@@ -1,5 +1,5 @@
 import { ok } from '@core/result/result-helpers';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { NotificationRepository } from '@infrastructure/notifications/notification-repository';
 import type { NotificationItemDto } from '@infrastructure/notifications/dtos/notification-item-dto';
 
@@ -24,7 +24,7 @@ const dto = (overrides: Partial<NotificationItemDto> = {}): NotificationItemDto 
 
 const listOf = async (item: NotificationItemDto) => {
   const http = { get: jest.fn().mockResolvedValue(ok({ items: [item], total: 1, unreadCount: 1 })) };
-  const result = await new NotificationRepository(http as unknown as HttpClient).list(1, 20);
+  const result = await new NotificationRepository(http as unknown as AxiosHttpClient).list(1, 20);
   if (!result.ok) throw new Error('list failed');
   const [first] = result.value.page.items;
   if (first === undefined) throw new Error('no item');
@@ -76,7 +76,7 @@ describe('NotificationRepository.list — creator decisions', () => {
 describe('NotificationRepository.list — paging', () => {
   it('asks for the requested page as limit/offset and reports whether more remain', async () => {
     const http = { get: jest.fn().mockResolvedValue(ok({ items: [dto()], total: 45, unreadCount: 3 })) };
-    const result = await new NotificationRepository(http as unknown as HttpClient).list(2, 20);
+    const result = await new NotificationRepository(http as unknown as AxiosHttpClient).list(2, 20);
 
     expect(http.get).toHaveBeenCalledWith(expect.any(String), { params: { limit: 20, offset: 20 } });
     if (!result.ok) throw new Error('list failed');
@@ -86,7 +86,7 @@ describe('NotificationRepository.list — paging', () => {
 
   it('says the last page is the last', async () => {
     const http = { get: jest.fn().mockResolvedValue(ok({ items: [dto()], total: 45, unreadCount: 0 })) };
-    const result = await new NotificationRepository(http as unknown as HttpClient).list(3, 20);
+    const result = await new NotificationRepository(http as unknown as AxiosHttpClient).list(3, 20);
 
     expect(http.get).toHaveBeenCalledWith(expect.any(String), { params: { limit: 20, offset: 40 } });
     expect(result.ok && result.value.page.hasMore).toBe(false);

@@ -25,7 +25,7 @@ const SERVER_URL: string =
   DEFAULT_SERVER_URL;
 
 
-/** `HttpClient.baseURL`: every relative `url:` in a repository resolves under here. */
+/** `AxiosHttpClient.baseURL`: every relative `url:` in a repository resolves under here. */
 export const API_BASE_URL: string = `${SERVER_URL}/api/v1`;
 
 /** Absolute, because avatar upload sits at the server root and must bypass `baseURL`. */

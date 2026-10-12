@@ -10,7 +10,7 @@ import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { toRecipeListQuery } from '@infrastructure/recipes/to-recipe-list-query';
 import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
@@ -56,7 +56,7 @@ import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list
 const RECIPE_PHOTO_FIELD = 'photo';
 
 export class RecipeRepository implements RecipeRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async listActiveRecipes(filters?: RecipeFilters): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
     const result = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.recipes.root, { params: toRecipeListQuery(filters) });
@@ -194,7 +194,7 @@ export class RecipeRepository implements RecipeRepositoryInterface {
     return ok(undefined);
   }
 
-  // Locale rides Accept-Language (HttpClient), not the body.
+  // Locale rides Accept-Language (AxiosHttpClient), not the body.
   async generateRecipe(prompt: string): Promise<Result<RecipeEntity, Failure>> {
     const result = await this.http.post<RecipeDto>(ApiRoutes.recipes.generate, { prompt } satisfies GenerateRecipeRequestDto, { timeout: AI_REQUEST_TIMEOUT_MS });
     if (!result.ok) {

@@ -7,7 +7,7 @@ import type { AssistantTextReply } from '@domain/assistant/session/assistant-tex
 import { CharConstants, ValueConstants } from '@core/constants';
 import type { Failure } from '@core/failure/failure';
 import { fail, ok } from '@core/result/result-helpers';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { isNonEmptyString } from '@core/guards/type-guards';
 import type { Result } from '@core/result/result';
 
@@ -19,7 +19,7 @@ import type { Result } from '@core/result/result';
  * session rather than a method on it.
  */
 export class AssistantMessenger implements AssistantMessengerInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async ask(
     message: string,

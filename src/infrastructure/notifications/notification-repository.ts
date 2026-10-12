@@ -7,7 +7,7 @@ import type { Failure } from '@core/failure';
 import { NotificationEntity } from '@domain/notifications/notification-entity';
 import type { NotificationRepositoryInterface } from '@domain/notifications/notification-repository-interface';
 import type { NotificationListResult } from '@domain/notifications/notification-list-result';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { toPage } from '@infrastructure/network/paging/to-page';
 import { toNotificationsQuery } from '@infrastructure/notifications/to-notifications-query';
@@ -22,7 +22,7 @@ import type { RegisterDeviceTokenRequestDto } from '@infrastructure/notification
  * endpoints live under `/me/` and require a valid JWT session.
  */
 export class NotificationRepository implements NotificationRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async list(page: number, pageSize: number): Promise<Result<NotificationListResult, Failure>> {
     const result = await this.http.get<NotificationsResponseDto>(ApiRoutes.me.notifications, {

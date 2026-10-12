@@ -1,7 +1,7 @@
 import { ConflictFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 import { ShoppingListRepository } from '@infrastructure/shopping/shopping-list-repository';
 import type { ShoppingItemDto } from '@infrastructure/shopping/dtos/shopping-item-dto';
@@ -15,7 +15,7 @@ interface RequestCall {
 
 const answering = (answer: Result<unknown, unknown>): { repo: ShoppingListRepository; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
-  const http: HttpClient = withHttpVerbs(
+  const http: AxiosHttpClient = withHttpVerbs(
     jest.fn((config: RequestCall) => {
       calls.push(config);
       return Promise.resolve(answer);

@@ -10,7 +10,7 @@ import type { DmRuleDraft } from '@domain/instagram/dm/dm-rule-draft';
 import type { DmRuleChanges } from '@domain/instagram/dm/dm-rule-changes';
 import type { DmSend } from '@domain/instagram/activity/dm-send';
 import type { InstagramRepositoryInterface } from '@domain/instagram/instagram-repository-interface';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { PageDto } from '@infrastructure/network/paging/page-dto';
 import { toPage } from '@infrastructure/network/paging/to-page';
@@ -42,7 +42,7 @@ import { toDmSaveRequest } from '@infrastructure/instagram/stats/to-dm-save-requ
  * `PageResult` envelopes read through `toPage`, which skips an unreadable row.
  */
 export class InstagramRepository implements InstagramRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async getConnection(): Promise<Result<InstagramConnection, Failure>> {
     const result = await this.http.get<InstagramConnectionDto>(ApiRoutes.instagram.connection);

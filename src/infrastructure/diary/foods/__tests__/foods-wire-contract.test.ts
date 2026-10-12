@@ -1,11 +1,11 @@
 import { ok } from '@core/result/result-helpers';
 import { RecentFoodKind } from '@domain/diary/foods/search/recent-food-kind';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 import { FoodCatalogRepository } from '@infrastructure/diary/foods/food-catalog-repository';
 import { FoodsWireSamples } from '@infrastructure/diary/foods/__fixtures__/foods-wire-samples';
 
-const answering = (json: string): HttpClient => {
+const answering = (json: string): AxiosHttpClient => {
   const body: unknown = JSON.parse(json);
   return withHttpVerbs(jest.fn(() => Promise.resolve(ok(body))));
 };

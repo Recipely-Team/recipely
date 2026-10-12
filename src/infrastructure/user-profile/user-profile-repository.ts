@@ -4,7 +4,7 @@ import { ok } from '@core/result/result-helpers';
 import type { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 import type { UserProfileRepositoryInterface } from '@domain/user-profile/user-profile-repository-interface';
 import type { ViewedUserProfile } from '@domain/user-profile/viewed-user-profile';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import type { UserProfileDto } from '@infrastructure/user-profile/user-profile-dto';
@@ -30,7 +30,7 @@ import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list
  *   the same `toRecipePage` and carry `hasMore` the same way.
  */
 export class UserProfileRepository implements UserProfileRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async getById(userId: string): Promise<Result<UserProfileEntity, Failure>> {
     const result = await this.http.get<UserProfileDto>(ApiRoutes.users.byId(userId));

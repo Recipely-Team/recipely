@@ -1,4 +1,4 @@
-export interface HttpClientOptions {
+export interface AxiosHttpClientOptions {
   baseUrl: string;
   tokenProvider: () => Promise<string | null>;
   /**

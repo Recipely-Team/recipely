@@ -2905,3 +2905,14 @@ the user reads as "how many there are" comes from the server's total, never from
 **Two copies of one settings screen.** Profile's settings and `/settings` drifted (Reminders in one, Send feedback
 in the other). *Now:* `/settings` redirects to Profile, which holds every setting and the assistant's settings
 words. *The class:* **one screen, one copy; a legacy route redirects rather than duplicates.**
+
+## A release build that allowed plain HTTP
+
+**Store builds accepted cleartext traffic for years after the reason was gone.** `usesCleartextTraffic: true`
+and `NSAllowsArbitraryLoads: true` went into `app.json` in #3 for a local http backend and shipped in every
+release since; nothing used them, but nothing stopped a stray `http://` URL from leaving the phone unencrypted
+either. *Now:* both are gone (debug builds keep Metro's cleartext through their own debug manifest and iOS's
+local-networking exemption), and `check:structure` rule AT fails on either coming back. The backend's one plain
+`/api/v1` reply — the 400 for a body the JSON parser cannot read — now goes out inside the AES envelope too
+(recipely-backend `mount-json-parsing.test.ts`). *The class:* **a development convenience in a build config
+is a release setting; it ships unless a gate says otherwise.**

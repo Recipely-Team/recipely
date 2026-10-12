@@ -8,7 +8,7 @@ import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import { FixedDeviceIdentity } from '@infrastructure/device/__fixtures__/fixed-device-identity';
 import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
 import { AVATAR_UPLOAD_URL } from '@infrastructure/constants/api/api-hosts';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 
 const userDto: RecipelyUserDto = {
@@ -48,14 +48,14 @@ interface UploadCall {
 
 const makeHttp = (
   result: Result<unknown, unknown>,
-): { http: HttpClient; calls: UploadCall[] } => {
+): { http: AxiosHttpClient; calls: UploadCall[] } => {
   const calls: UploadCall[] = [];
   const stub = {
     uploadMultipart: jest.fn((url: string, formData: FormData) => {
       calls.push({ url, formData });
       return Promise.resolve(result);
     }),
-  } as unknown as HttpClient;
+  } as unknown as AxiosHttpClient;
   return { http: stub, calls };
 };
 

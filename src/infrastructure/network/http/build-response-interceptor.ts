@@ -2,7 +2,7 @@ import type { AxiosResponse } from 'axios';
 import { LogTag, DECRYPT_FAILED_LOG } from '@infrastructure/constants/log-tag';
 import { decryptEnvelope } from '@infrastructure/crypto/aes-envelope';
 import { isEnvelope } from '@infrastructure/network/envelope/is-envelope';
-import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
+import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-http-client-options';
 import { CharConstants } from '@core/constants';
 
 /**
@@ -11,7 +11,7 @@ import { CharConstants } from '@core/constants';
  * left in place so downstream mapping can still fail cleanly.
  */
 export const buildResponseInterceptor = (
-  options: HttpClientOptions,
+  options: AxiosHttpClientOptions,
   aesKey: Uint8Array,
 ) => {
   return (response: AxiosResponse): AxiosResponse => {

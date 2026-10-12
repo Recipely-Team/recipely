@@ -5,7 +5,7 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { CommentEntity } from '@domain/comments/comment-entity';
 import type { CommentRepositoryInterface } from '@domain/comments/comment-repository-interface';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { CommentDto } from '@infrastructure/comments/dtos/comment-dto';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { ValueConstants } from '@core/constants';
@@ -19,7 +19,7 @@ import type { PageDto } from '@infrastructure/network/paging/page-dto';
  * paginated listing, adding, and removing comments scoped to a recipe.
  */
 export class CommentRepository implements CommentRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async listByRecipe(
     recipeId: string,

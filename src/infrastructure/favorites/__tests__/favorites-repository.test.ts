@@ -2,11 +2,11 @@ import { fail, ok } from '@core/result/result-helpers';
 import { NetworkFailure } from '@core/failure';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { FavoritesRepository } from '@infrastructure/favorites/favorites-repository';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 
 const httpAnswering = (answer: unknown) => {
   const http = { post: jest.fn().mockResolvedValue(answer), delete: jest.fn().mockResolvedValue(answer), get: jest.fn().mockResolvedValue(answer) };
-  return { repo: new FavoritesRepository(http as unknown as HttpClient), http };
+  return { repo: new FavoritesRepository(http as unknown as AxiosHttpClient), http };
 };
 
 describe('FavoritesRepository', () => {

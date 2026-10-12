@@ -2,7 +2,7 @@ import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { UserProfileDto } from '@infrastructure/user-profile/user-profile-dto';
 import { UserProfileRepository } from '@infrastructure/user-profile/user-profile-repository';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
@@ -27,7 +27,7 @@ interface RequestCall {
 
 const makeHttp = (
   result: Result<unknown, unknown>,
-): { http: HttpClient; calls: RequestCall[] } => {
+): { http: AxiosHttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
   const stub = withHttpVerbs(jest.fn((config: RequestCall) => {
       calls.push(config);
@@ -64,7 +64,7 @@ describe('UserProfileRepository.getById', () => {
     expect(calls[0].url).toBe('/users/user%2F3%20a');
   });
 
-  it('propagates the HttpClient failure unchanged without mapping', async () => {
+  it('propagates the AxiosHttpClient failure unchanged without mapping', async () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const repo = new UserProfileRepository(http);
@@ -130,7 +130,7 @@ describe('UserProfileRepository.listCreators', () => {
     }
   });
 
-  it('propagates the HttpClient failure unchanged', async () => {
+  it('propagates the AxiosHttpClient failure unchanged', async () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const repo = new UserProfileRepository(http);

@@ -8,7 +8,7 @@ import type { MealPlanEntryChanges } from '@domain/meal-plan/week/meal-plan-entr
 import type { CopyMealPlanResult } from '@domain/meal-plan/week/copy-meal-plan-result';
 import type { PlannedRecipeIngredients } from '@domain/meal-plan/shopping/planned-recipe-ingredients';
 import type { MealPlanRepositoryInterface } from '@domain/meal-plan/meal-plan-repository-interface';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { MealPlanDto } from '@infrastructure/meal-plan/dtos/meal-plan-dto';
 import type { MealPlanEntryDto } from '@infrastructure/meal-plan/dtos/meal-plan-entry-dto';
@@ -24,7 +24,7 @@ import { toCopyMealPlanRequest } from '@infrastructure/meal-plan/write/to-copy-m
 
 /** Implements `MealPlanRepositoryInterface` against `/me/meal-plan` (backend #392). */
 export class MealPlanRepository implements MealPlanRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async list(from: CalendarDate, to: CalendarDate): Promise<Result<MealPlanEntryEntity[], Failure>> {
     const result = await this.http.get<MealPlanDto>(ApiRoutes.mealPlan.root, { params: toMealPlanRangeQuery({ from, to }) });

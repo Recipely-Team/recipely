@@ -1,7 +1,7 @@
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { UserProfileDto } from '@infrastructure/user-profile/user-profile-dto';
 import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
 import { UserProfileRepository } from '@infrastructure/user-profile/user-profile-repository';
@@ -48,7 +48,7 @@ interface RequestCall {
   params?: unknown;
 }
 
-const makeHttp = (result: Result<unknown, unknown>): { http: HttpClient; calls: RequestCall[] } => {
+const makeHttp = (result: Result<unknown, unknown>): { http: AxiosHttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
   const stub = withHttpVerbs(
     jest.fn((config: RequestCall) => {
@@ -104,7 +104,7 @@ describe('UserProfileRepository.listUserRecipes', () => {
     }
   });
 
-  it('propagates the HttpClient failure unchanged', async () => {
+  it('propagates the AxiosHttpClient failure unchanged', async () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
 

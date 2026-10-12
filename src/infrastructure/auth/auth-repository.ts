@@ -6,7 +6,7 @@ import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-inter
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 import { AVATAR_UPLOAD_URL } from '@infrastructure/constants/api/api-hosts';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
 import type { RecipelyAuthSessionDto } from '@infrastructure/auth/session/recipely-auth-session-dto';
 import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
@@ -57,7 +57,7 @@ import { signedInUser } from '@infrastructure/auth/session/signed-in-user';
  */
 export class AuthRepository implements AuthRepositoryInterface {
   constructor(
-    private readonly http: HttpClient,
+    private readonly http: AxiosHttpClient,
     private readonly storage: SecureTokenStorage,
     private readonly deviceIdentity: DeviceIdentityInterface,
   ) {}

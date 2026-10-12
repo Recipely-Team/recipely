@@ -1,6 +1,6 @@
 import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { FILE_IMPORT_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
@@ -12,14 +12,14 @@ interface UploadCall {
   timeoutMs: number | undefined;
 }
 
-const makeHttp = (result: Result<unknown, unknown>): { http: HttpClient; calls: UploadCall[] } => {
+const makeHttp = (result: Result<unknown, unknown>): { http: AxiosHttpClient; calls: UploadCall[] } => {
   const calls: UploadCall[] = [];
   const stub = {
     uploadMultipart: jest.fn((url: string, _formData: FormData, _onProgress: unknown, timeoutMs?: number) => {
       calls.push({ url, timeoutMs });
       return Promise.resolve(result);
     }),
-  } as unknown as HttpClient;
+  } as unknown as AxiosHttpClient;
   return { http: stub, calls };
 };
 

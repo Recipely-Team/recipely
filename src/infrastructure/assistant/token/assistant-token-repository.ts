@@ -6,7 +6,7 @@ import type { AssistantUsageReportType } from '@domain/assistant/session/assista
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import type { Failure } from '@core/failure/failure';
 import { fail, ok } from '@core/result/result-helpers';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { Result } from '@core/result/result';
 import type { AssistantIntentTokenResponseDto } from '@infrastructure/assistant/token/dtos/assistant-intent-token-response-dto';
 import type { OsAssistantCredential } from '@domain/assistant/os/os-assistant-credential';
@@ -26,7 +26,7 @@ import { ValueConstants } from '@core/constants';
  * real while the client keeps reporting.
  */
 export class AssistantTokenRepository implements AssistantTokenRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async mintSession(
     languageCode: string,

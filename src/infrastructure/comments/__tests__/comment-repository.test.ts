@@ -2,7 +2,7 @@ import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { CommentEntity } from '@domain/comments/comment-entity';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { CommentDto } from '@infrastructure/comments/dtos/comment-dto';
 import { CommentRepository } from '@infrastructure/comments/comment-repository';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
@@ -31,7 +31,7 @@ interface RequestCall {
 
 const makeHttp = (
   result: Result<unknown, unknown>,
-): { http: HttpClient; calls: RequestCall[] } => {
+): { http: AxiosHttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
   const stub = withHttpVerbs(jest.fn((config: RequestCall) => {
       calls.push(config);
@@ -60,7 +60,7 @@ describe('CommentRepository.like', () => {
     expect(calls[0].url).toBe('/recipes/recipe-3/comments/comment-7/like');
   });
 
-  it('propagates the HttpClient failure unchanged', async () => {
+  it('propagates the AxiosHttpClient failure unchanged', async () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const repo = new CommentRepository(http);
@@ -94,7 +94,7 @@ describe('CommentRepository.unlike', () => {
     expect(calls[0].url).toBe('/recipes/recipe-3/comments/comment-7/like');
   });
 
-  it('propagates the HttpClient failure unchanged', async () => {
+  it('propagates the AxiosHttpClient failure unchanged', async () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const repo = new CommentRepository(http);

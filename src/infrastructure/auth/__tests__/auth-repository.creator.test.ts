@@ -10,7 +10,7 @@ import { CreatorStatus } from '@domain/creators/creator-status';
 import { CreatorTag } from '@domain/creators/creator-tag';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import { FixedDeviceIdentity } from '@infrastructure/device/__fixtures__/fixed-device-identity';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 
@@ -56,7 +56,7 @@ const makeRepo = (
   const http = withHttpVerbs(jest.fn((config: RequestCall) => {
     calls.push({ method: config.method, url: config.url, data: config.data });
     return Promise.resolve(httpResult);
-  })) as HttpClient;
+  })) as AxiosHttpClient;
   const saved: AuthSessionEntity[] = [];
   const storage = {
     loadSession: jest.fn(() => Promise.resolve(ok(stored))),
@@ -80,7 +80,7 @@ const repoSwitchingUserMidRequest = (
   const http = withHttpVerbs(jest.fn(() => {
     stored = next;
     return Promise.resolve(httpResult);
-  })) as HttpClient;
+  })) as AxiosHttpClient;
   const saved: AuthSessionEntity[] = [];
   const storage = {
     loadSession: jest.fn(() => Promise.resolve(ok(stored))),
@@ -239,7 +239,7 @@ const racingRepo = (): {
     new Promise((resolve) => {
       pending.set(config.method ?? '', resolve);
     }),
-  ) as HttpClient;
+  ) as AxiosHttpClient;
   const storage = {
     loadSession: jest.fn(() => Promise.resolve(ok(stored))),
     saveSession: jest.fn((session: AuthSessionEntity) => {

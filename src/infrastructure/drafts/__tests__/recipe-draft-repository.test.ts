@@ -1,7 +1,7 @@
 import { NetworkFailure, NotFoundFailure, UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
 import { RecipeDraftRepository } from '@infrastructure/drafts/recipe-draft-repository';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
@@ -33,7 +33,7 @@ interface RequestCall {
 
 const makeHttp = (
   result: Result<unknown, unknown>,
-): { http: HttpClient; calls: RequestCall[] } => {
+): { http: AxiosHttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
   const stub = withHttpVerbs(jest.fn((config: RequestCall) => {
       calls.push(config);
@@ -64,7 +64,7 @@ describe('RecipeDraftRepository.listDrafts', () => {
     }
   });
 
-  it('propagates HttpClient failure unchanged', async () => {
+  it('propagates AxiosHttpClient failure unchanged', async () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const repo = new RecipeDraftRepository(http);
@@ -127,7 +127,7 @@ describe('RecipeDraftRepository.getDraft', () => {
     if (r.ok) expect(r.value.id).toBe(draftDto.id);
   });
 
-  it('propagates HttpClient failure unchanged', async () => {
+  it('propagates AxiosHttpClient failure unchanged', async () => {
     const failure = new NotFoundFailure('gone');
     const { http } = makeHttp(fail(failure));
     const repo = new RecipeDraftRepository(http);
@@ -164,7 +164,7 @@ describe('RecipeDraftRepository.upsertDraft', () => {
     if (r.ok) expect(r.value.id).toBe(draftDto.id);
   });
 
-  it('propagates HttpClient failure unchanged', async () => {
+  it('propagates AxiosHttpClient failure unchanged', async () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const repo = new RecipeDraftRepository(http);
@@ -194,7 +194,7 @@ describe('RecipeDraftRepository.deleteDraft', () => {
     if (r.ok) expect(r.value).toBeUndefined();
   });
 
-  it('propagates HttpClient failure unchanged', async () => {
+  it('propagates AxiosHttpClient failure unchanged', async () => {
     const failure = new UnknownFailure('boom');
     const { http } = makeHttp(fail(failure));
     const repo = new RecipeDraftRepository(http);
