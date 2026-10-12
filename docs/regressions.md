@@ -2916,3 +2916,14 @@ local-networking exemption), and `check:structure` rule AT fails on either comin
 `/api/v1` reply — the 400 for a body the JSON parser cannot read — now goes out inside the AES envelope too
 (recipely-backend `mount-json-parsing.test.ts`). *The class:* **a development convenience in a build config
 is a release setting; it ships unless a gate says otherwise.**
+## A JavaScript API the phones do not have
+
+**v1.4.0 opened on the crash screen on iOS and Android.** `pluralCount` (#576) called
+`new Intl.PluralRules`, which Hermes — the engine of both native builds — does not ship (it has only
+`Intl.Collator`, `DateTimeFormat` and `NumberFormat`). Browsers and Jest's Node have it, so lint, tsc,
+4,300 tests and the web build were all green; the first render of the recipe feed's count threw into
+`AppErrorBoundary`. *Now:* `pluralCategory` carries CLDR's integer rules for the 14 languages, held equal
+to Node's ICU for every count up to 1,200 and the millions (`plural-category.test.ts`, which also runs
+`pluralCount` with `Intl.PluralRules` removed), and `check:structure` rule AU refuses every Intl API Hermes
+lacks. *The class:* **a platform API that exists in the browser and in Node is not proof it exists on the
+phone — the native engine is the narrowest runtime the code ships to, and only a native build exercises it.**

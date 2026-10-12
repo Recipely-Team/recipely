@@ -1,4 +1,5 @@
 import { getLocale } from '@presentation/i18n/i18n';
+import { pluralCategory } from '@presentation/i18n/plural-category';
 
 /** One string per CLDR plural category, each with `{n}`; every locale lists all six so the parity tests hold. */
 interface PluralForms {
@@ -12,11 +13,11 @@ interface PluralForms {
 
 /**
  * "{n} recipes" in the ACTIVE language, with the plural form that language
- * wants for `n` (`Intl.PluralRules`) and the number where that language puts it.
+ * wants for `n` ({@link pluralCategory}) and the number where that language puts it.
  *
  * @remarks
  * - **Why**: "{count} {word}" concatenation said "1 results" in English and
  *   picked one fixed form in Russian and Arabic, which have three to six.
  */
 export const pluralCount = (forms: PluralForms, n: number): string =>
-  forms[new Intl.PluralRules(getLocale()).select(n)].replace('{n}', String(n));
+  forms[pluralCategory(getLocale(), n)].replace('{n}', String(n));
