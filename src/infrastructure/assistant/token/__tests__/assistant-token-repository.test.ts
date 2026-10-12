@@ -2,11 +2,11 @@ import { fail, ok } from '@core/result/result-helpers';
 import { NetworkFailure } from '@core/failure';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { AssistantTokenRepository } from '@infrastructure/assistant/token/assistant-token-repository';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 
 const repoAnswering = (answer: unknown) => {
   const post = jest.fn().mockResolvedValue(answer);
-  return { repo: new AssistantTokenRepository({ post } as unknown as HttpClient), post };
+  return { repo: new AssistantTokenRepository({ post } as unknown as AxiosHttpClient), post };
 };
 
 describe('AssistantTokenRepository', () => {

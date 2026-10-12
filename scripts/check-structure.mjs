@@ -62,6 +62,8 @@
  *   AS. No bare `router.back()` under app/ — a cold-started page has no back, so
  *      it dead-ends on iOS/web and quits on Android; use `useGoBackOrHome`
  *      (CLAUDE.md §24).
+ *   AT. Release builds load HTTPS only: app.json never loosens App Transport
+ *      Security nor sets usesCleartextTraffic (CLAUDE.md §24).
  *   AU. No Intl API Hermes lacks (PluralRules, RelativeTimeFormat, ListFormat,
  *      Segmenter, DisplayNames, Locale, DurationFormat) outside tests (§24).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
@@ -412,7 +414,8 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
 {
   const appJsonPath = path.join(ROOT, 'app.json');
   if (fs.existsSync(appJsonPath)) {
-    const plugins = JSON.parse(fs.readFileSync(appJsonPath, 'utf8')).expo?.plugins ?? [];
+    const expoConfig = JSON.parse(fs.readFileSync(appJsonPath, 'utf8')).expo ?? {};
+    const plugins = expoConfig.plugins ?? [];
     const optionsFor = (name) => {
       const entry = plugins.find((p) => (Array.isArray(p) ? p[0] : p) === name);
       if (entry === undefined) return null;
@@ -453,6 +456,23 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       errors.push(
         'app.json: expo-video background playback / picture-in-picture adds UIBackgroundModes:audio, which App Review rejects without a qualifying feature (CLAUDE.md §23c)',
       );
+    }
+
+    // Rule AT — release builds speak HTTPS only. Both switches were set in #3 for
+    // a local http backend and shipped in every store build for years after;
+    // debug builds keep Metro's cleartext through their own debug manifest and
+    // iOS's NSAllowsLocalNetworking, so nothing in development needs them.
+    const buildProps = optionsFor('expo-build-properties');
+    if (buildProps !== null) {
+      if (buildProps.ios?.infoPlist?.NSAppTransportSecurity !== undefined || buildProps.ios?.infoPlist?.NSAllowsArbitraryLoads !== undefined) {
+        errors.push('app.json: expo-build-properties must not loosen App Transport Security — release builds load HTTPS only (CLAUDE.md rule 24, check:structure rule AT)');
+      }
+      if (buildProps.android?.usesCleartextTraffic === true) {
+        errors.push('app.json: expo-build-properties must not set "usesCleartextTraffic": true — release builds load HTTPS only (CLAUDE.md rule 24, check:structure rule AT)');
+      }
+    }
+    if (expoConfig.ios?.infoPlist?.NSAppTransportSecurity?.NSAllowsArbitraryLoads === true) {
+      errors.push('app.json: ios.infoPlist must not set NSAllowsArbitraryLoads — release builds load HTTPS only (check:structure rule AT)');
     }
 
     // react-native-audio-api carries the microphone for the voice assistant, and

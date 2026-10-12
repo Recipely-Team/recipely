@@ -66,9 +66,6 @@
         "expo-build-properties",
         {
           "ios": {
-            "infoPlist": {
-              "NSAllowsArbitraryLoads": true
-            },
             "useFrameworks": "static",
             "forceStaticLinking": [
               "RNFBApp",
@@ -78,7 +75,6 @@
             ]
           },
           "android": {
-            "usesCleartextTraffic": true,
             "enableProguardInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
             "useLegacyPackaging": true,
@@ -239,7 +235,8 @@
       "./plugins/withIosCrashlyticsDsym",
       "./plugins/withAndroidSplashForceDark",
       "./plugins/withAndroidReleaseSigning",
-      "./plugins/withAndroidR8Optimization"
+      "./plugins/withAndroidR8Optimization",
+      "./plugins/withApiCertificatePinning"
     ],
     "experiments": {
       "typedRoutes": true

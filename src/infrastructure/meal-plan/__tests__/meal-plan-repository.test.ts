@@ -3,7 +3,7 @@ import type { Result } from '@core/result/result';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { MealSlot } from '@domain/diary/meal-slot';
 import { Servings } from '@domain/diary/entry/servings';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 import { MealPlanRepository } from '@infrastructure/meal-plan/meal-plan-repository';
 import type { MealPlanDto } from '@infrastructure/meal-plan/dtos/meal-plan-dto';
@@ -51,7 +51,7 @@ const day = (raw: string): CalendarDate => {
 
 const answering = (answer: Result<unknown, unknown>): { repo: MealPlanRepository; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
-  const http: HttpClient = withHttpVerbs(
+  const http: AxiosHttpClient = withHttpVerbs(
     jest.fn((config: RequestCall) => {
       calls.push(config);
       return Promise.resolve(answer);

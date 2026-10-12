@@ -3,7 +3,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { FoodSearchGroup } from '@domain/diary/foods/search/food-search-group';
 import { RecentFoodKind } from '@domain/diary/foods/search/recent-food-kind';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 import { FoodCatalogRepository } from '@infrastructure/diary/foods/food-catalog-repository';
 import type { FoodProductDto } from '@infrastructure/diary/foods/dtos/food-product-dto';
@@ -18,7 +18,7 @@ interface RequestCall {
   params?: unknown;
 }
 
-const makeHttp = (result: Result<unknown, unknown>): { http: HttpClient; calls: RequestCall[] } => {
+const makeHttp = (result: Result<unknown, unknown>): { http: AxiosHttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
   const http = withHttpVerbs(
     jest.fn((config: RequestCall) => {

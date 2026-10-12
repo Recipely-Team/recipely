@@ -5,7 +5,7 @@ import { DmKeywords } from '@domain/instagram/dm/dm-keywords';
 import { DmRuleDraft } from '@domain/instagram/dm/dm-rule-draft';
 import { DmSendReason } from '@domain/instagram/activity/dm-send-reason';
 import { CreatorTagOutcome } from '@domain/instagram/connect/creator-tag-outcome';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 import { InstagramRepository } from '@infrastructure/instagram/instagram-repository';
 import { InstagramWireSamples } from '@infrastructure/instagram/__fixtures__/instagram-wire-samples';
@@ -18,7 +18,7 @@ interface RequestCall {
   data?: unknown;
 }
 
-const answering = (answer: Result<unknown, unknown>): { http: HttpClient; calls: RequestCall[] } => {
+const answering = (answer: Result<unknown, unknown>): { http: AxiosHttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
   const http = withHttpVerbs(
     jest.fn((config: RequestCall) => {

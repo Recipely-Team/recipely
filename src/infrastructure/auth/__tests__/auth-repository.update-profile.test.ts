@@ -7,7 +7,7 @@ import { Email } from '@domain/common/email';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import { FixedDeviceIdentity } from '@infrastructure/device/__fixtures__/fixed-device-identity';
 import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 
@@ -50,7 +50,7 @@ interface RequestCall {
 
 const makeHttp = (
   result: Result<unknown, unknown>,
-): { http: HttpClient; calls: RequestCall[] } => {
+): { http: AxiosHttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
   const stub = withHttpVerbs(jest.fn((config: RequestCall) => {
       calls.push({ method: config.method, url: config.url, data: config.data });

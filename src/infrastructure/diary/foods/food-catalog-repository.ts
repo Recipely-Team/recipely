@@ -11,7 +11,7 @@ import type { FoodSearchResults } from '@domain/diary/foods/search/food-search-r
 import type { RecipeHitGroupType } from '@domain/diary/foods/search/recipe-hit-group-type';
 import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import type { FoodCatalogRepositoryInterface } from '@domain/diary/foods/food-catalog-repository-interface';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { FIRST_PAGE } from '@domain/common/first-page';
 import type { PageDto } from '@infrastructure/network/paging/page-dto';
@@ -38,7 +38,7 @@ import { toRecentFood } from '@infrastructure/diary/foods/read/to-recent-food';
  * `PageResult` read through `toPage`, which skips an unreadable row.
  */
 export class FoodCatalogRepository implements FoodCatalogRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async search(query: string, pageSize: number): Promise<Result<FoodSearchResults, Failure>> {
     const params = toFoodSearchQuery({ query, group: null, page: FIRST_PAGE, pageSize });

@@ -1,5 +1,5 @@
 /**
- * Every backend endpoint path in one place. Paths are relative — `HttpClient`
+ * Every backend endpoint path in one place. Paths are relative — `AxiosHttpClient`
  * prepends `API_BASE_URL`. Parameterised endpoints are builders that
  * encodeURIComponent their segments, matching the former inline templates.
  */

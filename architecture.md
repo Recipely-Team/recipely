@@ -174,7 +174,7 @@ Orchestrates domain logic through use cases and manages UI state.
 
 Implements domain interfaces with concrete I/O.
 
-- **Repositories** — `AuthRepository`, `RecipeRepository` implement domain interfaces using `HttpClient`.
+- **Repositories** — `AuthRepository`, `RecipeRepository` implement domain interfaces using `AxiosHttpClient`.
 - **DTOs** — One interface per file (`RecipeDto`, `RecipesListDto`, …).
 - **Mappers** — Pure functions (`toRecipe`, `toUser`) that convert DTOs to domain entities, returning
   `Result`. Mappers are stateless and have no dependencies, so plain exported functions are idiomatic.
@@ -187,7 +187,7 @@ Implements domain interfaces with concrete I/O.
   (`RecipePage`: `items`, `total`, `page`, `hasMore`), not a bare array. Dropping the
   envelope is what let the app request page 1 forever. The page comes from the caller;
   the query is built by a `RequestMapper`, not by the repository method.
-- **Network** — `HttpClient` wraps Axios with typed error mapping to `Failure` subclasses.
+- **Network** — `AxiosHttpClient` wraps Axios with typed error mapping to `Failure` subclasses.
 - **Storage** — `SecureTokenStorage`; platform-specific `kv-store.ts` / `kv-store.web.ts`.
 - **Constants** — `src/infrastructure/constants/api.ts` (URLs, limits) and `storage.ts` (storage keys).
 - **DI Registration** — `src/infrastructure/di/register.ts` wires repositories and HTTP client.
@@ -309,7 +309,7 @@ where a class would add no value.
 |-----------|------|
 | Use case | `class GetRecipeUseCase { execute(...) }` |
 | Repository | `class HttpRecipeRepository implements RecipeRepositoryInterface { ... }` |
-| HTTP / Storage | `class HttpClient { ... }` / `class SecureTokenStorage { ... }` |
+| HTTP / Storage | `class AxiosHttpClient { ... }` / `class SecureTokenStorage { ... }` |
 | Domain entity | `class RecipeEntity extends BaseEntity<RecipeProps> { ... }` |
 | DTO mapper | `export const toRecipe = (dto: RecipeDto): Result<RecipeEntity, ...> => { ... }` |
 | Date formatter | `export const formatDate = (d: Date): string => { ... }` |
@@ -889,7 +889,16 @@ It is the only API this app talks to; there is no public sandbox behind it.
 The variant is chosen in `src/infrastructure/constants/api.ts`, which also owns every route, page
 size and request timeout — nothing else in the app names a host or an endpoint. Requests under
 `/api/v1` are wrapped in an AES-256-GCM envelope keyed by `API_AES_KEY_HEX`, which must equal the
-backend's `API_AES_KEY`; `/health` and the avatar upload sit outside that prefix.
+backend's `API_AES_KEY`; `/health` and the avatar upload sit outside that prefix. Multipart
+uploads travel as plain multipart over TLS; their `/api/v1` replies are still enveloped.
+
+The key ships inside the app, so the envelope is no secret from someone who unpacks it — TLS is
+what keeps traffic out of sight, and release builds harden it twice: no cleartext at all
+(`check:structure` rule AT) and the production host pinned to the four ISRG root keys
+(`plugins/withApiCertificatePinning.js`, Android `<pin-set>` + iOS `NSPinnedDomains`). Moving
+`api.recipely.net` off Let's Encrypt takes a release with the new pin FIRST; `npm run verify:pins`
+checks the live chain against the shipped pins and belongs in every release check. The Android pins
+expire on the plugin's `PIN_EXPIRATION` (fail open, not offline) — move it forward each release.
 
 Because the repos ship independently, a field or filter the UI wants may simply not exist yet —
 check the backend before assuming, and land the backend PR first.

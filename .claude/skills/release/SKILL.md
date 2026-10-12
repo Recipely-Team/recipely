@@ -17,7 +17,7 @@ TestFlight, and deploys the production web build.
 
 Pattern from #447 and #449 (and #417, #420, #422, #426).
 
-1. `dev` is green: lint · tsc · jest (note the suite/test counts) · check:structure · web export.
+1. `dev` is green: lint · tsc · jest (note the suite/test counts) · check:structure · web export · `npm run verify:pins` (the live API chain still matches the pinned roots — a miss means the release would be offline).
 2. **Release notes**, English and Turkish, in the six files a release touches (see #446), written
    for users, about what changed since the last release:
    - `distribution/whatsnew/whatsnew-en-US`, `distribution/whatsnew/whatsnew-tr-TR`

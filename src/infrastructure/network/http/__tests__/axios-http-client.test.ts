@@ -1,12 +1,12 @@
-import { HttpClient } from '@infrastructure/network/http/http-client';
-import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
+import { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
+import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-http-client-options';
 
 // Mock axios so `create()` returns a fake instance whose `request` resolves
 // with a status we control. The real interceptors are registered on this fake
 // instance (harmless no-op stubs) but never run, since we feed the response
 // directly — that is enough to exercise the 401 hook in `request<T>()`.
 // `create` is exposed BOTH as a named export and on the default, mirroring the
-// real module: axios ships it both ways, and HttpClient imports the named one.
+// real module: axios ships it both ways, and AxiosHttpClient imports the named one.
 const mockRequest = jest.fn();
 
 // The crypto envelope module pulls in `@noble/ciphers` (ESM, outside the jest
@@ -41,10 +41,10 @@ jest.mock('axios', () => {
 });
 
 const buildClient = (
-  overrides: Partial<HttpClientOptions> = {},
-): { client: HttpClient; onUnauthorized: jest.Mock } => {
+  overrides: Partial<AxiosHttpClientOptions> = {},
+): { client: AxiosHttpClient; onUnauthorized: jest.Mock } => {
   const onUnauthorized = jest.fn();
-  const client = new HttpClient({
+  const client = new AxiosHttpClient({
     baseUrl: 'https://api.test',
     tokenProvider: () => Promise.resolve('tok'),
     localeProvider: () => Promise.resolve('en'),
@@ -54,7 +54,7 @@ const buildClient = (
   return { client, onUnauthorized };
 };
 
-describe('HttpClient onUnauthorized hook', () => {
+describe('AxiosHttpClient onUnauthorized hook', () => {
   beforeEach(() => {
     mockRequest.mockReset();
   });

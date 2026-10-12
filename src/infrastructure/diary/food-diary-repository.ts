@@ -11,7 +11,7 @@ import type { FoodLogEntryChanges } from '@domain/diary/entry/food-log-entry-cha
 import type { FoodLogEntryEntity } from '@domain/diary/food-log-entry-entity';
 import type { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import type { FoodDiaryRepositoryInterface } from '@domain/diary/food-diary-repository-interface';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { DiaryDayDto } from '@infrastructure/diary/dtos/diary-day-dto';
 import type { DiaryMonthDto } from '@infrastructure/diary/dtos/diary-month-dto';
@@ -51,7 +51,7 @@ import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeout
  *   that fails mapping fails whole — its totals would otherwise be wrong.
  */
 export class FoodDiaryRepository implements FoodDiaryRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async getDay(date: CalendarDate): Promise<Result<DiaryDay, Failure>> {
     const result = await this.http.get<DiaryDayDto>(ApiRoutes.diary.day(date.value));

@@ -3,7 +3,7 @@ import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { LikeRepositoryInterface } from '@domain/likes/like-repository-interface';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
@@ -14,7 +14,7 @@ import { ValueConstants } from '@core/constants';
 
 /** Implements `LikeRepositoryInterface` against the Recipely backend. */
 export class LikeRepository implements LikeRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async like(recipeId: string): Promise<Result<void, Failure>> {
     const result = await this.http.post(ApiRoutes.recipes.like(recipeId), undefined);

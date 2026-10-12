@@ -2,7 +2,7 @@ import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { IMPORT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
@@ -45,10 +45,10 @@ interface RequestCall {
   timeout?: number;
 }
 
-// Minimal HttpClient stub — only `request` is used by importInstagramRecipe.
+// Minimal AxiosHttpClient stub — only `request` is used by importInstagramRecipe.
 const makeHttp = (
   result: Result<unknown, unknown>,
-): { http: HttpClient; calls: RequestCall[] } => {
+): { http: AxiosHttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
   const stub = withHttpVerbs(jest.fn((config: RequestCall) => {
       calls.push(config);
@@ -91,7 +91,7 @@ describe('RecipeRepository.importInstagramRecipe', () => {
     expect(JSON.stringify(calls[0].data)).not.toContain('locale');
   });
 
-  it('propagates HttpClient failure unchanged', async () => {
+  it('propagates AxiosHttpClient failure unchanged', async () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const repo = new RecipeRepository(http);

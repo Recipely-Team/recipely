@@ -2,7 +2,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { FavoritesRepositoryInterface } from '@domain/favorites/favorites-repository-interface';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
@@ -19,7 +19,7 @@ import { ValueConstants } from '@core/constants';
  * some other screen having already loaded the same recipes.
  */
 export class FavoritesRepository implements FavoritesRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async addFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>> {
     const result = await this.http.post(ApiRoutes.recipes.favorite(recipeId), undefined);
