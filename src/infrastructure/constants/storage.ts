@@ -42,3 +42,5 @@ export const CRASH_SENTINEL_STORAGE_KEY = 'recipely.crash.sentinel.v1';
  * the same phone is recorded against the same device.
  */
 export const DEVICE_ID_STORAGE_KEY = 'recipely.device.id.v1';
+/** The last first page of the recipe feed, shown when the next load of the same query cannot reach the API. */
+export const FEED_FIRST_PAGE_STORAGE_KEY = 'recipely.feedFirstPage.v1';

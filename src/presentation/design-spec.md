@@ -3095,3 +3095,26 @@ Label: "Shopping list, {n} to buy".
 - The "Kitchen" group heading in Profile is not added; the shopping-list row keeps its place above the creator rows.
 - The active-timers bar already shows on every screen in the app (mounted at the root), which the prototype lacked.
 - The shopping-list screen keeps its existing layout (#537); aisle grouping on that screen is a follow-up.
+
+## Share card — Story / Reel image (Oct 2026 — from the prototype)
+
+Source: Recipely Prototype → `src/share-card.jsx`, board `Share Card Variants.html`, spec
+`share-card-rn-spec.md` (project root). Built in `app/recipes/[recipeId]/sheets/recipe-share-card.tsx`;
+every number lives in `model/share/share-card-layout.ts`.
+
+- **Canvas** 360 × 640 dp, captured ×3 to a 1080 × 1920 PNG. Text stays in Instagram's safe band,
+  y 84–526 (250 px top / 340 px bottom of the export); the bottom 116 dp is plain paper.
+- **Photo** fills the top 460 dp; a 150 dp black scrim (`overlayLight` → clear) keeps Instagram's own
+  top UI legible; a 150 dp fade (paper at alpha `00 / 59 / C7 / F2 / FF`, stops 0 / .3 / .6 / .85 / 1)
+  carries the photo into **paper** = `colors.background`.
+- **Type** (system font): name 800 in three tiers by length — ≤ 20 chars 36/38, 21–34 31/33,
+  ≥ 35 26/29 (4 lines); meta 11/14 700 +1.4 upper-case in `primary`; "You'll need" 10/12 700 +1.6
+  in `textSubtle`; ingredient names 14/20 500 in `text`, separated by `  ·  ` and closed by `+n more`
+  in `primary`; footer wordmark 14/18 800, "Full recipe on **recipely.net**" 11.5/16.
+- **Contrast** (from the prototype's table, against paper): accent 5.4–10.7, muted 4.5–6.7 in every
+  palette and mode.
+- **No photo / failed photo**: the theme's `primaryGradientStart → End` at ≈160° with a white
+  monochrome logo, 132 dp, 28 % opacity, top 128.
+- **Not built yet** (needs `react-native-share` + `expo-media-library`, native): the prototype's
+  full-screen preview with a Light / Dark switch, safe-zone overlay, direct "Share to Instagram
+  Stories" and "Save image". The sheet's "Share as Story / Reel" goes to the system share sheet.

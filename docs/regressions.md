@@ -2939,3 +2939,27 @@ dark greys, `danger` and `likeActive` are chosen for the card, and `themes.test.
 theme to 4.5:1 for muted, tab, error and primary text on `surface` and 3:1 for the heart. *The class:*
 **a colour is checked against the surface it is drawn on — in dark mode the card, not the page, is
 the lowest-contrast background.**
+
+## A web photo upload that failed without a word
+
+**On the web the profile photo neither changed nor showed an error.** The picked photo is read with
+`fetch()` of its `blob:` / `data:` address before the multipart request is built, and the site's
+Content-Security-Policy allowed `connect-src` only `'self'`, `https:` and the assistant's socket — so
+the browser refused the read, `appendFilePart` threw, and the avatar hook had a `try/finally` with no
+`catch`: an unhandled rejection, no request, no dialog. Recipe photos and file imports used the same
+read. *Now:* `connect-src` admits `blob:` and `data:` on every hosting target,
+`assert-csp-inline-scripts.mjs` fails the web build if either is missing, and the avatar hook turns any
+throw after the pick into the upload error (`use-avatar-upload.test.tsx`). *The class:* **a step that
+can throw before the request is part of the request — catch it where the user is told, and check the
+browser's policy for every scheme the app reads from, not only the ones it calls.**
+
+## A page cached for an hour that pointed at a bundle that was gone
+
+**After the v1.5.0 web deploy a visitor sat on the splash until they reloaded.** Firebase gave every
+clean URL (`/`, `/recipes/<id>`, …) its default `max-age=3600`; the no-cache rule matched only
+`**/*.html`, which those requests never are. A browser holding the previous `index.html` asked for the
+previous hashed bundle, which the new release no longer had (404), so the app never started — and the
+splash, rendered into the static HTML, never left. *Now:* extension-less paths answer `no-cache`
+(revalidated on every visit, still a cheap 304), and the splash is not rendered on the web at all.
+*The class:* **an HTML page and the hashed assets it names must expire together — a cached page is
+only as good as the files it points at.**

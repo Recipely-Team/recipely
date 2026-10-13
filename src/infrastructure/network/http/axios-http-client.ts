@@ -4,7 +4,8 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { type Failure, UnauthorizedFailure } from '@core/failure';
 import { failureFromResponse } from '@infrastructure/network/errors/failure-from-response';
-import { DEFAULT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
+import { DEFAULT_REQUEST_TIMEOUT_MS, READ_RETRY_DELAY_MS } from '@infrastructure/constants/api/api-timeouts';
+import { isRetryableReadFailure } from '@infrastructure/network/errors/is-retryable-read-failure';
 import { API_AES_KEY_HEX } from '@infrastructure/constants/build-secrets';
 import { keyFromHex } from '@infrastructure/crypto/aes-envelope';
 import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-http-client-options';
@@ -75,7 +76,11 @@ export class AxiosHttpClient {
    * typed `'Post'` or landing on the wrong call. These read as the request they
    * make; `request` stays for the rare call needing a full Axios config.
    */
-  get<T>(url: string, config?: RequestConfig): Promise<Result<T, Failure>> {
+  /** A read that timed out or found the API briefly unreachable is asked once more before the user sees "this took a while". */
+  async get<T>(url: string, config?: RequestConfig): Promise<Result<T, Failure>> {
+    const first = await this.request<T>({ ...config, method: HttpMethod.Get, url });
+    if (first.ok || !isRetryableReadFailure(first.failure)) return first;
+    await new Promise((resolve) => setTimeout(resolve, READ_RETRY_DELAY_MS));
     return this.request<T>({ ...config, method: HttpMethod.Get, url });
   }
 

@@ -12,6 +12,9 @@ import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { toRecipeListQuery } from '@infrastructure/recipes/to-recipe-list-query';
+import { ValueConstants } from '@core/constants';
+import type { FeedFirstPageCache } from '@infrastructure/recipes/list/feed-first-page-cache';
+import { isUnreachableFailure } from '@infrastructure/network/errors/is-unreachable-failure';
 import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import { MY_RECIPES_PAGE_SIZE, TRENDING_RECIPES_LIMIT } from '@infrastructure/constants/api/api-paging';
@@ -56,13 +59,22 @@ import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list
 const RECIPE_PHOTO_FIELD = 'photo';
 
 export class RecipeRepository implements RecipeRepositoryInterface {
-  constructor(private readonly http: AxiosHttpClient) {}
+  constructor(
+    private readonly http: AxiosHttpClient,
+    private readonly feedCache?: FeedFirstPageCache,
+  ) {}
 
   async listActiveRecipes(filters?: RecipeFilters): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
-    const result = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.recipes.root, { params: toRecipeListQuery(filters) });
+    const params = toRecipeListQuery(filters);
+    const result = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.recipes.root, { params });
+    const isFirstPage = (filters?.page ?? ValueConstants.one) === ValueConstants.one;
+    const cacheKey = JSON.stringify(params);
     if (!result.ok) {
-      return result;
+      // The API was unreachable, not refusing: open on the recipes shown last time rather than an error.
+      const cached = isFirstPage && isUnreachableFailure(result.failure) ? await this.feedCache?.load(cacheKey) : null;
+      return cached ? toRecipePage(cached) : result;
     }
+    if (isFirstPage) void this.feedCache?.save(cacheKey, result.value);
     return toRecipePage(result.value);
   }
 

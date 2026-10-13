@@ -95,3 +95,50 @@ describe('AxiosHttpClient onUnauthorized hook', () => {
     expect(onUnauthorized).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * The symptom: "This took a while" on the web while the API was briefly
+ * unavailable — a single slow or refused read went straight to the user.
+ * A GET that times out or meets a 502/503/504 is asked once more.
+ */
+describe('AxiosHttpClient read retry', () => {
+  beforeEach(() => {
+    mockRequest.mockReset();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => jest.useRealTimers());
+
+  const settle = async <T>(pending: Promise<T>): Promise<T> => {
+    await jest.runAllTimersAsync();
+    return pending;
+  };
+
+  it('asks again after a 503 and returns the second answer', async () => {
+    mockRequest.mockResolvedValueOnce({ status: 503, data: {} }).mockResolvedValueOnce({ status: 200, data: { data: { ok: 1 } } });
+    const { client } = buildClient();
+
+    const result = await settle(client.get<{ ok: number }>('/recipes'));
+
+    expect(mockRequest).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({ ok: true, value: { ok: 1 } });
+  });
+
+  it('does not ask again when the API itself refused the read', async () => {
+    mockRequest.mockResolvedValue({ status: 404, data: {} });
+    const { client } = buildClient();
+
+    await settle(client.get('/recipes/missing'));
+
+    expect(mockRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it('never repeats a write', async () => {
+    mockRequest.mockResolvedValue({ status: 503, data: {} });
+    const { client } = buildClient();
+
+    await settle(client.post('/recipes', {}));
+
+    expect(mockRequest).toHaveBeenCalledTimes(1);
+  });
+});

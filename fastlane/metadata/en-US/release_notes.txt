@@ -1,7 +1,6 @@
-Plan your week, cook from your fridge, and share recipes as Stories.
+Share recipes as beautiful Stories, and profile photos upload again on the web.
 
-• Plan your week: a meal planner in the Diary tab, and "Add to plan" on every recipe.
-• From my fridge: photograph what you have and get dish ideas to cook.
-• Share a recipe as an Instagram Story or Reel image, or straight to WhatsApp.
-• Recipes imported from Instagram, TikTok and YouTube arrive in your language and your kitchen's units.
-• Easier-to-read text in dark mode.
+• A new look for recipes shared to Instagram Stories, Reels and WhatsApp: the photo, the dish, what you'll need, beautifully laid out.
+• Profile photo uploads work again on the web, and any upload problem now shows a message.
+• recipely.net opens straight to your recipes, without a splash screen.
+• Steadier on a weak connection: a slow request is retried, and the feed shows your last recipes while offline.

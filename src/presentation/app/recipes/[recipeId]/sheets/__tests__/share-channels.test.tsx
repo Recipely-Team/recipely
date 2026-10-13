@@ -32,6 +32,7 @@ const renderChannels = () =>
       cuisine="Turkish"
       url={URL}
       totalMinutes={20}
+      servings={4}
       ingredients={['3 eggs', '# Sauce', '2 tomatoes']}
     />,
   );

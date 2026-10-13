@@ -24,6 +24,7 @@ import { FeatureFlagRepository } from '@infrastructure/flags/feature-flag-reposi
 import { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
 import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 import { kvStore } from '@infrastructure/storage/kv-store';
+import { FeedFirstPageCache } from '@infrastructure/recipes/list/feed-first-page-cache';
 import { NotificationService } from '@infrastructure/notifications/notification-service';
 import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 import { AdsService } from '@infrastructure/ads/ads-service';
@@ -110,7 +111,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
 
   container.register(TOKENS.AuthRepository, () => new AuthRepository(http, storage, deviceIdentity));
   container.register(TOKENS.DeviceRepository, () => new DeviceRepository(http));
-  container.register(TOKENS.RecipeRepository, () => new RecipeRepository(http));
+  container.register(TOKENS.RecipeRepository, () => new RecipeRepository(http, new FeedFirstPageCache(kvStore)));
   container.register(TOKENS.TaxonomyRepository, () => new TaxonomyRepository(http));
   container.register(TOKENS.RecipeDraftRepository, () => new RecipeDraftRepository(http));
   container.register(TOKENS.FavoritesRepository, () => new FavoritesRepository(http));
