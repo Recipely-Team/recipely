@@ -1,7 +1,6 @@
-Haftanı planla, buzdolabından pişir, tarifleri Hikâye olarak paylaş.
+Tarifleri şık Hikâyeler olarak paylaş; web'de profil fotoğrafı yeniden yükleniyor.
 
-• Haftanı planla: Günlük sekmesinde yemek planlayıcı, her tarifte "Plana ekle".
-• Buzdolabımdan: elindekilerin fotoğrafını çek, pişirebileceğin yemek fikirlerini al.
-• Tarifleri Instagram Hikâye ya da Reels görseli olarak veya doğrudan WhatsApp'a paylaş.
-• Instagram, TikTok ve YouTube'dan aktarılan tarifler senin dilinde ve alıştığın ölçülerle gelir.
-• Koyu temada daha okunaklı yazılar.
+• Instagram Hikâye, Reels ve WhatsApp'ta paylaşılan tarifler için yeni görünüm: fotoğraf, yemek ve gerekenler şık bir düzende.
+• Web'de profil fotoğrafı yükleme yeniden çalışıyor; bir yükleme sorunu artık mesajla bildiriliyor.
+• recipely.net açılış ekranı olmadan doğrudan tariflerinle açılıyor.
+• Zayıf bağlantıda daha sağlam: yavaş bir istek yeniden deneniyor, bağlantı yokken akış son tariflerini gösteriyor.
