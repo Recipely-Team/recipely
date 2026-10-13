@@ -19,10 +19,16 @@ const LOGO_SIZE = 96;
  * Auto-dismissing brand splash shown on app boot. Displays the Recipely logo
  * inside a white tile on the primary gradient, with the localised tagline.
  * Tap anywhere to skip; auto-fades after `VISIBLE_MS`.
+ *
+ * @remarks
+ * - **Never on the web.** A site does not open on a splash, and the static
+ *   export rendered this one into every page's HTML: it stayed up until the
+ *   7 MB bundle had loaded and hydrated, and forever when that bundle was
+ *   missing after a deploy.
  */
 export const SplashOverlay = (): React.JSX.Element | null => {
   const colors = useTheme().colors;
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(!isWeb());
   const opacity = useRef(new Animated.Value(ValueConstants.one)).current;
 
   const dismiss = useCallback((): void => {

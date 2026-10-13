@@ -79,6 +79,13 @@ for (const target of targets) {
     );
     continue;
   }
+  // Web uploads read the picked photo with fetch(blob:/data:); without these the browser blocks it and the upload dies silently.
+  const connectSrc = /connect-src ([^;]*)/.exec(csp.value)?.[1]?.split(/\s+/) ?? [];
+  for (const scheme of ['blob:', 'data:']) {
+    if (!connectSrc.includes(scheme)) {
+      failures.push(`firebase.json (${target.target}): connect-src lacks ${scheme} — web photo uploads fetch the picked file from it`);
+    }
+  }
   const scriptSrc = /script-src ([^;]*)/.exec(csp.value)?.[1] ?? '';
   for (const [hash, where] of hashes) {
     if (!scriptSrc.includes(hash)) {

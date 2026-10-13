@@ -20,6 +20,9 @@ export const HttpStatus = {
   notFound: 404,
   conflict: 409,
   tooManyRequests: 429,
+  badGateway: 502,
+  serviceUnavailable: 503,
+  gatewayTimeout: 504,
   /** First client-error code — the 4xx range starts here. */
   clientErrorMin: 400,
   /** First server-error code — the 5xx range starts here. */

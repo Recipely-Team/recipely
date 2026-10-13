@@ -23,3 +23,9 @@ export const MULTIPART_UPLOAD_TIMEOUT_MS = 60_000;
  * cover uploading up to five photos, so its own answer arrives before ours.
  */
 export const FILE_IMPORT_TIMEOUT_MS = 70_000;
+
+/**
+ * The pause before a read is tried a second time after a timeout, a dropped
+ * connection or a 502/503/504 — long enough for a restarting API to answer.
+ */
+export const READ_RETRY_DELAY_MS = 800;
