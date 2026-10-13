@@ -63,12 +63,12 @@ const readableMuted = (palette: Palette, surface: string): string => {
 const DARK_NEUTRAL_BG = '#0B0B0D';
 const DARK_SURFACE_TARGET = '#52535A';
 const DARK_TEXT = '#F1F5F9';
-const DARK_TEXT_MUTED = '#64748B';
+const DARK_TEXT_MUTED = '#94A3B8';
 const LIGHT_TEXT = '#0F172A';
 const LIGHT_TEXT_MUTED = '#64748B';
 
 const darkSemantics: VariantSemantics = {
-  danger: '#F28B82',
+  danger: '#F6A39C',
   success: '#81C995',
   warning: '#FDD663',
   starFilled: '#FFD54F',
@@ -76,7 +76,7 @@ const darkSemantics: VariantSemantics = {
   shadow: '#000000',
   onOverlay: '#FFFFFF',
   onSuccess: '#0F1B0F',
-  likeActive: '#F43F5E',
+  likeActive: '#FB7185',
   overlayLight: 'rgba(0,0,0,0.4)',
   scrim: 'rgba(15,23,42,0.55)',
   gradientSurface: 'rgba(255,255,255,0.18)',
@@ -211,7 +211,7 @@ const themes: Record<ThemeIdType, ThemeDefinition> = {
       primary: '#F87171', primaryText: '#1F1F1F', primaryLight: '#450A0A',
       gradientStart: '#EF4444', gradientEnd: '#FCA5A5',
       background: '#1A0309', secondary: '#F87171', secondaryText: '#1F1F1F',
-      text: '#FEF2F2', textMuted: '#A78B8B',
+      text: '#FEF2F2', textMuted: '#B39999',
     }),
   },
   'emerald-garden': {
@@ -226,7 +226,7 @@ const themes: Record<ThemeIdType, ThemeDefinition> = {
       primary: '#34D399', primaryText: '#1A2E1A', primaryLight: '#022C22',
       gradientStart: '#10B981', gradientEnd: '#6EE7B7',
       background: '#04382B', secondary: '#34D399', secondaryText: '#1A2E1A',
-      text: '#ECFDF5', textMuted: '#70A090',
+      text: '#ECFDF5', textMuted: '#8FBDAD',
     }),
   },
   'royal-purple': {
@@ -241,7 +241,7 @@ const themes: Record<ThemeIdType, ThemeDefinition> = {
       primary: '#C084FC', primaryText: '#3B0764', primaryLight: '#3B0764',
       gradientStart: '#A855F7', gradientEnd: '#E9D5FF',
       background: '#2A075F', secondary: '#C084FC', secondaryText: '#3B0764',
-      text: '#FAF5FF', textMuted: '#9878A8',
+      text: '#FAF5FF', textMuted: '#B497C4',
     }),
   },
 };

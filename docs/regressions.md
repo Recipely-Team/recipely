@@ -2927,3 +2927,15 @@ to Node's ICU for every count up to 1,200 and the millions (`plural-category.tes
 `pluralCount` with `Intl.PluralRules` removed), and `check:structure` rule AU refuses every Intl API Hermes
 lacks. *The class:* **a platform API that exists in the browser and in Node is not proof it exists on the
 phone — the native engine is the narrowest runtime the code ships to, and only a native build exercises it.**
+
+## Grey text that disappeared on dark cards
+
+**Captions, tab icons and card metadata were barely readable in dark mode.** The dark palette reused
+the light theme's slate grey (`#64748B`) as `textMuted`: 3.65:1 on the Pearl White dark page, 2.52:1 on
+its cards, and the other dark themes' own greys sat at 3.2–3.5:1 on cards. The contrast tests checked
+muted text only against the page background, never against `surface`, where most of it sits. Error
+text (4.27:1) and the like heart (2.78:1) fell short on Emerald Garden cards the same way. *Now:*
+dark greys, `danger` and `likeActive` are chosen for the card, and `themes.test.ts` holds every dark
+theme to 4.5:1 for muted, tab, error and primary text on `surface` and 3:1 for the heart. *The class:*
+**a colour is checked against the surface it is drawn on — in dark mode the card, not the page, is
+the lowest-contrast background.**
