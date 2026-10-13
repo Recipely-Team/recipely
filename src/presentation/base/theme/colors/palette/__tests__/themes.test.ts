@@ -199,6 +199,29 @@ describe.each(themeVariantCases)(
   },
 );
 
+/**
+ * Dark-mode pairs the shared list leaves out: secondary text, tab icons, the
+ * like heart and error text all sit on cards. `textMuted` measured 2.52 on a
+ * Pearl White dark card before the dark palette got its own greys.
+ */
+const DARK_CARD_PAIRS: ContrastPair[] = [
+  { label: "textMuted vs surface — captions on cards", fg: "textMuted", bg: "surface", minRatio: 4.5 },
+  { label: "tabBarInactive vs tabBarBackground", fg: "tabBarInactive", bg: "tabBarBackground", minRatio: 4.5 },
+  { label: "danger vs surface — error text on a card", fg: "danger", bg: "surface", minRatio: 4.5 },
+  { label: "likeActive vs surface — the filled heart", fg: "likeActive", bg: "surface", minRatio: 3.0 },
+  { label: "primary vs surface — links and icons on cards", fg: "primary", bg: "surface", minRatio: 4.5 },
+];
+
+describe.each(ALL_THEMES)("themes — dark cards stay readable — %s", (id) => {
+  const colors = getThemeColors(id, "dark" as ThemeVariant);
+
+  it.each(DARK_CARD_PAIRS)("$label meets ratio >= $minRatio", ({ fg, bg, minRatio }) => {
+    const ratio = contrastRatio(stripAlpha(colors[fg]), stripAlpha(colors[bg]));
+
+    expect(ratio).toBeGreaterThanOrEqual(minRatio);
+  });
+});
+
 describe.each(themeVariantCases)(
   "themes — onOverlay over photo backdrop — $id $variant",
   ({ id, variant }) => {
