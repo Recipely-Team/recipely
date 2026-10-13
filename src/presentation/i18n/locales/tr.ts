@@ -622,7 +622,7 @@ export const tr: TranslationsType = {
     shareCopy: 'Kopyala',
     shareCopied: 'Kopyalandı',
     shareText: '{name} tarifine Recipely\'de göz at:',
-    shareChannelStory: 'Hikâye / Reels',
+    shareChannelStory: 'Hikâye / Reels olarak paylaş',
     shareChannelWhatsApp: 'WhatsApp',
     shareCardMore: '+{n} malzeme daha',
     shareCardFooter: 'Tarifin tamamı recipely.net’te',

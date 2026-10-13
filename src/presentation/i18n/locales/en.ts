@@ -630,7 +630,7 @@ export const en = {
     shareCopy: 'Copy',
     shareCopied: 'Copied',
     shareText: 'Check out {name} on Recipely:',
-    shareChannelStory: 'Story / Reel',
+    shareChannelStory: 'Share as Story / Reel',
     shareChannelWhatsApp: 'WhatsApp',
     shareCardMore: '+{n} more',
     shareCardFooter: 'Full recipe on recipely.net',

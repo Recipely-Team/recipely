@@ -5,9 +5,9 @@ describe('shareCardIngredients', () => {
     expect(shareCardIngredients(['# Syrup', '200 g sugar', ' ', '100 ml water']).shown).toEqual(['200 g sugar', '100 ml water']);
   });
 
-  it('prints six lines and counts the rest as "+n more"', () => {
+  it('prints five lines and counts the rest as "+n more"', () => {
     const lines = Array.from({ length: 9 }, (_, i) => `item ${String(i + 1)}`);
 
-    expect(shareCardIngredients(lines)).toEqual({ shown: lines.slice(0, 6), hidden: 3 });
+    expect(shareCardIngredients(lines)).toEqual({ shown: lines.slice(0, 5), hidden: 4 });
   });
 });

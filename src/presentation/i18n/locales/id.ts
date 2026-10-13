@@ -619,7 +619,7 @@ export const id = {
     shareCopy: 'Salin',
     shareCopied: 'Disalin',
     shareText: 'Lihat {name} di Recipely:',
-    shareChannelStory: 'Story / Reel',
+    shareChannelStory: 'Bagikan sebagai Story / Reel',
     shareChannelWhatsApp: 'WhatsApp',
     shareCardMore: '+{n} lagi',
     shareCardFooter: 'Resep lengkap di recipely.net',

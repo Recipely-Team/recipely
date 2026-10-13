@@ -622,7 +622,7 @@ export const zh = {
     shareCopy: '复制',
     shareCopied: '已复制',
     shareText: '来 Recipely 看看 {name}：',
-    shareChannelStory: '快拍 / Reels',
+    shareChannelStory: '分享为快拍 / Reels',
     shareChannelWhatsApp: 'WhatsApp',
     shareCardMore: '还有 {n} 种',
     shareCardFooter: '完整食谱见 recipely.net',

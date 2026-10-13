@@ -621,7 +621,7 @@ export const ko: TranslationsType = {
     shareCopy: '복사',
     shareCopied: '복사됨',
     shareText: 'Recipely에서 {name} 레시피를 확인해 보세요:',
-    shareChannelStory: '스토리 / 릴스',
+    shareChannelStory: '스토리 / 릴스로 공유',
     shareChannelWhatsApp: 'WhatsApp',
     shareCardMore: '외 {n}개',
     shareCardFooter: '전체 레시피는 recipely.net에서',

@@ -14,7 +14,9 @@ export const ShareCardLayout = {
   aspectRatio: 9 / 16,
   exportWidth: 1080,
   exportHeight: 1920,
-  maxIngredients: 6,
+  maxIngredients: 5,
+  /** Landscape, so the photo leaves room for the name and five ingredient lines. */
+  photoAspectRatio: 4 / 3,
   logoSize: 40,
   /** The card's text is part of an image; it must not grow with the device font scale. */
   fontScale: 1,

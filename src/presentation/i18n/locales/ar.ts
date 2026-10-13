@@ -619,7 +619,7 @@ export const ar = {
     shareCopy: "نسخ",
     shareCopied: "تم النسخ",
     shareText: "شاهد {name} على Recipely:",
-    shareChannelStory: 'قصة / ريلز',
+    shareChannelStory: 'شارك كقصة / ريلز',
     shareChannelWhatsApp: 'واتساب',
     shareCardMore: '+{n} أخرى',
     shareCardFooter: 'الوصفة كاملة على recipely.net',

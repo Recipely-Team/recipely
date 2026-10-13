@@ -621,7 +621,7 @@ export const hi: TranslationsType = {
     shareCopy: 'कॉपी करें',
     shareCopied: 'कॉपी हो गया',
     shareText: 'Recipely पर {name} देखें:',
-    shareChannelStory: 'स्टोरी / रील',
+    shareChannelStory: 'स्टोरी / रील के रूप में शेयर करें',
     shareChannelWhatsApp: 'WhatsApp',
     shareCardMore: '+{n} और',
     shareCardFooter: 'पूरी रेसिपी recipely.net पर',

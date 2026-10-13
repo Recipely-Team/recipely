@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   },
   photo: {
     width: '100%',
-    aspectRatio: ValueConstants.one,
+    aspectRatio: ShareCardLayout.photoAspectRatio,
     borderRadius: radii.lg,
   },
   body: {

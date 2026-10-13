@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Linking, Platform, Share, StyleSheet, View } from 'react-native';
+import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { ChannelTile } from '@presentation/app/recipes/[recipeId]/sheets/channel-tile';
 import { RecipeShareCard } from '@presentation/app/recipes/[recipeId]/sheets/recipe-share-card';
 import { useShareCard } from '@presentation/app/recipes/[recipeId]/hooks/share/use-share-card';
@@ -24,7 +26,7 @@ const WHATSAPP_SHARE_URL = 'https://wa.me/?text=';
 const CAN_SHARE_CARD = Platform.OS !== 'web';
 
 /**
- * The share sheet's channel row: Story / Reel, WhatsApp, Message, Email, More.
+ * The share sheet's channels: a Story / Reel button above WhatsApp, Message, Email and More.
  *
  * @remarks
  * - **Story / Reel** shares a 9:16 image of the recipe (`RecipeShareCard`) through
@@ -68,8 +70,11 @@ export const ShareChannels = ({
   };
 
   const { cardRef, onCardReady, shareCard } = useShareCard();
+  const [cardBusy, setCardBusy] = useState(false);
   const handleStory = (): void => {
+    setCardBusy(true);
     void shareCard(t().recipes.shareTitle).then((shared) => {
+      setCardBusy(false);
       if (!shared) handleMore();
     });
   };
@@ -90,15 +95,14 @@ export const ShareChannels = ({
           </View>
         ) : null}
 
+        {CAN_SHARE_CARD ? (
+          <View style={styles.storyButton}>
+            <PrimaryButton label={t().recipes.shareChannelStory} onPress={handleStory} loading={cardBusy} />
+          </View>
+        ) : null}
+
         {/* Channel grid */}
         <View style={styles.channelRow}>
-          {CAN_SHARE_CARD ? (
-            <ChannelTile
-              icon="images-outline"
-              label={t().recipes.shareChannelStory}
-              onPress={handleStory}
-            />
-          ) : null}
           <ChannelTile
             icon="logo-whatsapp"
             label={t().recipes.shareChannelWhatsApp}
@@ -125,6 +129,9 @@ export const ShareChannels = ({
 };
 
 const styles = StyleSheet.create({
+  storyButton: {
+    marginBottom: spacing.md,
+  },
   offscreen: {
     position: 'absolute',
     top: ValueConstants.zero,
