@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Image, Linking, Pressable, Share, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
-import { ChannelTile } from '@presentation/app/recipes/[recipeId]/sheets/channel-tile';
+import { ShareChannels } from '@presentation/app/recipes/[recipeId]/sheets/share-channels';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, mediaSizes, borderWidths } from '@presentation/base/theme';
@@ -17,12 +17,14 @@ export interface RecipeShareSheetProps {
   cuisine?: string;
   imageUrl?: string;
   url: string;
+  totalMinutes: number;
+  ingredients: readonly string[];
 }
 
 const COPIED_RESET_MS = 1800;
 const THUMBNAIL_SIZE = mediaSizes.shareThumb;
 
-/** Bottom-sheet share dialog for a recipe — channels, link display, and copy. */
+/** Bottom-sheet share dialog for a recipe — channels (`ShareChannels`), link display, and copy. */
 export const RecipeShareSheet = ({
   visible,
   onClose,
@@ -30,6 +32,8 @@ export const RecipeShareSheet = ({
   cuisine,
   imageUrl,
   url,
+  totalMinutes,
+  ingredients,
 }: RecipeShareSheetProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const [copied, setCopied] = useState(false);
@@ -43,7 +47,6 @@ export const RecipeShareSheet = ({
     };
   }, []);
 
-  const shareText = t().recipes.shareText.replace('{name}', recipeName);
 
   const handleCopy = async (): Promise<void> => {
     try {
@@ -61,26 +64,6 @@ export const RecipeShareSheet = ({
     }, COPIED_RESET_MS);
   };
 
-  const handleMessage = (): void => {
-    void Linking.openURL(
-      'sms:?body=' + encodeURIComponent(shareText + ' ' + url),
-    ).catch(() => undefined);
-  };
-
-  const handleEmail = (): void => {
-    void Linking.openURL(
-      'mailto:?subject=' +
-        encodeURIComponent(recipeName) +
-        '&body=' +
-        encodeURIComponent(shareText + '\n\n' + url),
-    ).catch(() => undefined);
-  };
-
-  const handleMore = (): void => {
-    void Share.share({ message: shareText + ' ' + url, url, title: recipeName }).catch(
-      () => undefined,
-    );
-  };
 
   return (
     <BottomSheet
@@ -123,24 +106,15 @@ export const RecipeShareSheet = ({
         </View>
       </View>
 
-      {/* Channel grid */}
-      <View style={styles.channelRow}>
-        <ChannelTile
-          icon="chatbubble-outline"
-          label={t().recipes.shareChannelMessage}
-          onPress={handleMessage}
-        />
-        <ChannelTile
-          icon="mail-outline"
-          label={t().recipes.shareChannelEmail}
-          onPress={handleEmail}
-        />
-        <ChannelTile
-          icon="share-social-outline"
-          label={t().recipes.shareChannelMore}
-          onPress={handleMore}
-        />
-      </View>
+      <ShareChannels
+        visible={visible}
+        recipeName={recipeName}
+        cuisine={cuisine}
+        imageUrl={imageUrl}
+        url={url}
+        totalMinutes={totalMinutes}
+        ingredients={ingredients}
+      />
 
       {/* Link section */}
       <ThemedText variant="label" muted style={styles.linkSectionLabel}>
@@ -216,11 +190,6 @@ const styles = StyleSheet.create({
   },
   previewName: {
     fontWeight: fontWeights.bold,
-  },
-  channelRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
   },
   linkSectionLabel: {
     marginBottom: spacing.sm,
