@@ -18,6 +18,7 @@ export interface RecipeShareSheetProps {
   imageUrl?: string;
   url: string;
   totalMinutes: number;
+  servings: number;
   ingredients: readonly string[];
 }
 
@@ -33,6 +34,7 @@ export const RecipeShareSheet = ({
   imageUrl,
   url,
   totalMinutes,
+  servings,
   ingredients,
 }: RecipeShareSheetProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -113,6 +115,7 @@ export const RecipeShareSheet = ({
         imageUrl={imageUrl}
         url={url}
         totalMinutes={totalMinutes}
+        servings={servings}
         ingredients={ingredients}
       />
 

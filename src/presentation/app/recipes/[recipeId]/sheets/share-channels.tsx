@@ -17,6 +17,7 @@ export interface ShareChannelsProps {
   imageUrl?: string;
   url: string;
   totalMinutes: number;
+  servings: number;
   ingredients: readonly string[];
 }
 
@@ -40,6 +41,7 @@ export const ShareChannels = ({
   imageUrl,
   url,
   totalMinutes,
+  servings,
   ingredients,
 }: ShareChannelsProps): React.JSX.Element => {
   const shareText = t().recipes.shareText.replace('{name}', recipeName);
@@ -88,6 +90,7 @@ export const ShareChannels = ({
               recipeName={recipeName}
               cuisine={cuisine}
               totalMinutes={totalMinutes}
+              servings={servings}
               ingredients={ingredients}
               imageUrl={imageUrl}
               onReady={onCardReady}
