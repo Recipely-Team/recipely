@@ -1,5 +1,5 @@
-• Your shopping list is now one tap away: a cart on every tab shows how many items are still to buy.
-• Undo after removing a shopping item, a diary entry or a saved recipe.
-• You can cancel while a recipe is being generated, and leaving a half-made recipe or profile edit asks first.
-• Recipe counts show the real total, and notifications can be pulled to refresh.
-• Many small fixes and polish.
+• Plan your week: a meal planner in the Diary tab, and "Add to plan" on every recipe.
+• From my fridge: photograph what you have and get dish ideas to cook.
+• Share a recipe as an Instagram Story or Reel image, or straight to WhatsApp.
+• Recipes imported from Instagram, TikTok and YouTube arrive in your language and your kitchen's units.
+• Easier-to-read text in dark mode.
