@@ -132,6 +132,8 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
             cuisine={vm.cuisineName}
             imageUrl={vm.firstImageUrl}
             url={recipeWebUrl(vm.recipeId)}
+            totalMinutes={vm.recipe.prepTimeMinutes + vm.recipe.cookTimeMinutes}
+            ingredients={vm.recipe.ingredients}
           />
         </>
       ) : null}
