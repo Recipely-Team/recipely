@@ -31,6 +31,7 @@ import type { ApplicationStores } from "@application/di/application-stores";
 import { StoresProvider } from "@presentation/bootstrap/stores-context";
 import { act } from "react-test-renderer";
 import { create } from "zustand";
+import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 
 // ─── module mock — keep toast side-effects out of these unit tests ────────────
 jest.mock("@presentation/base/feedback/show-toast", () => ({
@@ -66,7 +67,9 @@ const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
         return { savedIds: next };
       }),
     setSaved: (): void => undefined,
-    loadSaved: () => Promise.resolve(ok([])),
+    loadSaved: () => Promise.resolve(ok(recipePageOf([]))),
+    loadMoreSaved: () => Promise.resolve(),
+    paging: { page: 0, total: 0, hasMore: false, isLoadingMore: false },
     clear: (): void => undefined,
   }));
 

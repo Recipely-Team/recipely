@@ -17,6 +17,7 @@ import { RecipeSummaryEntity } from "@domain/recipes/recipe-summary-entity";
 import { CuisineKey } from "@domain/recipes/taxonomy/cuisine-key";
 import { RecipeCategory } from "@domain/recipes/taxonomy/recipe-category";
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
+import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 
 const makeSummary = (id: string): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
@@ -51,7 +52,7 @@ const makeStore = (execute: LoadFavoritesUseCase["execute"]) =>
 
 describe("savedRecipesStore.loadSaved", () => {
   it("starts idle — the grid has not asked for anything yet", () => {
-    const store = makeStore(() => Promise.resolve(ok([])));
+    const store = makeStore(() => Promise.resolve(ok(recipePageOf([]))));
 
     expect(store.getState().listState).toEqual({ status: "idle" });
   });
@@ -63,7 +64,7 @@ describe("savedRecipesStore.loadSaved", () => {
     });
     const store = makeStore(async () => {
       await held;
-      return ok([makeSummary("r1")]);
+      return ok(recipePageOf([makeSummary("r1")]));
     });
 
     const inFlight = store.getState().loadSaved();
@@ -78,7 +79,7 @@ describe("savedRecipesStore.loadSaved", () => {
 
   it("publishes the rows and the id set from one response", async () => {
     const rows = [makeSummary("r1"), makeSummary("r2")];
-    const store = makeStore(() => Promise.resolve(ok(rows)));
+    const store = makeStore(() => Promise.resolve(ok(recipePageOf(rows))));
 
     await store.getState().loadSaved();
 
@@ -87,7 +88,7 @@ describe("savedRecipesStore.loadSaved", () => {
   });
 
   it("answers loaded for an empty response — that IS an empty grid, not a pending one", async () => {
-    const store = makeStore(() => Promise.resolve(ok([])));
+    const store = makeStore(() => Promise.resolve(ok(recipePageOf([]))));
 
     await store.getState().loadSaved();
 
@@ -101,7 +102,7 @@ describe("savedRecipesStore.loadSaved", () => {
     const failure = new NetworkFailure("offline");
     const store = makeStore(() => {
       call++;
-      return Promise.resolve(call === 1 ? ok(rows) : fail(failure));
+      return Promise.resolve(call === 1 ? ok(recipePageOf(rows)) : fail(failure));
     });
     await store.getState().loadSaved();
 
@@ -125,7 +126,7 @@ describe("savedRecipesStore.loadSaved", () => {
     const store = makeStore(async () => {
       call++;
       if (call > 1) await new Promise<void>((resolve) => (release = resolve));
-      return ok([makeSummary("r1")]);
+      return ok(recipePageOf([makeSummary("r1")]));
     });
     await store.getState().loadSaved();
 
@@ -145,7 +146,7 @@ describe("savedRecipesStore.loadSaved", () => {
     });
     const store = makeStore(async () => {
       await held;
-      return ok([makeSummary("r1")]);
+      return ok(recipePageOf([makeSummary("r1")]));
     });
 
     const inFlight = store.getState().loadSaved();
@@ -162,7 +163,7 @@ describe("savedRecipesStore.loadSaved", () => {
   });
 
   it("returns to idle when the session ends, so the next user gets a skeleton", async () => {
-    const store = makeStore(() => Promise.resolve(ok([makeSummary("r1")])));
+    const store = makeStore(() => Promise.resolve(ok(recipePageOf([makeSummary("r1")]))));
     await store.getState().loadSaved();
 
     store.getState().clear();

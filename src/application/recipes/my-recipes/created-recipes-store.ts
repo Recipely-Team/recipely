@@ -3,6 +3,9 @@ import { StoreStatus } from '@application/store/store-status';
 import type { Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
 import { RequestEpoch } from '@application/store/request-epoch';
+import { pagingOf } from '@application/store/paging/paging-of';
+import { NO_PAGING } from '@application/store/paging/no-paging';
+import { appendById } from '@application/store/paging/append-by-id';
 import { create } from 'zustand';
 import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
 import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
@@ -18,6 +21,7 @@ import type { CreateRecipeState } from '@application/recipes/create/create-recip
 import type { GenerateRecipeState } from '@application/recipes/generate/generate-recipe-state';
 import type { RefineRecipeState } from '@application/recipes/refine/refine-recipe-state';
 import type { DeleteRecipeState } from '@application/recipes/delete/delete-recipe-state';
+import { ValueConstants } from '@core/constants';
 
 interface CreatedRecipesStoreDeps {
   createRecipeUseCase: CreateRecipeUseCase;
@@ -62,6 +66,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
   return create<CreatedRecipesStoreState>((set, get) => ({
     recipes: [],
     myRecipesState: { status: StoreStatus.Idle },
+    myRecipesPaging: NO_PAGING,
     localRecipes: [],
     createState: { status: StoreStatus.Idle },
     generateState: { status: StoreStatus.Idle },
@@ -76,12 +81,16 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         return {
           localRecipes: [recipe, ...s.localRecipes],
           recipes: summary.ok ? [summary.value, ...s.recipes] : s.recipes,
+          myRecipesPaging: summary.ok ? { ...s.myRecipesPaging, total: s.myRecipesPaging.total + ValueConstants.one } : s.myRecipesPaging,
         };
       }),
     remove: (id) =>
       set((s) => ({
         localRecipes: s.localRecipes.filter((r) => r.id !== id),
         recipes: s.recipes.filter((r) => r.id !== id),
+        myRecipesPaging: s.recipes.some((r) => r.id === id)
+          ? { ...s.myRecipesPaging, total: Math.max(ValueConstants.zero, s.myRecipesPaging.total - ValueConstants.one) }
+          : s.myRecipesPaging,
       })),
     findById: (id) => get().localRecipes.find((r) => r.id === id),
     createRecipe: async (input, onProgress) => {
@@ -109,7 +118,20 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         set({ myRecipesState: { status: StoreStatus.Error, failure: result.failure } });
         return;
       }
-      set({ recipes: result.value.items, myRecipesState: { status: StoreStatus.Loaded } });
+      set({ recipes: result.value.items, myRecipesState: { status: StoreStatus.Loaded }, myRecipesPaging: pagingOf(result.value) });
+    },
+    loadMoreMyRecipes: async () => {
+      const paging = get().myRecipesPaging;
+      if (!paging.hasMore || paging.isLoadingMore) return;
+      const isCurrent = listEpoch.current();
+      set({ myRecipesPaging: { ...paging, isLoadingMore: true } });
+      const result = await deps.listMyRecipesUseCase.execute(paging.page + ValueConstants.one);
+      if (!isCurrent()) return;
+      if (!result.ok) {
+        set((s) => ({ myRecipesPaging: { ...s.myRecipesPaging, isLoadingMore: false } }));
+        return;
+      }
+      set((s) => ({ recipes: appendById(s.recipes, result.value.items), myRecipesPaging: pagingOf(result.value) }));
     },
     // Generated and imported recipes are previews (not persisted): aiDraft only, never in the list.
     generateRecipe: async (prompt) => {
@@ -166,6 +188,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
       set({
         recipes: [],
         myRecipesState: { status: StoreStatus.Idle },
+        myRecipesPaging: NO_PAGING,
         localRecipes: [],
         aiDraft: null,
       });

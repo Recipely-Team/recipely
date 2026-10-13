@@ -21,7 +21,7 @@ describe('FavoritesRepository', () => {
   it('lists favorites as summaries from the paged envelope', async () => {
     const { repo, http } = httpAnswering(ok({ items: [], total: 0, page: 1, pageSize: 50, hasMore: false }));
     const result = await repo.listFavorites();
-    expect(result).toEqual(ok([]));
+    expect(result.ok && result.value.items).toEqual([]);
     expect(http.get).toHaveBeenCalledWith(ApiRoutes.me.favorites, expect.objectContaining({ params: expect.any(Object) }));
   });
 

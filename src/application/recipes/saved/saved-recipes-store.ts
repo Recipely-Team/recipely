@@ -4,6 +4,11 @@ import { create } from 'zustand';
 import { RequestEpoch } from '@application/store/request-epoch';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import { pagingOf } from '@application/store/paging/paging-of';
+import { NO_PAGING } from '@application/store/paging/no-paging';
+import { appendById } from '@application/store/paging/append-by-id';
+import { ValueConstants } from '@core/constants';
+
 
 interface SavedRecipesStoreDeps {
   loadFavoritesUseCase: LoadFavoritesUseCase;
@@ -25,6 +30,7 @@ export const configureSavedRecipesStore = (
     savedRecipes: [],
     savedIds: new Set<string>(),
     listState: { status: StoreStatus.Idle },
+    paging: NO_PAGING,
     has: (id) => get().savedIds.has(id),
     toggle: (id) =>
       set((s) => {
@@ -32,7 +38,7 @@ export const configureSavedRecipesStore = (
         if (next.has(id)) {
           next.delete(id);
           // Unsaving removes the card from the saved grid.
-          return { savedIds: next, savedRecipes: s.savedRecipes.filter((r) => r.id !== id) };
+          return { savedIds: next, savedRecipes: s.savedRecipes.filter((r) => r.id !== id), paging: { ...s.paging, total: Math.max(ValueConstants.zero, s.paging.total - ValueConstants.one) } };
         }
         next.add(id);
         return { savedIds: next };
@@ -49,14 +55,31 @@ export const configureSavedRecipesStore = (
         if (!s.savedIds.has(id)) return s;
         const next = new Set(s.savedIds);
         next.delete(id);
-        return { savedIds: next, savedRecipes: s.savedRecipes.filter((r) => r.id !== id) };
+        return { savedIds: next, savedRecipes: s.savedRecipes.filter((r) => r.id !== id), paging: { ...s.paging, total: Math.max(ValueConstants.zero, s.paging.total - ValueConstants.one) } };
       }),
-    setSaved: (recipes) =>
+    setSaved: (page) =>
       set({
-        savedRecipes: recipes,
-        savedIds: new Set(recipes.map((r) => r.id)),
+        savedRecipes: page.items,
+        savedIds: new Set(page.items.map((r) => r.id)),
         listState: { status: StoreStatus.Loaded },
+        paging: pagingOf(page),
       }),
+    loadMoreSaved: async () => {
+      const { paging } = get();
+      if (!paging.hasMore || paging.isLoadingMore) return;
+      const isCurrent = epoch.current();
+      set({ paging: { ...paging, isLoadingMore: true } });
+      const result = await deps.loadFavoritesUseCase.execute(paging.page + ValueConstants.one);
+      if (!isCurrent()) return;
+      if (!result.ok) {
+        set((s) => ({ paging: { ...s.paging, isLoadingMore: false } }));
+        return;
+      }
+      set((s) => {
+        const savedRecipes = appendById(s.savedRecipes, result.value.items);
+        return { savedRecipes, savedIds: new Set(savedRecipes.map((r) => r.id)), paging: pagingOf(result.value) };
+      });
+    },
     loadSaved: async () => {
       const isCurrent = epoch.start();
       // Only the first load shows a skeleton.
@@ -79,6 +102,7 @@ export const configureSavedRecipesStore = (
         savedRecipes: [],
         savedIds: new Set<string>(),
         listState: { status: StoreStatus.Idle },
+        paging: NO_PAGING,
       });
     },
   }));

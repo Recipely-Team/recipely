@@ -50,6 +50,8 @@ const props: MyRecipesListProps = {
   isRefreshing: false,
   onRefresh: jest.fn(),
   onDraftsEndReached: jest.fn(),
+  onItemsEndReached: jest.fn(),
+  isLoadingMoreItems: false,
   isFirstLoad: false,
   loadFailure: null,
   isLoadingMoreDrafts: false,

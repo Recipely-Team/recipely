@@ -2963,3 +2963,15 @@ splash, rendered into the static HTML, never left. *Now:* extension-less paths a
 (revalidated on every visit, still a cheap 304), and the splash is not rendered on the web at all.
 *The class:* **an HTML page and the hashed assets it names must expire together — a cached page is
 only as good as the files it points at.**
+
+## A list that stopped at its first page and counted what it held
+
+**An account with 31 recipes showed 20 in My Recipes → Created, and never more.** The Created list
+asked for page 1 only — `listMyRecipes()` with no page — and its store kept the rows but threw away the
+envelope's `total` and `hasMore`, so scrolling found nothing to load and the tab count was the 20 it
+held. Saved and Liked did the same with one 100-row page; the notifications filter's "All" count read
+the loaded rows too. *Now:* the three lists keep a `ListPaging` (page, total, hasMore) beside their
+rows, load the next page at the list's end until `hasMore` is false, and every count reads the
+server's `total` (`created-recipes-store.crud.test.ts`, "paging to the end"). *The class:* **a paged
+endpoint's envelope is part of the answer — a list that drops `total` and `hasMore` has quietly
+become its first page, and a count of loaded rows is not a count.**

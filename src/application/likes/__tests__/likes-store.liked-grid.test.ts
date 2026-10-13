@@ -22,6 +22,7 @@ import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
+import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 
 const RECIPE_ID = 'r-1';
 
@@ -53,7 +54,7 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
 const makeLikedStore = async (): Promise<BoundStore<LikedRecipesStoreState>> => {
   const store = configureLikedRecipesStore({
     loadLikedRecipesUseCase: {
-      execute: () => Promise.resolve(ok([makeRecipe(RECIPE_ID), makeRecipe('r-2')])),
+      execute: () => Promise.resolve(ok(recipePageOf([makeRecipe(RECIPE_ID), makeRecipe('r-2')]))),
     } as LoadLikedRecipesUseCase,
   });
   await store.getState().loadLiked();
