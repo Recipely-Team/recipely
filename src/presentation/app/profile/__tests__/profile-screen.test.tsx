@@ -135,6 +135,8 @@ const makeSavedRecipesStore = () =>
     removeLocal: jest.fn(),
     setSaved: jest.fn(),
     loadSaved: jest.fn(),
+    loadMoreSaved: jest.fn(),
+    paging: { page: 0, total: 0, hasMore: false, isLoadingMore: false },
     clear: jest.fn(),
   }));
 

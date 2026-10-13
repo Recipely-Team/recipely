@@ -1,4 +1,6 @@
 import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
+import { useMyRecipesTabDefs } from '@presentation/app/my-recipes/hooks/use-my-recipes-tab-defs';
+import { useMyRecipesPaging } from '@presentation/app/my-recipes/hooks/use-my-recipes-paging';
 import { useCallback, useMemo } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { loadedItems } from '@application/store/paging/loaded-items';
@@ -8,7 +10,6 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
-import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { WebMyRecipesHeader } from '@presentation/app/my-recipes/body/web-my-recipes-header';
@@ -48,6 +49,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const loadMoreDrafts = draftsStore((s) => s.loadMoreDrafts);
 
   const [tab, setTab] = useMyRecipesTab();
+  const { savedPaging, likedPaging, createdPaging, activePaging, onItemsEndReached } = useMyRecipesPaging(tab);
   const { isRefreshing, onRefresh } = useMyRecipesRefresh(tab);
 
   const gridColumns = useMemo(() => gridColumnsFor(isExpanded, width), [isExpanded, width]);
@@ -88,12 +90,9 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const loadFailure = activeState.status === StoreStatus.Error ? activeState.failure : null;
   useReportFailure(loadFailure, 'MyRecipesScreen');
 
-  const tabDefs: readonly MyRecipesTab[] = [
-    { key: TabType.Saved, label: t().myRecipes.saved, count: savedRecipes.length },
-    { key: TabType.Liked, label: t().myRecipes.liked, count: likedRecipes.length },
-    { key: TabType.Created, label: t().myRecipes.created, count: createdRecipes.length },
-    { key: TabType.Drafts, label: t().myRecipes.drafts, count: drafts.length },
-  ];
+  const draftsTotal = draftsListState.status === StoreStatus.Loaded ? draftsListState.total : drafts.length;
+  const loadedCounts = { saved: savedRecipes.length, liked: likedRecipes.length, created: createdRecipes.length };
+  const tabDefs = useMyRecipesTabDefs(loadedCounts, draftsTotal, { savedPaging, likedPaging, createdPaging });
 
   // Stable handlers, so the list's memoised rows and `renderItem` hold across renders.
   const openRecipe = useCallback((id: string): void => router.push(RoutePaths.recipeDetail(id) as Href), [router]);
@@ -166,6 +165,8 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             isFirstLoad={isTabFirstLoad}
             loadFailure={loadFailure}
             onDraftsEndReached={() => void loadMoreDrafts()}
+            onItemsEndReached={onItemsEndReached}
+            isLoadingMoreItems={activePaging?.isLoadingMore === true}
             isLoadingMoreDrafts={
               draftsListState.status === StoreStatus.Loaded && draftsListState.isLoadingMore
             }

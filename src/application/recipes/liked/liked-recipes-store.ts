@@ -4,6 +4,11 @@ import { create } from 'zustand';
 import { RequestEpoch } from '@application/store/request-epoch';
 import type { LoadLikedRecipesUseCase } from '@application/likes/load-liked-recipes-use-case';
 import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
+import { pagingOf } from '@application/store/paging/paging-of';
+import { NO_PAGING } from '@application/store/paging/no-paging';
+import { appendById } from '@application/store/paging/append-by-id';
+import { ValueConstants } from '@core/constants';
+
 
 interface LikedRecipesStoreDeps {
   loadLikedRecipesUseCase: LoadLikedRecipesUseCase;
@@ -22,11 +27,25 @@ export const configureLikedRecipesStore = (
   return create<LikedRecipesStoreState>((set, get) => ({
     likedRecipes: [],
     listState: { status: StoreStatus.Idle },
-    setLiked: (recipes) => set({ likedRecipes: recipes, listState: { status: StoreStatus.Loaded } }),
+    paging: NO_PAGING,
+    setLiked: (page) => set({ likedRecipes: page.items, listState: { status: StoreStatus.Loaded }, paging: pagingOf(page) }),
+    loadMoreLiked: async () => {
+      const { paging } = get();
+      if (!paging.hasMore || paging.isLoadingMore) return;
+      const isCurrent = epoch.current();
+      set({ paging: { ...paging, isLoadingMore: true } });
+      const result = await deps.loadLikedRecipesUseCase.execute(paging.page + ValueConstants.one);
+      if (!isCurrent()) return;
+      if (!result.ok) {
+        set((s) => ({ paging: { ...s.paging, isLoadingMore: false } }));
+        return;
+      }
+      set((s) => ({ likedRecipes: appendById(s.likedRecipes, result.value.items), paging: pagingOf(result.value) }));
+    },
     removeLocal: (id) =>
       set((s) => {
         if (!s.likedRecipes.some((r) => r.id === id)) return s;
-        return { likedRecipes: s.likedRecipes.filter((r) => r.id !== id) };
+        return { likedRecipes: s.likedRecipes.filter((r) => r.id !== id), paging: { ...s.paging, total: Math.max(ValueConstants.zero, s.paging.total - ValueConstants.one) } };
       }),
     loadLiked: async () => {
       const isCurrent = epoch.start();
@@ -46,7 +65,7 @@ export const configureLikedRecipesStore = (
     },
     clear: () => {
       epoch.invalidate();
-      set({ likedRecipes: [], listState: { status: StoreStatus.Idle } });
+      set({ likedRecipes: [], listState: { status: StoreStatus.Idle }, paging: NO_PAGING });
     },
   }));
 };

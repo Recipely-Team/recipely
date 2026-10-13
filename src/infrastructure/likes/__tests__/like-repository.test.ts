@@ -73,8 +73,8 @@ describe('LikeRepository.listLiked', () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.value.map((r) => r.id)).toEqual(['r1', 'r2']);
-    expect(result.value[0]?.likedByMe).toBe(true);
+    expect(result.value.items.map((r) => r.id)).toEqual(['r1', 'r2']);
+    expect(result.value.items[0]?.likedByMe).toBe(true);
   });
 
   it('returns an empty list rather than a failure when nothing is liked', async () => {
@@ -84,7 +84,7 @@ describe('LikeRepository.listLiked', () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.value).toEqual([]);
+    expect(result.value.items).toEqual([]);
   });
 
   it('propagates the transport failure', async () => {

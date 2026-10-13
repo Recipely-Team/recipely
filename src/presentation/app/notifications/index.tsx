@@ -125,7 +125,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ResponsiveContainer route="notifications" gutter={false} fill>
       <NotificationsHeader unreadCount={unreadCount} onBack={goBackOrHome} onMarkAllRead={markAll} />
-      <NotificationFilterPills filter={filter} totalCount={items.length} unreadCount={unreadCount} onChange={setFilter} />
+      <NotificationFilterPills filter={filter} totalCount={state.status === StoreStatus.Loaded ? Math.max(state.total, items.length) : items.length} unreadCount={unreadCount} onChange={setFilter} />
 
       {state.status === StoreStatus.Loading || state.status === StoreStatus.Idle ? (
         <View style={styles.empty}>

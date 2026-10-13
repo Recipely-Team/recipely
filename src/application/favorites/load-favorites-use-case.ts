@@ -1,3 +1,4 @@
+import type { Page } from '@domain/common/page';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { FavoritesRepositoryInterface } from '@domain/favorites/favorites-repository-interface';
@@ -9,7 +10,7 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 export class LoadFavoritesUseCase {
   constructor(private readonly repo: FavoritesRepositoryInterface) {}
 
-  execute(): Promise<Result<RecipeSummaryEntity[], Failure>> {
-    return this.repo.listFavorites();
+  execute(page?: number): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
+    return this.repo.listFavorites(page);
   }
 }

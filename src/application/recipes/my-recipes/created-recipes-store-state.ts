@@ -10,12 +10,15 @@ import type { DeleteRecipeState } from '@application/recipes/delete/delete-recip
 import type { RefineRecipeState } from '@application/recipes/refine/refine-recipe-state';
 import type { MyRecipesListState } from '@application/recipes/my-recipes/my-recipes-list-state';
 import type { ChatMessage } from '@domain/drafts/chat-message';
+import type { ListPaging } from '@application/store/paging/list-paging';
 
 export interface CreatedRecipesStoreState {
   // recipes: the lean My Recipes grid; localRecipes: full entities for findById.
   recipes: readonly RecipeSummaryEntity[];
   /** Load status of `recipes` — what the My-Recipes grid shows a skeleton for. */
   myRecipesState: MyRecipesListState;
+  /** The server's total of the user's recipes and whether more pages exist; the Created tab count reads `total`. */
+  myRecipesPaging: ListPaging;
   localRecipes: readonly RecipeEntity[];
   createState: CreateRecipeState;
   generateState: GenerateRecipeState;
@@ -29,6 +32,8 @@ export interface CreatedRecipesStoreState {
   findById: (id: string) => RecipeEntity | undefined;
   createRecipe: (input: CreateRecipeInput, onProgress?: CreateRecipeProgressCallback) => Promise<void>;
   loadMyRecipes: () => Promise<void>;
+  /** The next page of the user's recipes, appended; a no-op once the total is reached. */
+  loadMoreMyRecipes: () => Promise<void>;
   generateRecipe: (prompt: string) => Promise<void>;
   importInstagram: (url: string) => Promise<void>;
   refineRecipe: (

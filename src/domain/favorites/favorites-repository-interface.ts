@@ -1,3 +1,4 @@
+import type { Page } from '@domain/common/page';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
@@ -30,5 +31,5 @@ export interface FavoritesRepositoryInterface {
    * directly, so it no longer depends on the discover feed having the same
    * recipes in its currently-loaded (searched, filtered, sorted) page.
    */
-  listFavorites(): Promise<Result<RecipeSummaryEntity[], Failure>>;
+  listFavorites(page?: number): Promise<Result<Page<RecipeSummaryEntity>, Failure>>;
 }

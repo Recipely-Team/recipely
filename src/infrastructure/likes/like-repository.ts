@@ -1,3 +1,5 @@
+import type { Page } from '@domain/common/page';
+import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
 import { fail, ok } from '@core/result/result-helpers';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import type { Result } from '@core/result/result';
@@ -28,13 +30,13 @@ export class LikeRepository implements LikeRepositoryInterface {
     return ok(void ValueConstants.zero);
   }
 
-  async listLiked(): Promise<Result<RecipeSummaryEntity[], Failure>> {
+  async listLiked(page?: number): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
     const result = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.me.likes, {
-      params: toPageQuery({ pageSize: LIKED_RECIPES_PAGE_SIZE }),
+      params: toPageQuery({ page, pageSize: LIKED_RECIPES_PAGE_SIZE }),
     });
 
     if (!result.ok) return fail(result.failure);
 
-    return mapRecipeSummaries(result.value.items);
+    return toRecipePage(result.value);
   }
 }

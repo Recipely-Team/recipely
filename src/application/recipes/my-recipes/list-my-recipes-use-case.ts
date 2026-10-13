@@ -11,7 +11,7 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 export class ListMyRecipesUseCase {
   constructor(private readonly repo: RecipeRepositoryInterface) {}
 
-  execute(): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
-    return this.repo.listMyRecipes();
+  execute(page?: number): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
+    return this.repo.listMyRecipes(page);
   }
 }
