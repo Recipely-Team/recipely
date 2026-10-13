@@ -42,6 +42,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { useAvatarUpload } from '@presentation/base/hooks/profile/use-avatar-upload';
 import { AVATAR_UPLOAD_MAX_EDGE } from '@infrastructure/constants/media-upload';
 import type { AvatarUpload } from '@presentation/base/hooks/profile/avatar-upload';
+import { t } from '@presentation/i18n';
 
 const SHRUNK = 'file://shrunk.jpg';
 
@@ -180,5 +181,25 @@ describe('while the photo is being prepared', () => {
 
     expect(latest().isUploading).toBe(false);
     expect(latest().uploadError).not.toBeNull();
+  });
+});
+
+/**
+ * The symptom: on the web the profile photo neither changed nor showed an error.
+ * Reading the picked photo (`fetch` of its blob:/data: address, blocked by the
+ * site's CSP) threw before any request was made, and nothing caught it — the
+ * upload died in an unhandled rejection. A throw is a failed upload too.
+ */
+describe('useAvatarUpload — a throw before the request', () => {
+  it('shows the upload error instead of failing silently', async () => {
+    mockUploadAvatar.mockRejectedValue(new TypeError('Failed to fetch'));
+    const { latest } = drive();
+
+    await act(async () => {
+      await latest().pickAndUpload();
+    });
+
+    expect(latest().uploadError).toBe(t().profile.photoUploadFailed);
+    expect(latest().isUploading).toBe(false);
   });
 });
