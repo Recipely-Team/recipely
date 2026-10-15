@@ -157,3 +157,27 @@ describe("likedRecipesStore.removeLocal", () => {
     expect(store.getState().likedRecipes).toBe(before);
   });
 });
+
+describe("likedRecipesStore.loadMoreLiked", () => {
+  // A reload that superseded a next page and then failed left `isLoadingMore` on: the list never paged again.
+  it("pages again after a failed reload superseded a next page in flight", async () => {
+    let releaseMore: (value: unknown) => void = () => undefined;
+    const execute = jest
+      .fn()
+      .mockResolvedValueOnce(ok(recipePageOf([makeRecipe("r1")], { pageSize: 1, total: 3 })))
+      .mockImplementationOnce(() => new Promise((resolve) => { releaseMore = resolve; }))
+      .mockResolvedValueOnce(fail(new NetworkFailure("offline")))
+      .mockResolvedValueOnce(ok(recipePageOf([makeRecipe("r2")], { page: 2, pageSize: 1, total: 3 })));
+    const store = configureLikedRecipesStore({ loadLikedRecipesUseCase: { execute } as unknown as LoadLikedRecipesUseCase });
+
+    await store.getState().loadLiked();
+    const inFlight = store.getState().loadMoreLiked();
+    await store.getState().loadLiked();
+    releaseMore(ok(recipePageOf([makeRecipe("stale")], { page: 2, pageSize: 1, total: 3 })));
+    await inFlight;
+
+    expect(store.getState().paging.isLoadingMore).toBe(false);
+    await store.getState().loadMoreLiked();
+    expect(store.getState().likedRecipes.map((r) => r.id)).toEqual(["r1", "r2"]);
+  });
+});

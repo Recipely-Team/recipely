@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { ListPaging } from '@application/store/paging/list-paging';
+import type { ListPaging } from '@application/store/paging/list-paging/list-paging';
 import { t } from '@presentation/i18n';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';

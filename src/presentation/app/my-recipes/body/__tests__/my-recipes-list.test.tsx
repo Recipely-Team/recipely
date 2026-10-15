@@ -104,6 +104,7 @@ const baseProps = (): MyRecipesListProps => ({
   onDraftsEndReached: jest.fn(),
   onItemsEndReached: jest.fn(),
   isLoadingMoreItems: false,
+  itemsMoreFailure: null,
   isFirstLoad: false,
   loadFailure: null,
   isLoadingMoreDrafts: false,

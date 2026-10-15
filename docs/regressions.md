@@ -2975,3 +2975,15 @@ rows, load the next page at the list's end until `hasMore` is false, and every c
 server's `total` (`created-recipes-store.crud.test.ts`, "paging to the end"). *The class:* **a paged
 endpoint's envelope is part of the answer — a list that drops `total` and `hasMore` has quietly
 become its first page, and a count of loaded rows is not a count.**
+
+## My Recipes paging skipped rows, stalled silently, or stopped for good
+
+The Saved, Liked and Created lists paged by hand (#592) without three rules `PagedListLoader` keeps:
+after an unsave or unlike the next page was asked at `page + 1` although every later server row had
+moved up, so rows were skipped; a failed next page only cleared the spinner, so there was no "Try
+again" and the list never asked again; and a reload that superseded a next page and then failed left
+`isLoadingMore` on, so the list never paged again. *Guard:* the three stores share
+`loadMorePaging` / `pagingAfterRemoval` (`store/paging/list-paging/`), pinned by
+`load-more-paging.test.ts` and `liked-recipes-store.test.ts` ("pages again after a failed reload").
+*The class:* **a hand-paged list must keep the shared paging rules — offset after removals, a
+recorded failure, and no in-flight flag a cancelled request can strand.**

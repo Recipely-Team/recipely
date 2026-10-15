@@ -4,10 +4,11 @@ import { create } from 'zustand';
 import { RequestEpoch } from '@application/store/request-epoch';
 import type { LoadLikedRecipesUseCase } from '@application/likes/load-liked-recipes-use-case';
 import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
-import { pagingOf } from '@application/store/paging/paging-of';
-import { NO_PAGING } from '@application/store/paging/no-paging';
+import { pagingOf } from '@application/store/paging/list-paging/paging-of';
+import { NO_PAGING } from '@application/store/paging/list-paging/no-paging';
+import { loadMorePaging } from '@application/store/paging/list-paging/load-more-paging';
+import { pagingAfterRemoval } from '@application/store/paging/list-paging/paging-after-removal';
 import { appendById } from '@application/store/paging/append-by-id';
-import { ValueConstants } from '@core/constants';
 
 
 interface LikedRecipesStoreDeps {
@@ -29,23 +30,20 @@ export const configureLikedRecipesStore = (
     listState: { status: StoreStatus.Idle },
     paging: NO_PAGING,
     setLiked: (page) => set({ likedRecipes: page.items, listState: { status: StoreStatus.Loaded }, paging: pagingOf(page) }),
-    loadMoreLiked: async () => {
-      const { paging } = get();
-      if (!paging.hasMore || paging.isLoadingMore) return;
+    loadMoreLiked: () => {
       const isCurrent = epoch.current();
-      set({ paging: { ...paging, isLoadingMore: true } });
-      const result = await deps.loadLikedRecipesUseCase.execute(paging.page + ValueConstants.one);
-      if (!isCurrent()) return;
-      if (!result.ok) {
-        set((s) => ({ paging: { ...s.paging, isLoadingMore: false } }));
-        return;
-      }
-      set((s) => ({ likedRecipes: appendById(s.likedRecipes, result.value.items), paging: pagingOf(result.value) }));
+      return loadMorePaging({
+        read: () => get().paging,
+        write: (paging) => set({ paging }),
+        fetch: (page) => deps.loadLikedRecipesUseCase.execute(page),
+        isCurrent,
+        append: (items) => set((s) => ({ likedRecipes: appendById(s.likedRecipes, items) })),
+      });
     },
     removeLocal: (id) =>
       set((s) => {
         if (!s.likedRecipes.some((r) => r.id === id)) return s;
-        return { likedRecipes: s.likedRecipes.filter((r) => r.id !== id), paging: { ...s.paging, total: Math.max(ValueConstants.zero, s.paging.total - ValueConstants.one) } };
+        return { likedRecipes: s.likedRecipes.filter((r) => r.id !== id), paging: pagingAfterRemoval(s.paging) };
       }),
     loadLiked: async () => {
       const isCurrent = epoch.start();
@@ -56,8 +54,8 @@ export const configureLikedRecipesStore = (
       const result = await deps.loadLikedRecipesUseCase.execute();
       if (!isCurrent()) return result;
       if (!result.ok) {
-        // A failed reload keeps the rows.
-        set({ listState: { status: StoreStatus.Error, failure: result.failure } });
+        // A failed reload keeps the rows; a next page it superseded is no longer on its way.
+        set((s) => ({ listState: { status: StoreStatus.Error, failure: result.failure }, paging: { ...s.paging, isLoadingMore: false } }));
         return result;
       }
       get().setLiked(result.value);

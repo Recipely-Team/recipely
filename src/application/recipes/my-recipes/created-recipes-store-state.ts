@@ -10,7 +10,7 @@ import type { DeleteRecipeState } from '@application/recipes/delete/delete-recip
 import type { RefineRecipeState } from '@application/recipes/refine/refine-recipe-state';
 import type { MyRecipesListState } from '@application/recipes/my-recipes/my-recipes-list-state';
 import type { ChatMessage } from '@domain/drafts/chat-message';
-import type { ListPaging } from '@application/store/paging/list-paging';
+import type { ListPaging } from '@application/store/paging/list-paging/list-paging';
 
 export interface CreatedRecipesStoreState {
   // recipes: the lean My Recipes grid; localRecipes: full entities for findById.

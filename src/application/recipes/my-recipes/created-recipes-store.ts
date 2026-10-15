@@ -3,8 +3,10 @@ import { StoreStatus } from '@application/store/store-status';
 import type { Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
 import { RequestEpoch } from '@application/store/request-epoch';
-import { pagingOf } from '@application/store/paging/paging-of';
-import { NO_PAGING } from '@application/store/paging/no-paging';
+import { pagingOf } from '@application/store/paging/list-paging/paging-of';
+import { NO_PAGING } from '@application/store/paging/list-paging/no-paging';
+import { loadMorePaging } from '@application/store/paging/list-paging/load-more-paging';
+import { pagingAfterRemoval } from '@application/store/paging/list-paging/paging-after-removal';
 import { appendById } from '@application/store/paging/append-by-id';
 import { create } from 'zustand';
 import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
@@ -89,7 +91,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         localRecipes: s.localRecipes.filter((r) => r.id !== id),
         recipes: s.recipes.filter((r) => r.id !== id),
         myRecipesPaging: s.recipes.some((r) => r.id === id)
-          ? { ...s.myRecipesPaging, total: Math.max(ValueConstants.zero, s.myRecipesPaging.total - ValueConstants.one) }
+          ? pagingAfterRemoval(s.myRecipesPaging)
           : s.myRecipesPaging,
       })),
     findById: (id) => get().localRecipes.find((r) => r.id === id),
@@ -115,23 +117,21 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
       const result = await deps.listMyRecipesUseCase.execute();
       if (!isCurrent()) return;
       if (!result.ok) {
-        set({ myRecipesState: { status: StoreStatus.Error, failure: result.failure } });
+        // A next page this reload superseded is no longer on its way.
+        set((s) => ({ myRecipesState: { status: StoreStatus.Error, failure: result.failure }, myRecipesPaging: { ...s.myRecipesPaging, isLoadingMore: false } }));
         return;
       }
       set({ recipes: result.value.items, myRecipesState: { status: StoreStatus.Loaded }, myRecipesPaging: pagingOf(result.value) });
     },
-    loadMoreMyRecipes: async () => {
-      const paging = get().myRecipesPaging;
-      if (!paging.hasMore || paging.isLoadingMore) return;
+    loadMoreMyRecipes: () => {
       const isCurrent = listEpoch.current();
-      set({ myRecipesPaging: { ...paging, isLoadingMore: true } });
-      const result = await deps.listMyRecipesUseCase.execute(paging.page + ValueConstants.one);
-      if (!isCurrent()) return;
-      if (!result.ok) {
-        set((s) => ({ myRecipesPaging: { ...s.myRecipesPaging, isLoadingMore: false } }));
-        return;
-      }
-      set((s) => ({ recipes: appendById(s.recipes, result.value.items), myRecipesPaging: pagingOf(result.value) }));
+      return loadMorePaging({
+        read: () => get().myRecipesPaging,
+        write: (myRecipesPaging) => set({ myRecipesPaging }),
+        fetch: (page) => deps.listMyRecipesUseCase.execute(page),
+        isCurrent,
+        append: (items) => set((s) => ({ recipes: appendById(s.recipes, items) })),
+      });
     },
     // Generated and imported recipes are previews (not persisted): aiDraft only, never in the list.
     generateRecipe: async (prompt) => {

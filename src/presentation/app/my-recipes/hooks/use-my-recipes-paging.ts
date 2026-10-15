@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import type { ListPaging } from '@application/store/paging/list-paging';
+import type { Failure } from '@core/failure';
+import type { ListPaging } from '@application/store/paging/list-paging/list-paging';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 
 /**
@@ -15,6 +16,8 @@ export const useMyRecipesPaging = (
   likedPaging: ListPaging;
   createdPaging: ListPaging;
   activePaging: ListPaging | null;
+  /** The shown list's footer: the next-page spinner and why the last next page failed. */
+  itemsFooter: { isLoadingMoreItems: boolean; itemsMoreFailure: Failure | null };
   onItemsEndReached: () => void;
 } => {
   const { savedRecipesStore, likedRecipesStore, createdRecipesStore } = useStores();
@@ -30,5 +33,7 @@ export const useMyRecipesPaging = (
     else if (tab === TabType.Created) void createdRecipesStore.getState().loadMoreMyRecipes();
   }, [tab, savedRecipesStore, likedRecipesStore, createdRecipesStore]);
 
-  return { savedPaging, likedPaging, createdPaging, activePaging, onItemsEndReached };
+  const itemsFooter = { isLoadingMoreItems: activePaging?.isLoadingMore === true, itemsMoreFailure: activePaging?.moreFailure ?? null };
+
+  return { savedPaging, likedPaging, createdPaging, activePaging, itemsFooter, onItemsEndReached };
 };
