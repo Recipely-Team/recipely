@@ -1,5 +1,5 @@
 import type { Page } from '@domain/common/page';
-import type { ListPaging } from '@application/store/paging/list-paging';
+import type { ListPaging } from '@application/store/paging/list-paging/list-paging';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';

@@ -69,7 +69,7 @@ const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
     setSaved: (): void => undefined,
     loadSaved: () => Promise.resolve(ok(recipePageOf([]))),
     loadMoreSaved: () => Promise.resolve(),
-    paging: { page: 0, total: 0, hasMore: false, isLoadingMore: false },
+    paging: { page: 0, total: 0, pageSize: 20, hasMore: false, isLoadingMore: false, removed: 0, moreFailure: null },
     clear: (): void => undefined,
   }));
 

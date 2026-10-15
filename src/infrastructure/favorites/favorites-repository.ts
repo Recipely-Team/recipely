@@ -7,7 +7,6 @@ import type { Failure } from '@core/failure';
 import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { FavoritesRepositoryInterface } from '@domain/favorites/favorites-repository-interface';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
-import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { FAVORITES_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import type { PageDto } from '@infrastructure/network/paging/page-dto';

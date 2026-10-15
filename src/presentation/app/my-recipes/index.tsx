@@ -49,7 +49,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const loadMoreDrafts = draftsStore((s) => s.loadMoreDrafts);
 
   const [tab, setTab] = useMyRecipesTab();
-  const { savedPaging, likedPaging, createdPaging, activePaging, onItemsEndReached } = useMyRecipesPaging(tab);
+  const { savedPaging, likedPaging, createdPaging, itemsFooter, onItemsEndReached } = useMyRecipesPaging(tab);
   const { isRefreshing, onRefresh } = useMyRecipesRefresh(tab);
 
   const gridColumns = useMemo(() => gridColumnsFor(isExpanded, width), [isExpanded, width]);
@@ -166,7 +166,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             loadFailure={loadFailure}
             onDraftsEndReached={() => void loadMoreDrafts()}
             onItemsEndReached={onItemsEndReached}
-            isLoadingMoreItems={activePaging?.isLoadingMore === true}
+            {...itemsFooter}
             isLoadingMoreDrafts={
               draftsListState.status === StoreStatus.Loaded && draftsListState.isLoadingMore
             }
