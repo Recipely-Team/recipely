@@ -453,6 +453,11 @@ export const ko: TranslationsType = {
       body: '방금 코드를 요청했어요. 새 코드를 요청하기 전에 잠시 기다려 주세요.',
       short: '새 코드를 요청하기 전에 잠시 기다려 주세요',
     },
+    tooManyAttempts: {
+      title: "시도 횟수 초과",
+      body: "짧은 시간에 너무 많이 시도했어요. 몇 분 후에 다시 시도해 주세요.",
+      short: "시도 횟수 초과 — 몇 분 후 다시 시도하세요",
+    },
     registrationExpired: {
       title: '처음부터 다시 시작해 주세요',
       body: '이 이메일로 진행 중인 가입 정보가 더 이상 없어요. 정보를 다시 입력해 주세요.',

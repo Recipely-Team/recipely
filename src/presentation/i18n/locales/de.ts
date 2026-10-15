@@ -451,6 +451,11 @@ export const de = {
       body: 'Du hast gerade einen Code angefordert. Warte ein paar Sekunden, bevor du einen weiteren anforderst.',
       short: 'Warte kurz, bevor du einen neuen Code anforderst',
     },
+    tooManyAttempts: {
+      title: "Zu viele Versuche",
+      body: "Das waren viele Versuche in kurzer Zeit. Warte ein paar Minuten und versuche es dann erneut.",
+      short: "Zu viele Versuche – in ein paar Minuten erneut versuchen",
+    },
     registrationExpired: {
       title: 'Fangen wir noch einmal an',
       body: 'Für diese E-Mail-Adresse gibt es keine ausstehende Registrierung mehr. Gib deine Daten erneut ein.',
