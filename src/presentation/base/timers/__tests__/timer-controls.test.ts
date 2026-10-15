@@ -76,6 +76,20 @@ describe('timer-controls', () => {
       expect(alerts?.map((a) => end - a.fireAtMs)).toEqual([300_000, 60_000]);
     });
 
+    it('keeps the 5-minute heads-up on a 10-minute timer when the clock moves during start', async () => {
+      let clock = Date.now();
+      const tick = jest.spyOn(Date, 'now').mockImplementation(() => (clock += 1));
+      try {
+        await startTimer('r1:cook', 'r1', 'Pasta', 10);
+      } finally {
+        tick.mockRestore();
+      }
+      expect(notificationService.warningCalls[0]?.map((a) => a.body)).toEqual([
+        t().timer.minutesLeft.replace('{n}', '5'),
+        t().timer.oneMinuteLeft,
+      ]);
+    });
+
     it('stores the heads-up ids with the alarm ids, so stopping cancels both', async () => {
       notificationService.warningIds = ['warn-5', 'warn-1'];
       await startTimer('r1:cook', 'r1', 'Pasta', 10);
