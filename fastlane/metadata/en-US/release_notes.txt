@@ -1,6 +1,5 @@
-Share recipes as beautiful Stories, and profile photos upload again on the web.
+Your recipe lists load to the end, and creators can connect Instagram sooner.
 
-• A new look for recipes shared to Instagram Stories, Reels and WhatsApp: the photo, the dish, what you'll need, beautifully laid out.
-• Profile photo uploads work again on the web, and any upload problem now shows a message.
-• recipely.net opens straight to your recipes, without a splash screen.
-• Steadier on a weak connection: a slow request is retried, and the feed shows your last recipes while offline.
+• My Recipes: Created, Saved and Liked now load all the way down, with no recipes skipped, a "Try again" if a page fails, and counts that match your profile.
+• Food creators can connect Instagram while their creator tag is in review, and the Chefs tab shows newly verified creators as soon as you open it.
+• A clearer message when you try to sign in too many times.

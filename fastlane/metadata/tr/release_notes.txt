@@ -1,6 +1,5 @@
-Tarifleri şık Hikâyeler olarak paylaş; web'de profil fotoğrafı yeniden yükleniyor.
+Tarif listelerin sonuna kadar yükleniyor; şefler Instagram'ı daha erken bağlayabiliyor.
 
-• Instagram Hikâye, Reels ve WhatsApp'ta paylaşılan tarifler için yeni görünüm: fotoğraf, yemek ve gerekenler şık bir düzende.
-• Web'de profil fotoğrafı yükleme yeniden çalışıyor; bir yükleme sorunu artık mesajla bildiriliyor.
-• recipely.net açılış ekranı olmadan doğrudan tariflerinle açılıyor.
-• Zayıf bağlantıda daha sağlam: yavaş bir istek yeniden deneniyor, bağlantı yokken akış son tariflerini gösteriyor.
+• Tariflerim: Oluşturduklarım, Kaydettiklerim ve Beğendiklerim artık sonuna kadar yükleniyor; tarif atlanmıyor, bir sayfa yüklenemezse "Tekrar dene" çıkıyor ve sayılar profilinle aynı.
+• Yemek içerik üreticileri, şef etiketi incelemedeyken de Instagram bağlayabiliyor; Şefler sekmesi yeni onaylanan şefleri açar açmaz gösteriyor.
+• Çok fazla giriş denemesinde daha anlaşılır bir mesaj.
