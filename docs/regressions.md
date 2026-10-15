@@ -2987,3 +2987,14 @@ again" and the list never asked again; and a reload that superseded a next page 
 `load-more-paging.test.ts` and `liked-recipes-store.test.ts` ("pages again after a failed reload").
 *The class:* **a hand-paged list must keep the shared paging rules — offset after removals, a
 recorded failure, and no in-flight flag a cancelled request can strand.**
+
+## A 10-minute timer lost its "5 minutes left" heads-up
+
+`startTimer` set the end time from one `Date.now()` and the heads-up planner read `Date.now()`
+again. A heads-up is kept only when the time left is at least twice its lead, and a 10-minute timer
+sits exactly on that line for the 5-minute mark, so one millisecond between the two reads dropped
+it. A slow CI run caught it and blocked the v1.6.1 release. *Now:* `startTimer` and `resumeTimer`
+read the clock once and pass that reading to the planner (`timer-controls.test.ts`, "when the clock
+moves during start" — the clock ticks on every read). *The class:* **a rule that compares against
+"now" must get the same "now" its inputs were built from; a second clock read turns an exact boundary
+into a race.**

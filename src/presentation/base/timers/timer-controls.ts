@@ -35,9 +35,14 @@ const minutesLeftCopy = (minutes: number): string =>
  * Schedules a countdown's alarm and its quiet heads-ups; the ids come back together so one
  * `cancel` on stop or pause clears both.
  */
-const scheduleAlerts = async (timerId: string, recipeName: string, endTimeMs: number): Promise<string[]> => {
+const scheduleAlerts = async (
+  timerId: string,
+  recipeName: string,
+  endTimeMs: number,
+  nowMs: number,
+): Promise<string[]> => {
   const service = getNotificationService();
-  const alerts = timerWarnings(endTimeMs, Date.now()).map(
+  const alerts = timerWarnings(endTimeMs, nowMs).map(
     (w): TimerWarningAlert => ({ fireAtMs: w.fireAtMs, body: minutesLeftCopy(w.minutesLeft) }),
   );
   const [completion, warnings] = await Promise.all([
@@ -62,8 +67,10 @@ export const startTimer = async (
   if (timerStore.getState().timers[timerId] !== undefined) await stopTimer(timerId);
   await getNotificationService().requestPermissions();
   const durationSeconds = Math.round(minutes * TimerTimeConstants.secondsPerMinute);
-  const endTimeMs = Date.now() + durationSeconds * TimerTimeConstants.msPerSecond;
-  const completionNotifIds = await scheduleAlerts(timerId, recipeName, endTimeMs);
+  // One clock reading: a second one makes a 10-minute timer read as under 10 and drop its 5-minute heads-up.
+  const nowMs = Date.now();
+  const endTimeMs = nowMs + durationSeconds * TimerTimeConstants.msPerSecond;
+  const completionNotifIds = await scheduleAlerts(timerId, recipeName, endTimeMs, nowMs);
   await timerStore.getState().add({
     id: timerId,
     recipeId,
@@ -102,8 +109,9 @@ export const resumeTimer = async (timerId: string): Promise<void> => {
   // Resume counts as a start for the one-timer-per-recipe rule.
   if (isBlockedByRunningTimer(entry.recipeId, timerId)) return;
   triggeredAlarms.release(timerId);
-  const newEndTimeMs = Date.now() + entry.remainingMsOnPause;
-  const completionNotifIds = await scheduleAlerts(timerId, entry.recipeName, newEndTimeMs);
+  const nowMs = Date.now();
+  const newEndTimeMs = nowMs + entry.remainingMsOnPause;
+  const completionNotifIds = await scheduleAlerts(timerId, entry.recipeName, newEndTimeMs, nowMs);
   timerStore.setState((s) => {
     const cur = s.timers[timerId];
     if (cur === undefined) return s;
