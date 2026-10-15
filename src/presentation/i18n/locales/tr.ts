@@ -1724,10 +1724,10 @@ export const tr: TranslationsType = {
     previousSlide: 'Önceki',
     nextSlide: 'Sonraki',
     slides: {
-      recipesEyebrow: '1000+ tarif',
-      recipesTitle: 'Denenmiş binlerce tarife\nhızlıca ulaş',
+      recipesEyebrow: 'Her tarif, tek yerde',
+      recipesTitle: 'Bulduğun her tarif\ntek bir yerde',
       recipesBody:
-        'Kolay, pratik ve denenmiş binlerce tarif; ihtiyacın olan her an cebinde.',
+        'Instagram, TikTok, YouTube ve tarif sitelerindeki tarifleri kaydet; senin dilinde, pişirmeye hazır.',
       aiEyebrow: 'Yapay zekâ',
       aiTitle: 'Malzemeni yaz,\ntarifin hazır olsun',
       aiBody:

@@ -1720,9 +1720,9 @@ export const id = {
     previousSlide: 'Sebelumnya',
     nextSlide: 'Berikutnya',
     slides: {
-      recipesEyebrow: '1000+ resep',
-      recipesTitle: 'Ribuan resep teruji\ndalam hitungan detik',
-      recipesBody: 'Resep mudah, praktis, dan teruji — selalu ada di genggaman saat kamu membutuhkannya.',
+      recipesEyebrow: 'Semua resep tersimpan',
+      recipesTitle: 'Setiap resep yang kamu temukan,\ndi satu tempat',
+      recipesBody: 'Simpan resep dari Instagram, TikTok, YouTube, dan situs resep — ditulis dalam bahasamu, siap dimasak.',
       aiEyebrow: 'Didukung AI',
       aiTitle: 'Tulis bahan yang kamu punya,\ndapatkan resep lengkap',
       aiBody: 'Beri tahu Recipely bahan yang tersedia dan dapatkan resep khusus untuk kamu dalam hitungan detik.',

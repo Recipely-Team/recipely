@@ -1720,9 +1720,9 @@ export const ja = {
     previousSlide: '前へ',
     nextSlide: '次へ',
     slides: {
-      recipesEyebrow: '1000以上のレシピ',
-      recipesTitle: '何千もの実績ある\nレシピを数秒で',
-      recipesBody: '簡単で実用的、しかも試作済みのレシピを、必要なときいつでも手元に。',
+      recipesEyebrow: 'どのレシピも保存',
+      recipesTitle: '見つけたレシピを\nひとつの場所に',
+      recipesBody: 'Instagram、TikTok、YouTube、レシピサイトのレシピを保存。あなたの言語で、すぐに作れる形に。',
       aiEyebrow: 'AI搭載',
       aiTitle: '手元の材料を入力して、\nレシピをまるごと作成',
       aiBody: '手元にある材料をRecipelyに伝えるだけ。あなた向けのレシピを数秒で作ります。',

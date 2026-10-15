@@ -2998,3 +2998,12 @@ read the clock once and pass that reading to the planner (`timer-controls.test.t
 moves during start" — the clock ticks on every read). *The class:* **a rule that compares against
 "now" must get the same "now" its inputs were built from; a second clock read turns an exact boundary
 into a race.**
+
+## Onboarding claimed recipes the app did not have
+
+The recipes slide promised "1000+ recipes" and "thousands of tried recipes" in all 14 languages
+while production held a few dozen. *Now:* the slide says what the app does (save any recipe from
+Instagram, TikTok, YouTube and recipe sites, written up in your language), and
+`onboarding-claims.test.ts` fails if any onboarding slide in any locale carries a digit. *The
+class:* **marketing copy makes no number the data cannot back; a count needs a source, or it does
+not ship.**

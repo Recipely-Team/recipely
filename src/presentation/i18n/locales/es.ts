@@ -1720,9 +1720,9 @@ export const es = {
     previousSlide: 'Anterior',
     nextSlide: 'Siguiente',
     slides: {
-      recipesEyebrow: 'Más de 1000 recetas',
-      recipesTitle: 'Miles de recetas probadas\nen segundos',
-      recipesBody: 'Recetas fáciles, prácticas y comprobadas — siempre a mano cuando las necesites.',
+      recipesEyebrow: 'Todas tus recetas',
+      recipesTitle: 'Cada receta que encuentras,\nen un solo lugar',
+      recipesBody: 'Guarda recetas de Instagram, TikTok, YouTube y webs de recetas — escritas en tu idioma, listas para cocinar.',
       aiEyebrow: 'Con IA',
       aiTitle: 'Escribe lo que tienes,\nrecibe una receta completa',
       aiBody: 'Dile a Recipely qué tienes a mano y consigue en segundos una receta hecha para ti.',

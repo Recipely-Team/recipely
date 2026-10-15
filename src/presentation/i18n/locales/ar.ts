@@ -1720,9 +1720,9 @@ export const ar = {
     previousSlide: "السابق",
     nextSlide: "التالي",
     slides: {
-      recipesEyebrow: "أكثر من 1000 وصفة",
-      recipesTitle: "آلاف الوصفات المجربة\nفي ثوانٍ",
-      recipesBody: "وصفات سهلة وعملية ومجرّبة — في جيبك متى احتجت إليها.",
+      recipesEyebrow: 'كل وصفة في مكان واحد',
+      recipesTitle: 'كل وصفة تجدها\nفي مكان واحد',
+      recipesBody: 'احفظ الوصفات من Instagram وTikTok وYouTube ومواقع الوصفات — مكتوبة بلغتك وجاهزة للطهي.',
       aiEyebrow: "مدعوم بالذكاء الاصطناعي",
       aiTitle: "اكتب ما لديك،\nواحصل على وصفة كاملة",
       aiBody: "أخبر Recipely بما لديك وسيصنع لك وصفة مخصصة خلال ثوانٍ.",
