@@ -47,7 +47,7 @@ describe('NotificationRepository.list — import provenance', () => {
   });
 
   it('drops a platform this build has no word for rather than guessing', async () => {
-    const n = await listOf(dto({ sourcePlatform: 'PINTEREST', sourceHandle: '' }));
+    const n = await listOf(dto({ sourcePlatform: 'THREADS', sourceHandle: '' }));
 
     expect(n.sourcePlatform).toBeNull();
     expect(n.sourceHandle).toBeNull();

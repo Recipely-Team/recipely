@@ -47,6 +47,10 @@ export const BrandColors = {
   facebookInk: '#0866FF',
   /** YouTube's red as outline ink on the seal's white face, 4.0:1. */
   youtubeInk: '#FF0000',
+  /** Pinterest's red: seal ink and the import ring's first stop, 4.79:1 on white. */
+  pinterestInk: '#E60023',
+  /** Pinterest's deep red: the import ring's last stop and its pill, white text 7.43:1. */
+  pinterestDeep: '#AD081B',
   /** A web page's globe: neutral slate rather than any site's colour, 10.4:1 on white. */
   webInk: '#334155',
   /** The AI sparkles' indigo-to-teal ink, both stops at least 3:1 on white. */

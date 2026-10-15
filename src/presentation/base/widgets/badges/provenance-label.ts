@@ -8,6 +8,7 @@ const PLATFORM_A11Y: Record<SourceMarkType, () => string> = {
   [ProvenanceMark.TikTok]: () => t().recipes.originTiktokA11y,
   [ProvenanceMark.Facebook]: () => t().recipes.originFacebookA11y,
   [ProvenanceMark.YouTube]: () => t().recipes.originYoutubeA11y,
+  [ProvenanceMark.Pinterest]: () => t().recipes.originPinterestA11y,
   [ProvenanceMark.Web]: () => t().recipes.originWebA11y,
 };
 

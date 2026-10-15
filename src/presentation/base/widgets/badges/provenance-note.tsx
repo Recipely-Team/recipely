@@ -56,6 +56,13 @@ const SOURCE_WORDS: Record<SourceMarkType, {
     prefix: CharConstants.empty,
     href: (_channel, sourceUrl) => sourceUrl ?? null,
   },
+  [ProvenanceMark.Pinterest]: {
+    sentence: () => t().recipes.originPinterestDetailLabel,
+    fallback: () => t().recipes.originPinterestA11y,
+    open: () => t().recipes.originPinterestHandleA11y,
+    prefix: CharConstants.empty,
+    href: (_account, sourceUrl) => sourceUrl ?? null,
+  },
   // A site is named as a site, and its link is the page the recipe came from.
   [ProvenanceMark.Web]: {
     sentence: () => t().recipes.originWebDetailLabel,

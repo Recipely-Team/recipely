@@ -50,6 +50,13 @@ describe('ImportPasteField', () => {
     expect(labels(reel)).toContain(en.importRecipe.pasteDetectedInstagram);
   });
 
+  it('shows the Pinterest glyph for a pin and calls it a pin', () => {
+    const pin = linkOf('https://pin.it/4ZqQxkU');
+
+    expect(glyphs(pin)).toEqual([ProvenanceMark.Pinterest]);
+    expect(labels(pin)).toContain(en.importRecipe.pasteDetectedPinterest);
+  });
+
   it('shows the globe for a recipe page and names the site', () => {
     const page = linkOf('https://www.nefisyemektarifleri.com/menemen-tarifi/');
 

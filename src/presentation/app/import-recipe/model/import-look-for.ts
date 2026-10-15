@@ -11,6 +11,7 @@ const INSTAGRAM_GRADIENT = [
   BrandColors.instagramGradientEnd,
 ] as const;
 const TIKTOK_GRADIENT = [BrandColors.tiktokCyan, BrandColors.tiktokRed] as const;
+const PINTEREST_GRADIENT = [BrandColors.pinterestInk, BrandColors.pinterestDeep] as const;
 const INSTAGRAM_RING_STOPS = [ValueConstants.zero, 0.3, 0.62, ValueConstants.one] as const;
 const TWO_STOP_RING = [ValueConstants.zero, ValueConstants.one] as const;
 
@@ -34,6 +35,16 @@ export const importLookFor = (platform: SourcePlatformType, colors: ThemeColors)
       ringStops: TWO_STOP_RING,
       accent: BrandColors.tiktokRed,
       pill: [BrandColors.tiktokNote, BrandColors.tiktokNote],
+      pillText: BrandColors.white,
+    };
+  }
+  if (platform === SourcePlatform.Pinterest) {
+    // The pill sits on the deep stop: white on the brand red would be 4.79:1.
+    return {
+      gradient: PINTEREST_GRADIENT,
+      ringStops: TWO_STOP_RING,
+      accent: BrandColors.pinterestInk,
+      pill: [BrandColors.pinterestDeep, BrandColors.pinterestDeep],
       pillText: BrandColors.white,
     };
   }

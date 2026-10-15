@@ -16,6 +16,17 @@ const FACEBOOK_SHORT_HOST = 'fb.watch';
 /** The backend's YouTube hosts; `youtu.be/<id>` is the share sheet's form. */
 const YOUTUBE_HOSTS: readonly string[] = ['youtube.com', 'www.youtube.com', 'm.youtube.com'];
 const YOUTUBE_SHORT_HOST = 'youtu.be';
+/** Pinterest's country domains, the backend's list; a pin is `/pin/<id>` on any of them or one label below. */
+const PINTEREST_DOMAINS: readonly string[] = [
+  'com', 'fr', 'de', 'ch', 'jp', 'cl', 'ca', 'it', 'co.uk', 'nz', 'ru', 'com.au', 'at', 'pt', 'co.kr', 'es',
+  'com.mx', 'dk', 'ph', 'th', 'com.uy', 'co', 'nl', 'info', 'kr', 'ie', 'vn', 'com.vn', 'ec', 'mx', 'in', 'pe',
+  'co.at', 'hu', 'co.in', 'co.nz', 'id', 'com.ec', 'com.py', 'tw', 'be', 'uk', 'com.bo', 'com.pe',
+].map((tld) => `pinterest.${tld}`);
+/** The share sheet's short link; it redirects to the pin. */
+const PINTEREST_SHORT_HOST = 'pin.it';
+const PINTEREST_PIN = /^\/pin\/[^/?#]+/;
+/** `tr.pinterest.com` → `pinterest.com`: one label in front of a listed domain. */
+const ONE_LABEL = /^[a-z0-9-]+\./;
 /** Sites with recipes on them that this import cannot read: no video pipeline, no page to read. */
 const UNSUPPORTED_HOSTS: readonly string[] = ['x.com', 'twitter.com'];
 /** Any other subdomain of a video platform is that platform, not a web page, and holds no video we read. */
@@ -59,6 +70,9 @@ const ELLIPSIS = '…';
  * - **Facebook and YouTube take the backend's exact hosts** — `www.`, `m.` and
  *   (Facebook) `web.`, plus `fb.watch` and `youtu.be` — and a path that names
  *   one video: a page, a channel or a playlist is refused before the queue.
+ * - **A Pinterest pin is `/pin/<id>` or a `pin.it` link**; a board or a
+ *   profile holds many pins and no single recipe, so it is refused here. The
+ *   backend reads a pin's blog link first and the pin itself after.
  * - **Any other public web page is a candidate**, because most recipe sites
  *   publish their recipe as markup the backend reads directly. The sites that
  *   are known NOT to work are refused by name, so the user hears "we can't
@@ -124,6 +138,13 @@ export class ImportLink extends BaseValueObject<string> {
       if (id === null) return fail(ImportLink.invalid(trimmed));
       return ok(new ImportLink(url.toString(), SourcePlatform.YouTube, 'youtube.com', `youtube.com/watch?v=${id}`));
     }
+    if (fullHost === PINTEREST_SHORT_HOST || ImportLink.isPinterestHost(fullHost)) {
+      const isPin = fullHost === PINTEREST_SHORT_HOST
+        ? path.replace(TRAILING_SLASH, CharConstants.empty).length > ValueConstants.one
+        : PINTEREST_PIN.test(path);
+      if (!isPin) return fail(ImportLink.invalid(trimmed));
+      return ok(new ImportLink(url.toString(), SourcePlatform.Pinterest, fullHost === PINTEREST_SHORT_HOST ? fullHost : 'pinterest.com', ImportLink.shorten(`${host}${path}`)));
+    }
     if (VIDEO_PLATFORM_DOMAINS.some((h) => host.endsWith(`.${h}`))) return fail(ImportLink.invalid(trimmed));
     if (UNSUPPORTED_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))) {
       return fail(ImportLink.unsupported(trimmed));
@@ -149,6 +170,10 @@ export class ImportLink extends BaseValueObject<string> {
   private static shorten(page: string): string {
     const bare = page.replace(TRAILING_SLASH, CharConstants.empty);
     return bare.length > SHORT_FORM_MAX ? `${bare.slice(ValueConstants.zero, SHORT_FORM_MAX)}${ELLIPSIS}` : bare;
+  }
+
+  private static isPinterestHost(fullHost: string): boolean {
+    return PINTEREST_DOMAINS.includes(fullHost) || PINTEREST_DOMAINS.includes(fullHost.replace(ONE_LABEL, CharConstants.empty));
   }
 
   /** The id a YouTube link names — the same forms the backend reads — or `null` for a channel or a playlist. */
