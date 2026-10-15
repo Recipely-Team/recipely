@@ -457,6 +457,11 @@ export const en = {
       body: 'You just asked for a code. Wait a few seconds before requesting another.',
       short: 'Wait a moment before asking for a new code',
     },
+    tooManyAttempts: {
+      title: "Too many attempts",
+      body: "That was a lot of tries in a short time. Wait a few minutes, then try again.",
+      short: "Too many attempts — try again in a few minutes",
+    },
     registrationExpired: {
       title: "Let's start over",
       body: 'We have no pending sign-up for this email anymore. Enter your details again.',

@@ -454,6 +454,11 @@ export const zh = {
       body: '你刚刚已经申请过验证码。请过几秒再申请新的。',
       short: '请稍等片刻再获取新验证码',
     },
+    tooManyAttempts: {
+      title: "尝试次数过多",
+      body: "短时间内尝试次数过多。请等几分钟后再试。",
+      short: "尝试次数过多，请几分钟后再试",
+    },
     registrationExpired: {
       title: '重新开始吧',
       body: '这个邮箱已经没有待完成的注册记录了。请重新填写信息。',

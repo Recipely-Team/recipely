@@ -451,6 +451,11 @@ export const fr = {
       body: 'Vous venez de demander un code. Attendez quelques secondes avant d’en demander un autre.',
       short: 'Patientez avant de demander un nouveau code',
     },
+    tooManyAttempts: {
+      title: "Trop de tentatives",
+      body: "Beaucoup de tentatives en peu de temps. Patientez quelques minutes, puis réessayez.",
+      short: "Trop de tentatives — réessayez dans quelques minutes",
+    },
     registrationExpired: {
       title: 'Repartons de zéro',
       body: 'Il n’y a plus d’inscription en attente pour cette adresse e-mail. Saisissez à nouveau vos informations.',

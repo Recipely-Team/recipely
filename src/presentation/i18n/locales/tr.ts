@@ -454,6 +454,11 @@ export const tr: TranslationsType = {
       body: 'Az önce kod istedin. Yenisini istemeden önce birkaç saniye bekle.',
       short: 'Yeni kod istemeden önce biraz bekle',
     },
+    tooManyAttempts: {
+      title: "Çok fazla deneme",
+      body: "Kısa sürede çok fazla deneme yapıldı. Birkaç dakika bekleyip tekrar dene.",
+      short: "Çok fazla deneme — birkaç dakika sonra tekrar dene",
+    },
     registrationExpired: {
       title: 'Baştan başlayalım',
       body: 'Bu e-posta için devam eden bir kayıt bulunamadı. Bilgilerini yeniden gir.',
