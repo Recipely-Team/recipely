@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { type Href, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { type Href, useFocusEffect, useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import { loadedItems } from '@application/store/paging/loaded-items';
 import { ValueConstants } from '@core/constants';
@@ -18,6 +18,9 @@ import type { UseCreatorsScreenResult } from '@presentation/app/creators/model/u
  * @remarks
  * - **Shares the strip's store**, so arriving from "See all" shows the rows
  *   already loaded at once, and scrolling here pages the strip too.
+ * - **Re-read every time the tab opens**: a loaded list refreshes in place
+ *   (no skeleton), so a creator approved or connected meanwhile shows up
+ *   without restarting the app.
  * - **Two columns on a phone; on an expanded viewport as many 180-wide
  *   cards as fit**, the prototype's `auto-fill, minmax(180, 1fr)`.
  */
@@ -31,9 +34,12 @@ export const useCreatorsScreen = (): UseCreatorsScreenResult => {
   const loadMore = creatorsStore((s) => s.loadMore);
   const [isPullRefreshing, setPullRefreshing] = useState(false);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      if (creatorsStore.getState().creators.status === StoreStatus.Loaded) void refresh();
+      else void load();
+    }, [creatorsStore, load, refresh]),
+  );
 
   const { gutter, minCardWidthExpanded, phoneColumns } = CreatorsGridMetrics;
   const gap = isExpanded ? CreatorsGridMetrics.gapExpanded : CreatorsGridMetrics.gap;

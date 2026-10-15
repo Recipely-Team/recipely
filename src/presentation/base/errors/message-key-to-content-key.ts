@@ -106,6 +106,7 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKeyType> =
   [ErrorMessageKey.codeExpired]: 'codeExpired',
   [ErrorMessageKey.codeAttemptsExceeded]: 'codeAttemptsExceeded',
   [ErrorMessageKey.codeCooldown]: 'codeCooldown',
+  [ErrorMessageKey.tooManyAttempts]: 'tooManyAttempts',
   [ErrorMessageKey.registrationExpired]: 'registrationExpired',
 
   [ErrorMessageKey.invalidMediaType]: 'invalidMediaType',

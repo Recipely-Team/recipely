@@ -451,6 +451,11 @@ export const id = {
       body: 'Kamu baru saja meminta kode. Tunggu beberapa detik sebelum meminta yang lain.',
       short: 'Tunggu sebentar sebelum meminta kode baru',
     },
+    tooManyAttempts: {
+      title: "Terlalu banyak percobaan",
+      body: "Terlalu banyak percobaan dalam waktu singkat. Tunggu beberapa menit, lalu coba lagi.",
+      short: "Terlalu banyak percobaan — coba lagi beberapa menit lagi",
+    },
     registrationExpired: {
       title: 'Mari mulai lagi',
       body: 'Pendaftaran tertunda untuk email ini sudah tidak ada. Masukkan detail kamu lagi.',

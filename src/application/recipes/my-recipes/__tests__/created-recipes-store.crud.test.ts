@@ -448,3 +448,47 @@ describe("createdRecipesStore CRUD", () => {
     });
   });
 });
+
+/**
+ * The symptom: an account with 31 recipes showed 20 in the Created tab and
+ * never more — the list asked for page 1 only and kept no total, so scrolling
+ * found nothing to load and the tab count was the 20 it held.
+ */
+describe("createdRecipesStore — paging to the end", () => {
+  const twenty = Array.from({ length: 20 }, (_, i) => makeSummary({ id: `r${String(i)}` }));
+  const eleven = Array.from({ length: 11 }, (_, i) => makeSummary({ id: `r${String(20 + i)}` }));
+
+  const storeOf31 = () => {
+    const execute = jest.fn((page?: number) =>
+      Promise.resolve(
+        ok(
+          (page ?? 1) === 1
+            ? recipePageOf(twenty, { page: 1, pageSize: 20, total: 31 })
+            : recipePageOf(eleven, { page: 2, pageSize: 20, total: 31 }),
+        ),
+      ),
+    );
+    return { store: makeStore({ listMyRecipesUseCase: { execute } as unknown as ListMyRecipesUseCase }).store, execute };
+  };
+
+  it("knows the server's total after the first page", async () => {
+    const { store } = storeOf31();
+
+    await store.getState().loadMyRecipes();
+
+    expect(store.getState().recipes).toHaveLength(20);
+    expect(store.getState().myRecipesPaging).toMatchObject({ total: 31, hasMore: true });
+  });
+
+  it("loads the next page at the end of the list and stops at the total", async () => {
+    const { store, execute } = storeOf31();
+    await store.getState().loadMyRecipes();
+
+    await store.getState().loadMoreMyRecipes();
+    await store.getState().loadMoreMyRecipes();
+
+    expect(store.getState().recipes).toHaveLength(31);
+    expect(store.getState().myRecipesPaging).toMatchObject({ total: 31, hasMore: false });
+    expect(execute).toHaveBeenCalledTimes(2);
+  });
+});

@@ -1,3 +1,4 @@
+import type { Page } from '@domain/common/page';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
@@ -13,5 +14,5 @@ export interface LikeRepositoryInterface {
    * does: the liked grid renders these directly instead of depending on another
    * screen having the same recipes in its currently-loaded page.
    */
-  listLiked(): Promise<Result<RecipeSummaryEntity[], Failure>>;
+  listLiked(page?: number): Promise<Result<Page<RecipeSummaryEntity>, Failure>>;
 }

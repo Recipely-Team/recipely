@@ -451,6 +451,11 @@ export const it = {
       body: 'Hai appena richiesto un codice. Attendi qualche secondo prima di richiederne un altro.',
       short: 'Aspetta un momento prima di chiedere un nuovo codice',
     },
+    tooManyAttempts: {
+      title: "Troppi tentativi",
+      body: "Hai fatto molti tentativi in poco tempo. Attendi qualche minuto e riprova.",
+      short: "Troppi tentativi: riprova tra qualche minuto",
+    },
     registrationExpired: {
       title: 'Ricominciamo',
       body: 'Non c’è più una registrazione in sospeso per questa e-mail. Inserisci di nuovo i tuoi dati.',

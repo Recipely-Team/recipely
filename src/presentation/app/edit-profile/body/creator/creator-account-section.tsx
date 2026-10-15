@@ -17,6 +17,7 @@ import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { useInstagramAccount } from '@presentation/app/edit-profile/hooks/use-instagram-account';
 import { InstagramConnectedRow } from '@presentation/app/edit-profile/body/creator/instagram-connected-row';
 import { InstagramConnectRow } from '@presentation/app/edit-profile/body/creator/instagram-connect-row';
+import { InstagramConnectBlock } from '@presentation/base/widgets/instagram/instagram-connect-block';
 
 export interface CreatorAccountSectionProps {
   /** Reports where the section sits, so a `?section=creator` link can scroll to it. */
@@ -41,6 +42,15 @@ export const CreatorAccountSection = ({ onLayout }: CreatorAccountSectionProps):
   const ig = useInstagramAccount();
   const copy = t().instagram;
 
+  const renderClaimRow = (row: Extract<CreatorAccountRowType, { kind: typeof CreatorAccountRowKind.Linked }>): React.JSX.Element => (
+    <CreatorLinkedRow
+      claim={row.claim}
+      isBusy={vm.isBusy}
+      onRemove={() => vm.onRemove(row.claim.tag.platform)}
+      onTryAgain={() => vm.onOpenForm(row.claim.tag.platform)}
+    />
+  );
+
   const renderRow = (row: CreatorAccountRowType): React.JSX.Element => {
     if (ig.connection.isAvailable && platformOf(row) === CreatorPlatform.Instagram) {
       if (ig.connection.isConnected) {
@@ -58,17 +68,20 @@ export const CreatorAccountSection = ({ onLayout }: CreatorAccountSectionProps):
       if (row.kind === CreatorAccountRowKind.Add) {
         return <InstagramConnectRow phase={ig.phase} onConnect={ig.connect} onManual={() => vm.onOpenForm(CreatorPlatform.Instagram)} />;
       }
+      if (row.kind === CreatorAccountRowKind.Linked) {
+        return (
+          <>
+            {renderClaimRow(row)}
+            <View style={styles.connectBelowClaim}>
+              <InstagramConnectBlock phase={ig.phase} onConnect={ig.connect} label={copy.connect} showBody />
+            </View>
+          </>
+        );
+      }
     }
     switch (row.kind) {
       case CreatorAccountRowKind.Linked:
-        return (
-          <CreatorLinkedRow
-            claim={row.claim}
-            isBusy={vm.isBusy}
-            onRemove={() => vm.onRemove(row.claim.tag.platform)}
-            onTryAgain={() => vm.onOpenForm(row.claim.tag.platform)}
-          />
-        );
+        return renderClaimRow(row);
       case CreatorAccountRowKind.Add:
         return <CreatorAddRow platform={row.platform} disabled={vm.isBusy} onPress={vm.onOpenForm} />;
       case CreatorAccountRowKind.Form:
@@ -126,6 +139,10 @@ const styles = StyleSheet.create({
   },
   intro: {
     padding: spacing.lg,
+  },
+  connectBelowClaim: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   rule: {
     height: borderWidths.hairline,

@@ -149,6 +149,7 @@ export const ErrorMessageKey = {
   codeExpired: 'errors.validation.code_expired',
   codeAttemptsExceeded: 'errors.validation.code_attempts_exceeded',
   codeCooldown: 'errors.too_many_requests.code_cooldown',
+  tooManyAttempts: 'errors.too_many_requests.too_many_attempts',
   registrationExpired: 'errors.not_found.pending_registration',
 
   // Media upload

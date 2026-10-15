@@ -1,3 +1,5 @@
+import type { Page } from '@domain/common/page';
+import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
 import { fail, ok } from '@core/result/result-helpers';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import type { Result } from '@core/result/result';
@@ -5,7 +7,6 @@ import type { Failure } from '@core/failure';
 import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { FavoritesRepositoryInterface } from '@domain/favorites/favorites-repository-interface';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
-import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { FAVORITES_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import type { PageDto } from '@infrastructure/network/paging/page-dto';
@@ -41,13 +42,13 @@ export class FavoritesRepository implements FavoritesRepositoryInterface {
     return ok(void ValueConstants.zero);
   }
 
-  async listFavorites(): Promise<Result<RecipeSummaryEntity[], Failure>> {
+  async listFavorites(page?: number): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
     const result = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.me.favorites, {
-      params: toPageQuery({ pageSize: FAVORITES_PAGE_SIZE }),
+      params: toPageQuery({ page, pageSize: FAVORITES_PAGE_SIZE }),
     });
 
     if (!result.ok) return fail(result.failure);
 
-    return mapRecipeSummaries(result.value.items);
+    return toRecipePage(result.value);
   }
 }

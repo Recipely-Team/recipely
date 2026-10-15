@@ -53,6 +53,11 @@ export interface MyRecipesListProps {
   loadFailure: Failure | null;
   /** Asks for the next page of drafts; the list pages like the recipe feed does. */
   onDraftsEndReached: () => void;
+  /** The Saved / Liked / Created list reached its end: load the next page (a no-op once the total is reached). */
+  onItemsEndReached: () => void;
+  isLoadingMoreItems: boolean;
+  /** Why the last next page of Saved / Liked / Created failed, or null; shows a "Try again" row under the list. */
+  itemsMoreFailure: Failure | null;
   isLoadingMoreDrafts: boolean;
   /** Why the last next page of drafts failed, or null; shows a "Try again" row under the list. */
   draftsMoreFailure: Failure | null;
@@ -99,6 +104,9 @@ export const MyRecipesList = ({
   isFirstLoad,
   loadFailure,
   onDraftsEndReached,
+  onItemsEndReached,
+  isLoadingMoreItems,
+  itemsMoreFailure,
   isLoadingMoreDrafts,
   draftsMoreFailure,
   isRefreshing,
@@ -217,6 +225,9 @@ export const MyRecipesList = ({
       initialNumToRender={ListConstants.initialRows}
       maxToRenderPerBatch={ListConstants.rowsPerBatch}
       windowSize={ListConstants.windowSize}
+      onEndReached={onItemsEndReached}
+      onEndReachedThreshold={ListConstants.endReachedThreshold}
+      ListFooterComponent={<FeedFooter isLoadingMore={isLoadingMoreItems} failure={itemsMoreFailure} onRetry={onItemsEndReached} />}
       columnWrapperStyle={gridColumns > ValueConstants.one ? styles.gridRow : undefined}
       ItemSeparatorComponent={gridColumns === ValueConstants.one ? Separator : undefined}
       contentContainerStyle={[styles.listContent, gridColumns > ValueConstants.one ? styles.gridContent : null]}

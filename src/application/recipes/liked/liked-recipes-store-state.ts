@@ -1,3 +1,5 @@
+import type { Page } from '@domain/common/page';
+import type { ListPaging } from '@application/store/paging/list-paging/list-paging';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
@@ -13,7 +15,7 @@ export interface LikedRecipesStoreState {
   /** Load status of `likedRecipes` — what the liked grid shows a skeleton for. */
   listState: LikedRecipesListState;
   /** Replaces the rows from one `/me/likes` response. */
-  setLiked: (recipes: readonly RecipeSummaryEntity[]) => void;
+  setLiked: (page: Page<RecipeSummaryEntity>) => void;
   /**
    * Drops a row the user just unliked somewhere else in the app. The next load
    * would do it too, but not before the user has looked at a grid still showing
@@ -25,7 +27,11 @@ export interface LikedRecipesStoreState {
    * the same outcome back — a caller that pulled to refresh needs to know how
    * ITS load ended, which a shared field cannot say once two loads overlap.
    */
-  loadLiked: () => Promise<Result<readonly RecipeSummaryEntity[], Failure>>;
+  loadLiked: () => Promise<Result<Page<RecipeSummaryEntity>, Failure>>;
+  /** The next page of liked recipes, appended; a no-op once the server's total is reached. */
+  loadMoreLiked: () => Promise<void>;
+  /** The server's total and whether more pages exist — the tab count reads `total`, not the array. */
+  paging: ListPaging;
   /** Drops the signed-in user's liked recipes. Called when the session ends. */
   clear: () => void;
 }

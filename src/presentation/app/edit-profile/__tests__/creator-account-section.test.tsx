@@ -224,6 +224,16 @@ describe('CreatorAccountSection', () => {
       expect(root.findAllByType(TextInput)).toHaveLength(1);
     });
 
+    // A hand-entered Instagram tag hid Connect with Instagram until it was unlinked.
+    it('keeps Connect with Instagram under a hand-entered Instagram tag, without unlinking it first', async () => {
+      const instagram = instagramStoreOf(connectionOf({ connected: false, status: null }));
+      const { root, actions } = renderSection([['instagram', CreatorStatus.Approved]], {}, instagram);
+      await act(async () => undefined);
+      expect(textContent(root)).toEqual(expect.arrayContaining([copy().approved, '@aysemutfakta', ig().connect]));
+      expect(textContent(root)).not.toContain(ig().manual);
+      expect(actions.removeCreatorTag).not.toHaveBeenCalled();
+    });
+
     it('shows the linked account, verified via Instagram, and disconnects only after the confirmation', async () => {
       const instagram = instagramStoreOf(connectionOf());
       const { root } = renderSection([['instagram', CreatorStatus.Approved, 'mertmutfakta']], {}, instagram);

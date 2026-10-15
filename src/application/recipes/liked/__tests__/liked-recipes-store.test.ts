@@ -17,6 +17,7 @@ import { RecipeSummaryEntity } from "@domain/recipes/recipe-summary-entity";
 import { CuisineKey } from "@domain/recipes/taxonomy/cuisine-key";
 import { RecipeCategory } from "@domain/recipes/taxonomy/recipe-category";
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
+import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 
 const makeRecipe = (id: string): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
@@ -51,7 +52,7 @@ const useCaseReturning = (
 describe("likedRecipesStore.loadLiked", () => {
   it("starts idle so an empty grid can be told from an unanswered one", () => {
     const store = configureLikedRecipesStore({
-      loadLikedRecipesUseCase: useCaseReturning(() => Promise.resolve(ok([]))),
+      loadLikedRecipesUseCase: useCaseReturning(() => Promise.resolve(ok(recipePageOf([])))),
     });
 
     expect(store.getState().listState.status).toBe(StoreStatus.Idle);
@@ -61,7 +62,7 @@ describe("likedRecipesStore.loadLiked", () => {
   it("publishes the rows and marks the load loaded", async () => {
     const store = configureLikedRecipesStore({
       loadLikedRecipesUseCase: useCaseReturning(() =>
-        Promise.resolve(ok([makeRecipe("r1")])),
+        Promise.resolve(ok(recipePageOf([makeRecipe("r1")]))),
       ),
     });
 
@@ -78,7 +79,7 @@ describe("likedRecipesStore.loadLiked", () => {
         attempt++;
         return Promise.resolve(
           attempt === 1
-            ? ok([makeRecipe("r1")])
+            ? ok(recipePageOf([makeRecipe("r1")]))
             : fail(new NetworkFailure("offline")),
         );
       }),
@@ -114,7 +115,7 @@ describe("likedRecipesStore.loadLiked", () => {
     const store = configureLikedRecipesStore({
       loadLikedRecipesUseCase: useCaseReturning(async () => {
         await gate;
-        return ok([makeRecipe("r1")]);
+        return ok(recipePageOf([makeRecipe("r1")]));
       }),
     });
 
@@ -132,7 +133,7 @@ describe("likedRecipesStore.removeLocal", () => {
   it("takes the row out of the grid", async () => {
     const store = configureLikedRecipesStore({
       loadLikedRecipesUseCase: useCaseReturning(() =>
-        Promise.resolve(ok([makeRecipe("r1"), makeRecipe("r2")])),
+        Promise.resolve(ok(recipePageOf([makeRecipe("r1"), makeRecipe("r2")]))),
       ),
     });
     await store.getState().loadLiked();
@@ -145,7 +146,7 @@ describe("likedRecipesStore.removeLocal", () => {
   it("leaves the rows untouched for an id it is not holding", async () => {
     const store = configureLikedRecipesStore({
       loadLikedRecipesUseCase: useCaseReturning(() =>
-        Promise.resolve(ok([makeRecipe("r1")])),
+        Promise.resolve(ok(recipePageOf([makeRecipe("r1")]))),
       ),
     });
     await store.getState().loadLiked();
@@ -154,5 +155,29 @@ describe("likedRecipesStore.removeLocal", () => {
     store.getState().removeLocal("r-unknown");
 
     expect(store.getState().likedRecipes).toBe(before);
+  });
+});
+
+describe("likedRecipesStore.loadMoreLiked", () => {
+  // A reload that superseded a next page and then failed left `isLoadingMore` on: the list never paged again.
+  it("pages again after a failed reload superseded a next page in flight", async () => {
+    let releaseMore: (value: unknown) => void = () => undefined;
+    const execute = jest
+      .fn()
+      .mockResolvedValueOnce(ok(recipePageOf([makeRecipe("r1")], { pageSize: 1, total: 3 })))
+      .mockImplementationOnce(() => new Promise((resolve) => { releaseMore = resolve; }))
+      .mockResolvedValueOnce(fail(new NetworkFailure("offline")))
+      .mockResolvedValueOnce(ok(recipePageOf([makeRecipe("r2")], { page: 2, pageSize: 1, total: 3 })));
+    const store = configureLikedRecipesStore({ loadLikedRecipesUseCase: { execute } as unknown as LoadLikedRecipesUseCase });
+
+    await store.getState().loadLiked();
+    const inFlight = store.getState().loadMoreLiked();
+    await store.getState().loadLiked();
+    releaseMore(ok(recipePageOf([makeRecipe("stale")], { page: 2, pageSize: 1, total: 3 })));
+    await inFlight;
+
+    expect(store.getState().paging.isLoadingMore).toBe(false);
+    await store.getState().loadMoreLiked();
+    expect(store.getState().likedRecipes.map((r) => r.id)).toEqual(["r1", "r2"]);
   });
 });
