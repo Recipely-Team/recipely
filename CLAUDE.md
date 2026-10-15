@@ -86,6 +86,7 @@ research/review); run agents in parallel when their files don't overlap.
 | `design-handoff` | anything with a visual surface — rule 28, prototype → spec → build → compare |
 | `new-screen` | adding, renaming or removing a route |
 | `i18n-copy` | adding or changing user-visible copy in the 14 locales |
+| `paged-list` | any backend list: page envelope, store paging (`PagedListLoader` / `list-paging/`), infinite scroll, footer retry, refresh on focus |
 | `release` | `dev → main` release PR, backend cherry-pick promotion, dev APK/IPA markers |
 | `dev-db` | read-only dev Postgres queries and dev API logs over SSH |
 | `live-e2e` | the gated live specs in `recipely-tests` against dev |
