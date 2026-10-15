@@ -14,7 +14,7 @@ export interface UseCreatorsScreenResult {
   isLoadingMore: boolean;
   onRefresh: () => void;
   onEndReached: () => void;
-  onOpenCreator: (id: string) => void;
+  onOpenCreator: (address: string) => void;
   /** Opens Edit profile at Creator account — the placeholder's call to action. */
   onApplyAsCreator: () => void;
 }

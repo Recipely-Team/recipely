@@ -14,9 +14,9 @@ import { t } from '@presentation/i18n';
  *   (`navigator.share` is missing and `Share.share` rejects), so the link goes
  *   on the clipboard with a "Copied" toast instead of the button doing nothing.
  */
-export const useShareCreator = (): ((userId: string, name: string) => void) =>
-  useCallback((userId: string, name: string) => {
-    const url = creatorWebUrl(encodeURIComponent(userId));
+export const useShareCreator = (): ((address: string, name: string) => void) =>
+  useCallback((address: string, name: string) => {
+    const url = creatorWebUrl(encodeURIComponent(address));
     const message = [t().creators.shareText.replace('{name}', name), url].join(CharConstants.space);
     void Share.share({ message, url, title: name }).catch(async () => {
       try {
