@@ -23,6 +23,8 @@ jest.mock('@presentation/base/widgets/navigation/notifications-bell-button', () 
   NotificationsBellButton: (): null => null,
 }));
 jest.mock('expo-router', () => ({
+  // Runs the focus callback once on mount, as a first focus does.
+  useFocusEffect: (effect: () => void) => jest.requireActual<typeof import('react')>('react').useEffect(() => effect(), [effect]),
   useRouter: () => ({ push: mockPush, back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
 }));
 
@@ -51,6 +53,14 @@ describe('CreatorsScreen', () => {
     expect(textContent(root)).toEqual(
       expect.arrayContaining([t().creators.title, t().creators.listSubtitle, 'Creator 1', 'Creator 2']),
     );
+  });
+
+  // The Chefs tab kept the list from the app's first visit: a creator approved later never appeared.
+  it('refreshes an already loaded list every time the tab is opened', () => {
+    const store = storeOf([creatorSummaryOf('1')]);
+    renderComponent(<CreatorsScreen />, { creatorsStore: store });
+    expect(store.getState().refresh).toHaveBeenCalledTimes(1);
+    expect(store.getState().load).not.toHaveBeenCalled();
   });
 
   // The Chefs tab is a root tab: the tab bar takes the user elsewhere, so there is no back button.
