@@ -1716,9 +1716,9 @@ export const ko: TranslationsType = {
     previousSlide: '이전',
     nextSlide: '다음',
     slides: {
-      recipesEyebrow: '1,000개 이상의 레시피',
-      recipesTitle: '검증된 수많은 레시피를\n몇 초 만에',
-      recipesBody: '쉽고 실용적인 레시피를 언제 어디서든 빠르게 찾아보세요.',
+      recipesEyebrow: '어떤 레시피든 저장',
+      recipesTitle: '찾은 레시피를\n한곳에',
+      recipesBody: 'Instagram, TikTok, YouTube와 레시피 사이트의 레시피를 저장하세요. 내 언어로, 바로 요리할 수 있게.',
       aiEyebrow: 'AI 기반',
       aiTitle: '있는 재료를 적으면\n레시피가 완성돼요',
       aiBody: '가지고 있는 재료를 알려 주세요. Recipely가 몇 초 만에 나만을 위한 레시피를 만들어 드려요.',

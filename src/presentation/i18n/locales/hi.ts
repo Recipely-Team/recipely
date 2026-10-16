@@ -1716,9 +1716,9 @@ export const hi: TranslationsType = {
     previousSlide: 'पिछला',
     nextSlide: 'अगला',
     slides: {
-      recipesEyebrow: '1000+ रेसिपी',
-      recipesTitle: 'हज़ारों आज़माई हुई रेसिपी\nकुछ ही सेकंड में',
-      recipesBody: 'आसान, काम की और आज़माई हुई रेसिपी — जब चाहें, आपकी जेब में।',
+      recipesEyebrow: 'हर रेसिपी, एक जगह',
+      recipesTitle: 'जो भी रेसिपी मिले,\nएक ही जगह',
+      recipesBody: 'Instagram, TikTok, YouTube और रेसिपी साइटों से रेसिपी सेव करें — आपकी भाषा में, पकाने के लिए तैयार।',
       aiEyebrow: 'AI से संचालित',
       aiTitle: 'जो सामग्री है, लिखिए\nपूरी रेसिपी पाइए',
       aiBody: 'आपके पास जो सामग्री है, वह बताइए और Recipely कुछ ही सेकंड में आपके लिए रेसिपी बना देगा।',

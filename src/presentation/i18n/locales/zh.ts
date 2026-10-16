@@ -1724,10 +1724,10 @@ export const zh = {
     previousSlide: '上一页',
     nextSlide: '下一页',
     slides: {
-      recipesEyebrow: '1000+ 食谱',
-      recipesTitle: '数千份实用食谱\n随时都能找到',
+      recipesEyebrow: '所有食谱，一处收藏',
+      recipesTitle: '你找到的每份食谱\n都在一个地方',
       recipesBody:
-        '简单、实用、经过验证的食谱，随时装在你的口袋里。',
+        '保存来自 Instagram、TikTok、YouTube 和食谱网站的食谱——用你的语言写好，随时可做。',
       aiEyebrow: 'AI 驱动',
       aiTitle: '写下手边的食材，\n马上得到完整食谱',
       aiBody:

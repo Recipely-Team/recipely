@@ -1732,10 +1732,10 @@ export const en = {
     previousSlide: 'Previous',
     nextSlide: 'Next',
     slides: {
-      recipesEyebrow: '1000+ recipes',
-      recipesTitle: 'Thousands of tried\nrecipes, in seconds',
+      recipesEyebrow: 'Any recipe, saved',
+      recipesTitle: 'Every recipe you find,\nin one place',
       recipesBody:
-        'Easy, practical, tried-and-tested recipes — in your pocket whenever you need them.',
+        'Save recipes from Instagram, TikTok, YouTube and recipe sites — written up in your language, ready to cook.',
       aiEyebrow: 'AI powered',
       aiTitle: 'Type what you have,\nget a full recipe',
       aiBody:
