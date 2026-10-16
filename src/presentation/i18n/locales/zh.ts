@@ -1498,6 +1498,7 @@ export const zh = {
     modOk: '通过了你的食谱',
     modPending: '正在审核',
     followed: '关注了你',
+    newRecipeFrom: '{creator} 发布了新食谱',
     creatorApproved: '已验证你的 {platform} 账号',
     creatorRejected: '无法验证你的 {platform} 账号',
     markOneHint: '将这条通知标为已读',

@@ -14,6 +14,7 @@ import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
 import { importSourceLine } from '@presentation/app/notifications/model/import-source-line';
 import { CreatorHandleRules } from '@domain/creators/creator-handle-rules';
 import { creatorPlatformName } from '@presentation/base/widgets/creators/creator-platform-name';
+import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 
 const actionText = (n: NotifItem): string => {
   const labels = t().notifications;
@@ -29,12 +30,26 @@ const actionText = (n: NotifItem): string => {
     case NotifKind.Follow: return labels.followed;
     case NotifKind.CreatorApproved: return creatorLine(labels.creatorApproved, n);
     case NotifKind.CreatorRejected: return creatorLine(labels.creatorRejected, n);
+    case NotifKind.CreatorRecipe: return labels.newRecipeFrom.replace(CREATOR_SLOT, n.actor);
     // Never empty: unknown kinds fall back to the generic label.
     case NotifKind.Generic: return n.recipeName ?? labels.genericLabel;
   }
 };
 
 /** "verified your Instagram account" — the platform named; the handle goes on the line under it. */
+/** The `{creator}` slot in `newRecipeFrom`; each language puts the name where it reads naturally. */
+const CREATOR_SLOT = '{creator}';
+
+/** `template` cut so `slot` stands alone: "New recipe from {creator}" → ["New recipe from ", "{creator}", ""]. */
+const splitAround = (template: string, slot: string): string[] => template.split(slot).flatMap((part, i) => (i === ValueConstants.zero ? [part] : [slot, part]));
+
+/** What a screen reader says for the row; a new recipe reads "New recipe from Refika: Menemen". */
+const LABEL_JOIN = ': ';
+const rowLabel = (item: NotifItem, sourceLine: string | undefined): string =>
+  item.kind === NotifKind.CreatorRecipe
+    ? [actionText(item), item.recipeName].filter(Boolean).join(LABEL_JOIN)
+    : [item.actor, actionText(item), sourceLine].filter(Boolean).join(CharConstants.space);
+
 const creatorLine = (template: string, n: NotifItem): string =>
   // A platform this build cannot name: the row still says something, never blank.
   n.creator === undefined ? t().notifications.genericLabel : template.replace('{platform}', creatorPlatformName(n.creator.platform));
@@ -81,13 +96,17 @@ const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element =>
         },
       ]}
       accessibilityRole={tappable ? 'button' : 'text'}
-      accessibilityLabel={[item.actor, actionText(item), sourceLine].filter(Boolean).join(' ')}
+      accessibilityLabel={rowLabel(item, sourceLine)}
       // Target-less unread rows only mark read; say so.
       accessibilityHint={
         item.target === null && !item.read ? t().notifications.markOneHint : undefined
       }
     >
-      {item.source !== undefined ? (
+      {item.kind === NotifKind.CreatorRecipe ? (
+        <View style={styles.seal}>
+          <AvatarImage uri={item.actorPhotoUrl} name={item.actor} size={avatarSizes.md} />
+        </View>
+      ) : item.source !== undefined ? (
         <View style={styles.seal}>
           <ProvenanceSeal marks={[item.source.platform]} surface={SealSurface.Page} size={avatarSizes.md} decorative />
         </View>
@@ -97,10 +116,29 @@ const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element =>
         </View>
       )}
       <View style={styles.rowBody}>
-        <ThemedText variant="body" style={styles.actionLine} numberOfLines={ValueConstants.two}>
-          <ThemedText variant="body" style={{ fontWeight: fontWeights.bold }}>{item.actor}</ThemedText>
-          {' '}{actionText(item)}
-        </ThemedText>
+        {item.kind === NotifKind.CreatorRecipe ? (
+          <>
+            <ThemedText variant="body" muted style={styles.actionLine} numberOfLines={ValueConstants.two}>
+              {splitAround(t().notifications.newRecipeFrom, CREATOR_SLOT).map((part, i) =>
+                part === CREATOR_SLOT ? (
+                  <ThemedText key={i} variant="body" style={{ fontWeight: fontWeights.bold }}>{item.actor}</ThemedText>
+                ) : (
+                  part
+                ),
+              )}
+            </ThemedText>
+            {item.recipeName !== undefined ? (
+              <ThemedText variant="body" style={styles.recipeTitle} numberOfLines={ValueConstants.two}>
+                {item.recipeName}
+              </ThemedText>
+            ) : null}
+          </>
+        ) : (
+          <ThemedText variant="body" style={styles.actionLine} numberOfLines={ValueConstants.two}>
+            <ThemedText variant="body" style={{ fontWeight: fontWeights.bold }}>{item.actor}</ThemedText>
+            {' '}{actionText(item)}
+          </ThemedText>
+        )}
         {sourceLine !== undefined ? (
           <ThemedText variant="caption" muted numberOfLines={ValueConstants.two} style={styles.bodyText}>
             {sourceLine}
@@ -143,6 +181,7 @@ const styles = StyleSheet.create({
   seal: { flexShrink: ValueConstants.zero },
   rowBody: { flex: ValueConstants.one, gap: spacing.xxs },
   actionLine: { fontSize: fontSizes.body, lineHeight: lineHeightFor(fontSizes.body, lineHeights.snug) },
+  recipeTitle: { fontSize: fontSizes.body, fontWeight: fontWeights.semibold, lineHeight: lineHeightFor(fontSizes.body, lineHeights.snug) },
   bodyText: { lineHeight: lineHeightFor(fontSizes.caption) },
   timestamp: { fontSize: fontSizes.small },
   unreadDot: {

@@ -18,6 +18,7 @@ const KNOWN_KINDS = new Set<NotifKind>([
   NotifKind.Follow,
   NotifKind.CreatorApproved,
   NotifKind.CreatorRejected,
+  NotifKind.CreatorRecipe,
 ]);
 
 /** What a notification with no sender is attributed to. */
@@ -33,6 +34,7 @@ export const toNotifItem = (notification: NotificationEntity): NotifItem => ({
   id: notification.id,
   kind: resolveKind(notification),
   actor: notification.senderDisplayName ?? SYSTEM_ACTOR,
+  ...(notification.senderPhotoUrl !== null ? { actorPhotoUrl: notification.senderPhotoUrl } : {}),
   recipeName: notification.recipeTitle ?? undefined,
   daysAgo: daysSince(notification.createdAt),
   read: notification.read,

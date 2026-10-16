@@ -1494,6 +1494,7 @@ export const ja = {
     modOk: 'があなたのレシピを承認しました',
     modPending: 'の審査待ち：',
     followed: 'があなたをフォローしました',
+    newRecipeFrom: '{creator}さんの新しいレシピ',
     creatorApproved: 'があなたの {platform} アカウントを認証しました',
     creatorRejected: 'はあなたの {platform} アカウントを認証できませんでした',
     markOneHint: 'この通知を既読にします',

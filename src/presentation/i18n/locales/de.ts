@@ -1494,6 +1494,7 @@ export const de = {
     modOk: 'hat dein Rezept freigegeben',
     modPending: 'Prüfung ausstehend für',
     followed: 'folgt dir',
+    newRecipeFrom: 'Neues Rezept von {creator}',
     creatorApproved: 'hat dein {platform}-Konto verifiziert',
     creatorRejected: 'konnte dein {platform}-Konto nicht verifizieren',
     markOneHint: 'Markiert diese Benachrichtigung als gelesen',

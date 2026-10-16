@@ -1494,6 +1494,7 @@ export const ru = {
     modOk: 'одобрил(а) ваш рецепт',
     modPending: 'ожидает проверки для',
     followed: 'подписался(ась) на вас',
+    newRecipeFrom: 'Новый рецепт от {creator}',
     creatorApproved: 'подтвердил ваш аккаунт {platform}',
     creatorRejected: 'не смог подтвердить ваш аккаунт {platform}',
     markOneHint: 'Отмечает это уведомление как прочитанное',

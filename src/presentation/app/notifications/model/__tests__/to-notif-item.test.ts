@@ -80,3 +80,13 @@ describe('toNotifItem — creator decisions', () => {
     expect(item.target).toEqual({ kind: 'creator_account', platform: 'tiktok' });
   });
 });
+
+// A followed creator's new recipe was an unknown type, drawn as a generic bell.
+describe('toNotifItem — a followed creator’s new recipe', () => {
+  it('is its own kind and carries the creator’s photo', () => {
+    const n = toNotifItem(importRow({ type: 'creator_recipe', senderDisplayName: 'Refika', senderPhotoUrl: 'https://x.test/a.jpg', recipeId: 'r1', sourcePlatform: null }));
+    expect(n.kind).toBe(NotifKind.CreatorRecipe);
+    expect(n.actor).toBe('Refika');
+    expect(n.actorPhotoUrl).toBe('https://x.test/a.jpg');
+  });
+});

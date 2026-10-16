@@ -1494,6 +1494,7 @@ export const ar = {
     modOk: "وافق على وصفتك",
     modPending: "المراجعة معلّقة لـ",
     followed: "بدأ متابعتك",
+    newRecipeFrom: 'وصفة جديدة من {creator}',
     creatorApproved: 'وثّق حسابك على {platform}',
     creatorRejected: 'تعذّر عليه توثيق حسابك على {platform}',
     markOneHint: "يعلّم هذا الإشعار كمقروء"

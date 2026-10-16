@@ -3140,3 +3140,16 @@ every number lives in `model/share/share-card-layout.ts`.
 - **Not built yet** (needs `react-native-share` + `expo-media-library`, native): the prototype's
   full-screen preview with a Light / Dark switch, safe-zone overlay, direct "Share to Instagram
   Stories" and "Save image". The sheet's "Share as Story / Reel" goes to the system share sheet.
+
+## Notification: new recipe from a followed creator (added 2026-10-16)
+
+Drawn in the prototype's [Board · Import Review & Plan My Week](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+Import+Review+%26+Plan+My+Week.html)
+board, Notifications tab, from its `import-review-plan-week-spec.md` §3.
+
+- Type `creator_recipe` (backend: recipely-backend #420). Same row container as every other kind.
+- Leading: the creator's avatar 40, round (`AvatarImage`, initials fallback), in place of the icon disc.
+- Line 1, body `textMuted`: "New recipe from **{creator}**" / "**{creator}** yeni bir tarif paylaştı"; one
+  `newRecipeFrom` template per language, so the name sits where that language puts it, in bold `text`.
+- Line 2: the recipe title, body semibold `text`, at most 2 lines.
+- Tap opens the recipe (the target is the notification's `recipeId`).
+- A11y label: "New recipe from {creator}: {title}".

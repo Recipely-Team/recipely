@@ -1494,6 +1494,7 @@ export const fr = {
     modOk: 'a approuvé votre recette',
     modPending: 'révision en attente pour',
     followed: 'vous suit',
+    newRecipeFrom: 'Nouvelle recette de {creator}',
     creatorApproved: 'a vérifié ton compte {platform}',
     creatorRejected: 'n’a pas pu vérifier ton compte {platform}',
     markOneHint: 'Marque cette notification comme lue',

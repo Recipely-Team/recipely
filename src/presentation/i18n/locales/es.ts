@@ -1494,6 +1494,7 @@ export const es = {
     modOk: 'aprobó tu receta',
     modPending: 'revisión pendiente de',
     followed: 'empezó a seguirte',
+    newRecipeFrom: 'Nueva receta de {creator}',
     creatorApproved: 'verificó tu cuenta de {platform}',
     creatorRejected: 'no pudo verificar tu cuenta de {platform}',
     markOneHint: 'Marca esta notificación como leída',

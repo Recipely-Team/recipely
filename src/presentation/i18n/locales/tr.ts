@@ -1498,6 +1498,7 @@ export const tr: TranslationsType = {
     modOk: 'tarifini onayladı:',
     modPending: 'tarifin inceleniyor:',
     followed: 'seni takip etti',
+    newRecipeFrom: '{creator} yeni bir tarif paylaştı',
     creatorApproved: '{platform} hesabını doğruladı',
     creatorRejected: '{platform} hesabını doğrulayamadı',
     markOneHint: 'Bu bildirimi okundu olarak işaretler',
