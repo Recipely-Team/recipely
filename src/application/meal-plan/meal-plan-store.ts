@@ -22,6 +22,7 @@ import type { ClearMealPlanWeekUseCase } from '@application/meal-plan/write/clea
 import type { CopyPreviousWeekUseCase } from '@application/meal-plan/write/copy-previous-week-use-case';
 import type { RestoreMealPlanEntriesUseCase } from '@application/meal-plan/write/restore-meal-plan-entries-use-case';
 import type { SearchRecipeGroupUseCase } from '@application/diary/foods/search/search-recipe-group-use-case';
+import type { SuggestMealPlanWeekUseCase } from '@application/meal-plan/read/suggest-meal-plan-week-use-case';
 
 interface MealPlanStoreDeps {
   /** The `mealPlanner` flag (admin override, else build value). */
@@ -36,6 +37,7 @@ interface MealPlanStoreDeps {
   restore: RestoreMealPlanEntriesUseCase;
   shoppingList: BuildPlanShoppingListUseCase;
   searchRecipes: SearchRecipeGroupUseCase;
+  suggestWeek: SuggestMealPlanWeekUseCase;
 }
 
 const keyOf = (day: CalendarDate): string => day.weekStart().value;
@@ -162,6 +164,9 @@ export const configureMealPlanStore = (deps: MealPlanStoreDeps): BoundStore<Meal
         }
         return ok(held?.entries ?? []);
       },
+
+      // A draft is the sheet's own state; nothing here changes until picks are added.
+      suggestWeek: (weekStart, meals, seed) => deps.suggestWeek.execute(weekStart, meals, seed),
 
       restore: async (entries) => {
         const result = await deps.restore.execute(entries);

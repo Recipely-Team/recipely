@@ -11,6 +11,7 @@ import type { CopyMealPlanResult } from '@domain/meal-plan/week/copy-meal-plan-r
 import type { PlanShoppingLine } from '@domain/meal-plan/shopping/plan-shopping-line';
 import type { PagedList } from '@application/store/paging/paged-list';
 import type { MealPlanWeekState } from '@application/meal-plan/meal-plan-week-state';
+import type { WeekSuggestion } from '@domain/meal-plan/suggest/week-suggestion';
 
 export interface MealPlanStoreState {
   /** The `mealPlanner` flag; null until asked. Off, every entry point renders nothing. */
@@ -41,6 +42,8 @@ export interface MealPlanStoreState {
   clearWeek: (day: CalendarDate) => Promise<Result<readonly MealPlanEntryEntity[], Failure>>;
   /** Plans the given meals again (undo), then reloads their weeks. */
   restore: (entries: readonly MealPlanEntryEntity[]) => Promise<Result<MealPlanEntryEntity[], Failure>>;
+  /** "Plan my week": a drafted week from saved, liked and own recipes; nothing is written. */
+  suggestWeek: (weekStart: CalendarDate, meals: readonly MealSlotType[], seed: number) => Promise<Result<WeekSuggestion, Failure>>;
   /** Copies the week before into this one, then reloads it. */
   copyPreviousWeek: (day: CalendarDate) => Promise<Result<CopyMealPlanResult, Failure>>;
   /** The week's merged, scaled ingredients for the shopping confirm. */

@@ -31,6 +31,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { PlanView, type PlanViewProps } from '@presentation/app/diary/body/plan/plan-view';
 import { PlanViewKind } from '@presentation/app/diary/model/plan/plan-view-kind';
 import { t } from '@presentation/i18n';
+import { SuggestMealPlanWeekUseCase } from '@application/meal-plan/read/suggest-meal-plan-week-use-case';
 
 const day = (raw: string): CalendarDate => {
   const parsed = CalendarDate.create(raw);
@@ -47,6 +48,7 @@ const repo: MealPlanRepositoryInterface = {
   setEaten: jest.fn(async () => ok(mealPlanEntryOf({ eaten: true }))),
   clear: jest.fn(async () => ok(undefined)),
   copyWeek: jest.fn(async () => ok({ copied: 0, skipped: 0 })),
+  suggestWeek: jest.fn(),
 };
 
 const stores = (): Partial<ApplicationStores> =>
@@ -63,6 +65,7 @@ const stores = (): Partial<ApplicationStores> =>
       restore: new RestoreMealPlanEntriesUseCase(repo),
       shoppingList: new BuildPlanShoppingListUseCase(repo),
       searchRecipes: new SearchRecipeGroupUseCase({} as FoodCatalogRepositoryInterface),
+      suggestWeek: new SuggestMealPlanWeekUseCase(repo),
     }),
   }) as unknown as Partial<ApplicationStores>;
 
@@ -122,5 +125,38 @@ describe('PlanView', () => {
     const more = root.findAll((node) => node.props.accessibilityLabel === strings.increaseServings)[0];
     await act(async () => (more?.props as { onPress: () => void }).onPress());
     expect(repo.update).toHaveBeenCalledTimes(1);
+  });
+
+  // "Plan my week": nothing is written until Add, a swap changes what is added,
+  // and a meal no saved recipe fits says so instead of repeating one.
+  it('drafts the week, swaps a meal and adds only what is shown', async () => {
+    const tuesday = day('2026-10-13');
+    const recipe = (id: string, name: string) => ({ id, name, imageUrl: null, caloriesPerServing: 400, servings: 2, totalTimeMinutes: 30 });
+    (repo.suggestWeek as jest.Mock).mockResolvedValue(
+      ok({
+        weekStart: monday,
+        poolSize: 2,
+        slots: [
+          { date: monday, meal: 'dinner', pick: recipe('r-pick', 'Menemen'), alternative: recipe('r-alt', 'Kısır') },
+          { date: tuesday, meal: 'dinner', pick: null, alternative: null },
+        ],
+      }),
+    );
+    const plan = strings.planWeek;
+    const { root } = renderComponent(<PlanView {...props({ kind: PlanViewKind.Week, week: MealPlanWeek.of(monday, []) })} />, stores());
+
+    act(() => (root.findAll((node) => node.props.accessibilityLabel === plan.title && typeof node.props.onPress === 'function')[0]?.props as { onPress: () => void }).onPress());
+    await act(async () => (root.find((node) => node.props.label === plan.show).props as { onPress: () => void }).onPress());
+    expect(repo.suggestWeek).toHaveBeenCalledWith(monday, ['dinner'], expect.any(Number));
+    expect(repo.add).not.toHaveBeenCalled();
+    expect(texts(root)).toContain('Menemen');
+    expect(texts(root)).toContain(plan.none);
+
+    act(() => (root.findAll((node) => node.props.accessibilityLabel === plan.swapA11y.replace('{name}', 'Kısır'))[0]?.props as { onPress: () => void }).onPress());
+    expect(texts(root)).toContain('Kısır');
+
+    await act(async () => (root.find((node) => node.props.label === plan.add.replace('{n}', '1')).props as { onPress: () => void }).onPress());
+    expect(repo.add).toHaveBeenCalledTimes(1);
+    expect((repo.add as jest.Mock).mock.calls[0][0]).toMatchObject({ meal: 'dinner', recipeId: 'r-alt' });
   });
 });

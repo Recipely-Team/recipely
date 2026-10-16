@@ -16,6 +16,7 @@ import { ClearMealPlanWeekUseCase } from '@application/meal-plan/write/clear-mea
 import { CopyPreviousWeekUseCase } from '@application/meal-plan/write/copy-previous-week-use-case';
 import { RestoreMealPlanEntriesUseCase } from '@application/meal-plan/write/restore-meal-plan-entries-use-case';
 import { SearchRecipeGroupUseCase } from '@application/diary/foods/search/search-recipe-group-use-case';
+import { SuggestMealPlanWeekUseCase } from '@application/meal-plan/read/suggest-meal-plan-week-use-case';
 
 /** **Meal plan composition** — the weekly planner's store, gated by the `MealPlanner` feature flag. */
 export const registerMealPlan = (container: Container): Pick<ApplicationStores, 'mealPlanStore'> => {
@@ -34,6 +35,7 @@ export const registerMealPlan = (container: Container): Pick<ApplicationStores, 
     restore: new RestoreMealPlanEntriesUseCase(repo),
     shoppingList: new BuildPlanShoppingListUseCase(repo),
     searchRecipes: new SearchRecipeGroupUseCase(foodCatalogRepo),
+    suggestWeek: new SuggestMealPlanWeekUseCase(repo),
   });
   return { mealPlanStore };
 };
