@@ -3143,7 +3143,7 @@ every number lives in `model/share/share-card-layout.ts`.
 
 ## Notification: new recipe from a followed creator (added 2026-10-16)
 
-Drawn in the prototype's [Import Review - Plan My Week](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Import+Review+-+Plan+My+Week.html)
+Drawn in the prototype's [Board · Import Review & Plan My Week](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+Import+Review+%26+Plan+My+Week.html)
 board, Notifications tab, from its `import-review-plan-week-spec.md` §3.
 
 - Type `creator_recipe` (backend: recipely-backend #420). Same row container as every other kind.
