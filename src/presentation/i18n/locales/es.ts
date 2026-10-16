@@ -915,6 +915,17 @@ export const es = {
     successDone: 'Listo',
     nameRequired: 'Añade un nombre a la receta.',
     ingredientsRequired: 'Añade al menos un ingrediente.',
+    importReview: {
+      suggested: 'Esta publicación no tenía receta, así que escribimos una para el plato que muestra. Revísala antes de guardar.',
+      readTitle: 'Lo que leímos',
+      readSub: 'Texto y voz de la publicación',
+      readHint: 'Texto y transcripción de voz, en el idioma original.',
+      truncated: 'Se muestran los primeros 4000 caracteres.',
+      openLink: 'Ver enlace original',
+      check: 'Revisar',
+      legend: 'Las líneas marcadas se dedujeron, no se leyeron de la publicación',
+      chipA11y: 'Deducido, no leído de la publicación',
+    },
   },
   cuisineNames: {
     TURKISH: 'Turca',

@@ -911,6 +911,17 @@ export const ko: TranslationsType = {
     successDone: '완료',
     nameRequired: '레시피 이름을 입력해 주세요.',
     ingredientsRequired: '재료를 하나 이상 추가해 주세요.',
+    importReview: {
+      suggested: '이 게시물에는 레시피가 없어서, 보이는 요리의 레시피를 작성했어요. 저장하기 전에 확인하세요.',
+      readTitle: '읽은 내용',
+      readSub: '게시물의 캡션과 음성',
+      readHint: '캡션과 음성 기록, 원래 언어 그대로.',
+      truncated: '처음 4,000자를 표시합니다.',
+      openLink: '원본 링크 보기',
+      check: '확인',
+      legend: '표시된 줄은 게시물에서 읽은 게 아니라 추측한 내용이에요',
+      chipA11y: '추측함, 게시물에서 읽지 않음',
+    },
   },
   cuisineNames: {
     TURKISH: '튀르키예',

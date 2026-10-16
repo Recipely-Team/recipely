@@ -914,7 +914,18 @@ export const ar = {
     viewRecipe: "عرض الوصفة",
     successDone: "تم",
     nameRequired: "أضف اسمًا للوصفة.",
-    ingredientsRequired: "أضف مكوّنًا واحدًا على الأقل."
+    ingredientsRequired: "أضف مكوّنًا واحدًا على الأقل.",
+    importReview: {
+      suggested: 'لم يتضمن هذا المنشور وصفة، لذا كتبنا وصفة للطبق الظاهر فيه. راجعها قبل الحفظ.',
+      readTitle: 'ما قرأناه',
+      readSub: 'النص والكلام من المنشور',
+      readHint: 'النص ونسخة الكلام باللغة الأصلية.',
+      truncated: 'يتم عرض أول 4000 حرف.',
+      openLink: 'عرض الرابط الأصلي',
+      check: 'راجع',
+      legend: 'الأسطر المميزة مُخمّنة، ولم تُقرأ من المنشور',
+      chipA11y: 'مُخمّن، لم يُقرأ من المنشور',
+    },
   },
   cuisineNames: {
     TURKISH: "تركي",

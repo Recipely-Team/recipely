@@ -31,6 +31,7 @@ import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back
 
 import type { Dispatch, SetStateAction } from 'react';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+import { importReviewOf } from '@presentation/app/create-recipe/model/review/import-review-of';
 
 interface UseRecipeGenerationArgs {
   recipe: EditableRecipe;
@@ -446,6 +447,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   }, [cancelAutosave, draftsStore, activeDraftId, editRecipeId, leave]);
 
   return {
+    importReview: importReviewOf(carried.current),
     flushDraft,
     stopAutosave: cancelAutosave,
     phase,

@@ -919,6 +919,17 @@ export const zh = {
     successDone: '完成',
     nameRequired: '请给食谱起个名字。',
     ingredientsRequired: '请至少添加一种食材。',
+    importReview: {
+      suggested: '该帖子没有食谱，所以我们为其中的菜品写了一份。保存前请检查。',
+      readTitle: '我们读到的内容',
+      readSub: '帖子的文字说明和语音',
+      readHint: '文字说明和语音转录，保留原语言。',
+      truncated: '显示前 4,000 个字符。',
+      openLink: '显示原始链接',
+      check: '检查',
+      legend: '标记的行是推测的，并非从帖子中读取',
+      chipA11y: '推测，未从帖子中读取',
+    },
   },
   cuisineNames: {
     TURKISH: '土耳其菜',

@@ -1,4 +1,5 @@
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
+import type { ImportReading } from '@domain/drafts/import-reading';
 
 /**
  * A partial, transient snapshot of the recipe a user is shaping inside the
@@ -33,4 +34,12 @@ export interface DraftRecipeSnapshot {
   tips?: string[];
   caloriesPerServing?: number;
   nutrition?: RecipeNutrition;
+
+  /** Server-owned, set by an import: what it read and how sure it was. Never sent back. */
+  importReading?: ImportReading;
+  /** Server-owned: the post an import was read from, and where it came from. */
+  sourceUrl?: string;
+  sourcePlatform?: string;
+  /** Client-owned: the guessed lines (by text) not edited yet, so the chips survive a resume. */
+  guessedLines?: string[];
 }

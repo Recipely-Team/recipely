@@ -46,6 +46,7 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
 
   return {
     phase: generation.phase,
+    importReview: generation.importReview,
     isWebShell,
     insets,
     prompt: generation.prompt,

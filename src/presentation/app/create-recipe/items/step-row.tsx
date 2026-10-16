@@ -8,6 +8,8 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, decorSizes, borderWidths, maxFontScales } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { useIsGuessed } from '@presentation/app/create-recipe/hooks/use-is-guessed';
+import { CheckChip } from '@presentation/app/create-recipe/items/check-chip';
 
 export interface StepRowProps {
   index: number;
@@ -27,6 +29,7 @@ export const StepRow = ({
 }: StepRowProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const [focused, setFocused] = useState(false);
+  const guessed = useIsGuessed(value);
   return (
     <View
       style={[
@@ -60,6 +63,7 @@ export const StepRow = ({
         minHeight={controlSizes.iconBtn}
         style={[styles.input, { color: colors.text }]}
       />
+      {guessed ? <CheckChip /> : null}
       <Pressable
         onPress={onRemove}
         hitSlop={spacing.sm}

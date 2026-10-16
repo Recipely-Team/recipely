@@ -915,6 +915,17 @@ export const it = {
     successDone: 'Fatto',
     nameRequired: 'Aggiungi un nome alla ricetta.',
     ingredientsRequired: 'Aggiungi almeno un ingrediente.',
+    importReview: {
+      suggested: 'Questo post non aveva una ricetta, quindi ne abbiamo scritta una per il piatto mostrato. Controllala prima di salvare.',
+      readTitle: 'Cosa abbiamo letto',
+      readSub: 'Testo e parlato del post',
+      readHint: 'Testo e trascrizione del parlato, nella lingua originale.',
+      truncated: 'Vengono mostrati i primi 4.000 caratteri.',
+      openLink: 'Mostra link originale',
+      check: 'Controlla',
+      legend: 'Le righe segnate sono state dedotte, non lette dal post',
+      chipA11y: 'Dedotto, non letto dal post',
+    },
   },
   cuisineNames: {
     TURKISH: 'Turca',
