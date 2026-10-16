@@ -10,6 +10,7 @@ const VIDEO_LABEL: Record<Exclude<SourcePlatformType, typeof SourcePlatform.Web>
   [SourcePlatform.TikTok]: (copy) => copy.pasteDetectedTiktok,
   [SourcePlatform.Facebook]: (copy) => copy.pasteDetectedFacebook,
   [SourcePlatform.YouTube]: (copy) => copy.pasteDetectedYoutube,
+  [SourcePlatform.Pinterest]: (copy) => copy.pasteDetectedPinterest,
 };
 
 /**

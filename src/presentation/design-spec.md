@@ -2151,6 +2151,28 @@ has no such assertion.
 
 **The rating-row glyph is removed.** A second marker for the same fact would be noise.
 
+### Pinterest (added 2026-10-15)
+
+Drawn in the prototype's [Board · Pinterest Import](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+Pinterest+Import.html)
+board (paste, importing and detail screens, light and dark), from its `pinterest-import-spec.md`.
+Nothing else changes: same seal, same paste and importing screens, same sizes and strokes.
+
+- **Seal glyph.** The Facebook glyph's frame: 24×24, outline, stroke 2.3, round caps and joins, a
+  r=9 circle with a pin's stem and bowl inside. Ink `pinterestInk` `#E60023`, **4.79:1** on the
+  seal's white face (white in both modes, so one measurement covers both), so no darker shade.
+- **Paste screen.** The accepted-sources row reads Instagram, TikTok, YouTube, Pinterest, Facebook,
+  web. A `/pin/<id>` link on any Pinterest country domain or a `pin.it` link shows "Pinterest pin";
+  a board, a profile or the home page is refused as an invalid link before any round trip.
+- **Importing screen.** Two stops like TikTok: ring `#E60023 → #AD081B` (`pinterestDeep`), accent
+  `#E60023`. The pill sits on `#AD081B`, white text **7.43:1**: white on `#E60023` alone is 4.79:1,
+  too close to the line for the pill's small uppercase text.
+- **Detail sentence.** "Imported from {handle} on Pinterest", without `@`.
+
+**Deviation, on purpose.** The prototype writes the account as `@handle`, like Instagram and
+TikTok. What the backend actually receives for a pin (yt-dlp, measured on live pins) is a display
+name with a numeric id beside it ("Inspired Taste | Easy Recipes for Home Cooks"), the same as
+Facebook, so the build names it like Facebook: no `@`, and no profile link built from it.
+
 ## Provenance Badge (recipe origin marker)
 
 > **Superseded** by the Provenance Seal above. Kept for its reasoning (the accessibility rule

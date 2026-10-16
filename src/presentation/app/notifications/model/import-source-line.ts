@@ -13,6 +13,7 @@ const WORDS: Record<SourcePlatformType, { named: () => string; bare: () => strin
   [SourcePlatform.TikTok]: { named: () => t().recipes.originTiktokDetailLabel, bare: () => t().recipes.originTiktokA11y, prefix: AT },
   [SourcePlatform.Facebook]: { named: () => t().recipes.originFacebookDetailLabel, bare: () => t().recipes.originFacebookA11y, prefix: CharConstants.empty },
   [SourcePlatform.YouTube]: { named: () => t().recipes.originYoutubeDetailLabel, bare: () => t().recipes.originYoutubeA11y, prefix: CharConstants.empty },
+  [SourcePlatform.Pinterest]: { named: () => t().recipes.originPinterestDetailLabel, bare: () => t().recipes.originPinterestA11y, prefix: CharConstants.empty },
   [SourcePlatform.Web]: { named: () => t().recipes.originWebDetailLabel, bare: () => t().recipes.originWebA11y, prefix: CharConstants.empty },
 };
 

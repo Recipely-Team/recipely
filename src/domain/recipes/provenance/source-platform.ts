@@ -15,6 +15,11 @@ export const SourcePlatform = {
   Facebook: 'FACEBOOK',
   /** A YouTube video or short. The handle is the channel's display name. */
   YouTube: 'YOUTUBE',
+  /**
+   * A Pinterest video or idea pin that holds the recipe itself. The handle is
+   * the account's display name. A pin that links to a blog is named by the blog (`Web`).
+   */
+  Pinterest: 'PINTEREST',
   /** Any recipe web page, read from its own schema.org markup. The handle is the site. */
   Web: 'WEB',
 } as const;

@@ -58,10 +58,14 @@ describe('ProvenanceSeal', () => {
     expect(labelsOf(root)).toContain(`${t().recipes.originTiktokA11y}${t().recipes.originEditedByAiSuffix}`);
   });
 
-  it.each([ProvenanceMark.Facebook, ProvenanceMark.YouTube])('draws the %s mark and names it', (mark) => {
+  it.each([ProvenanceMark.Facebook, ProvenanceMark.YouTube, ProvenanceMark.Pinterest])('draws the %s mark and names it', (mark) => {
     const { root } = renderComponent(<ProvenanceSeal marks={[mark, ProvenanceMark.Ai]} surface={SealSurface.Photo} size={SIZE} />);
     expect(glyphsOf(root)).toEqual([mark, ProvenanceMark.Ai]);
-    const base = mark === ProvenanceMark.Facebook ? t().recipes.originFacebookA11y : t().recipes.originYoutubeA11y;
+    const base = {
+      [ProvenanceMark.Facebook]: t().recipes.originFacebookA11y,
+      [ProvenanceMark.YouTube]: t().recipes.originYoutubeA11y,
+      [ProvenanceMark.Pinterest]: t().recipes.originPinterestA11y,
+    }[mark];
     expect(labelsOf(root)).toContain(`${base}${t().recipes.originEditedByAiSuffix}`);
   });
 
@@ -126,10 +130,12 @@ describe('ProvenanceNote', () => {
       tiktok: { mark: ProvenanceMark.TikTok, sentence: t().recipes.originTiktokDetailLabel, shown: `@${HANDLE}` },
       facebook: { mark: ProvenanceMark.Facebook, sentence: t().recipes.originFacebookDetailLabel, shown: HANDLE },
       youtube: { mark: ProvenanceMark.YouTube, sentence: t().recipes.originYoutubeDetailLabel, shown: HANDLE },
+      // A Pinterest account is a display name, as yt-dlp reports it: no @.
+      pinterest: { mark: ProvenanceMark.Pinterest, sentence: t().recipes.originPinterestDetailLabel, shown: HANDLE },
       web: { mark: ProvenanceMark.Web, sentence: t().recipes.originWebDetailLabel, shown: HANDLE },
     });
 
-    it.each(['instagram', 'tiktok', 'facebook', 'youtube', 'web'])('%s: imported, then edited with AI, and the name opens the video', (key) => {
+    it.each(['instagram', 'tiktok', 'facebook', 'youtube', 'pinterest', 'web'])('%s: imported, then edited with AI, and the name opens the video', (key) => {
       const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
       const w = words()[key];
       if (w === undefined) throw new Error(key);
