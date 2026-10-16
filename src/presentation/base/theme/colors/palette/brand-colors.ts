@@ -46,6 +46,10 @@ export const BrandColors = {
   /** Facebook's blue as outline ink on the seal's white face, 5.0:1. */
   facebookInk: '#0866FF',
   /** YouTube's red as outline ink on the seal's white face, 4.0:1. */
+  /** Onboarding's camera viewfinder: a fixed dark frame in both modes, like real camera UI. */
+  viewfinder: '#15171B',
+  /** Ink of the chips over the viewfinder (on near-white chips), 16:1. */
+  viewfinderInk: '#0F172A',
   youtubeInk: '#FF0000',
   /** Pinterest's red: seal ink and the import ring's first stop, 4.79:1 on white. */
   pinterestInk: '#E60023',

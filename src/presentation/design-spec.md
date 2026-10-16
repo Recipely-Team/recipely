@@ -3203,3 +3203,33 @@ board, "Plan my week" tab, from `import-review-plan-week-spec.md` §2. Data: `GE
 next to *Shopping list*: the build's wide shopping bar is under the grid, not in a header. The picking
 rules (which category fits which meal, "recent") are recipely-backend #419's, which differ slightly
 from the prototype's sample logic.
+
+## Onboarding 2026 (added 2026-10-16)
+
+Drawn in the prototype's [Board · Onboarding 2026](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+Onboarding+2026.html)
+board, from its `onboarding-2026-spec.md`. Replaces the three-slide carousel and its claims ("1000+
+recipes", "thousands of tried recipes"); `onboarding-claims.test.ts` keeps any count off the slides.
+
+- **Slides:** Save (import from anywhere, in your language and units), Cook (hands-free with the voice
+  assistant), Plan (the week from saved recipes, one shopping list), Fridge & diary (cook with what
+  you have, log what you ate).
+- **Top bar:** logo + wordmark, **Skip** (`textSubtle`) on the right. Skip enters the app as a guest
+  and marks onboarding seen; it replaces the "Explore without signing in" and "Don't show this page
+  again" links, which did the same.
+- **Stage:** `primaryLight` panel, radius 32 (`radii.xxxl`), the slide's art centred: `surface` cards
+  with a hairline and soft shadow, rising in on a stagger (the spec's per-slide delays). Loops: the
+  Cook waveform (5 bars, out of phase), a live countdown from 24:58, and the Fridge scan line sweeping
+  10%–84% of a fixed dark viewfinder (`BrandColors.viewfinder`, same in both modes).
+- **Dots:** 6 px, the active one 28 wide, filling with `primary` as autoplay counts down 6 s per
+  slide. Autoplay stops for good on any swipe, dot or arrow, and on the last slide; it never runs with
+  reduced motion or, on native, with a screen reader on.
+- **Actions:** Sign in (secondary, `surface` + hairline) and Create account (primary, 1.5× wide),
+  height `controlSizes.button`, radius 16. Web: minimum widths 140 / 200, wrapping.
+- **Web:** the existing two-column layout, with Skip in the header row and the arrows kept.
+
+**Deviations, on purpose.**
+- Art cards are radius 16 (`radii.xl`); the spec's 18 has no token.
+- No stage dot grid, no meal photos (the prototype uses `assets/landing/photo-*.jpg`, which the app does
+  not ship); the art is drawn from cards, chips and icons.
+- Paging stays a horizontal `ScrollView` with `pagingEnabled` on every platform (the spec allows it);
+  no haptics yet, no pointer-hover pause on the web.

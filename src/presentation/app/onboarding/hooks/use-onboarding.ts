@@ -6,11 +6,9 @@ import { enterApp } from '@presentation/navigation/enter-app';
 import type { UseOnboardingResult } from '@presentation/app/onboarding/model/use-onboarding-result';
 
 /**
- * Wires the onboarding entry actions to navigation and the persisted dismissal.
- * "Explore" and "don't show again" both land on the browsable recipe list and
- * both record the dismissal: a guest who chose to browse has answered the
- * welcome screen, and showing it on every cold launch after that was noise.
- * Signing in stays one tap away in the feed's header.
+ * The welcome gate's three exits. Skip replaces the old "Explore without
+ * signing in" and "Don't show this page again" links: both entered the app as
+ * a guest and marked onboarding seen, so one action does it (Onboarding 2026).
  */
 export const useOnboarding = (): UseOnboardingResult => {
   const router = useRouter();
@@ -23,15 +21,10 @@ export const useOnboarding = (): UseOnboardingResult => {
     router.push(RoutePaths.login);
   }, [router]);
 
-  const onExplore = useCallback((): void => {
+  const onSkip = useCallback((): void => {
     void onboardingStore.getState().dismiss();
     enterApp(router, RoutePaths.recipes);
   }, [router]);
 
-  const onDismiss = useCallback((): void => {
-    void onboardingStore.getState().dismiss();
-    enterApp(router, RoutePaths.recipes);
-  }, [router]);
-
-  return { onSignUp, onSignIn, onExplore, onDismiss };
+  return { onSignUp, onSignIn, onSkip };
 };
