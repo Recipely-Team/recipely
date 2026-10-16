@@ -1,5 +1,8 @@
-Your recipe lists load to the end, and creators can connect Instagram sooner.
+Plan your week from saved recipes, and save from Pinterest.
 
-• My Recipes: Created, Saved and Liked now load all the way down, with no recipes skipped, a "Try again" if a page fails, and counts that match your profile.
-• Food creators can connect Instagram while their creator tag is in review, and the Chefs tab shows newly verified creators as soon as you open it.
-• A clearer message when you try to sign in too many times.
+• Plan my week: fill the week from your saved recipes, then swap or shuffle any day.
+• Save recipes from Pinterest, video pins included.
+• Imports show what we read and mark guessed lines; a dish with no recipe gets a suggested one.
+• Recipes are being translated into your language.
+• Get notified when a creator you follow posts a recipe.
+• A new welcome tour.
