@@ -18,6 +18,7 @@ import { useShareCreator } from '@presentation/app/creators/[userId]/hooks/use-s
 import { formatCompactCount } from '@presentation/base/utils/format-compact-count';
 import { CreatorProfileMetrics } from '@presentation/app/creators/[userId]/model/creator-profile-metrics';
 import type { UseCreatorProfileResult } from '@presentation/app/creators/[userId]/model/use-creator-profile-result';
+import { creatorAddress } from '@domain/creators/creator-address';
 
 /**
  * Orchestrates /creators/[userId]: opens the creator in the profile store on
@@ -77,7 +78,8 @@ export const useCreatorProfile = (): UseCreatorProfileResult => {
     profileState,
     recipes: loadedItems(recipesState),
     recipesState,
-    isOwnProfile: viewerId !== null && viewerId === userId,
+    // The address may be a handle: compare against the id the profile came back with.
+    isOwnProfile: viewerId !== null && profileState.status === StoreStatus.Loaded && viewerId === profileState.viewed.profile.id,
     isFollowPending,
     isPullRefreshing,
     gridColumns,
@@ -91,7 +93,7 @@ export const useCreatorProfile = (): UseCreatorProfileResult => {
     onEndReached: () => void loadMoreRecipes(),
     onToggleFollow: () => requestGate(follow, t().creators.signInToFollow),
     onShare: () => {
-      if (profileState.status === StoreStatus.Loaded) share(userId, profileState.viewed.profile.displayName);
+      if (profileState.status === StoreStatus.Loaded) share(creatorAddress(profileState.viewed.profile), profileState.viewed.profile.displayName);
     },
     onOpenRecipe: (id) => router.push(RoutePaths.recipeDetail(encodeURIComponent(id)) as Href),
     onBack,

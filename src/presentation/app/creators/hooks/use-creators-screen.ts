@@ -54,7 +54,7 @@ export const useCreatorsScreen = (): UseCreatorsScreenResult => {
   }, [refresh]);
 
   const onOpenCreator = useCallback(
-    (id: string) => router.push(RoutePaths.creatorProfile(id) as Href),
+    (address: string) => router.push(RoutePaths.creatorProfile(address) as Href),
     [router],
   );
 
