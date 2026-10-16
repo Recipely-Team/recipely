@@ -37,6 +37,22 @@ Data API importer, not yt-dlp); TikTok links are imported too.
 **Open:** do we cap video length, and what do we tell the user when we do? Many
 channels put the full recipe in the description; check that before transcribing.
 
+**Pinterest:** `built, PR open` — app #602, backend #415. A pin (`pinterest.*/pin/<id>`,
+`pin.it/<code>`) gets its own label, seal and importing look; a video or idea pin imports the
+recipe in the pin, and any other pin follows its link to the recipe site.
+
+## 2a. Import review and suggested recipes
+
+**Status:** `built, PR open` — app #607, backend #418
+
+An imported draft shows **what we read** (caption, transcript, page) and marks the lines the
+model **guessed** rather than read, so the user checks those before saving. When a post names a
+dish but has no recipe in it, the import offers a **suggested recipe** for that dish, labelled
+as a suggestion, instead of failing with "no recipe found".
+
+**Open:** not yet seen on a live import — check one reel without a recipe on dev after the
+backend deploys.
+
 ## 3. Persistent Recipe & Timer view in Background
 
 **Status:** `ready` — platform strategy & automatic trigger defined
@@ -137,10 +153,13 @@ on dev; Advanced Access needs Meta App Review and Business Verification.
 ## 10. Creator storefront
 
 **Status:** `partly shipped` — creator pages (`/creators`, `/creators/<userId>`),
-Instagram/TikTok creator tags and follow shipped in #496.
+Instagram/TikTok creator tags and follow shipped in #496. `built, PR open`: the page address
+is the creator's approved Instagram handle (`/creators/<handle>`; old id links keep working)
+and followers get a "New recipe from {creator}" notification in their own language — app
+#603 and #606, backend #420.
 
-**Still open:** the public `recipely.net/@handle` URL, and a "new recipe" notification
-to followers.
+**Still open:** a creator without an Instagram handle keeps the id address; decide whether
+a TikTok handle may stand in.
 
 ## 11. Recipely Kitchen: curated, copyright-free recipes
 
@@ -149,6 +168,9 @@ the first 33 recipes are in the backend's `data/curated-recipes/`.
 
 Recipes Recipely publishes itself under the official account, with original steps, USDA
 nutrition and freely licensed, credited photos.
+
+**Blocked:** copying the 33 to production — the import needs the production database, so
+the owner runs it on the prod box (dry-run first).
 
 ## 12. Creator stats
 
@@ -166,6 +188,42 @@ metrics, story insights, suggestions, and a cook event to end the funnel.
 
 **Open:** whether `this_week` / `this_month` are rolling or calendar windows —
 verify with a real call before designing v2's labels.
+
+## 13. Plan my week
+
+**Status:** `built, PR open` — app #608, backend #419 (`GET /me/meal-plan/suggestion`)
+
+The meal planner drafts the rest of the week from the user's saved, liked and own recipes:
+no recipe twice in a week, nothing from the last 14 days while something fresh fits, no same
+category two days running. The user swaps or shuffles before **Add to plan**; nothing is
+written until then, and Undo removes exactly what was added.
+
+**Open:** dietary filters (the draft ignores them), and an on-screen check against the
+prototype with a signed-in account that has saved recipes.
+
+## 14. Every recipe in every app language, with nutrition
+
+**Status:** `built, PR open` — backend #417 (all 14 locales stored), #416 (nutrition measured
+on save)
+
+A recipe is stored in all 14 app languages, not only the one it was written in, so a reader
+sees it in their own language and search matches its name in every language. New recipes are
+translated on save; a sweep fills in the backlog (2 recipes every 10 minutes).
+Nutrition is measured as soon as a recipe is saved, closing the gap where new recipes showed
+no values.
+
+**Open:** no live translation has run yet — check `translation_sweep_tick` in the dev logs
+after deploy.
+
+## 15. Onboarding 2026
+
+**Status:** `built, PR open` — app #604 (copy only claims what the app does, with a test that
+blocks counts like "thousands of recipes"), #609 (redesign; board `Board · Onboarding 2026`)
+
+Four slides — save from anywhere, cook hands-free, plan the week, cook with what you have —
+with live art, autoplay and a single Skip in place of "Explore" and "Don't show again".
+
+**Open:** the fridge slide uses a drawn camera frame; swap in a real photo if one is made.
 
 ## Adding to this file
 

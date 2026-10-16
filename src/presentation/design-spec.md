@@ -3098,7 +3098,7 @@ Label: "Shopping list, {n} to buy".
 
 ## Share card — Story / Reel image (Oct 2026 — from the prototype)
 
-Source: Recipely Prototype → `src/share-card.jsx`, board `Share Card Variants.html`, spec
+Source: Recipely Prototype → `src/share-card.jsx`, board `Board · Share Card Variants.html`, spec
 `share-card-rn-spec.md` (project root). Built in `app/recipes/[recipeId]/sheets/recipe-share-card.tsx`;
 every number lives in `model/share/share-card-layout.ts`.
 
