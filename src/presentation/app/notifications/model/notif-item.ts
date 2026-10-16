@@ -7,6 +7,8 @@ export interface NotifItem {
   id: string;
   kind: NotifKind;
   actor: string;
+  /** The sender's photo; a followed creator's new recipe leads with it. */
+  actorPhotoUrl?: string;
   recipeName?: string;
   daysAgo: number;
   read: boolean;

@@ -1494,6 +1494,7 @@ export const id = {
     modOk: 'menyetujui resep kamu',
     modPending: 'menunggu tinjauan untuk',
     followed: 'mulai mengikuti kamu',
+    newRecipeFrom: 'Resep baru dari {creator}',
     creatorApproved: 'memverifikasi akun {platform}-mu',
     creatorRejected: 'tidak dapat memverifikasi akun {platform}-mu',
     markOneHint: 'Menandai notifikasi ini sebagai sudah dibaca',

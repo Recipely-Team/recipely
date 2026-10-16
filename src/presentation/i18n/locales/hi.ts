@@ -1490,6 +1490,7 @@ export const hi: TranslationsType = {
     modOk: 'ने आपकी रेसिपी मंज़ूर की:',
     modPending: 'यह रेसिपी समीक्षा में है:',
     followed: 'ने आपको फ़ॉलो किया',
+    newRecipeFrom: '{creator} की नई रेसिपी',
     creatorApproved: 'ने आपका {platform} खाता सत्यापित किया',
     creatorRejected: 'आपका {platform} खाता सत्यापित नहीं कर सका',
     markOneHint: 'इस सूचना को पढ़ा हुआ चिह्नित करें',

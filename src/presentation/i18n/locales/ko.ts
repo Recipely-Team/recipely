@@ -1490,6 +1490,7 @@ export const ko: TranslationsType = {
     modOk: '레시피를 승인했어요:',
     modPending: '검토 중인 레시피:',
     followed: '회원님을 팔로우했어요',
+    newRecipeFrom: '{creator}님의 새 레시피',
     creatorApproved: '님이 {platform} 계정을 인증했어요',
     creatorRejected: '님이 {platform} 계정을 인증하지 못했어요',
     markOneHint: '이 알림을 읽음으로 표시',

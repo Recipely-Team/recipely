@@ -1506,6 +1506,7 @@ export const en = {
     modOk: 'approved your recipe',
     modPending: 'review pending for',
     followed: 'followed you',
+    newRecipeFrom: 'New recipe from {creator}',
     creatorApproved: 'verified your {platform} account',
     creatorRejected: 'couldn\'t verify your {platform} account',
     markOneHint: 'Marks this notification as read',

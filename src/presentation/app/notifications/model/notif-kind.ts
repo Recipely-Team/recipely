@@ -17,6 +17,8 @@ export const NotifKind = {
   CreatorApproved: CreatorNotificationType.Approved,
   /** One platform of the user's creator claim was rejected. */
   CreatorRejected: CreatorNotificationType.Rejected,
+  /** A creator the user follows published a recipe; the row leads with their avatar. */
+  CreatorRecipe: 'creator_recipe',
   Generic: 'generic',
 } as const;
 
