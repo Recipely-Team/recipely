@@ -24,9 +24,9 @@ describe('useOnboarding', () => {
   beforeEach(() => jest.clearAllMocks());
 
   // --- regression: the welcome carousel came back on every cold launch for a guest who had tapped "Explore".
-  it('records the dismissal when a guest chooses to explore', () => {
+  it('records the dismissal when a guest skips', () => {
     const vm = probe();
-    act(() => vm.onExplore());
+    act(() => vm.onSkip());
     expect(mockDismiss).toHaveBeenCalledTimes(1);
   });
 
