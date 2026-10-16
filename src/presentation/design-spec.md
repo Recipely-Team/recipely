@@ -3153,3 +3153,27 @@ board, Notifications tab, from its `import-review-plan-week-spec.md` §3.
 - Line 2: the recipe title, body semibold `text`, at most 2 lines.
 - Tap opens the recipe (the target is the notification's `recipeId`).
 - A11y label: "New recipe from {creator}: {title}".
+
+## Import draft review (added 2026-10-16)
+
+Drawn in the prototype's [Board · Import Review & Plan My Week](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+Import+Review+%26+Plan+My+Week.html)
+board, "Import draft review" tab, from its `import-review-plan-week-spec.md` §1. Data: the draft's
+server-owned `importReading` (recipely-backend #418).
+
+- **Placement:** between the cover and the name, a column with gap `spacing.sm`: note, "What we read" row, legend.
+- **Suggested note** (`suggested`): `surface` card, `cardBorder` hairline, radius lg; a 26 disc
+  (`avatarSizes.noteDisc`, `chipBackground`) with sparkles in `primary`; body `text`. Not a warning:
+  no warning colour, no dismiss.
+- **What we read** (`sourceText` present): the same card as a button, platform seal 26, title semibold +
+  "Caption and speech from the post", chevron. Opens the shared `BottomSheet` (dialog on the web shell):
+  the hint, the text verbatim in the post's language in a `surface` box, "Showing the first 4,000
+  characters." at the cap, and a ghost **Show original link** footer when there is a URL.
+- **Check chip** on a guessed ingredient or step row, before the remove ×: height 20
+  (`controlSizes.checkChip`), round, `chipBackground` / `chipText`, tiny bold. A11y "Guessed, not read
+  from the post". Rows read the guessed set from `GuessedLinesContext`, by line text, so editing a line
+  clears its chip. The legend (decorative chip + caption) shows only while a chipped line is on screen.
+- **Suggested + every line guessed:** no chips and no legend; the note already says it.
+- **Resume:** autosave writes the unedited guessed lines as `guessedLines`; a resumed draft uses them.
+
+**Deviation, on purpose.** The prototype persists the remaining set as `guessedLeft`; the build names
+it `guessedLines` (the field the backend accepts on upsert).

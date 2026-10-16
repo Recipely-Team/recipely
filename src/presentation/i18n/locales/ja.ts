@@ -915,6 +915,17 @@ export const ja = {
     successDone: '完了',
     nameRequired: 'レシピ名を追加してください。',
     ingredientsRequired: '材料を1つ以上追加してください。',
+    importReview: {
+      suggested: 'この投稿にはレシピがなかったため、映っている料理のレシピを作成しました。保存する前に確認してください。',
+      readTitle: '読み取った内容',
+      readSub: '投稿のキャプションと音声',
+      readHint: 'キャプションと音声の書き起こし（元の言語のまま）。',
+      truncated: '最初の4,000文字を表示しています。',
+      openLink: '元のリンクを表示',
+      check: '要確認',
+      legend: '印の付いた行は投稿から読み取ったものではなく推測です',
+      chipA11y: '推測（投稿から読み取ったものではありません）',
+    },
   },
   cuisineNames: {
     TURKISH: 'トルコ料理',

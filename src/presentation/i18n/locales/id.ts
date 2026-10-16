@@ -915,6 +915,17 @@ export const id = {
     successDone: 'Selesai',
     nameRequired: 'Tambahkan nama resep.',
     ingredientsRequired: 'Tambahkan setidaknya satu bahan.',
+    importReview: {
+      suggested: 'Postingan ini tidak berisi resep, jadi kami menulis resep untuk hidangan yang ditampilkan. Periksa sebelum menyimpan.',
+      readTitle: 'Yang kami baca',
+      readSub: 'Keterangan dan ucapan dari postingan',
+      readHint: 'Keterangan dan transkrip ucapan, dalam bahasa aslinya.',
+      truncated: 'Menampilkan 4.000 karakter pertama.',
+      openLink: 'Tampilkan tautan asli',
+      check: 'Periksa',
+      legend: 'Baris bertanda ditebak, bukan dibaca dari postingan',
+      chipA11y: 'Ditebak, bukan dibaca dari postingan',
+    },
   },
   cuisineNames: {
     TURKISH: 'Turki',

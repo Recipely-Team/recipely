@@ -6,6 +6,7 @@ import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RefineProposal } from '@presentation/app/create-recipe/model/refine/refine-proposal';
+import type { ImportReview } from '@presentation/app/create-recipe/model/review/import-review';
 
 /** View model returned by {@link useCreateRecipe} for the create-recipe screen. */
 export interface UseCreateRecipeResult {
@@ -55,6 +56,8 @@ export interface UseCreateRecipeResult {
   isEditingSaved: boolean;
 
   // Preview editor.
+  /** An imported draft's note, source and guessed lines; null otherwise. */
+  importReview: ImportReview | null;
   refining: boolean;
   recipe: EditableRecipe;
   fieldErrors: CreateRecipeFieldErrors['fields'];

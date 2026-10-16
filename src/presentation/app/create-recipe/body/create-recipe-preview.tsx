@@ -67,6 +67,7 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
           onRemoveStep={vm.onRemoveStep}
           onAddStep={vm.onAddStep}
           onOpenPhotos={vm.isEditingSaved ? null : vm.onOpenPhotos}
+          importReview={vm.importReview}
         />
       </View>
 

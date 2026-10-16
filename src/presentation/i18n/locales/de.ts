@@ -915,6 +915,17 @@ export const de = {
     successDone: 'Fertig',
     nameRequired: 'Füge einen Rezeptnamen hinzu.',
     ingredientsRequired: 'Füge mindestens eine Zutat hinzu.',
+    importReview: {
+      suggested: 'Dieser Beitrag enthielt kein Rezept, also haben wir eines für das gezeigte Gericht geschrieben. Prüfe es vor dem Speichern.',
+      readTitle: 'Was wir gelesen haben',
+      readSub: 'Beschreibung und Gesprochenes aus dem Beitrag',
+      readHint: 'Beschreibung und Sprachtranskript in der Originalsprache.',
+      truncated: 'Die ersten 4.000 Zeichen werden angezeigt.',
+      openLink: 'Originallink öffnen',
+      check: 'Prüfen',
+      legend: 'Markierte Zeilen wurden geschätzt, nicht aus dem Beitrag gelesen',
+      chipA11y: 'Geschätzt, nicht aus dem Beitrag gelesen',
+    },
   },
   cuisineNames: {
     TURKISH: 'Türkisch',

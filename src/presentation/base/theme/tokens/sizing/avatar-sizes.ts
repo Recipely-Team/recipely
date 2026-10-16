@@ -6,6 +6,8 @@ import { scale } from '@presentation/base/theme/tokens/scale';
  * visible ring, so the two values only ever change together.
  */
 export const avatarSizes = {
+  /** The disc or seal leading an editor note: the import draft's note and "What we read" row. */
+  noteDisc: scale(26),
   /** Byline avatar inside a stats row. */
   xs: scale(32),
   /** List-row avatar. */

@@ -919,6 +919,17 @@ export const tr: TranslationsType = {
     successDone: 'Tamam',
     nameRequired: 'Tarife bir ad ver.',
     ingredientsRequired: 'En az bir malzeme ekle.',
+    importReview: {
+      suggested: 'Bu gönderide tarif yoktu, bu yüzden gösterdiği yemek için biz bir tarif yazdık. Kaydetmeden önce kontrol et.',
+      readTitle: 'Okuduğumuz metin',
+      readSub: 'Gönderinin açıklaması ve konuşması',
+      readHint: 'Açıklama ve konuşma dökümü, orijinal dilinde.',
+      truncated: 'İlk 4.000 karakter gösteriliyor.',
+      openLink: 'Orijinal bağlantıyı göster',
+      check: 'Kontrol et',
+      legend: 'İşaretli satırlar gönderiden okunmadı, tahmin edildi',
+      chipA11y: 'Tahmin edildi, gönderiden okunmadı',
+    },
   },
   cuisineNames: {
     TURKISH: 'Türk',

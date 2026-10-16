@@ -26,6 +26,12 @@ import { ValueConstants } from '@core/constants';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { MediaType } from '@domain/recipes/media/media-type';
 import { useStableKeys } from '@presentation/app/create-recipe/hooks/use-stable-keys';
+import { ImportReviewBlock } from '@presentation/app/create-recipe/body/import-review-block';
+import { GuessedLinesContext } from '@presentation/app/create-recipe/model/review/guessed-lines-context';
+import type { ImportReview } from '@presentation/app/create-recipe/model/review/import-review';
+import { hasGuessedLine } from '@presentation/app/create-recipe/model/review/has-guessed-line';
+
+const NO_GUESSES: ReadonlySet<string> = new Set();
 
 export interface RecipePreviewEditorProps {
   recipe: EditableRecipe;
@@ -50,6 +56,8 @@ export interface RecipePreviewEditorProps {
   onAddStep: () => void;
   /** Null while editing a saved recipe: its photos are managed on its own page. */
   onOpenPhotos: (() => void) | null;
+  /** An import's note, source and guessed lines; null for anything else. */
+  importReview?: ImportReview | null;
 }
 
 /** Inline live editor of every recipe field shown in the preview phase. */
@@ -74,6 +82,7 @@ export const RecipePreviewEditor = ({
   onRemoveStep,
   onAddStep,
   onOpenPhotos,
+  importReview = null,
 }: RecipePreviewEditorProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
@@ -112,7 +121,9 @@ export const RecipePreviewEditor = ({
         ) : null}
       </View>
 
+      <GuessedLinesContext.Provider value={importReview?.guessed ?? NO_GUESSES}>
       <View style={styles.body}>
+        {importReview ? <ImportReviewBlock review={importReview} showLegend={hasGuessedLine(recipe, importReview.guessed)} /> : null}
         <View>
           <TextInput
             value={recipe.name}
@@ -217,6 +228,7 @@ export const RecipePreviewEditor = ({
           ))}
         </EditableItemsSection>
       </View>
+      </GuessedLinesContext.Provider>
 
       <TaxonomyPickerSheet
         visible={picker === TaxonomyPickerKind.Cuisine}
