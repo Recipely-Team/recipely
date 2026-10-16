@@ -2153,7 +2153,7 @@ has no such assertion.
 
 ### Pinterest (added 2026-10-15)
 
-Drawn in the prototype's [Pinterest Import](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Pinterest+Import.html)
+Drawn in the prototype's [Board · Pinterest Import](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+Pinterest+Import.html)
 board (paste, importing and detail screens, light and dark), from its `pinterest-import-spec.md`.
 Nothing else changes: same seal, same paste and importing screens, same sizes and strokes.
 
