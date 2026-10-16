@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2244 source files.
+[architecture.md](architecture.md). 2259 source files.
 
 ## Layers
 
@@ -44,7 +44,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `i18n/` _(1)_
 - `instagram/` — activity, connect, dm, stats _(33)_
 - `likes/` _(1)_
-- `meal-plan/` — shopping, week _(17)_
+- `meal-plan/` — shopping, suggest, week _(19)_
 - `notifications/` — reminders _(21)_
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(76)_
 - `shopping/` — items, recipe _(14)_
@@ -71,7 +71,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `i18n/` _(5)_
 - `instagram/` — activity, connect, rules, stats _(25)_
 - `likes/` _(5)_
-- `meal-plan/` — read, write _(12)_
+- `meal-plan/` — read, write _(13)_
 - `notifications/` — list, read, reminders _(15)_
 - `onboarding/` _(2)_
 - `recipes/` — cooking, create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(62)_
@@ -105,7 +105,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `i18n/` _(1)_
 - `instagram/` — dtos, read, stats, write _(27)_
 - `likes/` _(1)_
-- `meal-plan/` — dtos, read, write _(17)_
+- `meal-plan/` — dtos, read, write _(21)_
 - `network/` — envelope, errors, http, jwt, paging, upload _(28)_
 - `notifications/` — dtos _(13)_
 - `recipes/` — create, dtos, edit, import, import-file, list, media, publishing, refine, taxonomy _(34)_
@@ -175,4 +175,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: d7da301cc843bda4 -->
+<!-- fingerprint: 844aa826c5d1c3b2 -->

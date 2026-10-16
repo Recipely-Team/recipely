@@ -31,6 +31,12 @@ import type { PlanView as PlanViewState } from '@presentation/app/diary/model/pl
 import { spacing } from '@presentation/base/theme';
 import { t, useLocale } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { usePlanMyWeek } from '@presentation/app/diary/hooks/plan/use-plan-my-week';
+import { PlanMyWeekButton } from '@presentation/app/diary/body/plan/plan-my-week-button';
+import { PlanMyWeekSheet } from '@presentation/app/diary/sheets/plan/plan-my-week-sheet';
+import { formatWeekRange } from '@presentation/base/utils/meal-plan/format-week-range';
+import { RoutePaths } from '@presentation/base/constants/route-paths';
+import { type Href, useRouter } from 'expo-router';
 
 export interface PlanViewProps {
   view: PlanViewState;
@@ -66,6 +72,10 @@ export const PlanView = (props: PlanViewProps): React.JSX.Element => {
   const sheets = usePlanSheets();
   const entryActions = usePlanEntryActions(today);
   const weekActions = usePlanWeekActions(weekStart);
+  const planWeek = usePlanMyWeek(weekStart, today);
+  const router = useRouter();
+  // Hidden on past weeks: there is nothing left to fill.
+  const canPlanWeek = !weekStart.weekStart().isBefore(today.weekStart());
 
   const week: MealPlanWeek | null = view.kind === PlanViewKind.Week ? view.week : null;
   const summary =
@@ -105,6 +115,7 @@ export const PlanView = (props: PlanViewProps): React.JSX.Element => {
                 onThisWeek={props.onThisWeek}
                 onMenu={sheets.openWeekMenu}
               />
+              {view.kind === PlanViewKind.Week && canPlanWeek ? <PlanMyWeekButton wide={wide} onPress={planWeek.open} /> : null}
               {wide ? null : <PlanDayStrip week={week} days={weekStart.weekDays()} selected={selected} today={today} goal={goal} onSelect={props.onSelect} />}
               {view.kind === PlanViewKind.Loading ? <PlanSkeleton wide={wide} /> : null}
               {view.kind === PlanViewKind.Error ? (
@@ -172,6 +183,14 @@ export const PlanView = (props: PlanViewProps): React.JSX.Element => {
           weekActions.clearWeek();
         }}
         onClose={sheets.close}
+      />
+      <PlanMyWeekSheet
+        vm={planWeek}
+        rangeLabel={formatWeekRange(weekStart, locale)}
+        onBrowseRecipes={() => {
+          planWeek.close();
+          router.push(RoutePaths.recipes as Href);
+        }}
       />
       {week === null ? null : <PlanShoppingSheet visible={sheets.sheet.kind === PlanSheetKind.Shopping} week={week} onClose={sheets.close} />}
     </View>

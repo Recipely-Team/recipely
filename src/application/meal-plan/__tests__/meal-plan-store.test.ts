@@ -16,6 +16,7 @@ import { CopyPreviousWeekUseCase } from '@application/meal-plan/write/copy-previ
 import { RestoreMealPlanEntriesUseCase } from '@application/meal-plan/write/restore-meal-plan-entries-use-case';
 import { SearchRecipeGroupUseCase } from '@application/diary/foods/search/search-recipe-group-use-case';
 import { mealPlanEntryOf } from '@domain/meal-plan/__fixtures__/meal-plan-entry-of';
+import { SuggestMealPlanWeekUseCase } from '@application/meal-plan/read/suggest-meal-plan-week-use-case';
 
 const day = (raw: string): CalendarDate => {
   const parsed = CalendarDate.create(raw);
@@ -32,6 +33,7 @@ const repoWith = (over: Partial<MealPlanRepositoryInterface> = {}): MealPlanRepo
   setEaten: jest.fn(async () => ok(mealPlanEntryOf({ eaten: true }))),
   clear: jest.fn(async () => ok(undefined)),
   copyWeek: jest.fn(async () => ok({ copied: 0, skipped: 0 })),
+  suggestWeek: jest.fn(),
   ...over,
 });
 
@@ -48,6 +50,7 @@ const storeOn = (repo: MealPlanRepositoryInterface) =>
     restore: new RestoreMealPlanEntriesUseCase(repo),
     shoppingList: new BuildPlanShoppingListUseCase(repo),
     searchRecipes: new SearchRecipeGroupUseCase({} as FoodCatalogRepositoryInterface),
+    suggestWeek: new SuggestMealPlanWeekUseCase(repo),
   });
 
 const loadedIds = (store: ReturnType<typeof storeOn>, key: string): string[] => {

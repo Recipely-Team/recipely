@@ -21,6 +21,11 @@ import { toMealPlanRangeQuery } from '@infrastructure/meal-plan/write/to-meal-pl
 import { toCreateMealPlanEntryRequest } from '@infrastructure/meal-plan/write/to-create-meal-plan-entry-request';
 import { toUpdateMealPlanEntryRequest } from '@infrastructure/meal-plan/write/to-update-meal-plan-entry-request';
 import { toCopyMealPlanRequest } from '@infrastructure/meal-plan/write/to-copy-meal-plan-request';
+import { toWeekSuggestion } from '@infrastructure/meal-plan/read/to-week-suggestion';
+import { toWeekSuggestionQuery } from '@infrastructure/meal-plan/write/to-week-suggestion-query';
+import type { WeekSuggestionDto } from '@infrastructure/meal-plan/dtos/week-suggestion-dto';
+import type { WeekSuggestion } from '@domain/meal-plan/suggest/week-suggestion';
+import type { MealSlotType } from '@domain/diary/meal-slot';
 
 /** Implements `MealPlanRepositoryInterface` against `/me/meal-plan` (backend #392). */
 export class MealPlanRepository implements MealPlanRepositoryInterface {
@@ -65,5 +70,10 @@ export class MealPlanRepository implements MealPlanRepositoryInterface {
   async copyWeek(fromWeekStart: CalendarDate, toWeekStart: CalendarDate): Promise<Result<CopyMealPlanResult, Failure>> {
     const result = await this.http.post<CopyMealPlanResultDto>(ApiRoutes.mealPlan.copy, toCopyMealPlanRequest({ from: fromWeekStart, to: toWeekStart }));
     return result.ok ? ok({ copied: result.value.copied, skipped: result.value.skipped }) : result;
+  }
+
+  async suggestWeek(weekStart: CalendarDate, meals: readonly MealSlotType[], seed: number): Promise<Result<WeekSuggestion, Failure>> {
+    const result = await this.http.get<WeekSuggestionDto>(ApiRoutes.mealPlan.suggestion, { params: toWeekSuggestionQuery({ weekStart, meals, seed }) });
+    return result.ok ? toWeekSuggestion(result.value) : result;
   }
 }

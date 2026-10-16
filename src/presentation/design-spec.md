@@ -3177,3 +3177,29 @@ server-owned `importReading` (recipely-backend #418).
 
 **Deviation, on purpose.** The prototype persists the remaining set as `guessedLeft`; the build names
 it `guessedLines` (the field the backend accepts on upsert).
+
+## Plan my week (added 2026-10-16)
+
+Drawn in the prototype's [Board · Import Review & Plan My Week](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+Import+Review+%26+Plan+My+Week.html)
+board, "Plan my week" tab, from `import-review-plan-week-spec.md` §2. Data: `GET /me/meal-plan/suggestion`
+(recipely-backend #419); the picking rules are the backend's.
+
+- **Entry:** phone, a full-width `chipBackground` button (height `mealPlanSizes.ctaWeb`) under the week bar;
+  wide, a ghost button (`ghostWeb`, `surface` + hairline, sparkle in `primary`) aligned to the row's end.
+  Hidden when signed out, on error and on past weeks.
+- **Sheet** (shared `BottomSheet`; dialog `shopDialogMaxWidth` on the web shell), title "Plan my week":
+  - Step 1: lead with the week range, "MEALS TO FILL", four toggle chips (Dinner preselected; on =
+    `primary` fill + check), footer **Show plan**, disabled with no chip.
+  - Step 2: "{range} · meals" + **Change**; per day (today onwards) a caption heading and its open
+    meals. A filled row is a `surface` card: thumb 48, slot caption, title, "kcal per serving · min",
+    and **Swap** (toggles to the one alternative; `chipBackground` when swapped). A meal nothing fits
+    is a dashed row: "No saved recipe fits — save more recipes". Footer: ghost **Shuffle** (new seed,
+    swaps cleared) and primary **Add to plan (N)**.
+  - No saved, liked or own recipes: bookmark disc, "Save a few recipes first", **Browse recipes**.
+- **Add** writes each shown meal as a plan entry (1 serving), closes, and toasts "Added N meals to your
+  plan" with **Undo**, which removes exactly those entries.
+
+**Deviations, on purpose.** On wide screens the button sits under the week bar, not in the page header
+next to *Shopping list*: the build's wide shopping bar is under the grid, not in a header. The picking
+rules (which category fits which meal, "recent") are recipely-backend #419's, which differ slightly
+from the prototype's sample logic.

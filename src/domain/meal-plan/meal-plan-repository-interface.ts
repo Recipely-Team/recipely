@@ -6,6 +6,8 @@ import type { NewMealPlanEntry } from '@domain/meal-plan/week/new-meal-plan-entr
 import type { MealPlanEntryChanges } from '@domain/meal-plan/week/meal-plan-entry-changes';
 import type { CopyMealPlanResult } from '@domain/meal-plan/week/copy-meal-plan-result';
 import type { PlannedRecipeIngredients } from '@domain/meal-plan/shopping/planned-recipe-ingredients';
+import type { MealSlotType } from '@domain/diary/meal-slot';
+import type { WeekSuggestion } from '@domain/meal-plan/suggest/week-suggestion';
 
 /** The viewer's meal plan (`/me/meal-plan`). Every range is inclusive and at most `MealPlanLimits.rangeDaysMax` days. */
 export interface MealPlanRepositoryInterface {
@@ -20,4 +22,6 @@ export interface MealPlanRepositoryInterface {
   setEaten(id: string, eaten: boolean): Promise<Result<MealPlanEntryEntity, Failure>>;
   clear(from: CalendarDate, to: CalendarDate): Promise<Result<void, Failure>>;
   copyWeek(fromWeekStart: CalendarDate, toWeekStart: CalendarDate): Promise<Result<CopyMealPlanResult, Failure>>;
+  /** A drafted week for the open `meals`, nothing written; the same `seed` drafts the same week. */
+  suggestWeek(weekStart: CalendarDate, meals: readonly MealSlotType[], seed: number): Promise<Result<WeekSuggestion, Failure>>;
 }
