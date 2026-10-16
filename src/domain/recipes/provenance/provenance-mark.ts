@@ -19,6 +19,7 @@ export const ProvenanceMark = {
   TikTok: SourcePlatform.TikTok,
   Facebook: SourcePlatform.Facebook,
   YouTube: SourcePlatform.YouTube,
+  Pinterest: SourcePlatform.Pinterest,
   Web: SourcePlatform.Web,
   Ai: RecipeOrigin.Ai,
   Curated: RecipeOrigin.Curated,

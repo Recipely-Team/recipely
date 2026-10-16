@@ -17,6 +17,7 @@ export const useKindMeta = (kind: NotifKind): KindMeta => {
     follow: { icon: 'person-add-outline', color: colors.primary },
     [NotifKind.CreatorApproved]: { icon: 'checkmark-circle-outline', color: colors.success },
     [NotifKind.CreatorRejected]: { icon: 'alert-circle-outline', color: colors.danger },
+    [NotifKind.CreatorRecipe]: { icon: 'restaurant-outline', color: colors.primary },
     generic: { icon: 'notifications-outline', color: colors.primary },
   };
   return map[kind];

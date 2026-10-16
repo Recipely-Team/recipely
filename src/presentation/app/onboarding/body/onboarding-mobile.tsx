@@ -1,4 +1,7 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { Pressable } from 'react-native';
+import { useOnboardingAutoplay } from '@presentation/app/onboarding/hooks/use-onboarding-autoplay';
+import { t } from '@presentation/i18n';
 import { scrollThrottleMs } from '@presentation/base/constants';
 import {
   type LayoutChangeEvent,
@@ -12,7 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, fontSizes, fontWeights, letterSpacings } from '@presentation/base/theme';
+import { spacing, fontSizes, fontWeights, letterSpacings, targetSizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import { OnboardingSlide } from '@presentation/app/onboarding/items/onboarding-slide';
 import { OnboardingDots } from '@presentation/app/onboarding/items/onboarding-dots';
@@ -47,9 +50,17 @@ export const OnboardingMobile = ({ slides, actions }: OnboardingMobileProps): Re
     const next = Math.round(e.nativeEvent.contentOffset.x / width);
     if (next !== index) setIndex(next);
   };
+  const scrollTo = useCallback(
+    (i: number): void => {
+      setIndex(i);
+      scrollRef.current?.scrollTo({ x: i * width, animated: true });
+    },
+    [width],
+  );
+  const autoplay = useOnboardingAutoplay(index, slides.length, useCallback(() => scrollTo(index + ValueConstants.one), [scrollTo, index]));
   const goToSlide = (i: number): void => {
-    setIndex(i);
-    scrollRef.current?.scrollTo({ x: i * width, animated: true });
+    autoplay.stop();
+    scrollTo(i);
   };
 
   return (
@@ -62,9 +73,14 @@ export const OnboardingMobile = ({ slides, actions }: OnboardingMobileProps): Re
         },
       ]}
     >
-      <View style={styles.brand}>
-        <RecipelyLogo size={LOGO_SIZE} />
-        <ThemedText style={styles.wordmark}>{SiteMetadata.appName}</ThemedText>
+      <View style={styles.topBar}>
+        <View style={styles.brand}>
+          <RecipelyLogo size={LOGO_SIZE} />
+          <ThemedText style={styles.wordmark}>{SiteMetadata.appName}</ThemedText>
+        </View>
+        <Pressable onPress={actions.onSkip} accessibilityRole="button" accessibilityLabel={t().onboarding.skip} style={styles.skip} hitSlop={spacing.sm}>
+          <ThemedText style={[styles.skipLabel, { color: colors.textSubtle }]}>{t().onboarding.skip}</ThemedText>
+        </Pressable>
       </View>
 
       <View style={styles.carousel} onLayout={onLayout}>
@@ -75,6 +91,7 @@ export const OnboardingMobile = ({ slides, actions }: OnboardingMobileProps): Re
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onScroll={onScroll}
+            onScrollBeginDrag={autoplay.stop}
             scrollEventThrottle={scrollThrottleMs.perFrame}
           >
             {slides.map((slide, i) => (
@@ -91,11 +108,11 @@ export const OnboardingMobile = ({ slides, actions }: OnboardingMobileProps): Re
       </View>
 
       <View style={styles.dots}>
-        <OnboardingDots count={slides.length} index={index} onSelect={goToSlide} />
+        <OnboardingDots count={slides.length} index={index} onSelect={goToSlide} progress={autoplay.running ? autoplay.progress : undefined} />
       </View>
 
       <View style={[styles.actions, { paddingBottom: insets.bottom + spacing.lg2 }]}>
-        <OnboardingActions {...actions} />
+        <OnboardingActions onSignUp={actions.onSignUp} onSignIn={actions.onSignIn} />
       </View>
     </View>
   );
@@ -105,14 +122,21 @@ const styles = StyleSheet.create({
   root: {
     flex: ValueConstants.one,
   },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingLeft: spacing.lg2,
+    paddingRight: spacing.sm,
+    paddingBottom: spacing.sm2,
+  },
   brand: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: spacing.sm,
-    paddingTop: spacing.xxs,
-    paddingBottom: spacing.sm2,
   },
+  skip: { minWidth: targetSizes.min, minHeight: targetSizes.min, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.sm },
+  skipLabel: { fontSize: fontSizes.body, fontWeight: fontWeights.semibold },
   wordmark: {
     fontSize: fontSizes.subheading,
     fontWeight: fontWeights.heavy,

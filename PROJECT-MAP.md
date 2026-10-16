@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2233 source files.
+[architecture.md](architecture.md). 2263 source files.
 
 ## Layers
 
@@ -32,11 +32,11 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `auth/` _(8)_
 - `comments/` _(5)_
 - `common/` _(5)_
-- `creators/` _(13)_
+- `creators/` _(14)_
 - `device/` _(3)_
 - `diary/` — calendar, day, entry, foods, meal, month, nutrition _(60)_
 - `display/` _(5)_
-- `drafts/` _(6)_
+- `drafts/` _(8)_
 - `favorites/` _(1)_
 - `feedback/` _(4)_
 - `flags/` _(1)_
@@ -44,7 +44,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `i18n/` _(1)_
 - `instagram/` — activity, connect, dm, stats _(33)_
 - `likes/` _(1)_
-- `meal-plan/` — shopping, week _(17)_
+- `meal-plan/` — shopping, suggest, week _(19)_
 - `notifications/` — reminders _(21)_
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(76)_
 - `shopping/` — items, recipe _(14)_
@@ -71,7 +71,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `i18n/` _(5)_
 - `instagram/` — activity, connect, rules, stats _(25)_
 - `likes/` _(5)_
-- `meal-plan/` — read, write _(12)_
+- `meal-plan/` — read, write _(13)_
 - `notifications/` — list, read, reminders _(15)_
 - `onboarding/` _(2)_
 - `recipes/` — cooking, create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(62)_
@@ -105,7 +105,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `i18n/` _(1)_
 - `instagram/` — dtos, read, stats, write _(27)_
 - `likes/` _(1)_
-- `meal-plan/` — dtos, read, write _(17)_
+- `meal-plan/` — dtos, read, write _(21)_
 - `network/` — envelope, errors, http, jwt, paging, upload _(28)_
 - `notifications/` — dtos _(13)_
 - `recipes/` — create, dtos, edit, import, import-file, list, media, publishing, refine, taxonomy _(34)_
@@ -175,4 +175,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 6bb5bc183f2a2d20 -->
+<!-- fingerprint: 37a469381cf82cd0 -->

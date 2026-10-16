@@ -66,7 +66,8 @@ describe('CreatorCard', () => {
       .replace('{followers}', String(creator.followerCount));
     expect(textContent(root)).toEqual(expect.arrayContaining(['Creator 9', '@chef_9', caption]));
     act(() => (pressable(root, 'button').props.onPress as () => void)());
-    expect(onOpen).toHaveBeenCalledWith('9');
+    // The page's address is the creator's Instagram handle, not their id.
+    expect(onOpen).toHaveBeenCalledWith('chef_9');
   });
 });
 

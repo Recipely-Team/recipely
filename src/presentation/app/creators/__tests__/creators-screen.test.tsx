@@ -116,6 +116,6 @@ describe('CreatorsScreen', () => {
     );
     act(() => (card.props.onPress as () => void)());
 
-    expect(mockPush).toHaveBeenCalledWith('/creators/1');
+    expect(mockPush).toHaveBeenCalledWith('/creators/chef_1');
   });
 });

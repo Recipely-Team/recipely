@@ -12,10 +12,12 @@ import { CreatorAvatar } from '@presentation/base/widgets/creators/creator-avata
 import { creatorItemLabel } from '@presentation/base/widgets/creators/creator-item-label';
 import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
 import { CreatorPlatformMark } from '@presentation/base/widgets/creators/creator-platform-mark';
+import { creatorAddress } from '@domain/creators/creator-address';
 
 export interface CreatorCardProps {
   creator: CreatorSummaryEntity;
-  onOpen: (id: string) => void;
+  /** Gets the creator's page address: their approved Instagram handle, or their id. */
+  onOpen: (address: string) => void;
 }
 
 /**
@@ -39,7 +41,7 @@ const CreatorCardComponent = ({ creator, onOpen }: CreatorCardProps): React.JSX.
 
   return (
     <Pressable
-      onPress={() => onOpen(creator.id)}
+      onPress={() => onOpen(creatorAddress(creator))}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
       accessibilityRole="button"

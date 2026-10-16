@@ -132,9 +132,25 @@ describe('ImportLink', () => {
     );
   });
 
-  // A pin links to the site its recipe is on; the backend follows it there.
-  it.each(['https://www.pinterest.com/pin/1970393584739280/', 'https://pin.it/abc123'])('takes the Pinterest link %s as a page', (raw) => {
-    expect(accepted(raw).platform).toBe(SourcePlatform.Web);
+  // The backend follows a pin's blog link, or reads a video pin itself.
+  it.each([
+    'https://www.pinterest.com/pin/1970393584739280/',
+    'https://in.pinterest.com/pin/from-scratch-recipes--208995238951514966/',
+    'pinterest.co.uk/pin/123/',
+    'https://pin.it/abc123',
+  ])('takes the Pinterest pin %s as Pinterest', (raw) => {
+    expect(accepted(raw).platform).toBe(SourcePlatform.Pinterest);
+  });
+
+  it.each(['https://www.pinterest.com/', 'https://www.pinterest.com/wellplated/easy-chicken-dinners/', 'https://pin.it/'])(
+    'refuses %s: a board, a profile or the home page holds no single recipe',
+    (raw) => {
+      expect(failureKeyOf(raw)).toBe(ErrorMessageKey.importInvalidUrl);
+    },
+  );
+
+  it('reads a look-alike Pinterest host as an ordinary page', () => {
+    expect(accepted('https://pinterest.evil.test/pin/1/').platform).toBe(SourcePlatform.Web);
   });
 
   it('treats an empty field as an invalid link', () => {

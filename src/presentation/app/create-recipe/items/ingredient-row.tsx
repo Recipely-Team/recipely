@@ -6,6 +6,8 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, iconSizes, controlSizes, borderWidths, opacities, BrandColors } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { useIsGuessed } from '@presentation/app/create-recipe/hooks/use-is-guessed';
+import { CheckChip } from '@presentation/app/create-recipe/items/check-chip';
 
 export interface IngredientRowProps {
   value: string;
@@ -39,6 +41,7 @@ export const IngredientRow = ({
 }: IngredientRowProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const [focused, setFocused] = useState(false);
+  const guessed = useIsGuessed(value);
   const canReorder = onMoveUp !== undefined || onMoveDown !== undefined;
 
   return (
@@ -87,6 +90,7 @@ export const IngredientRow = ({
         minHeight={controlSizes.iconBtn}
         style={[styles.input, { color: colors.text }]}
       />
+      {guessed ? <CheckChip /> : null}
       <Pressable
         onPress={onRemove}
         hitSlop={spacing.sm}

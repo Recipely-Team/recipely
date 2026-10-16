@@ -22,6 +22,8 @@ const FACEBOOK_STEM = 'M13.3 20.9V10.2c0-1.9 1-2.9 2.9-2.9h.9';
 const FACEBOOK_BAR = 'M10.3 13.2h5.6';
 const YOUTUBE_PLAY = 'M10.2 9.1v5.8l5-2.9-5-2.9Z';
 const YOUTUBE_PLAY_STROKE = 1;
+const PINTEREST_STEM = 'M11.2 13.8 9.9 20.6';
+const PINTEREST_BOWL = 'M10.1 14.1c-.7-.6-1-1.5-1-2.5 0-2.1 1.5-3.9 3.6-3.9 1.9 0 3.2 1.3 3.2 3.1 0 2.2-1.2 3.9-2.9 3.9-.9 0-1.6-.6-1.6-1.4';
 const GLOBE_MERIDIAN = 'M12 3c2.4 2.5 3.6 5.5 3.6 9s-1.2 6.5-3.6 9c-2.4-2.5-3.6-5.5-3.6-9S9.6 5.5 12 3Z';
 const SPARKLE_LARGE =
   'M11 3.5c.5 3.9 2.6 6 6.5 6.5-3.9.5-6 2.6-6.5 6.5-.5-3.9-2.6-6-6.5-6.5 3.9-.5 6-2.6 6.5-6.5Z';
@@ -77,6 +79,17 @@ export const ProvenanceGlyph = ({ mark, size, tint }: ProvenanceGlyphProps): Rea
         <Circle cx="12" cy="12" r="9" {...line} />
         <Path d={FACEBOOK_STEM} {...line} />
         <Path d={FACEBOOK_BAR} {...line} />
+      </Svg>
+    );
+  }
+
+  if (mark === ProvenanceMark.Pinterest) {
+    const line = { fill: 'none', stroke: tint ?? BrandColors.pinterestInk, strokeWidth: STROKE, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
+    return (
+      <Svg width={size} height={size} viewBox={VIEW_BOX}>
+        <Circle cx="12" cy="12" r="9" {...line} />
+        <Path d={PINTEREST_STEM} {...line} />
+        <Path d={PINTEREST_BOWL} {...line} />
       </Svg>
     );
   }

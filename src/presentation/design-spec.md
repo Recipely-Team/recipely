@@ -2151,6 +2151,28 @@ has no such assertion.
 
 **The rating-row glyph is removed.** A second marker for the same fact would be noise.
 
+### Pinterest (added 2026-10-15)
+
+Drawn in the prototype's [Board · Pinterest Import](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+Pinterest+Import.html)
+board (paste, importing and detail screens, light and dark), from its `pinterest-import-spec.md`.
+Nothing else changes: same seal, same paste and importing screens, same sizes and strokes.
+
+- **Seal glyph.** The Facebook glyph's frame: 24×24, outline, stroke 2.3, round caps and joins, a
+  r=9 circle with a pin's stem and bowl inside. Ink `pinterestInk` `#E60023`, **4.79:1** on the
+  seal's white face (white in both modes, so one measurement covers both), so no darker shade.
+- **Paste screen.** The accepted-sources row reads Instagram, TikTok, YouTube, Pinterest, Facebook,
+  web. A `/pin/<id>` link on any Pinterest country domain or a `pin.it` link shows "Pinterest pin";
+  a board, a profile or the home page is refused as an invalid link before any round trip.
+- **Importing screen.** Two stops like TikTok: ring `#E60023 → #AD081B` (`pinterestDeep`), accent
+  `#E60023`. The pill sits on `#AD081B`, white text **7.43:1**: white on `#E60023` alone is 4.79:1,
+  too close to the line for the pill's small uppercase text.
+- **Detail sentence.** "Imported from {handle} on Pinterest", without `@`.
+
+**Deviation, on purpose.** The prototype writes the account as `@handle`, like Instagram and
+TikTok. What the backend actually receives for a pin (yt-dlp, measured on live pins) is a display
+name with a numeric id beside it ("Inspired Taste | Easy Recipes for Home Cooks"), the same as
+Facebook, so the build names it like Facebook: no `@`, and no profile link built from it.
+
 ## Provenance Badge (recipe origin marker)
 
 > **Superseded** by the Provenance Seal above. Kept for its reasoning (the accessibility rule
@@ -3098,7 +3120,7 @@ Label: "Shopping list, {n} to buy".
 
 ## Share card — Story / Reel image (Oct 2026 — from the prototype)
 
-Source: Recipely Prototype → `src/share-card.jsx`, board `Share Card Variants.html`, spec
+Source: Recipely Prototype → `src/share-card.jsx`, board `Board · Share Card Variants.html`, spec
 `share-card-rn-spec.md` (project root). Built in `app/recipes/[recipeId]/sheets/recipe-share-card.tsx`;
 every number lives in `model/share/share-card-layout.ts`.
 
@@ -3118,3 +3140,96 @@ every number lives in `model/share/share-card-layout.ts`.
 - **Not built yet** (needs `react-native-share` + `expo-media-library`, native): the prototype's
   full-screen preview with a Light / Dark switch, safe-zone overlay, direct "Share to Instagram
   Stories" and "Save image". The sheet's "Share as Story / Reel" goes to the system share sheet.
+
+## Notification: new recipe from a followed creator (added 2026-10-16)
+
+Drawn in the prototype's [Board · Import Review & Plan My Week](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+Import+Review+%26+Plan+My+Week.html)
+board, Notifications tab, from its `import-review-plan-week-spec.md` §3.
+
+- Type `creator_recipe` (backend: recipely-backend #420). Same row container as every other kind.
+- Leading: the creator's avatar 40, round (`AvatarImage`, initials fallback), in place of the icon disc.
+- Line 1, body `textMuted`: "New recipe from **{creator}**" / "**{creator}** yeni bir tarif paylaştı"; one
+  `newRecipeFrom` template per language, so the name sits where that language puts it, in bold `text`.
+- Line 2: the recipe title, body semibold `text`, at most 2 lines.
+- Tap opens the recipe (the target is the notification's `recipeId`).
+- A11y label: "New recipe from {creator}: {title}".
+
+## Import draft review (added 2026-10-16)
+
+Drawn in the prototype's [Board · Import Review & Plan My Week](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+Import+Review+%26+Plan+My+Week.html)
+board, "Import draft review" tab, from its `import-review-plan-week-spec.md` §1. Data: the draft's
+server-owned `importReading` (recipely-backend #418).
+
+- **Placement:** between the cover and the name, a column with gap `spacing.sm`: note, "What we read" row, legend.
+- **Suggested note** (`suggested`): `surface` card, `cardBorder` hairline, radius lg; a 26 disc
+  (`avatarSizes.noteDisc`, `chipBackground`) with sparkles in `primary`; body `text`. Not a warning:
+  no warning colour, no dismiss.
+- **What we read** (`sourceText` present): the same card as a button, platform seal 26, title semibold +
+  "Caption and speech from the post", chevron. Opens the shared `BottomSheet` (dialog on the web shell):
+  the hint, the text verbatim in the post's language in a `surface` box, "Showing the first 4,000
+  characters." at the cap, and a ghost **Show original link** footer when there is a URL.
+- **Check chip** on a guessed ingredient or step row, before the remove ×: height 20
+  (`controlSizes.checkChip`), round, `chipBackground` / `chipText`, tiny bold. A11y "Guessed, not read
+  from the post". Rows read the guessed set from `GuessedLinesContext`, by line text, so editing a line
+  clears its chip. The legend (decorative chip + caption) shows only while a chipped line is on screen.
+- **Suggested + every line guessed:** no chips and no legend; the note already says it.
+- **Resume:** autosave writes the unedited guessed lines as `guessedLines`; a resumed draft uses them.
+
+**Deviation, on purpose.** The prototype persists the remaining set as `guessedLeft`; the build names
+it `guessedLines` (the field the backend accepts on upsert).
+
+## Plan my week (added 2026-10-16)
+
+Drawn in the prototype's [Board · Import Review & Plan My Week](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+Import+Review+%26+Plan+My+Week.html)
+board, "Plan my week" tab, from `import-review-plan-week-spec.md` §2. Data: `GET /me/meal-plan/suggestion`
+(recipely-backend #419); the picking rules are the backend's.
+
+- **Entry:** phone, a full-width `chipBackground` button (height `mealPlanSizes.ctaWeb`) under the week bar;
+  wide, a ghost button (`ghostWeb`, `surface` + hairline, sparkle in `primary`) aligned to the row's end.
+  Hidden when signed out, on error and on past weeks.
+- **Sheet** (shared `BottomSheet`; dialog `shopDialogMaxWidth` on the web shell), title "Plan my week":
+  - Step 1: lead with the week range, "MEALS TO FILL", four toggle chips (Dinner preselected; on =
+    `primary` fill + check), footer **Show plan**, disabled with no chip.
+  - Step 2: "{range} · meals" + **Change**; per day (today onwards) a caption heading and its open
+    meals. A filled row is a `surface` card: thumb 48, slot caption, title, "kcal per serving · min",
+    and **Swap** (toggles to the one alternative; `chipBackground` when swapped). A meal nothing fits
+    is a dashed row: "No saved recipe fits — save more recipes". Footer: ghost **Shuffle** (new seed,
+    swaps cleared) and primary **Add to plan (N)**.
+  - No saved, liked or own recipes: bookmark disc, "Save a few recipes first", **Browse recipes**.
+- **Add** writes each shown meal as a plan entry (1 serving), closes, and toasts "Added N meals to your
+  plan" with **Undo**, which removes exactly those entries.
+
+**Deviations, on purpose.** On wide screens the button sits under the week bar, not in the page header
+next to *Shopping list*: the build's wide shopping bar is under the grid, not in a header. The picking
+rules (which category fits which meal, "recent") are recipely-backend #419's, which differ slightly
+from the prototype's sample logic.
+
+## Onboarding 2026 (added 2026-10-16)
+
+Drawn in the prototype's [Board · Onboarding 2026](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+Onboarding+2026.html)
+board, from its `onboarding-2026-spec.md`. Replaces the three-slide carousel and its claims ("1000+
+recipes", "thousands of tried recipes"); `onboarding-claims.test.ts` keeps any count off the slides.
+
+- **Slides:** Save (import from anywhere, in your language and units), Cook (hands-free with the voice
+  assistant), Plan (the week from saved recipes, one shopping list), Fridge & diary (cook with what
+  you have, log what you ate).
+- **Top bar:** logo + wordmark, **Skip** (`textSubtle`) on the right. Skip enters the app as a guest
+  and marks onboarding seen; it replaces the "Explore without signing in" and "Don't show this page
+  again" links, which did the same.
+- **Stage:** `primaryLight` panel, radius 32 (`radii.xxxl`), the slide's art centred: `surface` cards
+  with a hairline and soft shadow, rising in on a stagger (the spec's per-slide delays). Loops: the
+  Cook waveform (5 bars, out of phase), a live countdown from 24:58, and the Fridge scan line sweeping
+  10%–84% of a fixed dark viewfinder (`BrandColors.viewfinder`, same in both modes).
+- **Dots:** 6 px, the active one 28 wide, filling with `primary` as autoplay counts down 6 s per
+  slide. Autoplay stops for good on any swipe, dot or arrow, and on the last slide; it never runs with
+  reduced motion or, on native, with a screen reader on.
+- **Actions:** Sign in (secondary, `surface` + hairline) and Create account (primary, 1.5× wide),
+  height `controlSizes.button`, radius 16. Web: minimum widths 140 / 200, wrapping.
+- **Web:** the existing two-column layout, with Skip in the header row and the arrows kept.
+
+**Deviations, on purpose.**
+- Art cards are radius 16 (`radii.xl`); the spec's 18 has no token.
+- No stage dot grid, no meal photos (the prototype uses `assets/landing/photo-*.jpg`, which the app does
+  not ship); the art is drawn from cards, chips and icons.
+- Paging stays a horizontal `ScrollView` with `pagingEnabled` on every platform (the spec allows it);
+  no haptics yet, no pointer-hover pause on the web.

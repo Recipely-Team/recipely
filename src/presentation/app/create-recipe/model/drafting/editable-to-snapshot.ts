@@ -3,6 +3,7 @@ import { MediaType } from '@domain/recipes/media/media-type';
 import { isHostedMedia } from '@presentation/app/create-recipe/model/saving/is-hosted-media';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { guessedLinesOf } from '@domain/drafts/guessed-lines-of';
 
 /**
  * Projects the editor onto the wire snapshot that gets autosaved.
@@ -53,6 +54,9 @@ export const editableToSnapshot = (
     .filter((m) => m.type === MediaType.Image && isHostedMedia(m))
     .map((m) => ({ type: m.type, url: m.url }));
   const cover = media[ValueConstants.zero]?.url ?? carried?.image;
+  const ingredients = recipe.ingredients.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero);
+  const instructions = recipe.instructions.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero);
+  const guessed = carried?.importReading !== undefined || carried?.guessedLines !== undefined ? guessedLinesOf(carried) : null;
 
   return {
     name: recipe.name,
@@ -61,8 +65,8 @@ export const editableToSnapshot = (
     prepTimeMinutes: recipe.prepTimeMinutes,
     cookTimeMinutes: recipe.cookTimeMinutes,
     servings: recipe.servings,
-    ingredients: recipe.ingredients.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero),
-    instructions: recipe.instructions.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero),
+    ingredients,
+    instructions,
     media,
     category: recipe.category,
     ...(cover !== undefined ? { image: cover } : {}),
@@ -70,6 +74,8 @@ export const editableToSnapshot = (
     ...(carried?.mealType !== undefined ? { mealType: carried.mealType } : {}),
     ...(carried?.tips !== undefined ? { tips: carried.tips } : {}),
     ...(carried?.nutrition !== undefined ? { nutrition: carried.nutrition } : {}),
+    // The guessed lines still unedited, so a resumed draft keeps the right chips.
+    ...(guessed !== null ? { guessedLines: [...ingredients, ...instructions].filter((line) => guessed.has(line)) } : {}),
     ...(carried?.caloriesPerServing !== undefined
       ? { caloriesPerServing: carried.caloriesPerServing }
       : {}),

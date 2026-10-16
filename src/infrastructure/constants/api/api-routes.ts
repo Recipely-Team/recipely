@@ -47,6 +47,8 @@ export const ApiRoutes = {
     root: '/me/meal-plan',
     ingredients: '/me/meal-plan/ingredients',
     copy: '/me/meal-plan/copy',
+    /** GET a drafted week from saved, liked and own recipes (recipely-backend #419). */
+    suggestion: '/me/meal-plan/suggestion',
     entries: '/me/meal-plan/entries',
     entry: (id: string): string => `/me/meal-plan/entries/${encodeURIComponent(id)}`,
     /** POST marks eaten (logs to the diary); DELETE takes it back. */

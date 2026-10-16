@@ -24,6 +24,8 @@ export const controlSizes = {
   progressBarThin: scale(3),
   /** Standard progress bar. */
   progressBar: scale(6),
+  /** The import draft's "Check" chip on a guessed line (prototype: Import Review board). */
+  checkChip: scale(20),
   /** Compact consent checkbox. */
   checkboxSm: scale(22),
   /** Standard checkbox. */

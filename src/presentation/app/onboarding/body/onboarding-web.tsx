@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, layoutSizes, opacities, controlSizes } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, layoutSizes, opacities, controlSizes, targetSizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
@@ -15,6 +15,7 @@ import { OnboardingActions } from '@presentation/app/onboarding/items/onboarding
 import type { OnboardingSlide as OnboardingSlideModel } from '@presentation/app/onboarding/model/onboarding-slide';
 import type { UseOnboardingResult } from '@presentation/app/onboarding/model/use-onboarding-result';
 import { SiteMetadata } from '@presentation/base/constants/site-metadata';
+import { useOnboardingAutoplay } from '@presentation/app/onboarding/hooks/use-onboarding-autoplay';
 
 const LOGO_SIZE = 30;
 const COLUMN_MAX = layoutSizes.maxContentXl;
@@ -37,8 +38,18 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
   const slide = slides[index];
   const atStart = index === ValueConstants.zero;
   const atEnd = index === slides.length - ValueConstants.one;
+  const move = useCallback(
+    (delta: number): void => setIndex((i) => Math.min(slides.length - ValueConstants.one, Math.max(ValueConstants.zero, i + delta))),
+    [slides.length],
+  );
+  const autoplay = useOnboardingAutoplay(index, slides.length, useCallback(() => move(ValueConstants.one), [move]));
   const step = (delta: number): void => {
-    setIndex((i) => Math.min(slides.length - ValueConstants.one, Math.max(ValueConstants.zero, i + delta)));
+    autoplay.stop();
+    move(delta);
+  };
+  const select = (i: number): void => {
+    autoplay.stop();
+    setIndex(i);
   };
 
   const arrows: { icon: 'chevron-back' | 'chevron-forward'; delta: number; disabled: boolean; label: string }[] = [
@@ -50,9 +61,14 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={[styles.grid, stacked ? styles.gridStacked : styles.gridRow, { maxWidth: CONTENT_MAX }]}>
         <View style={[styles.copyCol, stacked ? styles.copyColStacked : null]}>
-          <View style={styles.brand}>
-            <RecipelyLogo size={LOGO_SIZE} />
-            <ThemedText style={styles.wordmark}>{SiteMetadata.appName}</ThemedText>
+          <View style={styles.headerRow}>
+            <View style={styles.brand}>
+              <RecipelyLogo size={LOGO_SIZE} />
+              <ThemedText style={styles.wordmark}>{SiteMetadata.appName}</ThemedText>
+            </View>
+            <Pressable onPress={actions.onSkip} accessibilityRole="button" accessibilityLabel={t().onboarding.skip} style={styles.skip}>
+              <ThemedText style={[styles.skipLabel, { color: colors.textSubtle }]}>{t().onboarding.skip}</ThemedText>
+            </Pressable>
           </View>
 
           <OnboardingReveal key={index} style={styles.copyBlock}>
@@ -68,7 +84,7 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
           </OnboardingReveal>
 
           <View style={styles.controls}>
-            <OnboardingDots count={slides.length} index={index} onSelect={setIndex} />
+            <OnboardingDots count={slides.length} index={index} onSelect={select} progress={autoplay.running ? autoplay.progress : undefined} />
             <View style={styles.arrows}>
               {arrows.map((arrow) => (
                 <Pressable
@@ -92,7 +108,7 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
             </View>
           </View>
 
-          <OnboardingActions web {...actions} />
+          <OnboardingActions web onSignUp={actions.onSignUp} onSignIn={actions.onSignIn} />
         </View>
 
         <View style={[styles.heroCol, stacked ? styles.heroColStacked : null]}>
@@ -134,6 +150,9 @@ const styles = StyleSheet.create({
   copyColStacked: {
     maxWidth: CONTENT_MAX,
   },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  skip: { minHeight: targetSizes.min, justifyContent: 'center', paddingHorizontal: spacing.sm },
+  skipLabel: { fontSize: fontSizes.body, fontWeight: fontWeights.semibold },
   brand: {
     flexDirection: 'row',
     alignItems: 'center',

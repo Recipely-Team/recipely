@@ -1,15 +1,18 @@
 import { t } from '@presentation/i18n';
 import type { OnboardingSlide } from '@presentation/app/onboarding/model/onboarding-slide';
+import { OnboardingSlideKind } from '@presentation/app/onboarding/model/onboarding-slide-kind';
 
 /**
- * Builds the three welcome slides from the active translations. A plain builder
- * (not a constant) so the copy re-reads on every language switch.
+ * The slides, each saying something the app does today: save from anywhere,
+ * cook hands-free, plan the week, cook with what you have. No counts: a number
+ * on these slides needs a source (onboarding-claims.test.ts).
  */
 export const buildOnboardingSlides = (): OnboardingSlide[] => {
   const s = t().onboarding.slides;
   return [
-    { kind: 'recipes', eyebrow: s.recipesEyebrow, title: s.recipesTitle, body: s.recipesBody },
-    { kind: 'ai', eyebrow: s.aiEyebrow, title: s.aiTitle, body: s.aiBody },
-    { kind: 'timer', eyebrow: s.timerEyebrow, title: s.timerTitle, body: s.timerBody },
+    { kind: OnboardingSlideKind.Import, eyebrow: s.importEyebrow, title: s.importTitle, body: s.importBody },
+    { kind: OnboardingSlideKind.Cook, eyebrow: s.cookEyebrow, title: s.cookTitle, body: s.cookBody },
+    { kind: OnboardingSlideKind.Plan, eyebrow: s.planEyebrow, title: s.planTitle, body: s.planBody },
+    { kind: OnboardingSlideKind.Fridge, eyebrow: s.fridgeEyebrow, title: s.fridgeTitle, body: s.fridgeBody },
   ];
 };
