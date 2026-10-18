@@ -140,6 +140,24 @@ export const FailureReporter = {
       // no-op
     }
   },
+
+  /**
+   * Sends ONE failure to crash reporting whatever its code — for a handled code
+   * that is itself the bug being chased.
+   *
+   * @remarks
+   * "You're offline" appeared on sign-in with the device online, twice, on the
+   * first request after a fresh launch, and `network` failures are never
+   * reported. Call sites are few and named (sign-in only), so this does not
+   * reopen the flood `REPORTED_CODES` keeps out.
+   */
+  reportDiagnostic(failure: Failure, context: string): void {
+    try {
+      current?.(new Error(`${failure.code}: ${redact(failure.message)}`), context);
+    } catch {
+      // no-op
+    }
+  },
 };
 
 let current: Sink | null = null;
