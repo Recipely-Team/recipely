@@ -36,6 +36,16 @@ describe('FailureReporter', () => {
     expect(events[0].context).toBe('FeedScreen');
   });
 
+  // "You're offline" on sign-in with the phone online: network failures are
+  // never crash-reported, so the one being chased must be sent on purpose.
+  it('sends a diagnostic network failure to crash reporting, redacted', () => {
+    FailureReporter.reportDiagnostic(new NetworkFailure('ERR_NETWORK: Network Error at https://api.recipely.net/x'), 'Login.signIn');
+
+    expect(crashes).toHaveLength(1);
+    expect(crashes[0]?.context).toBe('Login.signIn');
+    expect(String((crashes[0]?.error as Error).message)).toBe('network: ERR_NETWORK: Network Error at [redacted]');
+  });
+
   it('reports only the unforeseen ones as crashes', () => {
     FailureReporter.report(new UnknownFailure('boom'), 'FeedScreen');
     FailureReporter.report(new ServerFailure('500'), 'FeedScreen');

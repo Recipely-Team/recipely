@@ -47,6 +47,8 @@ export const DiagnosticMessage = {
   network: {
     timedOut: 'Request timed out',
     unreachable: 'Network unreachable',
+    /** No response at all: the transport's own code (ERR_NETWORK, ECONNABORTED…) and message. */
+    noResponse: (code: string | undefined, message: string): string => `${code ?? 'no-code'}: ${message || 'Network unreachable'}`,
     unexpected: 'Unexpected error',
     badEnvelope: (reason: string): string => `Bad envelope: ${reason}`,
     uploadFailed: (status: number): string => `Network error (status ${status})`,
