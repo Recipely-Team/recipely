@@ -103,6 +103,10 @@ export const useRecipeList = (): UseRecipeListResult => {
     router.push(RoutePaths.loginWithRedirect(pathname) as Href);
   }, [closePrompt, pathname, router]);
   const onOpenCreate = useCallback(() => requestGate(() => router.push(RoutePaths.createRecipe)), [requestGate, router]);
+  const onCreateWithAi = useCallback(
+    (query: string) => requestGate(() => router.push({ pathname: RoutePaths.createRecipe, params: { prompt: query } } as Href)),
+    [requestGate, router],
+  );
   const { cuisineLabel } = useTaxonomyLabel();
   const state = recipeListStore((s) => s.state);
   const loadFromStore = recipeListStore((s) => s.load);
@@ -441,6 +445,8 @@ export const useRecipeList = (): UseRecipeListResult => {
     onRefresh,
     onOpenRecipe,
     onOpenCreate,
+    searchedQuery: debouncedSearch,
+    onCreateWithAi,
     isSaved,
     onToggleSave: (id: string) => requestGate(() => void toggleSave(id), t().recipes.signInToSave),
     onChangeSort: (key: SortKey) => {

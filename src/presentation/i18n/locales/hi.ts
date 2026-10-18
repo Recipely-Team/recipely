@@ -581,6 +581,9 @@ export const hi: TranslationsType = {
     minutes: 'मिनट',
     searchPlaceholder: 'रेसिपी खोजें...',
     noResults: 'आपकी खोज से मेल खाती कोई रेसिपी नहीं मिली।',
+    noResultsQuery: "“{q}” के लिए अभी कुछ नहीं",
+    createWithAi: "AI से “{q}” बनाएँ",
+    createWithAiBody: "AI पूरी रेसिपी लिखता है — बाद में आप कुछ भी बदल सकते हैं।",
     servings: 'सर्विंग',
     portions: {
       decrease: 'कम सर्विंग',

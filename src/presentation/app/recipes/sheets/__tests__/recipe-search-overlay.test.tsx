@@ -74,7 +74,7 @@ const scrollProps = () => ({ ref: jest.fn(), onScroll: jest.fn(), scrollEventThr
 describe('RecipeSearchOverlay', () => {
   it('shows the zero-results empty state when the backend returned no matches', () => {
     const { root } = renderComponent(
-      <RecipeSearchOverlay recipes={[]} isLoading={false} onOpenRecipe={jest.fn()} assistantScroll={scrollProps()} />,
+      <RecipeSearchOverlay recipes={[]} isLoading={false} onOpenRecipe={jest.fn()} assistantScroll={scrollProps()} query="" onCreateWithAi={jest.fn()} />,
     );
 
     const texts = textContent(root);
@@ -85,7 +85,7 @@ describe('RecipeSearchOverlay', () => {
   it('renders the result count and every matching recipe row when results exist', () => {
     const recipes = [buildRecipe('r1', 'Search Pasta'), buildRecipe('r2', 'Search Salad')];
     const { root } = renderComponent(
-      <RecipeSearchOverlay recipes={recipes} isLoading={false} onOpenRecipe={jest.fn()} assistantScroll={scrollProps()} />,
+      <RecipeSearchOverlay recipes={recipes} isLoading={false} onOpenRecipe={jest.fn()} assistantScroll={scrollProps()} query="" onCreateWithAi={jest.fn()} />,
     );
 
     const texts = textContent(root);
@@ -99,7 +99,7 @@ describe('RecipeSearchOverlay', () => {
     const recipes = [buildRecipe('r1', 'Search Pasta')];
     const onOpenRecipe = jest.fn();
     const { root } = renderComponent(
-      <RecipeSearchOverlay recipes={recipes} isLoading={false} onOpenRecipe={onOpenRecipe} assistantScroll={scrollProps()} />,
+      <RecipeSearchOverlay recipes={recipes} isLoading={false} onOpenRecipe={onOpenRecipe} assistantScroll={scrollProps()} query="" onCreateWithAi={jest.fn()} />,
     );
 
     const row = root.find(
@@ -120,7 +120,7 @@ describe('RecipeSearchOverlay', () => {
   describe('while the typed query is unanswered', () => {
     it('suppresses the no-results copy instead of accusing the query of failing', () => {
       const { root } = renderComponent(
-        <RecipeSearchOverlay recipes={[]} isLoading onOpenRecipe={jest.fn()} assistantScroll={scrollProps()} />,
+        <RecipeSearchOverlay recipes={[]} isLoading onOpenRecipe={jest.fn()} assistantScroll={scrollProps()} query="" onCreateWithAi={jest.fn()} />,
       );
 
       expect(textContent(root)).not.toContain(t().recipes.noResults);
@@ -129,7 +129,7 @@ describe('RecipeSearchOverlay', () => {
     it('replaces the stale result count with the refreshing label', () => {
       const recipes = [buildRecipe('r1', 'Search Pasta')];
       const { root } = renderComponent(
-        <RecipeSearchOverlay recipes={recipes} isLoading onOpenRecipe={jest.fn()} assistantScroll={scrollProps()} />,
+        <RecipeSearchOverlay recipes={recipes} isLoading onOpenRecipe={jest.fn()} assistantScroll={scrollProps()} query="" onCreateWithAi={jest.fn()} />,
       );
 
       const texts = textContent(root);
@@ -142,7 +142,7 @@ describe('RecipeSearchOverlay', () => {
     it('keeps the previous rows visible rather than blanking the list', () => {
       const recipes = [buildRecipe('r1', 'Search Pasta')];
       const { root } = renderComponent(
-        <RecipeSearchOverlay recipes={recipes} isLoading onOpenRecipe={jest.fn()} assistantScroll={scrollProps()} />,
+        <RecipeSearchOverlay recipes={recipes} isLoading onOpenRecipe={jest.fn()} assistantScroll={scrollProps()} query="" onCreateWithAi={jest.fn()} />,
       );
 
       // Stale-while-revalidate: emptying the list on every keystroke would make
@@ -159,6 +159,8 @@ describe('RecipeSearchOverlay', () => {
     renderComponent(
       <RecipeSearchOverlay
         recipes={[buildRecipe('r1', 'Search Pasta')]}
+        query="pasta"
+        onCreateWithAi={jest.fn()}
         isLoading={false}
         onOpenRecipe={jest.fn()}
         assistantScroll={{ ...scrollProps(), ref: attachList }}
@@ -167,5 +169,35 @@ describe('RecipeSearchOverlay', () => {
 
     expect(attachList).toHaveBeenCalled();
     expect(attachList.mock.calls[0][0]).not.toBeNull();
+  });
+});
+
+/**
+ * "Arama yapınca bir şey çıkmıyor": the catalogue is small, so a search often
+ * finds nothing, and the empty state only said so. It now offers to create the
+ * searched dish with AI, carrying the exact words.
+ */
+describe('RecipeSearchOverlay — a search that found nothing', () => {
+  it('offers to create the searched dish with AI, with the search text', () => {
+    const onCreateWithAi = jest.fn();
+    const { root } = renderComponent(
+      <RecipeSearchOverlay recipes={[]} isLoading={false} onOpenRecipe={jest.fn()} assistantScroll={scrollProps()} query="lahmacun" onCreateWithAi={onCreateWithAi} />,
+    );
+    const button = root.findAll((n) => n.props.accessibilityRole === 'button' && typeof n.props.onPress === 'function').find((n) =>
+      textContent(n).some((line) => line.includes('lahmacun')),
+    );
+
+    expect(button).toBeDefined();
+    (button?.props.onPress as () => void)();
+
+    expect(onCreateWithAi).toHaveBeenCalledWith('lahmacun');
+  });
+
+  it('makes no offer when there is no search text to create from', () => {
+    const { root } = renderComponent(
+      <RecipeSearchOverlay recipes={[]} isLoading={false} onOpenRecipe={jest.fn()} assistantScroll={scrollProps()} query="" onCreateWithAi={jest.fn()} />,
+    );
+
+    expect(textContent(root).some((line) => line.includes('AI'))).toBe(false);
   });
 });

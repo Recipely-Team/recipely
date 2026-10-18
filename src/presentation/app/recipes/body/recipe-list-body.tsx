@@ -106,6 +106,8 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         isLoading={vm.isRefetching}
         onOpenRecipe={vm.onOpenRecipe}
         assistantScroll={vm.assistantScroll}
+        query={vm.searchedQuery}
+        onCreateWithAi={vm.onCreateWithAi}
       />
     );
   } else {
