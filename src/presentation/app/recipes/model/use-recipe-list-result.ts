@@ -40,6 +40,8 @@ export interface UseRecipeListResult {
   isReloadingResults: boolean;
   /** True while the NEXT page is being appended below the current rows. */
   isLoadingMore: boolean;
+  /** Whether the backend has another page for the current answer. */
+  hasMore: boolean;
   /** Called when the feed nears its end; appends the next page if there is one. */
   onEndReached: () => void;
   activeFilterCount: number;

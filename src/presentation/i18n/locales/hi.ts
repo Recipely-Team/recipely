@@ -2,6 +2,8 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const hi: TranslationsType = {
   common: {
+    loadingMore: "और लोड हो रहे हैं",
+    endOfList: "आपने सब देख लिया",
     undo: 'पूर्ववत करें',
     showPassword: 'पासवर्ड दिखाएँ',
     hidePassword: 'पासवर्ड छिपाएँ',

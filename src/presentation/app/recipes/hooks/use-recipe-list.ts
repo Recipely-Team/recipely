@@ -404,6 +404,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     isRefetching,
     isReloadingResults,
     isLoadingMore,
+    hasMore: state.status === StoreStatus.Loaded && state.hasMore,
     onEndReached,
     activeFilterCount: mutate.countActiveFilters(filters),
     gridColumns,

@@ -1,5 +1,7 @@
 export const ja = {
   common: {
+    loadingMore: "さらに読み込み中",
+    endOfList: "すべて表示しました",
     undo: '元に戻す',
     showPassword: 'パスワードを表示',
     hidePassword: 'パスワードを隠す',

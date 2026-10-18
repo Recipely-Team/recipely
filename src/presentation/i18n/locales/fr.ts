@@ -1,5 +1,7 @@
 export const fr = {
   common: {
+    loadingMore: "Chargement de la suite",
+    endOfList: "Vous avez tout vu",
     undo: 'Annuler',
     showPassword: 'Afficher le mot de passe',
     hidePassword: 'Masquer le mot de passe',
