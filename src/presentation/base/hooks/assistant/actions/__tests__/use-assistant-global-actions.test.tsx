@@ -161,6 +161,35 @@ describe('search', () => {
     expect(router.navigate).toHaveBeenCalledWith(RoutePaths.recipesWithSearch('tavuk şavurma'));
   });
 
+  // "Asistan tarif bulamayınca oluşturmayı önermeli": the search answered only
+  // { ok: true }, so the model never knew the library had nothing, and the
+  // instruction to offer creating it could not fire.
+  it('tells the model when nothing matched, so it can offer to create the recipe', async () => {
+    const feed = fakeRecipeList();
+    const registry = harness(feed);
+
+    const running = registry.run(AssistantAction.Search, 'lahmacun');
+    await Promise.resolve();
+    feed.answer('lahmacun', []);
+
+    const result = await running;
+    expect(result).toMatchObject({ ok: true, n: { found: 0 } });
+    expect(result.summary).toContain('generateRecipe');
+  });
+
+  it('reports how many it found when the search has results', async () => {
+    const feed = fakeRecipeList();
+    const registry = harness(feed);
+
+    const running = registry.run(AssistantAction.Search, 'pilav');
+    await Promise.resolve();
+    feed.answer('pilav', [{ id: 'r1', name: 'Pilav' }, { id: 'r2', name: 'Bulgur Pilavı' }]);
+
+    const result = await running;
+    expect(result).toMatchObject({ ok: true, n: { found: 2 } });
+    expect(result.summary).toBeUndefined();
+  });
+
   it('gives up waiting rather than leaving the assistant silent', async () => {
     jest.useFakeTimers();
     try {

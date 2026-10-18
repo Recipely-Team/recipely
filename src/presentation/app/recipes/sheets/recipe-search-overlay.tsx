@@ -1,4 +1,4 @@
-import { ActivityIndicator, StyleSheet, View, FlatList } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, FlatList, ScrollView } from 'react-native';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { NoResultsState } from '@presentation/app/recipes/items/banners/no-results-state';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -80,7 +80,10 @@ export const RecipeSearchOverlay = ({
           <ActivityIndicator color={colors.primary} />
         </View>
       ) : recipes.length === ValueConstants.zero ? (
-        <NoResultsState query={query} onCreateWithAi={onCreateWithAi} />
+        // Scrolls, and takes taps with the keyboard up: the offer is taller than the room above the keys.
+        <ScrollView contentContainerStyle={styles.emptyScroll} keyboardShouldPersistTaps="handled">
+          <NoResultsState query={query} onCreateWithAi={onCreateWithAi} />
+        </ScrollView>
       ) : (
         <FlatList
           // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
@@ -120,6 +123,10 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: spacing.md,
+  },
+  emptyScroll: {
+    flexGrow: ValueConstants.one,
+    justifyContent: 'center',
   },
   empty: {
     flex: ValueConstants.one,
