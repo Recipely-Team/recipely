@@ -37,7 +37,7 @@ export const AiBannerCard = ({ onPress }: AiBannerCardProps): React.JSX.Element 
             <Ionicons name="sparkles" size={iconSizes.md} color={colors.onOverlay} />
           </View>
 
-          <ThemedText variant="body" numberOfLines={ValueConstants.one} style={[styles.title, { color: colors.onOverlay }]}>
+          <ThemedText variant="body" numberOfLines={ValueConstants.two} style={[styles.title, { color: colors.onOverlay }]}>
             {t().recipes.aiPromo}
           </ThemedText>
 

@@ -38,7 +38,7 @@ export const AnalysingStep = ({ photos }: AnalysingStepProps): React.JSX.Element
               key={photo.uri}
               style={[styles.tile, { borderColor: active ? colors.primary : colors.cardBorder, backgroundColor: colors.skeleton }, active ? styles.tileActive : null]}
             >
-              <RecipeImage uri={photo.uri} style={styles.image} placeholderCompact />
+              <RecipeImage accessibilityLabel={null} uri={photo.uri} style={styles.image} placeholderCompact />
               {active ? <ScanSweep height={TILE_HEIGHT} /> : null}
             </View>
           );

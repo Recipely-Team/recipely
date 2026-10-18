@@ -55,7 +55,7 @@ export const DmPreview = ({ handle, dmText, recipeName, recipeImage, publicReply
       {recipeName === null ? null : (
         <View style={[styles.recipe, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <View style={styles.recipeImage}>
-            <RecipeImage uri={recipeImage} placeholderCompact style={StyleSheet.absoluteFill} />
+            <RecipeImage accessibilityLabel={null} uri={recipeImage} placeholderCompact style={StyleSheet.absoluteFill} />
           </View>
           <View style={styles.recipeText}>
             <SizedText size={fontSizes.caption} weight={fontWeights.bold} numberOfLines={ValueConstants.two}>

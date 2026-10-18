@@ -38,7 +38,7 @@ export const DateStrip = ({ selected, today, canPageNext, dayLook, onSelect, onP
   return (
     <View style={styles.stack}>
       <View style={styles.header}>
-        <SizedText size={fontSizes.body} weight={fontWeights.bold} style={styles.date} numberOfLines={ValueConstants.one}>
+        <SizedText size={fontSizes.body} weight={fontWeights.bold} style={styles.date} numberOfLines={ValueConstants.two}>
           {formatLongDate(selected, locale)}
         </SizedText>
         {isToday ? (

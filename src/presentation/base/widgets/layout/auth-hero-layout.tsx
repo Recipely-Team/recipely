@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTwoPaneSplit } from '@presentation/base/responsive/fold/use-two-pane-split';
@@ -35,6 +36,7 @@ export interface AuthHeroLayoutProps {
  */
 export const AuthHeroLayout = ({ icon, title, subtitle, backLabel, onBack, children }: AuthHeroLayoutProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const scrollEndPadding = useScrollEndPadding();
   const split = useTwoPaneSplit();
   const isLandscapeShell = split.isSplit;
 
@@ -84,7 +86,7 @@ export const AuthHeroLayout = ({ icon, title, subtitle, backLabel, onBack, child
     <KeyboardAvoider style={styles.flex}>
       <ScrollView
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollEndPadding }]}
         style={{ backgroundColor: colors.background }}
       >
         <LinearGradient

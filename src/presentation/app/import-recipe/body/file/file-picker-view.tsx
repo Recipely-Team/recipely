@@ -1,3 +1,4 @@
+import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { Failure } from '@core/failure';
@@ -48,6 +49,7 @@ const AI_MARK = [ProvenanceMark.Ai] as const;
  *   tiles never push it out of reach.
  */
 export const FilePickerView = (props: FilePickerViewProps): React.JSX.Element => {
+  const scrollEndPadding = useScrollEndPadding();
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
   const copy = t().fileImport;
@@ -101,7 +103,7 @@ export const FilePickerView = (props: FilePickerViewProps): React.JSX.Element =>
         )}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: scrollEndPadding }]}>
         <FileReadButton disabled={isEmpty} onPress={props.onSubmit} />
         <View style={styles.note}>
           <Ionicons name="lock-closed-outline" size={iconSizes.sm} color={colors.textMuted} />

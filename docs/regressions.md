@@ -3046,3 +3046,20 @@ the two pages `recipeWebUrl` / `creatorWebUrl` share — and `scripts/assert-app
 Verified on a release APK with `pm query-activities`: `/login`, `/register`,
 `/reset-password`, `/` and `/about` resolve to the browser only. *The class:* **a
 deep-link claim is an allowlist of shareable pages, never a domain.**
+
+## Cut labels, hidden buttons and silent photos — the app at the largest text
+
+**At Android's largest text (2×) the app could not be read or finished**: tab labels read
+"Recip…", cuisine names "Turki…", the AI button "Generate a recip…"; on a small phone the
+login screen's last buttons ("Continue without an account", the Google/Apple buttons)
+scrolled under the 3-button navigation bar and could not be tapped; the assistant's text
+box sat behind the keyboard because edge-to-edge Android leaves the navigation bar out of
+the keyboard's reported height; and photos were read as "image" or not at all.
+*Guard:* tab labels and cuisine names shrink to fit (`maxFontScales.tabLabelFloor` /
+`shrinkToFitFloor`, `tab-bar.test.tsx`); full-screen scrolls and footers without a tab bar
+pad by `useScrollEndPadding()`; `useKeyboardHeight` measures from the keyboard's top edge
+(`use-keyboard-height.test.tsx`); `RecipeImage.accessibilityLabel` is REQUIRED — a name, or
+`null` for a photo inside an already-labelled card. On a device: recipely-tests
+`npm run maestro:largest-text` and `npm run maestro:small-screen`. *The class:* **test at
+the largest text and the smallest screen, and look at the screenshots — a cut label still
+holds its full string, so no text assertion fails.**

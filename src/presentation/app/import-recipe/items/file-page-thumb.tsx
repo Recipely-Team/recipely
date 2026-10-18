@@ -29,7 +29,7 @@ export const FilePageThumb = ({ file, large = false }: FilePageThumbProps): Reac
   const isPdf = file.mimeType === ImportFileMimeType.Pdf;
 
   if (!isPdf && !broken) {
-    return <Image source={{ uri: file.uri }} style={styles.fill} resizeMode="cover" onError={() => setBroken(true)} />;
+    return <Image source={{ uri: file.uri }} style={styles.fill} resizeMode="cover" onError={() => setBroken(true)} accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />;
   }
 
   return (

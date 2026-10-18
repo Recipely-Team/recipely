@@ -1,3 +1,4 @@
+import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
 import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { StoreStatus } from "@application/store/store-status";
@@ -18,6 +19,7 @@ export interface AutomationRulesListProps {
 
 /** The creator's comment-to-DM rules, paged on scroll, under the connection header and above the rules note. */
 export const AutomationRulesList = ({ vm, scrollable }: AutomationRulesListProps): React.JSX.Element => {
+  const scrollEndPadding = useScrollEndPadding();
   const colors = useTheme().colors;
   const rules = vm.rules;
   return (
@@ -64,7 +66,7 @@ export const AutomationRulesList = ({ vm, scrollable }: AutomationRulesListProps
       }
       onEndReached={vm.onEndReached}
       onEndReachedThreshold={ListConstants.endReachedThreshold}
-      contentContainerStyle={styles.list}
+      contentContainerStyle={[styles.list, { paddingBottom: scrollEndPadding }]}
     />
   );
 };

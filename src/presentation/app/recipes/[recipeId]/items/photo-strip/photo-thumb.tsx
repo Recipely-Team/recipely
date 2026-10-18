@@ -53,7 +53,7 @@ export const PhotoThumb = ({ url, focus, index, total, selected, width, coverBan
           selected ? styles.thumbSelected : null,
         ]}
       >
-        <RecipeImage uri={url} focus={focus} style={styles.image} placeholderCompact />
+        <RecipeImage accessibilityLabel={null} uri={url} focus={focus} style={styles.image} placeholderCompact />
         {coverBand ? (
           <View style={[styles.band, { backgroundColor: colors.overlay }]}>
             <ThemedText style={[styles.bandText, { color: colors.onOverlay }]}>{t().photoViewer.cover}</ThemedText>

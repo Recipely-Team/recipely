@@ -27,7 +27,7 @@ export const FoodThumb = ({ imageUrl, icon, size }: FoodThumbProps): React.JSX.E
   }
   return (
     <View style={[styles.tile, box]}>
-      <RecipeImage uri={imageUrl} placeholderCompact style={StyleSheet.absoluteFill} />
+      <RecipeImage accessibilityLabel={null} uri={imageUrl} placeholderCompact style={StyleSheet.absoluteFill} />
     </View>
   );
 };

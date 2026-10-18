@@ -32,7 +32,7 @@ export const PlannedMealCard = ({ entry, onOpen, onStep, onOptions }: PlannedMea
     <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
       <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={recipe.name}>
         <View style={[styles.thumb, { backgroundColor: colors.skeleton, opacity: entry.eaten ? opacities.done : opacities.full }]}>
-          {recipe.imageUrl === null ? null : <Image source={{ uri: recipe.imageUrl }} style={styles.image} contentFit="cover" />}
+          {recipe.imageUrl === null ? null : <Image source={{ uri: recipe.imageUrl }} style={styles.image} contentFit="cover" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />}
         </View>
         {entry.eaten ? <EatenBadge /> : null}
       </Pressable>

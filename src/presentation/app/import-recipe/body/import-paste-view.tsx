@@ -1,3 +1,4 @@
+import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -37,6 +38,7 @@ export interface ImportPasteViewProps {
  *   instructions for one problem.
  */
 export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): React.JSX.Element => {
+  const scrollEndPadding = useScrollEndPadding();
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
   const copy = t().importRecipe;
@@ -126,7 +128,7 @@ export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): R
 
       <ImportPasteSteps />
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: scrollEndPadding }]}>
         <PrimaryButton label={copy.pasteSubmit} onPress={handleSubmit} />
         <View style={styles.footerNote}>
           <Ionicons name="information-circle-outline" size={iconSizes.xs} color={colors.textMuted} />

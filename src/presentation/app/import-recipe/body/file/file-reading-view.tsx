@@ -1,3 +1,4 @@
+import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
@@ -39,6 +40,7 @@ export const FileReadingView = ({
   pagesLabel,
   onClose,
 }: FileReadingViewProps): React.JSX.Element => {
+  const scrollEndPadding = useScrollEndPadding();
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
   const copy = t().fileImport;
@@ -85,7 +87,7 @@ export const FileReadingView = ({
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: scrollEndPadding }]}>
         <PrimaryButton label={t().common.close} onPress={onClose} disabled={isDone} />
       </View>
     </>

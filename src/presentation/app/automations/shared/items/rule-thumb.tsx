@@ -23,7 +23,7 @@ export const RuleThumb = ({ uri, size }: RuleThumbProps): React.JSX.Element => {
   }
   return (
     <View style={[styles.tile, box]}>
-      <RecipeImage uri={uri} placeholderCompact style={StyleSheet.absoluteFill} />
+      <RecipeImage accessibilityLabel={null} uri={uri} placeholderCompact style={StyleSheet.absoluteFill} />
     </View>
   );
 };
