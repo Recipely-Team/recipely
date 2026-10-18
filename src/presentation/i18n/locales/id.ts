@@ -1,5 +1,7 @@
 export const id = {
   common: {
+    loadingMore: "Memuat lagi",
+    endOfList: "Kamu sudah melihat semuanya",
     undo: 'Urungkan',
     showPassword: 'Tampilkan kata sandi',
     hidePassword: 'Sembunyikan kata sandi',

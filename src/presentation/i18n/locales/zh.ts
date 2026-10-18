@@ -1,5 +1,7 @@
 export const zh = {
   common: {
+    loadingMore: "正在加载更多",
+    endOfList: "已经全部看完了",
     undo: '撤销',
     showPassword: '显示密码',
     hidePassword: '隐藏密码',

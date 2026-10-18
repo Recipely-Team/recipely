@@ -1,5 +1,7 @@
 export const ar = {
   common: {
+    loadingMore: "جارٍ تحميل المزيد",
+    endOfList: "لقد شاهدت كل شيء",
     undo: "تراجع",
     showPassword: "إظهار كلمة المرور",
     hidePassword: "إخفاء كلمة المرور",

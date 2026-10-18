@@ -1,5 +1,7 @@
 export const ru = {
   common: {
+    loadingMore: "Загружаем ещё",
+    endOfList: "Вы всё посмотрели",
     undo: 'Отменить',
     showPassword: 'Показать пароль',
     hidePassword: 'Скрыть пароль',

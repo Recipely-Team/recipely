@@ -2,6 +2,8 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const ko: TranslationsType = {
   common: {
+    loadingMore: "더 불러오는 중",
+    endOfList: "모두 확인했어요",
     undo: '실행 취소',
     showPassword: '비밀번호 보기',
     hidePassword: '비밀번호 숨기기',

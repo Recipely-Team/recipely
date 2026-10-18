@@ -166,7 +166,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         scrollEventThrottle={scrollThrottleMs.perFrame}
         onEndReached={vm.onEndReached}
         onEndReachedThreshold={ListConstants.endReachedThreshold}
-        ListFooterComponent={<FeedFooter isLoadingMore={vm.isLoadingMore} />}
+        ListFooterComponent={<FeedFooter isLoadingMore={vm.isLoadingMore} hasMore={vm.recipes.length > ValueConstants.zero ? vm.hasMore : undefined} />}
         contentContainerStyle={[styles.listContent, styles.mobileListContent]}
         style={styles.list}
         refreshControl={

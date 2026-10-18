@@ -137,6 +137,7 @@ const baseVm = (): Omit<UseRecipeListResult, 'scrollY' | 'headerTranslateY' | 's
   onOpenRecipe: jest.fn(),
   onOpenCreate: jest.fn(),
   searchedQuery: '',
+  hasMore: false,
   onCreateWithAi: jest.fn(),
   isSaved: () => false,
   onToggleSave: jest.fn(),

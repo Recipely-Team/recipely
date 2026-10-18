@@ -1,5 +1,7 @@
 export const en = {
   common: {
+    loadingMore: "Loading more",
+    endOfList: "You've seen them all",
     undo: 'Undo',
     showPassword: 'Show password',
     hidePassword: 'Hide password',

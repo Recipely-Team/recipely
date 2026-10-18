@@ -1,5 +1,7 @@
 export const pt = {
   common: {
+    loadingMore: "Carregando mais",
+    endOfList: "Você já viu tudo",
     undo: 'Desfazer',
     showPassword: 'Mostrar senha',
     hidePassword: 'Ocultar senha',

@@ -2,6 +2,8 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const tr: TranslationsType = {
   common: {
+    loadingMore: "Daha fazlası yükleniyor",
+    endOfList: "Hepsini gördün",
     undo: 'Geri al',
     showPassword: 'Şifreyi göster',
     hidePassword: 'Şifreyi gizle',
