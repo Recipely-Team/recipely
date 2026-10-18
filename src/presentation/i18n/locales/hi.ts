@@ -2,6 +2,8 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const hi: TranslationsType = {
   common: {
+    loadingMore: "और लोड हो रहे हैं",
+    endOfList: "आपने सब देख लिया",
     undo: 'पूर्ववत करें',
     showPassword: 'पासवर्ड दिखाएँ',
     hidePassword: 'पासवर्ड छिपाएँ',
@@ -581,6 +583,9 @@ export const hi: TranslationsType = {
     minutes: 'मिनट',
     searchPlaceholder: 'रेसिपी खोजें...',
     noResults: 'आपकी खोज से मेल खाती कोई रेसिपी नहीं मिली।',
+    noResultsQuery: "“{q}” के लिए अभी कुछ नहीं",
+    createWithAi: "AI से “{q}” बनाएँ",
+    createWithAiBody: "AI पूरी रेसिपी लिखता है — बाद में आप कुछ भी बदल सकते हैं।",
     servings: 'सर्विंग',
     portions: {
       decrease: 'कम सर्विंग',

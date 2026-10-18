@@ -1,3 +1,4 @@
+import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { StoreStatus } from '@application/store/store-status';
@@ -23,6 +24,7 @@ import { t } from '@presentation/i18n';
  * with the no-retry note under it.
  */
 export const AutomationActivityScreen = (): React.JSX.Element => {
+  const scrollEndPadding = useScrollEndPadding();
   const colors = useTheme().colors;
   const vm = useAutomationActivity();
   const scrollable = useAssistantScrollable(vm.opened.status === StoreStatus.Loaded);
@@ -46,6 +48,8 @@ export const AutomationActivityScreen = (): React.JSX.Element => {
     const sends = vm.sends;
     return (
       <FlatList
+        // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+        removeClippedSubviews={false}
         {...scrollable}
         data={vm.shown}
         keyExtractor={(send) => send.id}
@@ -76,7 +80,7 @@ export const AutomationActivityScreen = (): React.JSX.Element => {
         }
         onEndReached={vm.onEndReached}
         onEndReachedThreshold={ListConstants.endReachedThreshold}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingBottom: scrollEndPadding }]}
       />
     );
   };

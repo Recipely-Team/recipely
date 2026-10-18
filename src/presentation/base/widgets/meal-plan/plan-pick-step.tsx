@@ -48,6 +48,8 @@ export const PlanPickStep = ({ onChoose }: PlanPickStepProps): React.JSX.Element
     if (recipes.items.length === ValueConstants.zero) return <PickMessage title={emptyCopy(picker.tab, picker.query)} hint={null} action={null} />;
     return (
       <FlatList
+        // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+        removeClippedSubviews={false}
         data={recipes.items}
         keyExtractor={(hit) => hit.id}
         renderItem={({ item }) => <PlanPickRow hit={item} onPress={onChoose} />}

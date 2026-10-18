@@ -21,8 +21,9 @@
  *      shared BottomSheet, which presents as a dialog on the web shell.
  *   Q. The custom route context must admit every root `+file` expo-router reads
  *      from it (`+native-intent` carries `redirectSystemPath`).
- *   R. No `removeClippedSubviews` — it re-parents views behind Fabric's back and
- *      crashes the app on the New Architecture (CLAUDE.md §6c).
+ *   R. Every FlatList / SectionList passes `removeClippedSubviews={false}` — the
+ *      prop re-parents views behind Fabric's back and crashes the app, and
+ *      FlatList turns it ON by default on Android (CLAUDE.md §6c).
  *   S. The store hub draws no status bar — a drawn one got 1.0.43 rejected under
  *      App Store guideline 2.3.10 (fastlane/store-hub/README.md).
  *   U. Every assistant action offered to the model has a handler registered by
@@ -926,31 +927,36 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
   }
 }
 
-// --- R: no removeClippedSubviews (CLAUDE.md §6c) ------------------------------
+// --- R: lists never clip subviews (CLAUDE.md §6c) ---------------------------
 // The prop detaches and re-attaches child views behind Fabric's back, and on the
-// New Architecture that is a crash, not an optimisation: opening a finished
-// Instagram import killed the app with `addViewAt: failed to insert view [332]
-// into parent [338]` thrown from `ReactClippingViewManager.addView` — the class
-// that exists to implement this prop. The feed carrying it was the screen UNDER
-// the import, so it re-clipped as the stack transition finished and handed
-// Fabric a child it had already parented somewhere else.
-//
-// FlatList's own windowing (`windowSize`, `maxToRenderPerBatch`,
-// `initialNumToRender`) is the supported way to bound mounted rows, and it was
-// already tuned on the one list that had this.
+// New Architecture that is a crash: opening a finished Instagram import killed the
+// app with `addViewAt: failed to insert view … The specified child already has a
+// parent`, thrown from `ReactClippingViewManager.addView`. The first fix BANNED
+// the prop — and so left every list on FlatList's default, which is
+// `removeClippedSubviews ?? Platform.OS === 'android'`: ON, on Android. v1.7.0
+// crashed exactly as before. So the rule is the opposite of a ban: every list
+// element says `removeClippedSubviews={false}` out loud, and no other value.
 {
-  // Matches the prop being SET (`removeClippedSubviews={…}` / `: …`), not the
-  // word. Comment lines are dropped first, so the note at the one call site
-  // explaining why it must never come back does not itself trip the rule —
-  // which is exactly what happened the first time this ran.
+  const LIST_OPEN = /^\s*<(FlatList|SectionList|Animated\.FlatList|VirtualizedList)\b/;
+  const OFF = /removeClippedSubviews=\{false\}/;
   const SET_PROP = /removeClippedSubviews\s*[=:]/;
   const isComment = (line) => /^\s*(\/\/|\*|\/\*)/.test(line);
   for (const file of files) {
     if (isTest(file)) continue;
-    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
-    const code = src.split('\n').filter((line) => !isComment(line)).join('\n');
-    if (!SET_PROP.test(code)) continue;
-    errors.push(`${file}: removeClippedSubviews — crashes Fabric mounting (CLAUDE.md §6c)`);
+    const lines = fs.readFileSync(path.join(SRC, file), 'utf8').split('\n');
+    lines.forEach((line, index) => {
+      if (isComment(line)) return;
+      if (SET_PROP.test(line) && !OFF.test(line)) {
+        errors.push(`${file}:${String(index + 1)}: removeClippedSubviews may only be {false} (CLAUDE.md §6c)`);
+      }
+      if (!LIST_OPEN.test(line)) return;
+      // The opening tag runs to the first line that closes it.
+      const end = lines.findIndex((l, i) => i >= index && /(^\s*\/?>\s*$)|\/>\s*$/.test(l));
+      const tag = lines.slice(index, end === -1 ? index + 1 : end + 1).join('\n');
+      if (!OFF.test(tag)) {
+        errors.push(`${file}:${String(index + 1)}: list without removeClippedSubviews={false} — Android clips by default and crashes Fabric (CLAUDE.md §6c)`);
+      }
+    });
   }
 }
 

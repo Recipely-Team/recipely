@@ -2,6 +2,8 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const tr: TranslationsType = {
   common: {
+    loadingMore: "Daha fazlası yükleniyor",
+    endOfList: "Hepsini gördün",
     undo: 'Geri al',
     showPassword: 'Şifreyi göster',
     hidePassword: 'Şifreyi gizle',
@@ -582,6 +584,9 @@ export const tr: TranslationsType = {
     minutes: 'dk',
     searchPlaceholder: 'Tarif ara...',
     noResults: 'Aramana uygun tarif bulunamadı.',
+    noResultsQuery: "“{q}” için henüz tarif yok",
+    createWithAi: "“{q}” tarifini yapay zekâyla oluştur",
+    createWithAiBody: "Yapay zekâ tarifin tamamını yazar; sonra istediğin her şeyi değiştirebilirsin.",
     servings: 'Porsiyon',
     portions: {
       decrease: 'Daha az porsiyon',

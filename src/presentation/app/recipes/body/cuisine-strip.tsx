@@ -3,7 +3,7 @@ import { isWeb } from '@infrastructure/constants/platform';
 import { StyleSheet, View, ScrollView, Pressable } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, avatarSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, avatarSizes, borderWidths, maxFontScales } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/app/recipes/hooks/use-taxonomy-options';
@@ -75,6 +75,9 @@ export const CuisineStrip = ({ selectedCuisines, onToggle, gutter = true }: Cuis
           variant="caption"
           style={[styles.label, { color: active ? colors.primary : colors.textMuted }]}
           numberOfLines={ValueConstants.one}
+          // A circle's width is fixed: shrink before cutting "Turki…" at large text.
+          adjustsFontSizeToFit
+          minimumFontScale={maxFontScales.shrinkToFitFloor}
         >
           {name}
         </ThemedText>

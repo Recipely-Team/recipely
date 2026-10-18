@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
-import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
+import { NoResultsState } from '@presentation/app/recipes/items/banners/no-results-state';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebRecipeListItem } from '@presentation/base/widgets/cards/web-recipe-list-item';
 import { WebSectionHead } from '@presentation/app/recipes/items/web-section-head';
@@ -45,6 +44,11 @@ export interface WebRecipeGridProps {
   onChangeSort: (key: SortKey) => void;
   /** Opens the full filter sheet (cuisine / category / difficulty / max-time). */
   onOpenFilter: () => void;
+  /**
+   * How many recipes match on the server — not how many pages have loaded.
+   * The heading said "30 recipes" (the first page) over a feed with more.
+   */
+  total: number | undefined;
   /** Count of applied filters; shown as a badge on the filter button when > 0. */
   activeFilterCount: number;
   activeDifficulty: Difficulty | null;
@@ -53,6 +57,9 @@ export interface WebRecipeGridProps {
   /** Cap for one card — `numColumns` does not pad a short last row. */
   gridCellMaxWidth: number;
   onOpenRecipe: (id: string) => void;
+  /** The query these results answer; an empty answer offers to create it with AI. */
+  query: string;
+  onCreateWithAi: (query: string) => void;
   /** True when the recipe id is in the signed-in user's saved set. */
   isSaved: (id: string) => boolean;
   onToggleSave: (id: string) => void;
@@ -65,7 +72,7 @@ export interface WebRecipeGridProps {
 export const WebRecipeGrid = ({
   recipes, isSearching, activeCuisineLabel, sortBy, onChangeSort,
   onOpenFilter, activeFilterCount, activeDifficulty, onDifficultyChange,
-  gridColumns, gridCellMaxWidth, isLoading, isRefreshing, onOpenRecipe, isSaved, onToggleSave,
+  gridColumns, gridCellMaxWidth, isLoading, isRefreshing, onOpenRecipe, isSaved, onToggleSave, query, onCreateWithAi, total,
 }: WebRecipeGridProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -153,7 +160,7 @@ export const WebRecipeGrid = ({
         <WebSectionHead
           title={title}
           // No count while reloading.
-          sub={isLoading ? undefined : t().recipes.webRecipesCount.replace('{n}', String(recipes.length))}
+          sub={isLoading ? undefined : t().recipes.webRecipesCount.replace('{n}', String(total ?? recipes.length))}
           right={right}
         />
       </View>
@@ -171,15 +178,12 @@ export const WebRecipeGrid = ({
         </View>
       ) : recipes.length === ValueConstants.zero ? (
         <View style={[styles.empty, { borderColor: colors.border }]}>
-          <ErrorState
-            icon="search"
-            severity={SeverityType.Neutral}
-            title={t().recipes.noResults}
-            body={t().recipes.webEmptyBody}
-          />
+          <NoResultsState query={query} onCreateWithAi={onCreateWithAi} />
         </View>
       ) : (
         <FlatList
+          // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+          removeClippedSubviews={false}
           key={`web-grid-${gridColumns}`}
           data={recipes}
           keyExtractor={(r) => r.id}

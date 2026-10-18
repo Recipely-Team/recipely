@@ -47,7 +47,8 @@ export const mapAxiosError = (error: unknown): Failure => {
     return failureFromResponse(error.response.status, error.response.data);
   }
   if (error.request) {
-    return new NetworkFailure(error.message || DiagnosticMessage.network.unreachable);
+    // The code (ERR_NETWORK, ECONNABORTED…) is the only transport detail React Native passes up.
+    return new NetworkFailure(DiagnosticMessage.network.noResponse(error.code, error.message));
   }
   return new UnknownFailure(error.message, error);
 };

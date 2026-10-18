@@ -106,11 +106,15 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         isLoading={vm.isRefetching}
         onOpenRecipe={vm.onOpenRecipe}
         assistantScroll={vm.assistantScroll}
+        query={vm.searchedQuery}
+        onCreateWithAi={vm.onCreateWithAi}
       />
     );
   } else {
     body = (
       <Animated.FlatList
+        // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+        removeClippedSubviews={false}
         ref={vm.attachList}
         // Emptied while the next set loads; the header stays.
         data={rows}
@@ -120,7 +124,6 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         initialNumToRender={ListConstants.initialRows}
         maxToRenderPerBatch={ListConstants.rowsPerBatch}
         windowSize={ListConstants.windowSize}
-        // No removeClippedSubviews: it crashed under Fabric (check:structure rule R).
         ListHeaderComponent={
           <MobileFeedHeader
             filters={vm.filters}
@@ -163,7 +166,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         scrollEventThrottle={scrollThrottleMs.perFrame}
         onEndReached={vm.onEndReached}
         onEndReachedThreshold={ListConstants.endReachedThreshold}
-        ListFooterComponent={<FeedFooter isLoadingMore={vm.isLoadingMore} />}
+        ListFooterComponent={<FeedFooter isLoadingMore={vm.isLoadingMore} hasMore={vm.recipes.length > ValueConstants.zero ? vm.hasMore : undefined} />}
         contentContainerStyle={[styles.listContent, styles.mobileListContent]}
         style={styles.list}
         refreshControl={

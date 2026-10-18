@@ -50,6 +50,8 @@ export const AssistantTranscript = ({ lines }: AssistantTranscriptProps): React.
 
   return (
     <FlatList
+      // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+      removeClippedSubviews={false}
       ref={list}
       data={lines}
       keyExtractor={(line) => line.id}

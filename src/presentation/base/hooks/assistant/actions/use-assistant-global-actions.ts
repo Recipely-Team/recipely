@@ -1,3 +1,4 @@
+import { AssistantModelNote } from '@application/assistant/actions/assistant-model-note';
 import { useCallback } from 'react';
 import { router, type Href } from 'expo-router';
 import { isAssistantExternalName } from '@presentation/base/hooks/assistant/args/targets/assistant-external-targets';
@@ -10,7 +11,7 @@ import { RoutePaths } from '@presentation/base/constants/route-paths';
 import { StoreStatus } from '@application/store/store-status';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /**
@@ -80,7 +81,13 @@ export const useAssistantGlobalActions = (): void => {
       router.navigate(RoutePaths.recipesWithSearch(arg) as Href);
       // Wait for rows: the registry reads the screen as soon as this returns.
       await waitForRecipeListQuery(recipeListStore, arg);
-      return { ok: true };
+      const answered = recipeListStore.getState().state;
+      const found = answered.status === StoreStatus.Loaded && answered.query.trim() === arg.trim() ? answered.recipes.length : undefined;
+      // The count lets the model offer to create a recipe the library does not have.
+      if (found === undefined) return { ok: true };
+      return found === ValueConstants.zero
+        ? { ok: true, n: { found }, summary: AssistantModelNote.searchFoundNothing(arg) }
+        : { ok: true, n: { found } };
     }, [recipeListStore]),
   );
 

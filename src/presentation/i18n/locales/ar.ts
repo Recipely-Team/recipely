@@ -1,5 +1,7 @@
 export const ar = {
   common: {
+    loadingMore: "جارٍ تحميل المزيد",
+    endOfList: "لقد شاهدت كل شيء",
     undo: "تراجع",
     showPassword: "إظهار كلمة المرور",
     hidePassword: "إخفاء كلمة المرور",
@@ -579,6 +581,9 @@ export const ar = {
     minutes: "د",
     searchPlaceholder: "ابحث في الوصفات...",
     noResults: "لا توجد وصفات تطابق بحثك.",
+    noResultsQuery: "لا شيء عن «{q}» بعد",
+    createWithAi: "أنشئ «{q}» بالذكاء الاصطناعي",
+    createWithAiBody: "يكتب الذكاء الاصطناعي الوصفة كاملة، ويمكنك تعديل أي شيء بعدها.",
     servings: "الحصص",
     portions: {
       decrease: 'حصص أقل',

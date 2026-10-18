@@ -1,3 +1,4 @@
+import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { ValueConstants } from '@core/constants';
 import { StatsRange, type StatsRangeType } from '@domain/instagram/stats/stats-range';
@@ -32,6 +33,7 @@ const RANGES: readonly StatsRangeType[] = [StatsRange.Week, StatsRange.Month, St
  * the daily chart, the follower trend and every automated post.
  */
 export const CreatorStatsScreen = (): React.JSX.Element => {
+  const scrollEndPadding = useScrollEndPadding();
   const colors = useTheme().colors;
   const vm = useCreatorStats();
   const scrollable = useAssistantScrollable(vm.view === StatsViewKind.Stats);
@@ -96,7 +98,7 @@ export const CreatorStatsScreen = (): React.JSX.Element => {
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <PageTitle subject={copy.title} />
       <AutomationsBar title={copy.title} subtitle={vm.handle} icon="chevron-back" onBack={vm.onBack} />
-      <ScrollView {...scrollable} contentContainerStyle={styles.content}>
+      <ScrollView {...scrollable} contentContainerStyle={[styles.content, { paddingBottom: scrollEndPadding }]}>
         {range}
         {body()}
       </ScrollView>

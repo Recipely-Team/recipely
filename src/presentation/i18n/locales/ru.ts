@@ -1,5 +1,7 @@
 export const ru = {
   common: {
+    loadingMore: "Загружаем ещё",
+    endOfList: "Вы всё посмотрели",
     undo: 'Отменить',
     showPassword: 'Показать пароль',
     hidePassword: 'Скрыть пароль',
@@ -579,6 +581,9 @@ export const ru = {
     minutes: 'мин',
     searchPlaceholder: 'Искать рецепты...',
     noResults: 'По вашему запросу рецептов не найдено.',
+    noResultsQuery: "Пока ничего по запросу «{q}»",
+    createWithAi: "Создать «{q}» с ИИ",
+    createWithAiBody: "ИИ напишет весь рецепт — потом можно изменить что угодно.",
     servings: 'Порции',
     portions: {
       decrease: 'Меньше порций',

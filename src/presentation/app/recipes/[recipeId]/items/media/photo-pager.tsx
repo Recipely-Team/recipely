@@ -75,6 +75,8 @@ export const PhotoPager = ({ media, width, height, current, onSwipe }: PhotoPage
 
   return (
     <FlatList
+      // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+      removeClippedSubviews={false}
       ref={listRef}
       data={media as MediaItem[]}
       extraData={width}

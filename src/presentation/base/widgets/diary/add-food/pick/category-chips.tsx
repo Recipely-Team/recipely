@@ -24,6 +24,8 @@ export const CategoryChips = ({ categories, selected, onSelect, onEndReached }: 
   const chips: readonly { key: string | null; name: string }[] = [{ key: null, name: t().diary.allShelves }, ...categories];
   return (
     <FlatList
+      // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+      removeClippedSubviews={false}
       horizontal
       data={chips}
       keyExtractor={(chip) => chip.key ?? CharConstants.empty}

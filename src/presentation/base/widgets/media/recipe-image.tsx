@@ -12,7 +12,12 @@ export interface RecipeImageProps {
   /** Remote recipe / media URI. Empty, missing, or failed shows the placeholder. */
   uri: string | undefined | null;
   style?: StyleProp<ImageStyle>;
-  accessibilityLabel?: string;
+  /**
+   * What a screen reader says for this photo — the dish's name — or `null` for
+   * a photo that only decorates something already labelled (a card whose button
+   * names the recipe). Required, so no photo ships without that decision.
+   */
+  accessibilityLabel: string | null;
   /** Caption under the placeholder motif when there is no photo. */
   placeholderLabel?: string;
   /** Compact placeholder motif (no caption) for dense thumbnails. */
@@ -38,6 +43,9 @@ export interface RecipeImageProps {
  *   the new one decodes — the wrong recipe under the right title.
  * - **The crop sits on the photo's focal point** when the backend has found
  *   one, so a card shows the dish rather than the hands or pot around it.
+ * - **Every photo is described or deliberately silent.** A blind user heard
+ *   "image" on card after card, or nothing at all. A label makes the photo an
+ *   `image` the screen reader names; `null` hides it, so a card is read once.
  * - **`transition` is deliberately short.** It hides the decode step; long
  *   enough to read as a fade, short enough not to feel like a delay.
  */
@@ -66,7 +74,9 @@ export const RecipeImage = ({
     <Image
       source={{ uri }}
       style={style}
-      accessibilityLabel={accessibilityLabel}
+      {...(accessibilityLabel === null
+        ? { accessible: false, accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' as const }
+        : { accessible: true, accessibilityRole: 'image' as const, accessibilityLabel })}
       contentFit="cover"
       contentPosition={toContentPosition(focus)}
       cachePolicy="memory-disk"

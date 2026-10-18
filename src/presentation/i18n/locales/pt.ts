@@ -1,5 +1,7 @@
 export const pt = {
   common: {
+    loadingMore: "Carregando mais",
+    endOfList: "Você já viu tudo",
     undo: 'Desfazer',
     showPassword: 'Mostrar senha',
     hidePassword: 'Ocultar senha',
@@ -579,6 +581,9 @@ export const pt = {
     minutes: 'min',
     searchPlaceholder: 'Buscar receitas...',
     noResults: 'Nenhuma receita corresponde à sua busca.',
+    noResultsQuery: "Ainda não há nada para “{q}”",
+    createWithAi: "Criar “{q}” com IA",
+    createWithAiBody: "A IA escreve a receita inteira; depois você pode mudar o que quiser.",
     servings: 'Porções',
     portions: {
       decrease: 'Menos porções',

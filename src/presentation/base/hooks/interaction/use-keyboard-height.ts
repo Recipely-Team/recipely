@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Keyboard, type KeyboardEvent } from 'react-native';
+import { Dimensions, Keyboard, type KeyboardEvent } from 'react-native';
 import { isIos, isWeb } from '@infrastructure/constants/platform';
 import { ValueConstants } from '@core/constants';
 
@@ -21,6 +21,19 @@ import { ValueConstants } from '@core/constants';
  *   there is no layout box to pad. What they need is their `bottom` offset, and
  *   that is a number.
  */
+/**
+ * How far the keyboard reaches up from the bottom of the window: the window's
+ * height less the keyboard's top edge. Not `endCoordinates.height` — on
+ * edge-to-edge Android that leaves out the navigation bar below the keys, so a
+ * sheet lifted by it sat one bar-height too low and its text box was hidden
+ * behind the keyboard (seen at the largest text size, where the box is tallest).
+ */
+const keyboardOverlap = (event: KeyboardEvent): number => {
+  const { screenY, height } = event.endCoordinates;
+  const fromTop = Dimensions.get('window').height - screenY;
+  return fromTop > ValueConstants.zero ? Math.max(fromTop, height) : height;
+};
+
 export const useKeyboardHeight = (): number => {
   const [keyboardHeight, setKeyboardHeight] = useState(ValueConstants.zero);
 
@@ -30,7 +43,7 @@ export const useKeyboardHeight = (): number => {
     const hideEvent = isIos() ? 'keyboardWillHide' : 'keyboardDidHide';
 
     const showSub = Keyboard.addListener(showEvent, (event: KeyboardEvent) => {
-      setKeyboardHeight(event.endCoordinates.height);
+      setKeyboardHeight(keyboardOverlap(event));
     });
     const hideSub = Keyboard.addListener(hideEvent, () => {
       setKeyboardHeight(ValueConstants.zero);

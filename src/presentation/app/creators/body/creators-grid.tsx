@@ -73,6 +73,8 @@ export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.E
       }
       return (
         <FlatList
+          // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+          removeClippedSubviews={false}
           {...scrollable}
           key={`creators-${vm.columns}`}
           data={vm.creators}

@@ -77,3 +77,9 @@ recipely_push.command
 !.env.example
 *.bak
 *.bak.*
+
+# Local native build output (e.g. the iOS simulator build)
+/build/
+
+# Jest coverage report (npx jest --coverage)
+/coverage/

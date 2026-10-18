@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { type Href, useLocalSearchParams, useRouter } from 'expo-router';
@@ -22,6 +23,7 @@ export const LoginScreen = (): React.JSX.Element => {
   const router = useRouter();
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const colors = useTheme().colors;
+  const scrollEndPadding = useScrollEndPadding();
   const split = useTwoPaneSplit();
   const isLandscapeShell = split.isSplit;
 
@@ -75,7 +77,7 @@ export const LoginScreen = (): React.JSX.Element => {
     <KeyboardAvoider style={styles.flex}>
       <ScrollView
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollEndPadding }]}
         style={{ backgroundColor: colors.background }}
       >
         <LinearGradient

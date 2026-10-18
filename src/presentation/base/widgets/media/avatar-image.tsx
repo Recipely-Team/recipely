@@ -46,6 +46,10 @@ export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.El
         source={{ uri }}
         style={{ width: size, height: size, borderRadius }}
         contentFit="cover"
+        // The person's name is always beside it, or on the button it sits in.
+        accessible={false}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
         // Avatars repeat across a list; cache them.
         cachePolicy="memory-disk"
         transition={durations.imageFade}

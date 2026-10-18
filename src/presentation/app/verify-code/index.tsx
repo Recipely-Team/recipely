@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { isString } from '@core/guards/type-guards';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -26,6 +27,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   const router = useRouter();
   const goBack = useGoBackOrHome(RoutePaths.login);
   const colors = useTheme().colors;
+  const scrollEndPadding = useScrollEndPadding();
   const split = useTwoPaneSplit();
   const isLandscapeShell = split.isSplit;
 
@@ -80,7 +82,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
     <KeyboardAvoider style={styles.flex}>
       <ScrollView
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollEndPadding }]}
         style={{ backgroundColor: colors.background }}
       >
         <LinearGradient

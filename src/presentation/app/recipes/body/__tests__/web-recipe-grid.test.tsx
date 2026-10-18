@@ -42,6 +42,9 @@ jest.mock('@presentation/base/widgets/cards/skeleton-card', () => {
 
 const baseProps: WebRecipeGridProps = {
   recipes: [],
+  total: undefined,
+  query: '',
+  onCreateWithAi: jest.fn(),
   isSearching: false,
   activeCuisineLabel: null,
   sortBy: 'popular',
@@ -100,5 +103,16 @@ describe('WebRecipeGrid — background refresh indicator', () => {
     const { root } = renderGrid({ isRefreshing: false });
 
     expect(allByTestId(root, 'web-recipe-grid-refresh-indicator')).toHaveLength(0);
+  });
+});
+
+/** The web heading said "30 recipes" — the first page — over a feed of 48. */
+describe('WebRecipeGrid — the recipe count', () => {
+  it('shows the server total, not the number of recipes loaded so far', () => {
+    const { root } = renderComponent(
+      <WebRecipeGrid {...baseProps} recipes={[]} total={48} isLoading={false} />,
+    );
+
+    expect(textContent(root).some((line) => line.includes('48'))).toBe(true);
   });
 });

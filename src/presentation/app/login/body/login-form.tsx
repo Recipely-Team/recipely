@@ -1,3 +1,4 @@
+import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { useCallback, useRef, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
@@ -26,6 +27,11 @@ import { isBlank } from '@core/guards/type-guards';
  * and the social/guest section. Owns the credentials state and the sign-in call;
  * the parent screen only chooses the surrounding layout.
  */
+/** Crash-report contexts and the breadcrumb for the sign-in diagnostic (FailureReporter.reportDiagnostic). */
+const LOGIN_EMAIL_CONTEXT = 'Login.signIn';
+const LOGIN_SOCIAL_CONTEXT = 'Login.socialSignIn';
+const LOGIN_SUBMIT_TRAIL = 'login: submitted';
+
 export const LoginForm = (): React.JSX.Element => {
   const router = useRouter();
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
@@ -49,6 +55,7 @@ export const LoginForm = (): React.JSX.Element => {
     async (signInWith: () => Promise<Failure | null>) => {
       setErrorMessage(undefined);
       const failure = await signInWith();
+      if (failure?.code === FailureCode.Network) FailureReporter.reportDiagnostic(failure, LOGIN_SOCIAL_CONTEXT);
       if (failure && failure.code !== FailureCode.Cancelled) {
         setErrorMessage(authFormMessage(failure, {}));
       }
@@ -63,7 +70,10 @@ export const LoginForm = (): React.JSX.Element => {
       return;
     }
     setErrorMessage(undefined);
+    FailureReporter.trail(LOGIN_SUBMIT_TRAIL);
     const failure = await signIn(email, password);
+    // "You're offline" on an online phone: send what the transport said.
+    if (failure?.code === FailureCode.Network) FailureReporter.reportDiagnostic(failure, LOGIN_EMAIL_CONTEXT);
     if (failure) {
       setErrorMessage(
         authFormMessage(failure, {

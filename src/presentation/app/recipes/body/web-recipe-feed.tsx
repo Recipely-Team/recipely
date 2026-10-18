@@ -78,6 +78,9 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
     )}
     <WebRecipeGrid
       recipes={vm.recipes}
+      total={vm.state.status === StoreStatus.Loaded ? vm.state.total : undefined}
+      query={vm.searchedQuery}
+      onCreateWithAi={vm.onCreateWithAi}
       isLoading={vm.state.status !== StoreStatus.Loaded || vm.isReloadingResults}
       isRefreshing={vm.isRefetching && !vm.isReloadingResults}
       isSearching={vm.isSearching}

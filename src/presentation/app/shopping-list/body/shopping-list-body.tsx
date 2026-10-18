@@ -48,6 +48,8 @@ export const ShoppingListBody = ({ vm, scrollable, onEdit }: ShoppingListBodyPro
   );
   return (
     <FlatList
+      // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+      removeClippedSubviews={false}
       {...scrollable}
       data={vm.rows}
       keyExtractor={rowKey}

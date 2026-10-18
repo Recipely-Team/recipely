@@ -42,7 +42,7 @@ export const PostTile = ({ media, selected, hasRule, onPress }: PostTileProps): 
       {media.thumbnailUrl === null ? (
         <Ionicons name={placeholderIcon} size={iconSizes.xl} color={colors.chipText} />
       ) : (
-        <RecipeImage uri={media.thumbnailUrl} placeholderCompact style={StyleSheet.absoluteFill} />
+        <RecipeImage accessibilityLabel={null} uri={media.thumbnailUrl} placeholderCompact style={StyleSheet.absoluteFill} />
       )}
       {selected ? <View style={[StyleSheet.absoluteFill, styles.ring, { borderColor: colors.primary }]} /> : null}
       {selected ? (

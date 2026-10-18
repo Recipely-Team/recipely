@@ -907,6 +907,17 @@ the feed, asserted with `Platform.OS` forced to `'android'` — under Jest's def
 `'ios'` the expression is already `false` and the test passes against the unfixed
 code.
 
+**It came back in v1.7.0 — with a different trigger.** "Open draft" crashed with the same
+Fabric exception. This time the import screen cleared its job store BEFORE navigating, so it
+re-rendered from "Recipe ready" to the empty paste view while the navigator was animating it
+out. *Guard:* the store is cleared on unmount only; `use-import-recipe.test.tsx` ("leaving
+does not repaint the screen on its way out") fails if a leave action changes what the screen
+shows; the Maestro flow `07-open-imported-draft.yaml` proves it on a device. Separately, the
+first fix had only DELETED `removeClippedSubviews`, and FlatList defaults it to ON on Android:
+rule R now requires `removeClippedSubviews={false}` on every list, and the feed test asserts
+`toBe(false)`. *The class:* **a screen on its way out must not change what it shows; and
+removing a prop is not turning it off.**
+
 **The lesson: a crash names where the process died, never what was asked of it.**
 What broke the three-session deadlock was not more reading — it was breadcrumbs.
 The trail stopped at `import: draft fetch started`, which placed the crash inside
@@ -3023,3 +3034,32 @@ Instagram, TikTok, YouTube and recipe sites, written up in your language), and
 `onboarding-claims.test.ts` fails if any onboarding slide in any locale carries a digit. *The
 class:* **marketing copy makes no number the data cannot back; a count needs a source, or it does
 not ship.**
+
+## Signing in on the website pulled Android users into the app
+
+**On Android, someone signing in at recipely.net was sent into the app mid-flow and
+could not finish on the web**: the app link filter in `app.json` claimed the whole
+domain (and iOS's apple-app-site-association claimed `*`), so the redirect back to the
+site opened the app. *Guard:* both platforms claim only `/recipes/` and `/creators/` —
+the two pages `recipeWebUrl` / `creatorWebUrl` share — and `scripts/assert-app-links.mjs`
+(in `check:structure`) fails if either claims anything else or they drift apart.
+Verified on a release APK with `pm query-activities`: `/login`, `/register`,
+`/reset-password`, `/` and `/about` resolve to the browser only. *The class:* **a
+deep-link claim is an allowlist of shareable pages, never a domain.**
+
+## Cut labels, hidden buttons and silent photos — the app at the largest text
+
+**At Android's largest text (2×) the app could not be read or finished**: tab labels read
+"Recip…", cuisine names "Turki…", the AI button "Generate a recip…"; on a small phone the
+login screen's last buttons ("Continue without an account", the Google/Apple buttons)
+scrolled under the 3-button navigation bar and could not be tapped; the assistant's text
+box sat behind the keyboard because edge-to-edge Android leaves the navigation bar out of
+the keyboard's reported height; and photos were read as "image" or not at all.
+*Guard:* tab labels and cuisine names shrink to fit (`maxFontScales.tabLabelFloor` /
+`shrinkToFitFloor`, `tab-bar.test.tsx`); full-screen scrolls and footers without a tab bar
+pad by `useScrollEndPadding()`; `useKeyboardHeight` measures from the keyboard's top edge
+(`use-keyboard-height.test.tsx`); `RecipeImage.accessibilityLabel` is REQUIRED — a name, or
+`null` for a photo inside an already-labelled card. On a device: recipely-tests
+`npm run maestro:largest-text` and `npm run maestro:small-screen`. *The class:* **test at
+the largest text and the smallest screen, and look at the screenshots — a cut label still
+holds its full string, so no text assertion fails.**

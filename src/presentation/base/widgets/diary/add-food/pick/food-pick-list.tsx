@@ -27,6 +27,8 @@ export interface FoodPickListProps {
  */
 export const FoodPickList = ({ rows, header, onEndReached, ...handlers }: FoodPickListProps): React.JSX.Element => (
   <FlatList
+    // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+    removeClippedSubviews={false}
     data={rows}
     keyExtractor={(row) => row.key}
     renderItem={({ item }) => <PickRowView row={item} {...handlers} />}

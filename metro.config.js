@@ -27,6 +27,7 @@ const isRouterCtxRequest = (context, moduleName) =>
 // exist there, so the assistant reported a denied microphone without ever
 // asking, and played nothing. Native requests in or into that package resolve
 // without `browser`; the web keeps it. Guarded by scripts/assert-native-audio.mjs.
+// The library maps them back itself since 0.3.5; this stays as a second guard.
 const NATIVE_MAIN_FIELDS = ['react-native', 'main'];
 const isAssistantAudioRequest = (context, moduleName) =>
   moduleName.startsWith('@live-assistant/audio') ||
