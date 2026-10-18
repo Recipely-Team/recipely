@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { TimeCard } from '@presentation/app/recipes/[recipeId]/items/meta/time-card';
 import { InfoStat } from '@presentation/app/recipes/[recipeId]/items/meta/info-stat';
 import { PortionStepper } from '@presentation/app/recipes/[recipeId]/items/meta/portion-stepper';
@@ -53,6 +53,7 @@ export const RecipeMetaCard = ({
 }: RecipeMetaCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const [cardWidth, setCardWidth] = useState<number>(ValueConstants.zero);
+  const { fontScale } = useWindowDimensions();
   const strings = t().recipes;
 
   const tiles: { key: string; node: React.JSX.Element }[] = [];
@@ -84,7 +85,7 @@ export const RecipeMetaCard = ({
     node: <InfoStat icon="speedometer-outline" value={difficultyLabel(difficulty)} label={strings.difficulty} />,
   });
 
-  const widths = statCellWidths(cardWidth, tiles.length, FRAME);
+  const widths = statCellWidths(cardWidth, tiles.length, FRAME, fontScale);
   const onLayout = (event: LayoutChangeEvent): void => setCardWidth(event.nativeEvent.layout.width);
 
   return (
