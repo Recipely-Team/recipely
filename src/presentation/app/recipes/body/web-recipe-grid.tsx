@@ -44,6 +44,11 @@ export interface WebRecipeGridProps {
   onChangeSort: (key: SortKey) => void;
   /** Opens the full filter sheet (cuisine / category / difficulty / max-time). */
   onOpenFilter: () => void;
+  /**
+   * How many recipes match on the server — not how many pages have loaded.
+   * The heading said "30 recipes" (the first page) over a feed with more.
+   */
+  total: number | undefined;
   /** Count of applied filters; shown as a badge on the filter button when > 0. */
   activeFilterCount: number;
   activeDifficulty: Difficulty | null;
@@ -67,7 +72,7 @@ export interface WebRecipeGridProps {
 export const WebRecipeGrid = ({
   recipes, isSearching, activeCuisineLabel, sortBy, onChangeSort,
   onOpenFilter, activeFilterCount, activeDifficulty, onDifficultyChange,
-  gridColumns, gridCellMaxWidth, isLoading, isRefreshing, onOpenRecipe, isSaved, onToggleSave, query, onCreateWithAi,
+  gridColumns, gridCellMaxWidth, isLoading, isRefreshing, onOpenRecipe, isSaved, onToggleSave, query, onCreateWithAi, total,
 }: WebRecipeGridProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -155,7 +160,7 @@ export const WebRecipeGrid = ({
         <WebSectionHead
           title={title}
           // No count while reloading.
-          sub={isLoading ? undefined : t().recipes.webRecipesCount.replace('{n}', String(recipes.length))}
+          sub={isLoading ? undefined : t().recipes.webRecipesCount.replace('{n}', String(total ?? recipes.length))}
           right={right}
         />
       </View>
