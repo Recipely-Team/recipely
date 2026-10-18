@@ -139,28 +139,40 @@
     ],
     "coverageThreshold": {
       "global": {
-        "lines": 62,
-        "statements": 61,
-        "branches": 54,
-        "functions": 53
+        "lines": 72,
+        "statements": 70.5,
+        "branches": 61,
+        "functions": 67.5
       },
       "./src/domain/": {
-        "lines": 94,
-        "statements": 94,
-        "branches": 91,
-        "functions": 93
+        "lines": 96,
+        "statements": 95.5,
+        "branches": 92,
+        "functions": 95
       },
       "./src/application/": {
-        "lines": 85,
-        "statements": 83,
-        "branches": 79,
-        "functions": 89
+        "lines": 92,
+        "statements": 90,
+        "branches": 81.5,
+        "functions": 90
       },
       "./src/core/": {
-        "lines": 91,
-        "statements": 92,
-        "branches": 90,
-        "functions": 87
+        "lines": 92.5,
+        "statements": 93,
+        "branches": 90.5,
+        "functions": 89
+      },
+      "./src/infrastructure/": {
+        "lines": 73.5,
+        "statements": 70.5,
+        "branches": 63,
+        "functions": 74
+      },
+      "./src/presentation/": {
+        "lines": 65,
+        "statements": 64,
+        "branches": 55,
+        "functions": 55
       }
     },
     "modulePathIgnorePatterns": [

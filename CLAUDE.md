@@ -102,7 +102,7 @@ details: the `pr-flow` skill.
 
 1. **Branch from `dev`**: `git checkout dev && git pull && git checkout -b <feat|fix|refactor|chore>/<name>`. Never edit `dev` or `main` directly.
 2. **Implement** via the agent pipeline above. Clear, atomic, conventional-commit messages (`feat(scope):`, `fix(scope):`, …).
-3. **Quality gate** — all must pass: `npm run lint`, `npx tsc --noEmit`, `npx jest` (at minimum the touched layer), `npm run check:structure`. Work is never "done" with a red gate.
+3. **Quality gate** — all must pass: `npm run lint`, `npx tsc --noEmit`, `npx jest --ci --coverage` (CI's command — plain `npx jest` skips the coverage minimums), `npm run check:structure`. Work is never "done" with a red gate. **Coverage only goes up**: the per-layer minimums in `package.json` sit just under the measured numbers; a PR that adds tests raises them, none lowers them.
 4. **`code-reviewer` must approve** before merge. If it requests changes, loop back to the developer agent; never merge over a blocked review.
 5. **Push and open a PR → `dev`**: `git push -u origin <branch>` then `gh pr create --base dev …`.
 6. **Merge to `dev`**: `gh pr merge <pr> --squash --delete-branch`, then `git checkout dev && git pull` — only once CI is green.
