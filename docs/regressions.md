@@ -3034,3 +3034,15 @@ Instagram, TikTok, YouTube and recipe sites, written up in your language), and
 `onboarding-claims.test.ts` fails if any onboarding slide in any locale carries a digit. *The
 class:* **marketing copy makes no number the data cannot back; a count needs a source, or it does
 not ship.**
+
+## Signing in on the website pulled Android users into the app
+
+**On Android, someone signing in at recipely.net was sent into the app mid-flow and
+could not finish on the web**: the app link filter in `app.json` claimed the whole
+domain (and iOS's apple-app-site-association claimed `*`), so the redirect back to the
+site opened the app. *Guard:* both platforms claim only `/recipes/` and `/creators/` —
+the two pages `recipeWebUrl` / `creatorWebUrl` share — and `scripts/assert-app-links.mjs`
+(in `check:structure`) fails if either claims anything else or they drift apart.
+Verified on a release APK with `pm query-activities`: `/login`, `/register`,
+`/reset-password`, `/` and `/about` resolve to the browser only. *The class:* **a
+deep-link claim is an allowlist of shareable pages, never a domain.**
