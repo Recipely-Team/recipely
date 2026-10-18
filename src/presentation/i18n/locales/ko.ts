@@ -581,6 +581,9 @@ export const ko: TranslationsType = {
     minutes: '분',
     searchPlaceholder: '레시피 검색...',
     noResults: '검색 조건에 맞는 레시피가 없어요.',
+    noResultsQuery: "아직 “{q}” 레시피가 없어요",
+    createWithAi: "AI로 “{q}” 만들기",
+    createWithAiBody: "AI가 레시피 전체를 작성해요. 나중에 무엇이든 바꿀 수 있어요.",
     servings: '인분',
     portions: {
       decrease: '인분 줄이기',

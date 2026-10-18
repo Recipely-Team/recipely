@@ -579,6 +579,9 @@ export const ar = {
     minutes: "د",
     searchPlaceholder: "ابحث في الوصفات...",
     noResults: "لا توجد وصفات تطابق بحثك.",
+    noResultsQuery: "لا شيء عن «{q}» بعد",
+    createWithAi: "أنشئ «{q}» بالذكاء الاصطناعي",
+    createWithAiBody: "يكتب الذكاء الاصطناعي الوصفة كاملة، ويمكنك تعديل أي شيء بعدها.",
     servings: "الحصص",
     portions: {
       decrease: 'حصص أقل',

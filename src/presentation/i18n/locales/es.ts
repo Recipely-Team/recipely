@@ -579,6 +579,9 @@ export const es = {
     minutes: 'min',
     searchPlaceholder: 'Buscar recetas...',
     noResults: 'Ninguna receta coincide con tu búsqueda.',
+    noResultsQuery: "Aún no hay nada para «{q}»",
+    createWithAi: "Crear «{q}» con IA",
+    createWithAiBody: "La IA escribe la receta completa; después puedes cambiar lo que quieras.",
     servings: 'Porciones',
     portions: {
       decrease: 'Menos raciones',

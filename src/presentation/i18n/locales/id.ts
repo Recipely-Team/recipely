@@ -579,6 +579,9 @@ export const id = {
     minutes: 'mnt',
     searchPlaceholder: 'Cari resep...',
     noResults: 'Tidak ada resep yang cocok dengan pencarian kamu.',
+    noResultsQuery: "Belum ada untuk “{q}”",
+    createWithAi: "Buat “{q}” dengan AI",
+    createWithAiBody: "AI menulis resep lengkapnya — setelah itu kamu bisa mengubah apa saja.",
     servings: 'Porsi',
     portions: {
       decrease: 'Lebih sedikit porsi',

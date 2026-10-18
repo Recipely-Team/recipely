@@ -579,6 +579,9 @@ export const ja = {
     minutes: '分',
     searchPlaceholder: 'レシピを検索...',
     noResults: '検索に一致するレシピがありません。',
+    noResultsQuery: "「{q}」はまだありません",
+    createWithAi: "AIで「{q}」を作る",
+    createWithAiBody: "AIがレシピをまるごと書きます。あとから何でも変更できます。",
     servings: '人分',
     portions: {
       decrease: '人数を減らす',

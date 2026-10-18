@@ -582,6 +582,9 @@ export const zh = {
     minutes: '分钟',
     searchPlaceholder: '搜索食谱...',
     noResults: '没有符合搜索条件的食谱。',
+    noResultsQuery: "还没有“{q}”的食谱",
+    createWithAi: "用 AI 创建“{q}”",
+    createWithAiBody: "AI 会写出完整食谱，之后你可以随意修改。",
     servings: '份数',
     portions: {
       decrease: '减少份数',

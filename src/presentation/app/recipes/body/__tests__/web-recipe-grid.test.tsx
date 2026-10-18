@@ -42,6 +42,8 @@ jest.mock('@presentation/base/widgets/cards/skeleton-card', () => {
 
 const baseProps: WebRecipeGridProps = {
   recipes: [],
+  query: '',
+  onCreateWithAi: jest.fn(),
   isSearching: false,
   activeCuisineLabel: null,
   sortBy: 'popular',

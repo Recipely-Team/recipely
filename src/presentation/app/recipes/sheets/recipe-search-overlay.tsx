@@ -1,7 +1,6 @@
-import { ActivityIndicator, StyleSheet, View, FlatList } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, FlatList, ScrollView } from 'react-native';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
-import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
-import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
+import { NoResultsState } from '@presentation/app/recipes/items/banners/no-results-state';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
@@ -33,6 +32,9 @@ export interface RecipeSearchOverlayProps {
    * the same place every time while reporting a scroll each time.
    */
   assistantScroll: AssistantScrollableProps;
+  /** The query these results answer; an empty answer offers to create it with AI. */
+  query: string;
+  onCreateWithAi: (query: string) => void;
 }
 
 const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />;
@@ -50,6 +52,8 @@ export const RecipeSearchOverlay = ({
   isLoading,
   onOpenRecipe,
   assistantScroll,
+  query,
+  onCreateWithAi,
 }: RecipeSearchOverlayProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -76,12 +80,10 @@ export const RecipeSearchOverlay = ({
           <ActivityIndicator color={colors.primary} />
         </View>
       ) : recipes.length === ValueConstants.zero ? (
-        <ErrorState
-          icon="search"
-          severity={SeverityType.Neutral}
-          title={t().recipes.noResults}
-          body={t().recipes.webEmptyBody}
-        />
+        // Scrolls, and takes taps with the keyboard up: the offer is taller than the room above the keys.
+        <ScrollView contentContainerStyle={styles.emptyScroll} keyboardShouldPersistTaps="handled">
+          <NoResultsState query={query} onCreateWithAi={onCreateWithAi} />
+        </ScrollView>
       ) : (
         <FlatList
           // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
@@ -121,6 +123,10 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: spacing.md,
+  },
+  emptyScroll: {
+    flexGrow: ValueConstants.one,
+    justifyContent: 'center',
   },
   empty: {
     flex: ValueConstants.one,
