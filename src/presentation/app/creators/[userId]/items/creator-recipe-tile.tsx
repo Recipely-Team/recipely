@@ -41,7 +41,7 @@ const CreatorRecipeTileComponent = ({ recipe, onOpen }: CreatorRecipeTileProps):
       style={({ pressed }) => [styles.tile, { opacity: pressed ? opacities.pressedSubtle : opacities.full }]}
     >
       <View style={[styles.photo, { backgroundColor: colors.skeleton, borderColor: colors.cardBorder }]}>
-        <RecipeImage uri={recipe.image} focus={recipe.imageFocus} style={styles.image} placeholderLabel={t().recipes.noPhoto} />
+        <RecipeImage accessibilityLabel={null} uri={recipe.image} focus={recipe.imageFocus} style={styles.image} placeholderLabel={t().recipes.noPhoto} />
         <View style={styles.seal}>
           <ProvenanceSeal marks={recipe.provenanceMarks} surface={SealSurface.Photo} size={CreatorProfileMetrics.tileSeal} />
         </View>

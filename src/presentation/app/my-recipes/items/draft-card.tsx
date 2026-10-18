@@ -44,7 +44,7 @@ const DraftCardComponent = ({ draft, onOpen, onDelete }: DraftCardProps): React.
       accessibilityLabel={name !== undefined && name.length > ValueConstants.zero ? name : t().drafts.untitled}
     >
       <View style={[styles.thumb, { backgroundColor: colors.skeleton }]}>
-        <RecipeImage uri={cover?.url} style={styles.thumbImage} placeholderCompact />
+        <RecipeImage accessibilityLabel={null} uri={cover?.url} style={styles.thumbImage} placeholderCompact />
       </View>
       <View style={styles.body}>
         <View style={[styles.badge, { backgroundColor: colors.chipBackground }]}>

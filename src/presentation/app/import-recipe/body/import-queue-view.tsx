@@ -1,3 +1,4 @@
+import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SourcePlatform, type SourcePlatformType } from '@domain/recipes/provenance/source-platform';
@@ -53,6 +54,7 @@ export const ImportQueueView = ({
   host,
   onPrimary,
 }: ImportQueueViewProps): React.JSX.Element => {
+  const scrollEndPadding = useScrollEndPadding();
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
   const copy = t().importRecipe;
@@ -81,7 +83,7 @@ export const ImportQueueView = ({
         <ImportQueueStats isWeb={isWeb} host={host} />
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: scrollEndPadding }]}>
         <PrimaryButton label={primaryLabel} onPress={onPrimary} loading={isQueueing} />
         {isWeb ? null : (
           <View style={styles.hint}>

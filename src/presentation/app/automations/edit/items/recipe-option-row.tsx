@@ -37,7 +37,7 @@ export const RecipeOptionRow = ({ hit, selected, onSelect }: RecipeOptionRowProp
       ]}
     >
       <View style={styles.thumb}>
-        <RecipeImage uri={hit.imageUrl} placeholderCompact style={StyleSheet.absoluteFill} />
+        <RecipeImage accessibilityLabel={null} uri={hit.imageUrl} placeholderCompact style={StyleSheet.absoluteFill} />
       </View>
       <View style={styles.text}>
         <SizedText size={fontSizes.medium} weight={fontWeights.bold} numberOfLines={ValueConstants.one}>

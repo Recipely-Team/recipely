@@ -25,7 +25,7 @@ export const PhotoTile = ({ uri, position, onRemove }: PhotoTileProps): React.JS
       accessibilityLabel={t().fridge.photoA11y.replace('{n}', String(position))}
       style={[styles.tile, { backgroundColor: colors.skeleton, borderColor: colors.cardBorder }]}
     >
-      <RecipeImage uri={uri} style={styles.image} placeholderCompact />
+      <RecipeImage accessibilityLabel={null} uri={uri} style={styles.image} placeholderCompact />
       <Pressable
         onPress={onRemove}
         accessibilityRole="button"

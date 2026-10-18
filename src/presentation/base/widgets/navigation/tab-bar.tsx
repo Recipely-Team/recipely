@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { spacing, fontSizes, controlSizes, iconSizes, fontWeights } from '@presentation/base/theme';
+import { spacing, fontSizes, controlSizes, iconSizes, fontWeights, maxFontScales } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { t } from '@presentation/i18n';
 import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
@@ -19,13 +19,17 @@ export interface TabBarProps {
 /**
  * Bottom navigation bar with icon-and-label tabs for the five main sections —
  * Recipes, My Recipes, Chefs, Diary, Profile (design spec → Chefs tab §5).
- * Each tab shares the width equally and its label stays on one line with an
- * ellipsis. Returns null on the web shell — the WebHeader replaces it there.
+ * Each tab shares the width equally. Returns null on the web shell — the
+ * WebHeader replaces it there.
  *
  * @remarks
  * - **The bar grows with the text** (`minHeight`, rule 6b): a fixed height
  *   clipped icon and label at large Dynamic Type. Labels are `micro` (11), not
  *   the 10 pt they were, and the row is a `tablist` so TalkBack says "tab 2 of 5".
+ * - **A label is never cut.** At the largest Android text every label read
+ *   "Recip…", "My Re…": a tab cannot widen. Labels stay on one line and shrink
+ *   only as far as they must (`adjustsFontSizeToFit`); two lines made Android
+ *   break the words themselves ("My Re / cipes").
  */
 export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | null => {
   const colors = useTheme().colors;
@@ -71,6 +75,8 @@ export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | n
             <ThemedText
               variant="caption"
               numberOfLines={ValueConstants.one}
+              adjustsFontSizeToFit
+              minimumFontScale={maxFontScales.tabLabelFloor}
               style={[
                 styles.label,
                 {
@@ -106,5 +112,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: fontSizes.micro,
     maxWidth: '100%',
+    textAlign: 'center',
   },
 });

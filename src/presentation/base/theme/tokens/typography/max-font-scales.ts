@@ -11,4 +11,16 @@
 export const maxFontScales = {
   /** Digits inside a fixed-diameter circle or count badge. */
   badge: 1.3,
+  /**
+   * The smallest a label may shrink to (`minimumFontScale`) when it sits in a
+   * slot that cannot widen — five equal tabs, a row of cuisine circles — rather
+   * than being cut with an ellipsis at the largest system text.
+   */
+  shrinkToFitFloor: 0.6,
+  /**
+   * The tab labels' floor: at Android's largest text (2×) this is still a
+   * little under the 1× size, so "My Recipes" fits a fifth of a phone on ONE
+   * line. Two lines were worse — Android broke the words ("My Re / cipes").
+   */
+  tabLabelFloor: 0.45,
 } as const;

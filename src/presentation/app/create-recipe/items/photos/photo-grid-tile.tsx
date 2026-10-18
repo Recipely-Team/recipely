@@ -34,7 +34,7 @@ export const PhotoGridTile = ({ url, focus, isCover, size, x, y, onRemove, onSet
     <View style={[styles.cell, { width: size, height: size, left: x, top: y }]}>
       {isCover ? <View pointerEvents="none" style={[styles.coverRing, { borderColor: colors.primary }]} /> : null}
       <View style={[styles.tile, { backgroundColor: colors.skeleton, borderColor: colors.cardBorder }, isCover ? styles.tileCover : null]}>
-        <RecipeImage uri={url} focus={focus} style={styles.image} placeholderCompact />
+        <RecipeImage accessibilityLabel={null} uri={url} focus={focus} style={styles.image} placeholderCompact />
         {isCover ? (
           <View style={[styles.coverLabel, { backgroundColor: colors.primary }]}>
             <ThemedText style={[styles.coverText, { color: colors.primaryText }]}>{t().mediaPicker.cover}</ThemedText>
