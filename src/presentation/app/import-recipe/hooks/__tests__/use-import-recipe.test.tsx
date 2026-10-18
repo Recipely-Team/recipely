@@ -505,3 +505,48 @@ describe("useImportRecipe — the notification the button promises", () => {
     expect(mockRouter.back).toHaveBeenCalled();
   });
 });
+
+/**
+ * "Taslağı aç'a basınca uygulama kapandı" — Android, v1.7.0. Tapping "Open draft"
+ * cleared the import store BEFORE navigating, so this screen re-rendered from
+ * "Recipe ready" to the empty paste view while the navigator was animating it
+ * out. Fabric crashed: "addViewAt: … The specified child already has a parent".
+ * The store is cleared on unmount only, once the screen has gone.
+ */
+describe("useImportRecipe — leaving does not repaint the screen on its way out", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+  });
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
+  it("still shows the finished job after Open draft is tapped", async () => {
+    const { latest } = drive(ImportJobStatus.Done);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      latest().onOpenDraft();
+    });
+
+    expect(mockRouter.replace).toHaveBeenCalled();
+    expect(latest().jobStatus).toBe(ImportJobStatus.Done);
+  });
+
+  it("still shows the job after the screen is closed", async () => {
+    const { latest } = drive(ImportJobStatus.Done);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      latest().onClose();
+    });
+
+    expect(latest().jobStatus).toBe(ImportJobStatus.Done);
+  });
+});

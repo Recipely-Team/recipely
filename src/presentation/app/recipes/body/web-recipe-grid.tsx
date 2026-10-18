@@ -180,6 +180,8 @@ export const WebRecipeGrid = ({
         </View>
       ) : (
         <FlatList
+          // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+          removeClippedSubviews={false}
           key={`web-grid-${gridColumns}`}
           data={recipes}
           keyExtractor={(r) => r.id}

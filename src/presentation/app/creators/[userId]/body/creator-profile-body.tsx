@@ -93,6 +93,8 @@ export const CreatorProfileBody = ({ vm, scrollable }: CreatorProfileBodyProps):
 
   return (
     <FlatList
+      // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+      removeClippedSubviews={false}
       {...scrollable}
       key={`recipes-${gridColumns}`}
       data={cells}

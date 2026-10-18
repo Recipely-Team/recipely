@@ -44,6 +44,8 @@ export const PostStep = ({ handle, selected, onSelect, scrollable }: PostStepPro
 
   return (
     <FlatList
+      // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+      removeClippedSubviews={false}
       {...scrollable}
       key={columns}
       data={media.status === StoreStatus.Loaded ? media.items : []}

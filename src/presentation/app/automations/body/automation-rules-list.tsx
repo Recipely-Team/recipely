@@ -22,6 +22,8 @@ export const AutomationRulesList = ({ vm, scrollable }: AutomationRulesListProps
   const rules = vm.rules;
   return (
     <FlatList
+      // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+      removeClippedSubviews={false}
       {...scrollable}
       data={rules.status === StoreStatus.Loaded ? rules.items : []}
       keyExtractor={(rule) => rule.id}
