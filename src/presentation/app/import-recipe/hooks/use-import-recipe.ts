@@ -80,6 +80,10 @@ interface UseImportRecipeResult {
  * - **The checklist creeps, the ring does not.** Only the backend's four states
  *   are real, so the ring moves on them alone while the stage list walks
  *   forward on a timer — and stops short of the end until the job is done.
+ * - **Leaving never repaints the screen.** The receipt is cleared on unmount only.
+ *   Clearing it before `router.replace` re-rendered "Recipe ready" as the empty
+ *   paste view while the screen animated out, and Fabric crashed ("The specified
+ *   child already has a parent") — the Android "Open draft" crash of v1.7.0.
  */
 export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeResult => {
   const router = useRouter();
@@ -140,14 +144,13 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     return () => clearInterval(tick);
   }, [isWatchable, jobId]);
 
-  // Back gesture / swipe also clears our copy of the receipt; the job runs on.
+  // Cleared on unmount only: clearing before navigating crashed "Open draft" (see head).
   useEffect(() => () => importJobStore.getState().clear(), [importJobStore]);
 
   const onClose = useCallback((): void => {
     // goBackOrHome: a cold-start share leaves this screen as the whole stack.
-    importJobStore.getState().clear();
     goBackOrHome();
-  }, [importJobStore, goBackOrHome]);
+  }, [goBackOrHome]);
 
   // The copy promises a notification, so ask the OS for permission here.
   const onNotifyMe = useCallback((): void => {
@@ -165,7 +168,6 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
   const onOpenDraft = useCallback((): void => {
     FailureReporter.trail(ImportTrail.openDraftTapped);
     const draftId = job?.draftId;
-    importJobStore.getState().clear();
 
     // A done job without a draft id should not happen, but the button must still go somewhere.
     if (draftId === null || draftId === undefined) {
@@ -183,7 +185,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
 
     FailureReporter.trail(ImportTrail.navigatingToEditor);
     router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } } as Href);
-  }, [job, importJobStore, router]);
+  }, [job, router]);
 
   // No URL means the paste screen (always on web).
   const isAwaitingLink =

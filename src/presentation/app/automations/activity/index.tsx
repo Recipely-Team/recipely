@@ -46,6 +46,8 @@ export const AutomationActivityScreen = (): React.JSX.Element => {
     const sends = vm.sends;
     return (
       <FlatList
+        // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+        removeClippedSubviews={false}
         {...scrollable}
         data={vm.shown}
         keyExtractor={(send) => send.id}

@@ -190,8 +190,9 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
 6b2. **Name the capability, not the platform** — `isExpanded` (pure width: grids, columns, caps, centred
    dialogs) vs `isWebShell` (browser chrome only: sticky header, no TabBar, no safe-area insets, header
    search/sort). Ask each call site which one it means.
-6c. **No `removeClippedSubviews`** — it re-parents views behind Fabric and crashed the app; bound mounted rows
-   with `FlatList`'s `windowSize` / `maxToRenderPerBatch` / `initialNumToRender`. `check:structure` rule R.
+6c. **Every list says `removeClippedSubviews={false}`** — the prop re-parents views behind Fabric and crashed the app,
+   and `FlatList` turns it ON by default on Android, so leaving it out is not enough (v1.7.0). Bound mounted rows with
+   `windowSize` / `maxToRenderPerBatch` / `initialNumToRender`. `check:structure` rule R.
 7. **Component props interface** — `ComponentNameProps`, exported, above the component in the same file.
 8. **Custom hooks** — prefix `use`, one hook per file, no store state passed as props.
 9. **FlatList keyExtractor** — always stable, never the array index for mutable lists.

@@ -180,6 +180,8 @@ export const MyRecipesList = ({
     }
     return (
       <FlatList
+        // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+        removeClippedSubviews={false}
         {...scrollable}
         refreshControl={refreshControl}
         data={drafts}
@@ -215,6 +217,8 @@ export const MyRecipesList = ({
 
   return (
     <FlatList
+      // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+      removeClippedSubviews={false}
       {...scrollable}
       refreshControl={refreshControl}
       key={`grid-${gridColumns}`}

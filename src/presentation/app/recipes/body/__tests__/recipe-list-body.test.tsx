@@ -497,13 +497,18 @@ describe('RecipeListBody — the feed does not clip its own children', () => {
   // the prop was written as `Platform.OS === 'android'`, so under Jest's default
   // 'ios' it evaluates to false and a test that just reads it back passes
   // against the unfixed code. It has to be checked where it was true.
-  it('never sets removeClippedSubviews on the mobile feed, on Android', () => {
+  //
+  // And it must be an explicit `false`: the first fix deleted the prop, which
+  // leaves FlatList's own default — `removeClippedSubviews ?? Platform.OS ===
+  // 'android'` — ON on Android. v1.7.0 crashed on "Open draft" exactly as before,
+  // while this test, then `toBeFalsy()`, passed on `undefined`.
+  it('turns removeClippedSubviews off explicitly on the mobile feed, on Android', () => {
     const platform = jest.replaceProperty(Platform, 'OS', 'android');
 
     try {
       const list = render({}).findByType(Animated.FlatList);
 
-      expect(list.props.removeClippedSubviews).toBeFalsy();
+      expect(list.props.removeClippedSubviews).toBe(false);
     } finally {
       platform.restore();
     }

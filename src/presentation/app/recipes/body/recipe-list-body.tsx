@@ -111,6 +111,8 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   } else {
     body = (
       <Animated.FlatList
+        // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+        removeClippedSubviews={false}
         ref={vm.attachList}
         // Emptied while the next set loads; the header stays.
         data={rows}
@@ -120,7 +122,6 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         initialNumToRender={ListConstants.initialRows}
         maxToRenderPerBatch={ListConstants.rowsPerBatch}
         windowSize={ListConstants.windowSize}
-        // No removeClippedSubviews: it crashed under Fabric (check:structure rule R).
         ListHeaderComponent={
           <MobileFeedHeader
             filters={vm.filters}

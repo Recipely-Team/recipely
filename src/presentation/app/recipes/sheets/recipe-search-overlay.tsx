@@ -84,6 +84,8 @@ export const RecipeSearchOverlay = ({
         />
       ) : (
         <FlatList
+          // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+          removeClippedSubviews={false}
           {...assistantScroll}
           data={recipes}
           keyExtractor={(r) => r.id}

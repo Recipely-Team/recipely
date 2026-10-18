@@ -907,6 +907,17 @@ the feed, asserted with `Platform.OS` forced to `'android'` — under Jest's def
 `'ios'` the expression is already `false` and the test passes against the unfixed
 code.
 
+**It came back in v1.7.0 — with a different trigger.** "Open draft" crashed with the same
+Fabric exception. This time the import screen cleared its job store BEFORE navigating, so it
+re-rendered from "Recipe ready" to the empty paste view while the navigator was animating it
+out. *Guard:* the store is cleared on unmount only; `use-import-recipe.test.tsx` ("leaving
+does not repaint the screen on its way out") fails if a leave action changes what the screen
+shows; the Maestro flow `07-open-imported-draft.yaml` proves it on a device. Separately, the
+first fix had only DELETED `removeClippedSubviews`, and FlatList defaults it to ON on Android:
+rule R now requires `removeClippedSubviews={false}` on every list, and the feed test asserts
+`toBe(false)`. *The class:* **a screen on its way out must not change what it shows; and
+removing a prop is not turning it off.**
+
 **The lesson: a crash names where the process died, never what was asked of it.**
 What broke the three-session deadlock was not more reading — it was breadcrumbs.
 The trail stopped at `import: draft fetch started`, which placed the crash inside

@@ -142,6 +142,8 @@ export const NotificationsScreen = (): React.JSX.Element => {
         />
       ) : (
       <SectionList
+        // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
+        removeClippedSubviews={false}
         {...scrollable}
         sections={sections}
         keyExtractor={notifKey}
