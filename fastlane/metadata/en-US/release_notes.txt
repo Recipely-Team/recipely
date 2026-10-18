@@ -1,6 +1,7 @@
-The voice assistant is back on Android, with fixes for typing and large text.
+Create a missing dish with AI from search, easier reading with large text, and fixes.
 
-• The voice assistant works again on Android: it asks for the microphone, listens and talks back.
-• "Ask by typing" opens the keyboard right away, and the text box no longer hides under the navigation buttons.
-• Recipe details stay tidy with larger system text.
-• Sharper, better-chosen photos for recipes imported from videos.
+• Opening an imported draft no longer closes the app on Android.
+• Search for a missing dish and create it with AI in one tap.
+• Ask the assistant how to cook a dish and it explains.
+• Easier to read with large text; photos described for screen readers.
+• The feed shows when more recipes are loading.
