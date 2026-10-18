@@ -1,3 +1,4 @@
+import { ValueConstants } from '@core/constants';
 import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 
 /** Where the typing sheet sits, and how tall it is. Only its own module names it. */
@@ -5,6 +6,8 @@ interface SheetGeometry {
   /** How far the sheet's bottom edge stands off the bottom of the screen. */
   bottom: number;
   height: number;
+  /** Room kept clear at the foot of the sheet for the system navigation bar. */
+  paddingBottom: number;
 }
 
 /**
@@ -24,18 +27,25 @@ interface SheetGeometry {
  *   with the keyboard up leaves so little that the proportional height would
  *   not fit the composer, and a sheet you cannot type into is worse than one
  *   that overlaps.
+ * - **The navigation bar is not the screen.** With no keyboard up, the composer
+ *   sat under Android's 3-button bar, which swallows every touch: the box
+ *   could not be tapped, so the keyboard could never open. The sheet's
+ *   background still runs under the bar; its contents stop above it.
  */
 export const assistantSheetGeometry = (
   screenHeight: number,
   keyboardHeight: number,
+  bottomInset: number,
 ): SheetGeometry => {
   const room = screenHeight - keyboardHeight;
+  // The keyboard covers the navigation bar; only a resting sheet has to clear it.
+  const paddingBottom = keyboardHeight > ValueConstants.zero ? ValueConstants.zero : bottomInset;
 
   return {
     bottom: keyboardHeight,
-    height: Math.max(
-      assistantMetrics.sheetMinHeight,
-      room * assistantMetrics.sheetHeightShare,
-    ),
+    height:
+      Math.max(assistantMetrics.sheetMinHeight, (room - paddingBottom) * assistantMetrics.sheetHeightShare) +
+      paddingBottom,
+    paddingBottom,
   };
 };

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AssistantOrb } from '@presentation/base/widgets/assistant/parts/assistant-orb';
 import { AssistantWaitingLine } from '@presentation/base/widgets/assistant/parts/assistant-waiting-line';
 import { AssistantOrbMenu } from '@presentation/base/widgets/assistant/views/assistant-orb-menu';
@@ -65,7 +66,7 @@ export const AssistantOrbSurface = ({
 
   // The sheet is pinned to the bottom, so move it by the keyboard height.
   const keyboardHeight = useKeyboardHeight();
-  const sheet = assistantSheetGeometry(height, keyboardHeight);
+  const sheet = assistantSheetGeometry(height, keyboardHeight, useSafeAreaInsets().bottom);
   // Floats about an eighth up, never below the tab bar or the screen's own floating control.
   const orbBottom = isTyping
     ? sheet.bottom + sheet.height + spacing.lg
@@ -120,6 +121,7 @@ export const AssistantOrbSurface = ({
         <AssistantSheet
           height={sheet.height}
           bottom={sheet.bottom}
+          paddingBottom={sheet.paddingBottom}
           transcript={transcript}
           noticeTone={noticeTone}
           notice={notice}

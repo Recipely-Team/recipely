@@ -21,10 +21,24 @@ const isRouterCtxRequest = (context, moduleName) =>
   (moduleName === '../../_ctx' &&
     context.originModulePath.includes(`expo-router${path.sep}build${path.sep}`));
 
+// @live-assistant/audio maps its microphone and player to their `.web.js`
+// twins through package.json `browser`, and Metro reads `browser` on iOS and
+// Android too. The phones shipped the WEB microphone: getUserMedia does not
+// exist there, so the assistant reported a denied microphone without ever
+// asking, and played nothing. Native requests in or into that package resolve
+// without `browser`; the web keeps it. Guarded by scripts/assert-native-audio.mjs.
+const NATIVE_MAIN_FIELDS = ['react-native', 'main'];
+const isAssistantAudioRequest = (context, moduleName) =>
+  moduleName.startsWith('@live-assistant/audio') ||
+  context.originModulePath.includes(`@live-assistant${path.sep}audio${path.sep}`);
+
 const defaultResolveRequest = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (isRouterCtxRequest(context, moduleName)) {
     return context.resolveRequest(context, routeContext, platform);
+  }
+  if (platform !== 'web' && isAssistantAudioRequest(context, moduleName)) {
+    return context.resolveRequest({ ...context, mainFields: NATIVE_MAIN_FIELDS }, moduleName, platform);
   }
   return defaultResolveRequest
     ? defaultResolveRequest(context, moduleName, platform)

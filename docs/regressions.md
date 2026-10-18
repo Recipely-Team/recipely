@@ -143,6 +143,22 @@ disconnected from the thing it claims to fix; the export is what settles it.
 
 ## Native / platform
 
+**The phones ran the web microphone.** On Android (and iOS) the assistant said "Recipely
+needs the microphone to hear you" with access already granted, never showed a permission
+prompt, and played nothing. `@live-assistant/audio` maps its microphone and player to the
+`.web.js` builds through package.json `browser`, and Metro reads `browser` on native too, so
+`getUserMedia` — absent on a phone — failed and was reported as a denied microphone. An
+earlier fix that added "Open settings" treated the symptom.
+*Guard:* `metro.config.js` resolves that package without `browser` on native;
+`scripts/assert-native-audio.mjs` (in `check:structure`) fails if a phone would resolve it
+through `browser` or the web stops doing so. *The class:* **a package's `browser` field is a
+web choice; check what the NATIVE bundle actually contains, not what the test runner loads.**
+
+**A composer under the navigation bar.** The assistant's typing sheet sat at the bottom edge
+with no room for Android's 3-button bar, which takes every touch: the box could not be
+tapped and the keyboard never opened. *Guard:* `assistantSheetGeometry` takes the bottom
+inset (`assistant-sheet-geometry.test.ts`); "Ask by typing" focuses the box.
+
 **A `Modal` without `statusBarTranslucent` shifted the screen underneath.**
 `edgeToEdgeEnabled` is on, so Android re-lays-out the window around the status bar as
 the modal opens. Reported as "the layout jumps when I leave a draft". The dialog faded
