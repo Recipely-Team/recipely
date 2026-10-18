@@ -175,4 +175,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 266a7c9709e2ddb1 -->
+<!-- fingerprint: e6a97195db86db1b -->
