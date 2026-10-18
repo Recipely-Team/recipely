@@ -32,6 +32,8 @@ export interface AssistantSheetProps {
    * an overlay at the root of the app, so nothing above it can pad it up.
    */
   bottom: number;
+  /** Clearance for the system navigation bar while the keyboard is down. */
+  paddingBottom: number;
   transcript: AssistantTranscriptLineType[];
   notice: string | null;
   /**
@@ -57,6 +59,7 @@ export interface AssistantSheetProps {
 export const AssistantSheet = ({
   height,
   bottom,
+  paddingBottom,
   transcript,
   notice,
   noticeTone,
@@ -78,7 +81,7 @@ export const AssistantSheet = ({
       style={[
         styles.sheet,
         shadows.lg,
-        { height, bottom, backgroundColor: colors.cardBackground, borderTopColor: colors.cardBorder },
+        { height, bottom, paddingBottom, backgroundColor: colors.cardBackground, borderTopColor: colors.cardBorder },
       ]}
     >
       <Pressable
@@ -115,6 +118,8 @@ export const AssistantSheet = ({
           value={draft}
           onChangeText={setDraft}
           placeholder={t().assistant.placeholder}
+          // "Ask by typing" means type now: the keyboard comes up with the sheet.
+          autoFocus
           minHeight={controlSizes.searchBar}
           style={styles.input}
         />

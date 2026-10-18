@@ -1,3 +1,10 @@
+/* eslint-disable import/first -- jest.mock() must be hoisted above imports */
+// React Native's Jest preset reports a font scale of 2; these tests are about normal text.
+jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
+  __esModule: true,
+  default: () => ({ width: 390, height: 844, scale: 3, fontScale: 1 }),
+}));
+
 /**
  * The phone's stat tiles, as the prototype draws them.
  *

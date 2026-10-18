@@ -1,8 +1,6 @@
-Plan your week from saved recipes, and save from Pinterest.
+The voice assistant is back on Android, with fixes for typing and large text.
 
-• Plan my week: fill the week from your saved recipes, then swap or shuffle any day.
-• Save recipes from Pinterest, video pins included.
-• Imports show what we read and mark guessed lines; a dish with no recipe gets a suggested one.
-• Recipes are being translated into your language.
-• Get notified when a creator you follow posts a recipe.
-• A new welcome tour.
+• The voice assistant works again on Android: it asks for the microphone, listens and talks back.
+• "Ask by typing" opens the keyboard right away, and the text box no longer hides under the navigation buttons.
+• Recipe details stay tidy with larger system text.
+• Sharper, better-chosen photos for recipes imported from videos.
