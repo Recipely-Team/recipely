@@ -1,8 +1,6 @@
-Haftanı kayıtlı tariflerinle planla, Pinterest'ten tarif kaydet.
+Sesli asistan Android'de yeniden çalışıyor; yazarak sorma ve büyük yazı düzeltmeleri.
 
-• Haftanı planla: haftayı kayıtlı tariflerinle doldur, istediğin günü değiştir ya da karıştır.
-• Pinterest'ten tarif kaydet, video pinler dahil.
-• İçe aktarmada neyi okuduğumuzu ve tahmin ettiğimiz satırları görürsün; tarifsiz bir yemeğe tarif önerilir.
-• Tarifler senin diline çevriliyor.
-• Takip ettiğin şef yeni tarif paylaşınca haber al.
-• Yenilenen tanıtım ekranları.
+• Sesli asistan Android'de yeniden çalışıyor: mikrofon izni istiyor, dinliyor ve cevap veriyor.
+• "Yazarak sor" klavyeyi hemen açıyor; yazı kutusu artık alttaki gezinme tuşlarının altında kalmıyor.
+• Büyük yazı boyutunda tarif ayrıntıları düzgün görünüyor.
+• Videolardan aktarılan tariflerde daha net ve daha iyi seçilmiş fotoğraflar.
