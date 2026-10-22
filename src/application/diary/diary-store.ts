@@ -8,7 +8,7 @@ import { CalendarMonth } from '@domain/diary/calendar/calendar-month';
 import type { DiaryDay } from '@domain/diary/day/diary-day';
 import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import { DiaryConcern, type DiaryConcernType } from '@application/diary/diary-concern';
-import type { DiaryStoreState } from '@application/diary/diary-store-state';
+import type { DiaryStore } from '@application/diary/diary-store-contract';
 import { WaterTapLedger } from '@application/diary/day/water-tap-ledger';
 import type { LoadDiaryDayUseCase } from '@application/diary/day/load-diary-day-use-case';
 import type { SetDayWaterUseCase } from '@application/diary/day/set-day-water-use-case';
@@ -61,7 +61,7 @@ const flags = <T>(value: T): Record<DiaryConcernType, T> => ({
  *   saved goals; `clear()` bumps `session` so nothing started under a previous
  *   account publishes.
  */
-export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStoreState> => {
+export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore> => {
   const today = deps.today ?? (() => CalendarDate.today());
   const water = new WaterTapLedger();
   let session = ValueConstants.zero;
@@ -69,7 +69,7 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
   /** Entry ids per date in the order the server last listed them — where a failed delete goes back. */
   const serverOrder = new Map<string, readonly string[]>();
 
-  return create<DiaryStoreState>((set, get) => {
+  return create<DiaryStore>((set, get) => {
     const mark = (concern: DiaryConcernType, loading: boolean, failure: Failure | null = null): void =>
       set((s) => ({ loading: { ...s.loading, [concern]: loading }, errors: { ...s.errors, [concern]: failure } }));
 

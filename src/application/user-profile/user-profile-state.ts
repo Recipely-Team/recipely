@@ -1,9 +1,10 @@
-import type { Failure } from '@core/failure';
-import type { StoreStatus } from '@application/store/store-status';
-import type { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
+import type { UserProfileIdle } from '@application/user-profile/states/user-profile-idle';
+import type { UserProfileLoading } from '@application/user-profile/states/user-profile-loading';
+import type { UserProfileLoaded } from '@application/user-profile/states/user-profile-loaded';
+import type { UserProfileError } from '@application/user-profile/states/user-profile-error';
 
 export type UserProfileState =
-  | { status: typeof StoreStatus.Idle }
-  | { status: typeof StoreStatus.Loading }
-  | { status: typeof StoreStatus.Loaded; profile: UserProfileEntity }
-  | { status: typeof StoreStatus.Error; failure: Failure };
+  | UserProfileIdle
+  | UserProfileLoading
+  | UserProfileLoaded
+  | UserProfileError;

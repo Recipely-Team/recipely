@@ -15,9 +15,9 @@
  * and only assert on the store interactions that matter.
  */
 
-import type { AuthStoreState } from "@application/auth/auth-store-state";
-import type { FavoritesStoreState } from "@application/favorites/favorites-store-state";
-import type { SavedRecipesStoreState } from "@application/recipes/saved/saved-recipes-store-state";
+import type { AuthStore } from "@application/auth/auth-store-contract";
+import type { FavoritesStore } from "@application/favorites/favorites-store-contract";
+import type { SavedRecipesStore } from "@application/recipes/saved/saved-recipes-store-contract";
 import { UnknownFailure } from "@core/failure";
 import { ok } from "@core/result/result-helpers";
 import { AuthSessionEntity } from "@domain/auth/auth-session-entity";
@@ -42,7 +42,7 @@ jest.mock("@presentation/base/feedback/show-toast", () => ({
 
 /** Builds a savedRecipesStore whose savedIds can be seeded and mutated. */
 const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
-  create<SavedRecipesStoreState>((set, get) => ({
+  create<SavedRecipesStore>((set, get) => ({
     savedRecipes: [],
     savedIds: initial,
     listState: { status: "idle" },
@@ -87,7 +87,7 @@ const makeFavoritesStore = ({
   addFavorite = jest.fn().mockResolvedValue(null),
   removeFavorite = jest.fn().mockResolvedValue(null),
 }: FavoritesStoreOptions = {}) =>
-  create<FavoritesStoreState>(() => ({
+  create<FavoritesStore>(() => ({
     isLoading,
     pending,
     addFavorite,
@@ -120,7 +120,7 @@ const buildSession = (userId: string): AuthSessionEntity => {
 
 /** Builds an authStore that returns the given userId (null = unauthenticated). */
 const makeAuthStore = (userId: string | null) =>
-  create<AuthStoreState>(() => ({
+  create<AuthStore>(() => ({
     state:
       userId !== null
         ? { status: "authenticated", session: buildSession(userId) }

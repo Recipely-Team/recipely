@@ -33,8 +33,8 @@ regression discipline (`bug-fix`) and which `architecture.md` section to read fo
 1b. **Structure & placement (architecture.md §1, §8; CLAUDE.md rules 1, 14-16, 21).**
    - One EXPORTED class/interface/type/component/enum per file (rule 1). Exempt: barrels, a component's
      `Props`, non-exported types — a shape only its consumer names stays unexported above it. A store
-     module `x-store.ts` exports only `configureXStore(): BoundStore<XStoreState>`; the state type is
-     `x-store-state.ts`. A context provider and its `use*` hook are separate files.
+     module `x-store.ts` exports only `configureXStore(): BoundStore<XStore>`; the contract is
+     `x-store-contract.ts`, the `XState` union `x-state.ts`, each named state `states/*.ts`. A context provider and its `use*` hook are separate files.
    - Props interfaces named exactly `<ComponentName>Props`.
    - Page code in the page's `body/`/`items/`/`sheets/`/`hooks/`/`model/`; single-page widgets NOT in
      `base/widgets/`; no loose files at the `base/widgets/` root.

@@ -14,7 +14,7 @@ import { RequestEpoch } from '@application/store/request-epoch';
 import { PageSizes } from '@application/config/page-sizes';
 import type { PagedList } from '@application/store/paging/paged-list';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
-import type { ShoppingListStoreState } from '@application/shopping/shopping-list-store-state';
+import type { ShoppingListStore } from '@application/shopping/shopping-list-store-contract';
 import type { ListShoppingItemsUseCase } from '@application/shopping/read/list-shopping-items-use-case';
 import type { AddShoppingItemUseCase } from '@application/shopping/write/add-shopping-item-use-case';
 import type { AddRecipeIngredientsUseCase } from '@application/shopping/write/add-recipe-ingredients-use-case';
@@ -74,13 +74,13 @@ const hasItem = (list: PagedList<ShoppingItemEntity>, id: string): boolean =>
  * - **User-scoped**: cleared on sign-out (`clearSessionCaches`); an answer that
  *   lands after that is dropped, so the old account's lines never come back.
  */
-export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundStore<ShoppingListStoreState> => {
+export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundStore<ShoppingListStore> => {
   const ticks = new Map<string, number>();
   const removals = new KeyedRequestEpoch();
   const session = new RequestEpoch();
   const toBuyReads = new RequestEpoch();
 
-  return create<ShoppingListStoreState>((set, get) => {
+  return create<ShoppingListStore>((set, get) => {
     const loader = new PagedListLoader<ShoppingItemEntity>(() => get().list, (list) => set({ list }), (item) => item.id);
     const fetchPage = (page: number) => deps.list.execute(page, PageSizes.shoppingList);
     const hasMore = (): boolean => { const list = get().list; return list.status === StoreStatus.Loaded && list.hasMore; };

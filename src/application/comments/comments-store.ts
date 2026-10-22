@@ -9,7 +9,7 @@ import { RequestEpoch } from '@application/store/request-epoch';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
 import type { PagedList } from '@application/store/paging/paged-list';
 import { loadedItems } from '@application/store/paging/loaded-items';
-import type { CommentsStoreState } from '@application/comments/comments-store-state';
+import type { CommentsStore } from '@application/comments/comments-store-contract';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { mergeRecipeComments } from '@application/comments/list/merge-recipe-comments';
 import { commentsThreadView } from '@application/comments/list/comments-thread-view';
@@ -46,14 +46,14 @@ const commentKey = (view: CommentView): string => view.comment.id;
  *   reloads the thread, so it is not lost from view until the next visit.
  * - **No try/catch:** the use cases return `Result` and the HTTP client never throws.
  */
-export const configureCommentsStore = (deps: CommentsStoreDeps): BoundStore<CommentsStoreState> => {
+export const configureCommentsStore = (deps: CommentsStoreDeps): BoundStore<CommentsStore> => {
   const { listComments, addComment, deleteComment, setCommentLike } = deps;
   const lists = new Map<string, PagedList<CommentView>>();
   const loaders = new Map<string, PagedListLoader<CommentView>>();
   const sessions = new RequestEpoch();
   let isSessionCurrent = sessions.start();
 
-  return create<CommentsStoreState>((set, get) => {
+  return create<CommentsStore>((set, get) => {
     const patch = (recipeId: string, change: Patch): void =>
       set((state) => ({ byRecipe: mergeRecipeComments(state.byRecipe, recipeId, change) }));
 

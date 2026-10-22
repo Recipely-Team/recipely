@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2273 source files.
+[architecture.md](architecture.md). 2370 source files.
 
 ## Layers
 
@@ -58,29 +58,29 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `ads/` _(2)_
 - `assistant/` — actions, session _(17)_
 - `audio/` _(2)_
-- `auth/` — password-reset, profile, registration, session, sign-in _(17)_
+- `auth/` — password-reset, profile, registration, session, sign-in, states _(21)_
 - `comments/` — add, delete, like, list _(12)_
 - `config/` _(6)_
-- `creators/` — claim, list, profile _(10)_
+- `creators/` — claim, list, profile _(14)_
 - `device/` _(2)_
 - `di/` — features _(17)_
-- `diary/` — day, entries, foods, goals, meal, month _(27)_
+- `diary/` — day, entries, foods, goals, meal, month _(31)_
 - `drafts/` — list, read, write _(8)_
 - `favorites/` _(5)_
 - `feedback/` _(3)_
 - `fridge/` _(5)_
 - `i18n/` _(5)_
-- `instagram/` — activity, connect, rules, stats _(25)_
+- `instagram/` — activity, connect, rules, stats _(37)_
 - `likes/` _(5)_
-- `meal-plan/` — read, write _(13)_
+- `meal-plan/` — read, states, write _(17)_
 - `notifications/` — list, read, reminders _(15)_
 - `onboarding/` _(2)_
-- `recipes/` — cooking, create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(62)_
+- `recipes/` — cooking, create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(110)_
 - `shopping/` — read, write _(13)_
 - `storage/` _(4)_
-- `store/` — paging _(16)_
+- `store/` — paging _(20)_
 - `timers/` _(7)_
-- `user-profile/` — follow, recipes _(8)_
+- `user-profile/` — follow, recipes, states _(12)_
 
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
 
@@ -143,7 +143,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(9)_
 - `utils/` (diary, instagram, meal-plan) — small pure helpers _(34)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(218)_
+- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(221)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -176,4 +176,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 97ddbd5aaca63ead -->
+<!-- fingerprint: c79b36001e33ba5d -->

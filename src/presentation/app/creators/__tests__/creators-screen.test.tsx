@@ -8,7 +8,7 @@ import { act, type ReactTestInstance } from 'react-test-renderer';
 import { create } from 'zustand';
 import { loadedList } from '@application/store/paging/loaded-list';
 import { creatorPageOf } from '@application/__fixtures__/creator-page-of';
-import type { CreatorsStoreState } from '@application/creators/creators-store-state';
+import type { CreatorsStore } from '@application/creators/creators-store-contract';
 import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 import { creatorSummaryOf } from '@application/__fixtures__/creator-summary-of';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
@@ -29,7 +29,7 @@ jest.mock('expo-router', () => ({
 }));
 
 const storeOf = (creators: CreatorSummaryEntity[]) =>
-  create<CreatorsStoreState>(() => ({
+  create<CreatorsStore>(() => ({
     creators: loadedList(creatorPageOf(creators)),
     load: jest.fn(async () => undefined),
     refresh: jest.fn(async () => undefined),

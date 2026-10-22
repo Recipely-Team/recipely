@@ -25,7 +25,7 @@ import type { ApplicationStores } from '@application/di/application-stores';
 import { WebFilterModal } from '@presentation/app/recipes/sheets/web-filter-modal';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { emptyFilters } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';
-import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
+import type { TaxonomyStore } from '@application/recipes/taxonomy/taxonomy-store-contract';
 import { CUISINE_KEY_VALUES } from '@domain/recipes/taxonomy/cuisine-key';
 import { DIFFICULTY_VALUES } from '@domain/recipes/difficulty';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
@@ -49,7 +49,7 @@ jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
  * category names — exactly the "store not ready" path the modal must survive.
  */
 const makeTaxonomyStore = () =>
-  create<TaxonomyStoreState>(() => ({
+  create<TaxonomyStore>(() => ({
     cuisines: [],
     categories: [],
     status: 'idle',

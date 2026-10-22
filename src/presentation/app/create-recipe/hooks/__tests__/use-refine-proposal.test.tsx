@@ -29,8 +29,8 @@ import type { CreateRecipeUseCase } from '@application/recipes/create/create-rec
 import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
-import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store-contract';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
@@ -108,8 +108,8 @@ const makeStores = (repo: FakeRecipeRepository): ApplicationStores => {
     refineRecipeUseCase: new RefineRecipeUseCase(repo),
     importInstagramRecipeUseCase: unusedUseCase<ImportInstagramRecipeUseCase>(),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
-    recipeListStore: noopCacheStore<BoundStore<RecipeListStoreState>>(),
-    recipeDetailStore: noopCacheStore<BoundStore<RecipeDetailStoreState>>(),
+    recipeListStore: noopCacheStore<BoundStore<RecipeListStore>>(),
+    recipeDetailStore: noopCacheStore<BoundStore<RecipeDetailStore>>(),
   });
   return { createdRecipesStore } as unknown as ApplicationStores;
 };

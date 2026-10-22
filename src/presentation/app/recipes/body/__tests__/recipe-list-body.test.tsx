@@ -36,7 +36,7 @@ import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list
 import { t } from '@presentation/i18n';
 import { layoutSizes } from '@presentation/base/theme';
 import { ListConstants } from '@presentation/base/constants';
-import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
+import type { TaxonomyStore } from '@application/recipes/taxonomy/taxonomy-store-contract';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
@@ -99,7 +99,7 @@ const RECIPES = [makeRecipe('r1')];
 /** An un-loaded taxonomy store: labels/options fall back to the bundled enums. */
 const makeStores = (): ApplicationStores =>
   ({
-    taxonomyStore: create<TaxonomyStoreState>(() => ({
+    taxonomyStore: create<TaxonomyStore>(() => ({
       cuisines: [],
       categories: [],
       status: 'idle',

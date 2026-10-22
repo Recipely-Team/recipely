@@ -69,8 +69,8 @@ import type { EditableRecipe } from '@presentation/app/create-recipe/model/draft
 import { en } from '@presentation/i18n/locales/en';
 import { RoutePaths } from '@presentation/base/constants';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
-import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store-contract';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 // ─── module mocks ────────────────────────────────────────────────────────────
@@ -243,8 +243,8 @@ const makeStores = (
     refineRecipeUseCase: new RefineRecipeUseCase(new FakeRecipeRepository(config)),
     importInstagramRecipeUseCase: unusedUseCase<ImportInstagramRecipeUseCase>(),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
-    recipeListStore: noopCacheStore<BoundStore<RecipeListStoreState>>(),
-    recipeDetailStore: noopCacheStore<BoundStore<RecipeDetailStoreState>>(),
+    recipeListStore: noopCacheStore<BoundStore<RecipeListStore>>(),
+    recipeDetailStore: noopCacheStore<BoundStore<RecipeDetailStore>>(),
   });
 
   const draftsStore = configureDraftsStore({

@@ -24,7 +24,7 @@ import { AssistantFailurePolicy } from '@application/assistant/session/assistant
 import type { AskAssistantUseCase } from '@application/assistant/session/ask-assistant-use-case';
 import type { RunAssistantActionUseCase } from '@application/assistant/actions/run-assistant-action-use-case';
 import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
-import type { AssistantSessionStoreState } from '@application/assistant/session/assistant-session-store-state';
+import type { AssistantSessionStore } from '@application/assistant/session/assistant-session-store-contract';
 import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import type { BoundStore } from '@application/store/bound-store';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
@@ -102,7 +102,7 @@ const EXTRA_ID_PREFIX = 'app-';
  */
 export const configureAssistantSessionStore = (
   deps: AssistantSessionStoreDeps,
-): BoundStore<AssistantSessionStoreState> => {
+): BoundStore<AssistantSessionStore> => {
   const { tokens, registry, askAssistant, runAction } = deps;
   const meter = new AssistantLevelMeter();
   let languageCode = CharConstants.empty;
@@ -117,7 +117,7 @@ export const configureAssistantSessionStore = (
   let seenEntries: readonly TranscriptEntry[] | null = null;
   let previousStatus: string = SessionStatus.Idle;
 
-  return create<AssistantSessionStoreState>((set, get) => {
+  return create<AssistantSessionStore>((set, get) => {
     let controller!: AssistantController<LiveSessionCredentials>;
 
     const publishLevel = (samples: Float32Array<ArrayBuffer>): void => {
@@ -196,7 +196,7 @@ export const configureAssistantSessionStore = (
 
     const sync = (): void => {
       const state = controller.getState();
-      const patch: Partial<AssistantSessionStoreState> = {
+      const patch: Partial<AssistantSessionStore> = {
         isMuted: state.isMuted,
         tokensUsed: state.tokensUsed,
         status: state.status !== SessionStatus.Idle ? state.status : (overlay ?? AssistantStatus.Idle),

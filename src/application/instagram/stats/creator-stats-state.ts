@@ -1,10 +1,11 @@
-import type { Failure } from '@core/failure';
-import type { StoreStatus } from '@application/store/store-status';
-import type { CreatorStats } from '@domain/instagram/stats/creator-stats';
+import type { CreatorStatsIdle } from '@application/instagram/stats/states/creator-stats-idle';
+import type { CreatorStatsLoading } from '@application/instagram/stats/states/creator-stats-loading';
+import type { CreatorStatsLoaded } from '@application/instagram/stats/states/creator-stats-loaded';
+import type { CreatorStatsError } from '@application/instagram/stats/states/creator-stats-error';
 
 /** One range of the creator stats panel. */
 export type CreatorStatsState =
-  | { status: typeof StoreStatus.Idle }
-  | { status: typeof StoreStatus.Loading }
-  | { status: typeof StoreStatus.Loaded; stats: CreatorStats }
-  | { status: typeof StoreStatus.Error; failure: Failure };
+  | CreatorStatsIdle
+  | CreatorStatsLoading
+  | CreatorStatsLoaded
+  | CreatorStatsError;

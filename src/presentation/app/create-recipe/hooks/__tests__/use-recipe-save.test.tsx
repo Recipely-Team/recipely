@@ -60,7 +60,7 @@ import { RemoveRecipeMediaUseCase } from '@application/recipes/photos/remove-rec
 import { PublishRecipeUseCase } from '@application/recipes/publishing/publish-recipe-use-case';
 import { UnpublishRecipeUseCase } from '@application/recipes/publishing/unpublish-recipe-use-case';
 import { EditRecipeUseCase } from '@application/recipes/edit/edit-recipe-use-case';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 // ─── module mocks ────────────────────────────────────────────────────────────
@@ -154,7 +154,7 @@ const makeStores = (repo: FakeRecipeRepository): ApplicationStores => {
     refineRecipeUseCase: unusedUseCase<RefineRecipeUseCase>(),
     importInstagramRecipeUseCase: unusedUseCase<ImportInstagramRecipeUseCase>(),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
-    recipeListStore: noopCacheStore<BoundStore<RecipeListStoreState>>(),
+    recipeListStore: noopCacheStore<BoundStore<RecipeListStore>>(),
     recipeDetailStore,
   });
 

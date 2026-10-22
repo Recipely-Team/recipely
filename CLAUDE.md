@@ -166,7 +166,9 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
 1. **One declaration per file** — one EXPORTED class, interface, type alias or component per `.ts`/`.tsx`.
    Exempt: barrel `index.ts`, a component's `Props` interface, non-exported types. A shape only its own
    consumer names stays unexported above it; a factory gets no alias for its return type (a store module
-   exports only its factory, typed `BoundStore<XState>`). `check:structure` rule A.
+   exports only its factory, typed `BoundStore<XStore>`). `check:structure` rule A. A store's contract
+   (`XStore`, state + actions, in `x-store-contract.ts`) is not a state: its `state` field is the union
+   `XState` of named states (`XLoaded`, `XError`, …), one interface each in a `states/` folder.
 2. **Class vs. function** — classes for use cases, repositories, HTTP clients, storage, domain entities;
    stateless mappers/formatters are plain exported functions.
 3. **Comments live at the head of the thing they describe** — ONE doc block per class/hook/component/module

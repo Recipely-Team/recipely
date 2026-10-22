@@ -12,7 +12,7 @@ import { configureLikedRecipesStore } from '@application/recipes/liked/liked-rec
 import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
 import type { LoadLikedRecipesUseCase } from '@application/likes/load-liked-recipes-use-case';
 import type { BoundStore } from '@application/store/bound-store';
-import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
+import type { LikedRecipesStore } from '@application/recipes/liked/liked-recipes-store-contract';
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
@@ -51,7 +51,7 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
   return result.value;
 };
 
-const makeLikedStore = async (): Promise<BoundStore<LikedRecipesStoreState>> => {
+const makeLikedStore = async (): Promise<BoundStore<LikedRecipesStore>> => {
   const store = configureLikedRecipesStore({
     loadLikedRecipesUseCase: {
       execute: () => Promise.resolve(ok(recipePageOf([makeRecipe(RECIPE_ID), makeRecipe('r-2')]))),
@@ -62,7 +62,7 @@ const makeLikedStore = async (): Promise<BoundStore<LikedRecipesStoreState>> => 
 };
 
 const makeLikesStore = (
-  likedRecipesStore: BoundStore<LikedRecipesStoreState>,
+  likedRecipesStore: BoundStore<LikedRecipesStore>,
   unlikeResult: Result<void, Failure> = ok(undefined),
 ) =>
   configureLikesStore({

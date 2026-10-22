@@ -22,13 +22,13 @@ import { CreatorProfileScreen } from '@presentation/app/creators/[userId]';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { create } from 'zustand';
-import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
 import type { ApplicationStores } from '@application/di/application-stores';
 
 /** The saved set the web cards' bookmarks read; empty, since these tests are about following. */
 const savedStores = (): Partial<ApplicationStores> =>
   ({
-    savedRecipesStore: create<Pick<SavedRecipesStoreState, 'savedIds'>>(() => ({ savedIds: new Set<string>() })),
+    savedRecipesStore: create<Pick<SavedRecipesStore, 'savedIds'>>(() => ({ savedIds: new Set<string>() })),
     favoritesStore: create(() => ({ isLoading: false, pending: new Set<string>(), error: null })),
   }) as unknown as Partial<ApplicationStores>;
 

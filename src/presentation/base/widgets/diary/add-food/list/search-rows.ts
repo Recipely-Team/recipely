@@ -1,4 +1,4 @@
-import type { FoodSearchStoreState } from '@application/diary/foods/food-search-store-state';
+import type { FoodSearchStore } from '@application/diary/foods/food-search-store-contract';
 import { CharConstants } from '@core/constants';
 import { FoodSearchGroup, type FoodSearchGroupType } from '@domain/diary/foods/search/food-search-group';
 import type { PickRowEntryType } from '@presentation/base/widgets/diary/add-food/list/pick-row';
@@ -6,7 +6,7 @@ import { PickRowType } from '@presentation/base/widgets/diary/add-food/list/pick
 import { pagedRows } from '@presentation/base/widgets/diary/add-food/list/paged-rows';
 
 /** The four groups as the store holds them. */
-type SearchLists = Pick<FoodSearchStoreState, FoodSearchGroupType>;
+type SearchLists = Pick<FoodSearchStore, FoodSearchGroupType>;
 
 /** The search groups in display order (Add food v2 spec §3). */
 export const SEARCH_GROUP_ORDER: readonly FoodSearchGroupType[] = [

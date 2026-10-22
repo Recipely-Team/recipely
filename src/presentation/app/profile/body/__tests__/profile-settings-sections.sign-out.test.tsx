@@ -11,7 +11,7 @@ import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { ProfileSettingsSections } from '@presentation/app/profile/body/profile-settings-sections';
-import type { AuthStoreState } from '@application/auth/auth-store-state';
+import type { AuthStore } from '@application/auth/auth-store-contract';
 import { t } from '@presentation/i18n';
 
 const mockReplace = jest.fn();
@@ -31,7 +31,7 @@ const signOut = jest.fn<Promise<null>, []>(() => Promise.resolve(null));
 
 const makeStores = (): ApplicationStores =>
   ({
-    authStore: create<Partial<AuthStoreState>>(() => ({
+    authStore: create<Partial<AuthStore>>(() => ({
       state: { status: 'unauthenticated' },
       signOut,
       deleteAccount: jest.fn<Promise<null>, []>(() => Promise.resolve(null)),

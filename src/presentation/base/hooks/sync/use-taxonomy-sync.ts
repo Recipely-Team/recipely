@@ -1,8 +1,8 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { useEffect, useRef } from 'react';
 import { useLocale } from '@presentation/i18n/use-locale';
-import type { AuthStoreState } from '@application/auth/auth-store-state';
-import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
+import type { AuthStore } from '@application/auth/auth-store-contract';
+import type { TaxonomyStore } from '@application/recipes/taxonomy/taxonomy-store-contract';
 
 /**
  * Keeps the backend cuisine + category catalogs loaded and in the app's
@@ -12,7 +12,7 @@ import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-
  * the backend localizes catalog names through the `Accept-Language` header
  * and the cached entries would otherwise stay in the previous language.
  */
-export const useTaxonomySync = (taxonomyStore: BoundStore<TaxonomyStoreState>, authStore: BoundStore<AuthStoreState>): void => {
+export const useTaxonomySync = (taxonomyStore: BoundStore<TaxonomyStore>, authStore: BoundStore<AuthStore>): void => {
   const locale = useLocale();
   const initialLocale = useRef(locale);
 

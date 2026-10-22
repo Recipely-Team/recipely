@@ -24,7 +24,7 @@ import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { Difficulty } from '@domain/recipes/difficulty';
-import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 import { RequestCreatorTagUseCase } from '@application/creators/claim/request-creator-tag-use-case';
 import { RemoveCreatorTagUseCase } from '@application/creators/claim/remove-creator-tag-use-case';
@@ -93,7 +93,7 @@ const neverLoadsFavorites = {
 const makeStore = (
   repo: FakeAuthRepository,
   overrides: {
-    savedRecipesStore?: BoundStore<SavedRecipesStoreState>;
+    savedRecipesStore?: BoundStore<SavedRecipesStore>;
     clearSessionCaches?: () => void;
     onSessionRestored?: () => void;
   } = {},

@@ -13,7 +13,7 @@ import { CreatorClaim } from '@domain/creators/creator-claim';
 import { CreatorClaims } from '@domain/creators/creator-claims';
 import { CreatorStatus } from '@domain/creators/creator-status';
 import { CreatorTag } from '@domain/creators/creator-tag';
-import type { AuthStoreState } from '@application/auth/auth-store-state';
+import type { AuthStore } from '@application/auth/auth-store-contract';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { authStoreOf } from '@presentation/base/test-support/auth-store-of';
 import { instagramStoreOf } from '@presentation/base/test-support/instagram-store-of';
@@ -49,7 +49,7 @@ const userWith = (...specs: ClaimSpec[]): UserEntity => {
   return user.value;
 };
 
-const renderSection = (specs: ClaimSpec[], overrides: Partial<AuthStoreState> = {}, instagram = instagramStoreOf()) => {
+const renderSection = (specs: ClaimSpec[], overrides: Partial<AuthStore> = {}, instagram = instagramStoreOf()) => {
   const authStore = authStoreOf(userWith(...specs), overrides);
   const rendered = renderComponent(<CreatorAccountSection />, { authStore, instagramStore: instagram.store });
   return { ...rendered, actions: authStore.getState(), instagram };

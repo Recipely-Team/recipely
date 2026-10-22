@@ -22,7 +22,7 @@ import { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-rec
 import { RemoveRecipeMediaUseCase } from '@application/recipes/photos/remove-recipe-media-use-case';
 import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
 import { configureDraftsStore } from '@application/drafts/drafts-store';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import type { ApplicationStores } from '@application/di/application-stores';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import { renderComponent } from '@presentation/base/test-support/render-component';
@@ -74,7 +74,7 @@ const mount = () => {
     importInstagramRecipeUseCase: unused(),
     refineRecipeUseCase: unused(),
     deleteRecipeUseCase: unused(),
-    recipeListStore: unused<BoundStore<RecipeListStoreState>>(),
+    recipeListStore: unused<BoundStore<RecipeListStore>>(),
     recipeDetailStore,
   });
   const stores = { recipeDetailStore, draftsStore, createdRecipesStore } as unknown as ApplicationStores;

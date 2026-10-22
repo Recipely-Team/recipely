@@ -34,11 +34,11 @@ import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-r
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import type { RecipeListState } from '@application/recipes/list/recipe-list-state';
-import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
-import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
-import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
+import type { CreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store-contract';
+import type { DraftsStore } from '@application/drafts/drafts-store-contract';
 import { NetworkFailure } from '@core/failure';
 import { ok, fail } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
@@ -94,7 +94,7 @@ const IDLE_STATE: RecipeListState = { status: 'idle' };
  * seam under test.
  */
 const makeStores = (loaders: Loaders) => {
-  const recipeListStore = create<RecipeListStoreState>(() => ({
+  const recipeListStore = create<RecipeListStore>(() => ({
     state: IDLE_STATE,
     load: loaders.loadRecipes,
     loadMore: jest.fn(),
@@ -102,22 +102,22 @@ const makeStores = (loaders: Loaders) => {
     remove: jest.fn(),
   }));
 
-  const savedRecipesStore = create<SavedRecipesStoreState>(() => ({
+  const savedRecipesStore = create<SavedRecipesStore>(() => ({
     savedIds: new Set<string>(),
     listState: { status: 'idle' },
     setSaved: jest.fn(),
     loadSaved: loaders.loadSaved,
-  }) as unknown as SavedRecipesStoreState);
+  }) as unknown as SavedRecipesStore);
 
-  const createdRecipesStore = create<CreatedRecipesStoreState>(() => ({
+  const createdRecipesStore = create<CreatedRecipesStore>(() => ({
     recipes: [],
     loadMyRecipes: loaders.loadMyRecipes,
-  }) as unknown as CreatedRecipesStoreState);
+  }) as unknown as CreatedRecipesStore);
 
-  const draftsStore = create<DraftsStoreState>(() => ({
+  const draftsStore = create<DraftsStore>(() => ({
     drafts: { status: 'idle' },
     loadDrafts: loaders.loadDrafts,
-  }) as unknown as DraftsStoreState);
+  }) as unknown as DraftsStore);
 
   const stores = {
     recipeListStore,

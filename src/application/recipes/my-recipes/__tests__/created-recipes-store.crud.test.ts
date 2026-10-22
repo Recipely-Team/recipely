@@ -2,10 +2,10 @@ import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 import { recipePageOf } from "@application/__fixtures__/recipe-page-of";
 import type { CreateRecipeUseCase } from "@application/recipes/create/create-recipe-use-case";
 import type { DeleteRecipeUseCase } from "@application/recipes/delete/delete-recipe-use-case";
-import type { RecipeDetailStoreState } from "@application/recipes/detail/recipe-detail-store-state";
+import type { RecipeDetailStore } from "@application/recipes/detail/recipe-detail-store-contract";
 import type { GenerateRecipeUseCase } from "@application/recipes/generate/generate-recipe-use-case";
 import type { ImportInstagramRecipeUseCase } from "@application/recipes/import/import-instagram-recipe-use-case";
-import type { RecipeListStoreState } from "@application/recipes/list/recipe-list-store-state";
+import type { RecipeListStore } from "@application/recipes/list/recipe-list-store-contract";
 import { configureCreatedRecipesStore } from "@application/recipes/my-recipes/created-recipes-store";
 import type { ListMyRecipesUseCase } from "@application/recipes/my-recipes/list-my-recipes-use-case";
 import type { RefineRecipeUseCase } from "@application/recipes/refine/refine-recipe-use-case";
@@ -114,8 +114,8 @@ interface Deps {
   createRecipeUseCase: CreateRecipeUseCase;
   listMyRecipesUseCase: ListMyRecipesUseCase;
   deleteRecipeUseCase: DeleteRecipeUseCase;
-  recipeListStore: BoundStore<RecipeListStoreState>;
-  recipeDetailStore: BoundStore<RecipeDetailStoreState>;
+  recipeListStore: BoundStore<RecipeListStore>;
+  recipeDetailStore: BoundStore<RecipeDetailStore>;
 }
 
 const makeStore = (overrides: Partial<Deps> = {}) => {
@@ -138,7 +138,7 @@ const makeStore = (overrides: Partial<Deps> = {}) => {
       replace: recipeListStoreReplace,
       remove: recipeListStoreRemove,
     }),
-  } as unknown as BoundStore<RecipeListStoreState>;
+  } as unknown as BoundStore<RecipeListStore>;
 
   const recipeDetailStoreReplace = jest.fn();
   const recipeDetailStoreRemove = jest.fn();
@@ -148,7 +148,7 @@ const makeStore = (overrides: Partial<Deps> = {}) => {
       remove: recipeDetailStoreRemove,
       put: jest.fn(),
     }),
-  } as unknown as BoundStore<RecipeDetailStoreState>;
+  } as unknown as BoundStore<RecipeDetailStore>;
 
   const store = configureCreatedRecipesStore({
     createRecipeUseCase: fakeCreateUseCase,

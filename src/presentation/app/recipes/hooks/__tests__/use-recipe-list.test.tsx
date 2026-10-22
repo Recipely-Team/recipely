@@ -41,9 +41,9 @@ import { useFocusEffect } from 'expo-router';
 import { configureRecipeListStore } from '@application/recipes/list/recipe-list-store';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
-import type { AuthStoreState } from '@application/auth/auth-store-state';
-import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
-import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import type { AuthStore } from '@application/auth/auth-store-contract';
+import type { NotificationsStore } from '@application/notifications/notifications-store-contract';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
@@ -52,7 +52,7 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 import type { Page } from '@domain/common/page';
@@ -150,28 +150,28 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
 };
 
 const makeAuthStore = () =>
-  create<AuthStoreState>(() => ({
+  create<AuthStore>(() => ({
     state: { status: 'unauthenticated' },
-  }) as unknown as AuthStoreState);
+  }) as unknown as AuthStore);
 
 const makeNotificationsStore = () =>
-  create<NotificationsStoreState>(() => ({
-  }) as unknown as NotificationsStoreState);
+  create<NotificationsStore>(() => ({
+  }) as unknown as NotificationsStore);
 
 const makeSavedRecipesStore = () =>
-  create<SavedRecipesStoreState>(() => ({
+  create<SavedRecipesStore>(() => ({
     savedIds: new Set<string>(),
     setSavedIds: jest.fn(),
-  }) as unknown as SavedRecipesStoreState);
+  }) as unknown as SavedRecipesStore);
 
 /** The user's own recipes; a change to it means the feed may be missing a just-published recipe. */
 const ownRecipes = create<{ version: number }>(() => ({ version: 0 }));
 
 /** The viewer the feed hook reads; a test signs in by setting it. Reset before each test. */
 const viewer = makeAuthStore();
-beforeEach(() => viewer.setState({ state: { status: 'unauthenticated' } } as unknown as AuthStoreState));
+beforeEach(() => viewer.setState({ state: { status: 'unauthenticated' } } as unknown as AuthStore));
 
-const makeStores = (recipeListStore: BoundStore<RecipeListStoreState>): ApplicationStores =>
+const makeStores = (recipeListStore: BoundStore<RecipeListStore>): ApplicationStores =>
   ({
     recipeListStore,
     authStore: viewer,
@@ -836,7 +836,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     await mountLoaded(execute);
     execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('r1')]))));
     act(() =>
-      viewer.setState({ state: { status: 'authenticated', session: { user: { id: 'u1' } } } } as unknown as AuthStoreState),
+      viewer.setState({ state: { status: 'authenticated', session: { user: { id: 'u1' } } } } as unknown as AuthStore),
     );
     now.mockReturnValue(loadedAt + 1_000);
 

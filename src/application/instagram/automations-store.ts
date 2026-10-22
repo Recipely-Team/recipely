@@ -13,7 +13,7 @@ import { RequestEpoch } from '@application/store/request-epoch';
 import { KeyedRequestEpoch } from '@application/store/keyed-request-epoch';
 import type { PagedList } from '@application/store/paging/paged-list';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
-import type { AutomationsStoreState } from '@application/instagram/automations-store-state';
+import type { AutomationsStore } from '@application/instagram/automations-store-contract';
 import type { ListDmRulesUseCase } from '@application/instagram/rules/list-dm-rules-use-case';
 import type { GetDmRuleUseCase } from '@application/instagram/rules/get-dm-rule-use-case';
 import type { SaveDmRuleUseCase } from '@application/instagram/rules/save-dm-rule-use-case';
@@ -53,11 +53,11 @@ const replacing = (list: PagedList<DmRuleEntity>, rule: DmRuleEntity): PagedList
  *   the shifted offset, so no rule is skipped.
  * - **User-scoped**: cleared on sign-out.
  */
-export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStore<AutomationsStoreState> => {
+export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStore<AutomationsStore> => {
   const flips = new KeyedRequestEpoch();
   const opening = new RequestEpoch();
 
-  return create<AutomationsStoreState>((set, get) => {
+  return create<AutomationsStore>((set, get) => {
     const rules = new PagedListLoader<DmRuleEntity>(() => get().rules, (list) => set({ rules: list }), (r) => r.id);
     const media = new PagedListLoader<InstagramMedia>(() => get().media, (list) => set({ media: list }), (m) => m.id);
     const recipes = new PagedListLoader<RecipeFoodHit>(() => get().recipes, (list) => set({ recipes: list }), (h) => h.key);

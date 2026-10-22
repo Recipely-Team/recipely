@@ -10,7 +10,7 @@ import { RequestEpoch } from '@application/store/request-epoch';
 import { KeyedRequestEpoch } from '@application/store/keyed-request-epoch';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
 import { PageSizes } from '@application/config/page-sizes';
-import type { MealPlanStoreState } from '@application/meal-plan/meal-plan-store-state';
+import type { MealPlanStore } from '@application/meal-plan/meal-plan-store-contract';
 import type { MealPlanWeekState } from '@application/meal-plan/meal-plan-week-state';
 import type { LoadMealPlanWeekUseCase } from '@application/meal-plan/read/load-meal-plan-week-use-case';
 import type { BuildPlanShoppingListUseCase } from '@application/meal-plan/read/build-plan-shopping-list-use-case';
@@ -56,13 +56,13 @@ const keyOf = (day: CalendarDate): string => day.weekStart().value;
  * - **User-scoped**: cleared on sign-out (`clearSessionCaches`); an answer
  *   that lands after that is dropped. The flag answer is per launch and stays.
  */
-export const configureMealPlanStore = (deps: MealPlanStoreDeps): BoundStore<MealPlanStoreState> => {
+export const configureMealPlanStore = (deps: MealPlanStoreDeps): BoundStore<MealPlanStore> => {
   const loads = new KeyedRequestEpoch();
   const edits = new KeyedRequestEpoch();
   const session = new RequestEpoch();
   let flag: Promise<boolean> | null = null;
 
-  return create<MealPlanStoreState>((set, get) => {
+  return create<MealPlanStore>((set, get) => {
     const put = (key: string, state: MealPlanWeekState): void => set((s) => ({ weeks: { ...s.weeks, [key]: state } }));
     const weekOf = (day: CalendarDate): MealPlanWeek | null => {
       const state = get().weeks[keyOf(day)];

@@ -4,8 +4,8 @@ import { create } from 'zustand';
 import { ErrorMessageKey, type Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
 import type { PublishOutcome } from '@domain/recipes/publishing/publish-outcome';
-import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
-import type { RecipePublishingStoreState } from '@application/recipes/publishing/recipe-publishing-store-state';
+import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store-contract';
+import type { RecipePublishingStore } from '@application/recipes/publishing/recipe-publishing-store-contract';
 import type { PublishRecipeUseCase } from '@application/recipes/publishing/publish-recipe-use-case';
 import type { UnpublishRecipeUseCase } from '@application/recipes/publishing/unpublish-recipe-use-case';
 import type { EditRecipeUseCase } from '@application/recipes/edit/edit-recipe-use-case';
@@ -14,7 +14,7 @@ interface RecipePublishingStoreDeps {
   publishRecipe: PublishRecipeUseCase;
   unpublishRecipe: UnpublishRecipeUseCase;
   editRecipe: EditRecipeUseCase;
-  recipeDetailStore: BoundStore<RecipeDetailStoreState>;
+  recipeDetailStore: BoundStore<RecipeDetailStore>;
 }
 
 /**
@@ -29,14 +29,14 @@ interface RecipePublishingStoreDeps {
  */
 export const configureRecipePublishingStore = (
   deps: RecipePublishingStoreDeps,
-): BoundStore<RecipePublishingStoreState> => {
+): BoundStore<RecipePublishingStore> => {
   const applyOutcome = (recipeId: string, outcome: PublishOutcome): void => {
     const cached = deps.recipeDetailStore.getState().byId[recipeId];
     if (cached?.status !== StoreStatus.Loaded) return;
     deps.recipeDetailStore.getState().put(cached.recipe.withPublishOutcome(outcome));
   };
 
-  return create<RecipePublishingStoreState>((set) => {
+  return create<RecipePublishingStore>((set) => {
     const run = async (
       recipeId: string,
       request: () => Promise<Result<PublishOutcome, Failure>>,

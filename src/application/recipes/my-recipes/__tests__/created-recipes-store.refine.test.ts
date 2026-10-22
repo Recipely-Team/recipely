@@ -16,8 +16,8 @@ import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
-import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store-contract';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 
@@ -79,11 +79,11 @@ const fakeDeleteUseCase = {
 
 const fakeRecipeListStore = {
   getState: () => ({ replace: () => undefined, remove: () => undefined }),
-} as unknown as BoundStore<RecipeListStoreState>;
+} as unknown as BoundStore<RecipeListStore>;
 
 const fakeRecipeDetailStore = {
   getState: () => ({ replace: () => undefined, remove: () => undefined }),
-} as unknown as BoundStore<RecipeDetailStoreState>;
+} as unknown as BoundStore<RecipeDetailStore>;
 
 interface DeferredRefineUseCase {
   useCase: RefineRecipeUseCase;

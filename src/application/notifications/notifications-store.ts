@@ -1,7 +1,7 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
-import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
+import type { NotificationsStore } from '@application/notifications/notifications-store-contract';
 import { ValueConstants } from '@core/constants';
 import type { Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
@@ -37,8 +37,8 @@ interface NotificationsStoreDeps {
  */
 export const configureNotificationsStore = (
   deps: NotificationsStoreDeps,
-): BoundStore<NotificationsStoreState> =>
-  create<NotificationsStoreState>((set, get) => {
+): BoundStore<NotificationsStore> =>
+  create<NotificationsStore>((set, get) => {
     const feed = new PagedListLoader<NotificationEntity>(() => get().state, (state) => set({ state }), (n) => n.id);
     const badge = new RequestEpoch();
 

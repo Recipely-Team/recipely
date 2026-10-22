@@ -1,7 +1,7 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
-import type { TrendingRecipesStoreState } from '@application/recipes/trending/trending-recipes-store-state';
+import type { TrendingRecipesStore } from '@application/recipes/trending/trending-recipes-store-contract';
 import type { ListTrendingRecipesUseCase } from '@application/recipes/trending/list-trending-recipes-use-case';
 
 interface TrendingRecipesStoreDeps {
@@ -10,8 +10,8 @@ interface TrendingRecipesStoreDeps {
 
 export const configureTrendingRecipesStore = (
   deps: TrendingRecipesStoreDeps,
-): BoundStore<TrendingRecipesStoreState> => {
-  return create<TrendingRecipesStoreState>((set) => ({
+): BoundStore<TrendingRecipesStore> => {
+  return create<TrendingRecipesStore>((set) => ({
     state: { status: StoreStatus.Idle },
     load: async (limit?: number) => {
       set({ state: { status: StoreStatus.Loading } });

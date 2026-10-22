@@ -950,9 +950,21 @@ declaration. Giving it a file of its own (`use-x-args.ts`, `x-store-deps.ts`,
 easier to find — you still had to open the consumer to learn what it was for. Declare it
 unexported, directly above its consumer. Export it the moment a second file needs it, and
 it earns its own file again.
-A factory does NOT get an alias for its own return type — `BoundStore<AuthStoreState>`
+A factory does NOT get an alias for its own return type — `BoundStore<AuthStore>`
 says what the handle is without a name to look up, so a store module exports exactly one
 thing: its factory.
+
+**A store's contract is not its state.** Three names, three jobs:
+
+| Name | File | What it is |
+|---|---|---|
+| `RecipeListStore` | `recipe-list-store-contract.ts` | The contract: `state` plus the actions (`load`, `loadMore`, `remove`) |
+| `RecipeListState` | `recipe-list-state.ts` | The union of every state the list can be in |
+| `RecipeListIdle`, `RecipeListLoading`, `RecipeListLoaded`, `RecipeListError` | `states/*.ts` | One named state each; the store sets exactly one at a time |
+
+Every backend-paged list shares `ListIdle`, `ListLoading`, `ListLoaded<T>` and `ListError`
+(`application/store/paging/states/`). A function that needs a loaded list takes
+`RecipeListLoaded`, not "the union, hoping `status` is `loaded`".
 
 ### Rule 2
 

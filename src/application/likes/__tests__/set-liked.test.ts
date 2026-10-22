@@ -1,6 +1,6 @@
 import { configureLikesStore } from '@application/likes/likes-store';
 import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
-import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
+import type { LikedRecipesStore } from '@application/recipes/liked/liked-recipes-store-contract';
 import type { BoundStore } from '@application/store/bound-store';
 import { ok } from '@core/result/result-helpers';
 
@@ -17,7 +17,7 @@ const build = (calls: string[]) => {
   };
   return configureLikesStore({
     setRecipeLike: setRecipeLike as unknown as SetRecipeLikeUseCase,
-    likedRecipesStore: likedRecipesStore as unknown as BoundStore<LikedRecipesStoreState>,
+    likedRecipesStore: likedRecipesStore as unknown as BoundStore<LikedRecipesStore>,
   });
 };
 
@@ -78,7 +78,7 @@ describe('toggle after sign-out', () => {
     let answer: (value: ReturnType<typeof ok>) => void = () => undefined;
     const store = configureLikesStore({
       setRecipeLike: { execute: () => new Promise((resolve) => { answer = resolve; }) } as unknown as SetRecipeLikeUseCase,
-      likedRecipesStore: { getState: () => ({ removeLocal: () => undefined }) } as unknown as BoundStore<LikedRecipesStoreState>,
+      likedRecipesStore: { getState: () => ({ removeLocal: () => undefined }) } as unknown as BoundStore<LikedRecipesStore>,
     });
     store.getState().seed('r1', 4, false);
     const toggling = store.getState().toggle('r1');

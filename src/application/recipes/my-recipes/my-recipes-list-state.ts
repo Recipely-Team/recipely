@@ -1,5 +1,7 @@
-import type { Failure } from '@core/failure';
-import type { StoreStatus } from '@application/store/store-status';
+import type { MyRecipesListIdle } from '@application/recipes/my-recipes/states/my-recipes-list-idle';
+import type { MyRecipesListLoading } from '@application/recipes/my-recipes/states/my-recipes-list-loading';
+import type { MyRecipesListLoaded } from '@application/recipes/my-recipes/states/my-recipes-list-loaded';
+import type { MyRecipesListError } from '@application/recipes/my-recipes/states/my-recipes-list-error';
 
 /**
  * The "Created" grid's load.
@@ -11,7 +13,7 @@ import type { StoreStatus } from '@application/store/store-status';
  * empty state for both — a flash of "no recipes" on every cold open.
  */
 export type MyRecipesListState =
-  | { status: typeof StoreStatus.Idle }
-  | { status: typeof StoreStatus.Loading }
-  | { status: typeof StoreStatus.Loaded }
-  | { status: typeof StoreStatus.Error; failure: Failure };
+  | MyRecipesListIdle
+  | MyRecipesListLoading
+  | MyRecipesListLoaded
+  | MyRecipesListError;

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { RequestEpoch } from '@application/store/request-epoch';
-import type { InstagramStoreState } from '@application/instagram/instagram-store-state';
+import type { InstagramStore } from '@application/instagram/instagram-store-contract';
 import type { GetInstagramConnectionUseCase } from '@application/instagram/connect/get-instagram-connection-use-case';
 import type { StartInstagramLoginUseCase } from '@application/instagram/connect/start-instagram-login-use-case';
 import type { FinalizeInstagramLinkUseCase } from '@application/instagram/connect/finalize-instagram-link-use-case';
@@ -27,10 +27,10 @@ interface InstagramStoreDeps {
  *   shows the error.
  * - **User-scoped**: cleared on sign-out.
  */
-export const configureInstagramStore = (deps: InstagramStoreDeps): BoundStore<InstagramStoreState> => {
+export const configureInstagramStore = (deps: InstagramStoreDeps): BoundStore<InstagramStore> => {
   const epoch = new RequestEpoch();
 
-  return create<InstagramStoreState>((set, get) => {
+  return create<InstagramStore>((set, get) => {
     const load = async (): Promise<void> => {
       const isCurrent = epoch.start();
       if (get().connection.status !== StoreStatus.Loaded) set({ connection: { status: StoreStatus.Loading } });

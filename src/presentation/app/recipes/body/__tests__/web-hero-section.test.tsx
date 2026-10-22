@@ -28,7 +28,7 @@ import {
 } from '@presentation/app/recipes/body/web-hero-section';
 import { aspectRatios } from '@presentation/base/theme';
 import { StoreStatus } from '@application/store/store-status';
-import type { TrendingRecipesStoreState } from '@application/recipes/trending/trending-recipes-store-state';
+import type { TrendingRecipesStore } from '@application/recipes/trending/trending-recipes-store-contract';
 import type { TrendingRecipesState } from '@application/recipes/trending/trending-recipes-state';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
@@ -81,7 +81,7 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
 
 const makeStores = (state: TrendingRecipesState): ApplicationStores =>
   ({
-    trendingRecipesStore: create<TrendingRecipesStoreState>(() => ({
+    trendingRecipesStore: create<TrendingRecipesStore>(() => ({
       state,
       load: jest.fn(async () => undefined),
     })),

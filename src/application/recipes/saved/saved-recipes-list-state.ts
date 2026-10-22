@@ -1,5 +1,7 @@
-import type { Failure } from '@core/failure';
-import type { StoreStatus } from '@application/store/store-status';
+import type { SavedRecipesListIdle } from '@application/recipes/saved/states/saved-recipes-list-idle';
+import type { SavedRecipesListLoading } from '@application/recipes/saved/states/saved-recipes-list-loading';
+import type { SavedRecipesListLoaded } from '@application/recipes/saved/states/saved-recipes-list-loaded';
+import type { SavedRecipesListError } from '@application/recipes/saved/states/saved-recipes-list-error';
 
 /**
  * The "Saved" grid's load.
@@ -10,7 +12,7 @@ import type { StoreStatus } from '@application/store/store-status';
  * saved" this exists to prevent.
  */
 export type SavedRecipesListState =
-  | { status: typeof StoreStatus.Idle }
-  | { status: typeof StoreStatus.Loading }
-  | { status: typeof StoreStatus.Loaded }
-  | { status: typeof StoreStatus.Error; failure: Failure };
+  | SavedRecipesListIdle
+  | SavedRecipesListLoading
+  | SavedRecipesListLoaded
+  | SavedRecipesListError;

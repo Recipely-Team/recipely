@@ -1,13 +1,14 @@
 import type { StoreApi, UseBoundStore } from 'zustand';
 
 /**
- * A Zustand store handle over `TState`.
+ * A Zustand store handle over the contract `TStore` (its state and actions).
  *
- * Replaces the fourteen per-store aliases that all said the same thing
- * (`AuthStore`, `CommentsStore`, …) and existed only to name a factory's
- * return type. One generic reads better at the point of use —
- * `BoundStore<AuthStoreState>` says what the handle IS, where `AuthStore` was
- * a name you had to look up — and it leaves every store module with a single
- * export: its factory.
+ * @remarks
+ * - **One generic, not an alias per store.** Fourteen aliases once named a
+ *   factory's return type and said nothing more; `BoundStore<AuthStore>` says
+ *   what the handle is at the point of use and leaves every store module with
+ *   one export, its factory.
+ * - **`AuthStore` is the contract, not the handle**: `state` plus actions, in
+ *   `auth-store-contract.ts`. Its `state` is a union of named states.
  */
-export type BoundStore<TState> = UseBoundStore<StoreApi<TState>>;
+export type BoundStore<TStore> = UseBoundStore<StoreApi<TStore>>;

@@ -4,12 +4,12 @@ import { NetworkFailure } from '@core/failure';
 import { configureFavoritesStore } from '@application/favorites/favorites-store';
 import type { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import type { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
-import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
 
 const setup = (answer: Awaited<ReturnType<AddFavoriteUseCase['execute']>>) => {
   const addLocal = jest.fn();
   const removeLocal = jest.fn();
-  const saved = create<SavedRecipesStoreState>(() => ({ addLocal, removeLocal }) as unknown as SavedRecipesStoreState);
+  const saved = create<SavedRecipesStore>(() => ({ addLocal, removeLocal }) as unknown as SavedRecipesStore);
   const add = { execute: jest.fn().mockResolvedValue(answer) };
   const store = configureFavoritesStore({
     addFavoriteUseCase: add as unknown as AddFavoriteUseCase,

@@ -71,6 +71,8 @@
  *      CharConstants names it (§5).
  *   AW. No `authStore((s) => s.state)` in presentation — select what is used
  *      (useSignedInUserId / useIsSignedIn / useSignedInUser, or s.state.status).
+ *   AX. Every state a store can be in is a named type in a `states/` folder;
+ *      no anonymous `| { status: typeof StoreStatus.X; … }` union members.
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -920,7 +922,9 @@ if (nearSizeLimit.length > 0 && process.env.CI !== 'true') {
 // closing `\n}` (an interface or object type) or its first `;` (any other
 // alias), so a one-line alias is never judged by the block after it. The
 // notifications list (`total` + `unreadCount`, no paging fields) and `FilePage`
-// (one picked page of a document) pass.
+// (one picked page of a document) pass. A store state in a `states/` folder
+// (`ListLoaded<T>`, `RecipeListLoaded`) is not an envelope either: it is what a
+// list has reached so far, cursor included, and is built FROM a `Page<T>`.
 {
   const GENERIC = new Set(['Page', 'PageDto']);
   const DECL = /^export\s+(interface|type)\s+(\w+)/gm;
@@ -931,7 +935,7 @@ if (nearSizeLimit.length > 0 && process.env.CI !== 'true') {
     return end < 0 ? rest : rest.slice(0, end + 2);
   };
   for (const file of files) {
-    if (isTest(file) || file.includes('__fixtures__')) continue;
+    if (isTest(file) || file.includes('__fixtures__') || file.includes('/states/')) continue;
     const src = fs.readFileSync(path.join(SRC, file), 'utf8');
     for (const match of src.matchAll(DECL)) {
       const [, kind, name] = match;
@@ -1429,6 +1433,22 @@ function openingTag(src, at) {
     const src = fs.readFileSync(path.join(SRC, file), 'utf8');
     if (WHOLE_AUTH_STATE.test(src)) {
       errors.push(`${file}: selects the whole auth state — use useSignedInUserId / useIsSignedIn / useSignedInUser, or s.state.status (CLAUDE.md §8)`);
+    }
+  }
+}
+
+// --- AX: states have names (CLAUDE.md §1) -------------------------------------
+// Twenty-five unions held 95 states as anonymous `{ status: … }` object types,
+// so nothing could say "this takes a loaded list" — only "the union, hoping
+// status is loaded". Each state is now an interface of its own (`ListLoaded<T>`,
+// `RecipeCreated`, `Authenticated`) in a `states/` folder, and a union lists them.
+{
+  const ANONYMOUS_STATE = /\|\s*\{\s*status:\s*typeof StoreStatus\./;
+  for (const file of files) {
+    if (isTest(file) || file.includes('/states/')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (ANONYMOUS_STATE.test(src)) {
+      errors.push(`${file}: an anonymous { status } state in a union — name it in a states/ folder (CLAUDE.md §1)`);
     }
   }
 }

@@ -10,13 +10,13 @@ import type { BoundStore } from '@application/store/bound-store';
 import { configureLikesStore } from '@application/likes/likes-store';
 import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
 import { ok } from '@core/result/result-helpers';
-import type { LikesStoreState } from '@application/likes/likes-store-state';
+import type { LikesStore } from '@application/likes/likes-store-contract';
 import { configureLikedRecipesStore } from '@application/recipes/liked/liked-recipes-store';
 import type { LoadLikedRecipesUseCase } from '@application/likes/load-liked-recipes-use-case';
 
 const RECIPE_ID = 'r-1';
 
-const makeStore = (): BoundStore<LikesStoreState> =>
+const makeStore = (): BoundStore<LikesStore> =>
   configureLikesStore({
     setRecipeLike: { execute: () => Promise.resolve(ok(undefined)) } as unknown as SetRecipeLikeUseCase,
     likedRecipesStore: configureLikedRecipesStore({

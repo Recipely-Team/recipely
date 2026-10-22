@@ -3,7 +3,7 @@ import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import { ValueConstants } from '@core/constants';
 import { KeyedRequestEpoch } from '@application/store/keyed-request-epoch';
-import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
+import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store-contract';
 import type { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-case';
 import type { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
 import type { RemoveRecipeMediaUseCase } from '@application/recipes/photos/remove-recipe-media-use-case';
@@ -22,9 +22,9 @@ interface RecipeDetailStoreDeps {
  *   per-id epoch, invalidated by `clear()` / `remove()`, keeps a late answer
  *   from writing the previous account's like back, or an older answer over a newer one.
  */
-export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundStore<RecipeDetailStoreState> => {
+export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundStore<RecipeDetailStore> => {
   const loads = new KeyedRequestEpoch();
-  return create<RecipeDetailStoreState>((set, get) => ({
+  return create<RecipeDetailStore>((set, get) => ({
     byId: {},
     load: async (id: string) => {
       // A re-entry refetches behind the cached recipe.

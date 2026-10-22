@@ -4,15 +4,15 @@ import { fail, ok } from '@core/result/result-helpers';
 import { ConflictFailure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { RecipeLikeState } from '@application/likes/recipe-like-state';
-import type { LikesStoreState } from '@application/likes/likes-store-state';
+import type { LikesStore } from '@application/likes/likes-store-contract';
 import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
-import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
+import type { LikedRecipesStore } from '@application/recipes/liked/liked-recipes-store-contract';
 import { ViewerReaction } from '@domain/common/viewer-reaction';
 import { RequestEpoch } from '@application/store/request-epoch';
 
 interface LikesStoreDeps {
   setRecipeLike: SetRecipeLikeUseCase;
-  likedRecipesStore: BoundStore<LikedRecipesStoreState>;
+  likedRecipesStore: BoundStore<LikedRecipesStore>;
 }
 
 /**
@@ -22,9 +22,9 @@ interface LikesStoreDeps {
  * - **Session guard**: `clear()` on sign-out drops a toggle answer still in
  *   flight, so the previous account's like is never written back.
  */
-export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStoreState> => {
+export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore> => {
   const session = new RequestEpoch();
-  return create<LikesStoreState>((set, get) => ({
+  return create<LikesStore>((set, get) => ({
     byRecipe: {},
 
     seed: (recipeId, likeCount, likedByMe) => {

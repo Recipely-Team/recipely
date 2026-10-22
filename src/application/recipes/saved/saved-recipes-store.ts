@@ -3,7 +3,7 @@ import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import { RequestEpoch } from '@application/store/request-epoch';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
-import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
 import { pagingOf } from '@application/store/paging/list-paging/paging-of';
 import { NO_PAGING } from '@application/store/paging/list-paging/no-paging';
 import { loadMorePaging } from '@application/store/paging/list-paging/load-more-paging';
@@ -17,7 +17,7 @@ interface SavedRecipesStoreDeps {
 
 export const configureSavedRecipesStore = (
   deps: SavedRecipesStoreDeps,
-): BoundStore<SavedRecipesStoreState> => {
+): BoundStore<SavedRecipesStore> => {
   /**
    * Invalidated by `clear()`; a newer load also wins. A load that started under
    * an earlier session must not publish its answer: signing out while a
@@ -27,7 +27,7 @@ export const configureSavedRecipesStore = (
    */
   const epoch = new RequestEpoch();
 
-  return create<SavedRecipesStoreState>((set, get) => ({
+  return create<SavedRecipesStore>((set, get) => ({
     savedRecipes: [],
     savedIds: new Set<string>(),
     listState: { status: StoreStatus.Idle },

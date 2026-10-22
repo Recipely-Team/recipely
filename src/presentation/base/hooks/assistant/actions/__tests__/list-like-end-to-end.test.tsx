@@ -8,7 +8,7 @@ import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { ApplicationStores } from '@application/di/application-stores';
 import { useAssistantListRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-list-recipe-actions';
 import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
-import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
+import type { LikedRecipesStore } from '@application/recipes/liked/liked-recipes-store-contract';
 import type { BoundStore } from '@application/store/bound-store';
 import { ok } from '@core/result/result-helpers';
 
@@ -25,7 +25,7 @@ const mount = (seeded: { count: number; liked: boolean } | null) => {
   const calls: string[] = [];
   const likes = configureLikesStore({
     setRecipeLike: { execute: async (id: string, like: boolean) => { calls.push(`${like ? 'like' : 'unlike'}:${id}`); return ok(undefined); } } as unknown as SetRecipeLikeUseCase,
-    likedRecipesStore: { getState: () => ({ removeLocal: () => undefined }) } as unknown as BoundStore<LikedRecipesStoreState>,
+    likedRecipesStore: { getState: () => ({ removeLocal: () => undefined }) } as unknown as BoundStore<LikedRecipesStore>,
   });
   if (seeded !== null) likes.getState().seed(ROWS[0]!.id, seeded.count, seeded.liked);
 

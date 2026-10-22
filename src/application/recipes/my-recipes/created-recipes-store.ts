@@ -10,15 +10,15 @@ import { pagingAfterRemoval } from '@application/store/paging/list-paging/paging
 import { appendById } from '@application/store/paging/append-by-id';
 import { create } from 'zustand';
 import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
-import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
+import type { CreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store-contract';
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
-import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store-contract';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import type { CreateRecipeState } from '@application/recipes/create/create-recipe-state';
 import type { GenerateRecipeState } from '@application/recipes/generate/generate-recipe-state';
 import type { RefineRecipeState } from '@application/recipes/refine/refine-recipe-state';
@@ -33,8 +33,8 @@ interface CreatedRecipesStoreDeps {
   refineRecipeUseCase: RefineRecipeUseCase;
   deleteRecipeUseCase: DeleteRecipeUseCase;
   // Owner mutations keep the public feed and detail cache in sync.
-  recipeListStore: BoundStore<RecipeListStoreState>;
-  recipeDetailStore: BoundStore<RecipeDetailStoreState>;
+  recipeListStore: BoundStore<RecipeListStore>;
+  recipeDetailStore: BoundStore<RecipeDetailStore>;
 }
 
 /** The failed variant every operation state in this store shares. */
@@ -60,12 +60,12 @@ const runOperation = async <S, T>(
   return result.value;
 };
 
-export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): BoundStore<CreatedRecipesStoreState> => {
+export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): BoundStore<CreatedRecipesStore> => {
   // `clear()` invalidates it: a list load from an earlier session must not put that account's recipes back.
   const listEpoch = new RequestEpoch();
 
 
-  return create<CreatedRecipesStoreState>((set, get) => ({
+  return create<CreatedRecipesStore>((set, get) => ({
     recipes: [],
     myRecipesState: { status: StoreStatus.Idle },
     myRecipesPaging: NO_PAGING,

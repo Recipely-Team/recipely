@@ -1,45 +1,45 @@
 import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
-import type { AssistantSessionStoreState } from '@application/assistant/session/assistant-session-store-state';
+import type { AssistantSessionStore } from '@application/assistant/session/assistant-session-store-contract';
 import type { BoundStore } from '@application/store/bound-store';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
-import type { AuthStoreState } from '@application/auth/auth-store-state';
-import type { CommentsStoreState } from '@application/comments/comments-store-state';
-import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
-import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
-import type { DiaryStoreState } from '@application/diary/diary-store-state';
+import type { AuthStore } from '@application/auth/auth-store-contract';
+import type { CommentsStore } from '@application/comments/comments-store-contract';
+import type { CreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store-contract';
+import type { DraftsStore } from '@application/drafts/drafts-store-contract';
+import type { DiaryStore } from '@application/diary/diary-store-contract';
 import type { BuildLoggableFoodFromRecipeUseCase } from '@application/diary/entries/build-loggable-food-from-recipe-use-case';
 import type { ParseMealUseCase } from '@application/diary/meal/parse-meal-use-case';
-import type { FoodSearchStoreState } from '@application/diary/foods/food-search-store-state';
-import type { FoodCatalogStoreState } from '@application/diary/foods/food-catalog-store-state';
+import type { FoodSearchStore } from '@application/diary/foods/food-search-store-contract';
+import type { FoodCatalogStore } from '@application/diary/foods/food-catalog-store-contract';
 import type { SearchFoodsUseCase } from '@application/diary/foods/search/search-foods-use-case';
-import type { InstagramStoreState } from '@application/instagram/instagram-store-state';
-import type { AutomationsStoreState } from '@application/instagram/automations-store-state';
-import type { CreatorStatsStoreState } from '@application/instagram/stats/creator-stats-store-state';
-import type { DmArrivalStoreState } from '@application/instagram/stats/dm-arrival-store-state';
-import type { ShoppingListStoreState } from '@application/shopping/shopping-list-store-state';
-import type { MealPlanStoreState } from '@application/meal-plan/meal-plan-store-state';
-import type { FridgeStoreState } from '@application/fridge/fridge-store-state';
+import type { InstagramStore } from '@application/instagram/instagram-store-contract';
+import type { AutomationsStore } from '@application/instagram/automations-store-contract';
+import type { CreatorStatsStore } from '@application/instagram/stats/creator-stats-store-contract';
+import type { DmArrivalStore } from '@application/instagram/stats/dm-arrival-store-contract';
+import type { ShoppingListStore } from '@application/shopping/shopping-list-store-contract';
+import type { MealPlanStore } from '@application/meal-plan/meal-plan-store-contract';
+import type { FridgeStore } from '@application/fridge/fridge-store-contract';
 import type { ListRecentFoodPageUseCase } from '@application/diary/foods/browse/list-recent-food-page-use-case';
-import type { FavoritesStoreState } from '@application/favorites/favorites-store-state';
-import type { ImportJobStoreState } from '@application/recipes/import/import-job-store-state';
-import type { FileImportStoreState } from '@application/recipes/import-file/file-import-store-state';
-import type { FeedbackStoreState } from '@application/feedback/feedback-store-state';
-import type { LikesStoreState } from '@application/likes/likes-store-state';
-import type { StepProgressStoreState } from '@application/recipes/cooking/step-progress-store-state';
-import type { PortionChoiceStoreState } from '@application/recipes/cooking/portion-choice-store-state';
-import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
-import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
-import type { RecipePublishingStoreState } from '@application/recipes/publishing/recipe-publishing-store-state';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
-import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
-import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import type { FavoritesStore } from '@application/favorites/favorites-store-contract';
+import type { ImportJobStore } from '@application/recipes/import/import-job-store-contract';
+import type { FileImportStore } from '@application/recipes/import-file/file-import-store-contract';
+import type { FeedbackStore } from '@application/feedback/feedback-store-contract';
+import type { LikesStore } from '@application/likes/likes-store-contract';
+import type { StepProgressStore } from '@application/recipes/cooking/step-progress-store-contract';
+import type { PortionChoiceStore } from '@application/recipes/cooking/portion-choice-store-contract';
+import type { NotificationsStore } from '@application/notifications/notifications-store-contract';
+import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store-contract';
+import type { RecipePublishingStore } from '@application/recipes/publishing/recipe-publishing-store-contract';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
+import type { LikedRecipesStore } from '@application/recipes/liked/liked-recipes-store-contract';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import type { OsAssistantInterface } from '@domain/assistant/os/os-assistant-interface';
-import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
-import type { TrendingRecipesStoreState } from '@application/recipes/trending/trending-recipes-store-state';
-import type { UserProfileStoreState } from '@application/user-profile/user-profile-store-state';
-import type { CreatorsStoreState } from '@application/creators/creators-store-state';
-import type { CreatorProfileStoreState } from '@application/creators/profile/creator-profile-store-state';
+import type { TaxonomyStore } from '@application/recipes/taxonomy/taxonomy-store-contract';
+import type { TrendingRecipesStore } from '@application/recipes/trending/trending-recipes-store-contract';
+import type { UserProfileStore } from '@application/user-profile/user-profile-store-contract';
+import type { CreatorsStore } from '@application/creators/creators-store-contract';
+import type { CreatorProfileStore } from '@application/creators/profile/creator-profile-store-contract';
 import type { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 import type { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
 import type { RefreshRemindersUseCase } from '@application/notifications/reminders/refresh-reminders-use-case';
@@ -49,60 +49,60 @@ import type { ShouldOfferRemindersUseCase } from '@application/notifications/rem
 
 /** The store bundle `registerApplication` hands to the presentation layer. */
 export interface ApplicationStores {
-  assistantSessionStore: BoundStore<AssistantSessionStoreState>;
+  assistantSessionStore: BoundStore<AssistantSessionStore>;
   /** Screens register the actions only they can perform (navigate, focus, pick). */
   assistantActionRegistry: AssistantActionRegistry;
   /** Siri, Spotlight and the launcher — the assistant's entry points from outside. */
   osAssistant: OsAssistantInterface;
   /** Mints the narrow token those entry points answer with. */
   assistantTokens: AssistantTokenRepositoryInterface;
-  authStore: BoundStore<AuthStoreState>;
-  recipeListStore: BoundStore<RecipeListStoreState>;
-  trendingRecipesStore: BoundStore<TrendingRecipesStoreState>;
-  recipeDetailStore: BoundStore<RecipeDetailStoreState>;
+  authStore: BoundStore<AuthStore>;
+  recipeListStore: BoundStore<RecipeListStore>;
+  trendingRecipesStore: BoundStore<TrendingRecipesStore>;
+  recipeDetailStore: BoundStore<RecipeDetailStore>;
   /** Publish, take back and edit a recipe the user owns. */
-  recipePublishingStore: BoundStore<RecipePublishingStoreState>;
-  savedRecipesStore: BoundStore<SavedRecipesStoreState>;
-  likedRecipesStore: BoundStore<LikedRecipesStoreState>;
-  createdRecipesStore: BoundStore<CreatedRecipesStoreState>;
-  draftsStore: BoundStore<DraftsStoreState>;
-  importJobStore: BoundStore<ImportJobStoreState>;
+  recipePublishingStore: BoundStore<RecipePublishingStore>;
+  savedRecipesStore: BoundStore<SavedRecipesStore>;
+  likedRecipesStore: BoundStore<LikedRecipesStore>;
+  createdRecipesStore: BoundStore<CreatedRecipesStore>;
+  draftsStore: BoundStore<DraftsStore>;
+  importJobStore: BoundStore<ImportJobStore>;
   /** One synchronous reading of photos or a PDF into a draft. */
-  fileImportStore: BoundStore<FileImportStoreState>;
-  favoritesStore: BoundStore<FavoritesStoreState>;
-  commentsStore: BoundStore<CommentsStoreState>;
-  likesStore: BoundStore<LikesStoreState>;
+  fileImportStore: BoundStore<FileImportStore>;
+  favoritesStore: BoundStore<FavoritesStore>;
+  commentsStore: BoundStore<CommentsStore>;
+  likesStore: BoundStore<LikesStore>;
   /** Ticked instruction steps per recipe, shared by the recipe page and cook mode. */
-  stepProgressStore: BoundStore<StepProgressStoreState>;
-  portionChoiceStore: BoundStore<PortionChoiceStoreState>;
-  notificationsStore: BoundStore<NotificationsStoreState>;
-  userProfileStore: BoundStore<UserProfileStoreState>;
-  taxonomyStore: BoundStore<TaxonomyStoreState>;
-  feedbackStore: BoundStore<FeedbackStoreState>;
+  stepProgressStore: BoundStore<StepProgressStore>;
+  portionChoiceStore: BoundStore<PortionChoiceStore>;
+  notificationsStore: BoundStore<NotificationsStore>;
+  userProfileStore: BoundStore<UserProfileStore>;
+  taxonomyStore: BoundStore<TaxonomyStore>;
+  feedbackStore: BoundStore<FeedbackStore>;
   /** The Explore creators strip. Public, so it survives sign-out. */
-  creatorsStore: BoundStore<CreatorsStoreState>;
+  creatorsStore: BoundStore<CreatorsStore>;
   /** One creator's page: profile, recipes, follow. Viewer-scoped, cleared on sign-out. */
-  creatorProfileStore: BoundStore<CreatorProfileStoreState>;
+  creatorProfileStore: BoundStore<CreatorProfileStore>;
   /** The food diary: days, months, recent foods, goals. User-scoped. */
-  diaryStore: BoundStore<DiaryStoreState>;
+  diaryStore: BoundStore<DiaryStore>;
   /** The Add food sheet's server-side search, four paged groups. User-scoped. */
-  foodSearchStore: BoundStore<FoodSearchStoreState>;
+  foodSearchStore: BoundStore<FoodSearchStore>;
   /** The Add food sheet's shelves, products, recent foods and opened product. User-scoped. */
-  foodCatalogStore: BoundStore<FoodCatalogStoreState>;
+  foodCatalogStore: BoundStore<FoodCatalogStore>;
   /** The viewer's Instagram link. User-scoped. */
-  instagramStore: BoundStore<InstagramStoreState>;
+  instagramStore: BoundStore<InstagramStore>;
   /** Instagram comment-to-DM rules, their pickers and activity. User-scoped. */
-  automationsStore: BoundStore<AutomationsStoreState>;
+  automationsStore: BoundStore<AutomationsStore>;
   /** The creator stats panel, one answer per range. */
-  creatorStatsStore: BoundStore<CreatorStatsStoreState>;
+  creatorStatsStore: BoundStore<CreatorStatsStore>;
   /** Recipes reached through a creator's DM; app-session scoped so a sign-in in between still counts the save. */
-  dmArrivalStore: BoundStore<DmArrivalStoreState>;
+  dmArrivalStore: BoundStore<DmArrivalStore>;
   /** The viewer's shopping list. User-scoped. */
-  shoppingListStore: BoundStore<ShoppingListStoreState>;
+  shoppingListStore: BoundStore<ShoppingListStore>;
   /** The weekly meal plan, one state per week, and the add sheet's recipe list. User-scoped. */
-  mealPlanStore: BoundStore<MealPlanStoreState>;
+  mealPlanStore: BoundStore<MealPlanStore>;
   /** Cook from my fridge: its flag and its two AI calls. Not user-scoped. */
-  fridgeStore: BoundStore<FridgeStoreState>;
+  fridgeStore: BoundStore<FridgeStore>;
   /** The food search without a store, for the assistant's `logFood` / `searchFood`. */
   searchFoods: SearchFoodsUseCase;
   /** Recent foods, product-aware, for the assistant's name matching. */

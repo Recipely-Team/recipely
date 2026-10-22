@@ -1,5 +1,7 @@
-import type { Failure } from '@core/failure';
-import type { StoreStatus } from '@application/store/store-status';
+import type { LikedRecipesListIdle } from '@application/recipes/liked/states/liked-recipes-list-idle';
+import type { LikedRecipesListLoading } from '@application/recipes/liked/states/liked-recipes-list-loading';
+import type { LikedRecipesListLoaded } from '@application/recipes/liked/states/liked-recipes-list-loaded';
+import type { LikedRecipesListError } from '@application/recipes/liked/states/liked-recipes-list-error';
 
 /**
  * The "Liked" grid's load.
@@ -10,7 +12,7 @@ import type { StoreStatus } from '@application/store/store-status';
  * its first request is still in flight.
  */
 export type LikedRecipesListState =
-  | { status: typeof StoreStatus.Idle }
-  | { status: typeof StoreStatus.Loading }
-  | { status: typeof StoreStatus.Loaded }
-  | { status: typeof StoreStatus.Error; failure: Failure };
+  | LikedRecipesListIdle
+  | LikedRecipesListLoading
+  | LikedRecipesListLoaded
+  | LikedRecipesListError;
