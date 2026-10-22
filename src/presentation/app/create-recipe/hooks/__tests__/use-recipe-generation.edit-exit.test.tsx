@@ -71,7 +71,6 @@ const mount = () => {
     createRecipeUseCase: unused(),
     listMyRecipesUseCase: unused(),
     generateRecipeUseCase: unused(),
-    importInstagramRecipeUseCase: unused(),
     refineRecipeUseCase: unused(),
     deleteRecipeUseCase: unused(),
     recipeListStore: unused<BoundStore<RecipeListStore>>(),

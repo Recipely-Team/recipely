@@ -6,7 +6,6 @@ import type {
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import type { GenerateRecipeInput } from '@application/recipes/generate/generate-recipe-input';
 import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
-import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import { UnknownFailure, type Failure } from '@core/failure';
@@ -73,9 +72,6 @@ const fakeRefineUseCase = {
   execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
 } as unknown as RefineRecipeUseCase;
 
-const fakeImportUseCase = {
-  execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
-} as unknown as ImportInstagramRecipeUseCase;
 
 // Generate flow never touches these — provide no-op stubs that satisfy the
 // interface so the store constructs without exercising the sibling caches.
@@ -122,7 +118,6 @@ const makeStoreWithGenerateResult = (result: Result<RecipeEntity, Failure>) => {
     listMyRecipesUseCase: fakeListMyUseCase,
     generateRecipeUseCase: generateUseCase,
     refineRecipeUseCase: fakeRefineUseCase,
-    importInstagramRecipeUseCase: fakeImportUseCase,
     deleteRecipeUseCase: fakeDeleteUseCase,
     recipeListStore: fakeRecipeListStore,
     recipeDetailStore: fakeRecipeDetailStore,
@@ -130,11 +125,10 @@ const makeStoreWithGenerateResult = (result: Result<RecipeEntity, Failure>) => {
 };
 
 describe('createdRecipesStore.generateRecipe', () => {
-  it('starts with generateState idle and aiDraft null', () => {
+  it('starts with generateState idle', () => {
     const store = makeStoreWithGenerateResult(ok(makeRecipe()));
 
     expect(store.getState().generateState).toEqual({ status: 'idle' });
-    expect(store.getState().aiDraft).toBeNull();
     expect(store.getState().recipes).toEqual([]);
   });
 
@@ -145,7 +139,6 @@ describe('createdRecipesStore.generateRecipe', () => {
       listMyRecipesUseCase: fakeListMyUseCase,
       generateRecipeUseCase: deferred.useCase,
       refineRecipeUseCase: fakeRefineUseCase,
-      importInstagramRecipeUseCase: fakeImportUseCase,
       deleteRecipeUseCase: fakeDeleteUseCase,
       recipeListStore: fakeRecipeListStore,
       recipeDetailStore: fakeRecipeDetailStore,
@@ -155,13 +148,12 @@ describe('createdRecipesStore.generateRecipe', () => {
 
     // Synchronous check — state must have flipped before we await.
     expect(store.getState().generateState).toEqual({ status: 'generating' });
-    expect(store.getState().aiDraft).toBeNull();
 
     deferred.resolve(ok(makeRecipe()));
     await pending;
   });
 
-  it('on success, sets generateState.success and aiDraft, but does NOT touch recipes', async () => {
+  it('on success, sets generateState.success, but does NOT touch recipes', async () => {
     const recipe = makeRecipe({ id: 'r-new', name: 'New AI Dish' });
     const store = makeStoreWithGenerateResult(ok(recipe));
 
@@ -172,7 +164,6 @@ describe('createdRecipesStore.generateRecipe', () => {
     if (s.generateState.status === 'success') {
       expect(s.generateState.recipe).toBe(recipe);
     }
-    expect(s.aiDraft).toBe(recipe);
     // WHY: `/recipes/generate` does not persist the recipe — it returns a
     // preview with a throwaway id. Prepending it to `recipes` would show a
     // phantom entry in "My Recipes" that does not exist on the server.
@@ -189,10 +180,9 @@ describe('createdRecipesStore.generateRecipe', () => {
 
     const s = store.getState();
     expect(s.recipes.map((r) => r.id)).toEqual(['existing']);
-    expect(s.aiDraft).toBe(generated);
   });
 
-  it('on failure, sets generateState.error and leaves aiDraft + recipes untouched', async () => {
+  it('on failure, sets generateState.error and leaves recipes untouched', async () => {
     const failure = new UnknownFailure('AI down');
     const store = makeStoreWithGenerateResult(fail(failure));
 
@@ -203,7 +193,6 @@ describe('createdRecipesStore.generateRecipe', () => {
     if (s.generateState.status === 'error') {
       expect(s.generateState.failure).toBe(failure);
     }
-    expect(s.aiDraft).toBeNull();
     expect(s.recipes).toEqual([]);
   });
 
@@ -216,17 +205,5 @@ describe('createdRecipesStore.generateRecipe', () => {
     store.getState().resetGenerateState();
 
     expect(store.getState().generateState).toEqual({ status: 'idle' });
-  });
-
-  it('clearAiDraft sets aiDraft back to null', async () => {
-    const recipe = makeRecipe();
-    const store = makeStoreWithGenerateResult(ok(recipe));
-
-    await store.getState().generateRecipe('pasta');
-    expect(store.getState().aiDraft).toBe(recipe);
-
-    store.getState().clearAiDraft();
-
-    expect(store.getState().aiDraft).toBeNull();
   });
 });

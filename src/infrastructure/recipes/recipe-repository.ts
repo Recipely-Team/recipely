@@ -17,7 +17,7 @@ import type { FirstPageCache } from '@infrastructure/network/paging/first-page-c
 import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import { MY_RECIPES_PAGE_SIZE, TRENDING_RECIPES_LIMIT } from '@infrastructure/constants/api/api-paging';
-import { AI_REQUEST_TIMEOUT_MS, FILE_IMPORT_TIMEOUT_MS, IMPORT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
+import { AI_REQUEST_TIMEOUT_MS, FILE_IMPORT_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
 import type { MediaDto } from '@infrastructure/recipes/media/media-dto';
 import type { MediaItem } from '@domain/recipes/media/media-item';
@@ -203,15 +203,6 @@ export class RecipeRepository implements RecipeRepositoryInterface {
   // Locale rides Accept-Language (AxiosHttpClient), not the body.
   async generateRecipe(prompt: string): Promise<Result<RecipeEntity, Failure>> {
     const result = await this.http.post<RecipeDto>(ApiRoutes.recipes.generate, { prompt } satisfies GenerateRecipeRequestDto, { timeout: AI_REQUEST_TIMEOUT_MS });
-    if (!result.ok) {
-      return result;
-    }
-    return this.mapRecipe(result.value);
-  }
-
-  // Preview only; locale via Accept-Language; long per-request timeout for the import.
-  async importInstagramRecipe(url: string): Promise<Result<RecipeEntity, Failure>> {
-    const result = await this.http.post<RecipeDto>(ApiRoutes.recipes.import, { url } satisfies ImportRecipeRequestDto, { timeout: IMPORT_REQUEST_TIMEOUT_MS });
     if (!result.ok) {
       return result;
     }

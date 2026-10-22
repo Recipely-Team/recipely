@@ -22,11 +22,8 @@ export interface CreatedRecipesStore {
   localRecipes: readonly RecipeEntity[];
   createState: CreateRecipeState;
   generateState: GenerateRecipeState;
-  // Same shape as generate: both produce a preview recipe.
-  importState: GenerateRecipeState;
   deleteState: DeleteRecipeState;
   refineState: RefineRecipeState;
-  aiDraft: RecipeEntity | null;
   add: (recipe: RecipeEntity) => void;
   remove: (id: string) => void;
   findById: (id: string) => RecipeEntity | undefined;
@@ -35,7 +32,6 @@ export interface CreatedRecipesStore {
   /** The next page of the user's recipes, appended; a no-op once the total is reached. */
   loadMoreMyRecipes: () => Promise<void>;
   generateRecipe: (prompt: string) => Promise<void>;
-  importInstagram: (url: string) => Promise<void>;
   refineRecipe: (
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
@@ -44,10 +40,8 @@ export interface CreatedRecipesStore {
   deleteRecipe: (id: string) => Promise<void>;
   resetCreateState: () => void;
   resetGenerateState: () => void;
-  resetImportState: () => void;
   resetRefineState: () => void;
   resetDeleteState: () => void;
-  clearAiDraft: () => void;
-  /** Drops the signed-in user's recipe lists and AI draft. Called when the session ends. */
+  /** Drops the signed-in user's recipe lists. Called when the session ends. */
   clear: () => void;
 }

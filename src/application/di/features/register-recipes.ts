@@ -10,7 +10,6 @@ import { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-cas
 import { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
 import { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
-import { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import { EnqueueInstagramImportUseCase } from '@application/recipes/import/enqueue-instagram-import-use-case';
 import { ImportRecipeFromFilesUseCase } from '@application/recipes/import-file/import-recipe-from-files-use-case';
 import { configureFileImportStore } from '@application/recipes/import-file/file-import-store';
@@ -95,7 +94,6 @@ export const registerRecipes = (
     createRecipeUseCase: new CreateRecipeUseCase(recipeRepo),
     listMyRecipesUseCase: new ListMyRecipesUseCase(recipeRepo),
     generateRecipeUseCase: new GenerateRecipeUseCase(recipeRepo),
-    importInstagramRecipeUseCase: new ImportInstagramRecipeUseCase(recipeRepo),
     refineRecipeUseCase: new RefineRecipeUseCase(recipeRepo),
     deleteRecipeUseCase: new DeleteRecipeUseCase(recipeRepo),
     recipeListStore,

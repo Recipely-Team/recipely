@@ -14,7 +14,6 @@ import type { CreatedRecipesStore } from '@application/recipes/my-recipes/create
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
-import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store-contract';
@@ -24,12 +23,15 @@ import type { GenerateRecipeState } from '@application/recipes/generate/generate
 import type { RefineRecipeState } from '@application/recipes/refine/refine-recipe-state';
 import type { DeleteRecipeState } from '@application/recipes/delete/delete-recipe-state';
 import { ValueConstants } from '@core/constants';
+import type { CreateRecipeError } from '@application/recipes/create/states/create-recipe-error';
+import type { GenerateRecipeError } from '@application/recipes/generate/states/generate-recipe-error';
+import type { RefineRecipeError } from '@application/recipes/refine/states/refine-recipe-error';
+import type { DeleteRecipeError } from '@application/recipes/delete/states/delete-recipe-error';
 
 interface CreatedRecipesStoreDeps {
   createRecipeUseCase: CreateRecipeUseCase;
   listMyRecipesUseCase: ListMyRecipesUseCase;
   generateRecipeUseCase: GenerateRecipeUseCase;
-  importInstagramRecipeUseCase: ImportInstagramRecipeUseCase;
   refineRecipeUseCase: RefineRecipeUseCase;
   deleteRecipeUseCase: DeleteRecipeUseCase;
   // Owner mutations keep the public feed and detail cache in sync.
@@ -37,8 +39,8 @@ interface CreatedRecipesStoreDeps {
   recipeDetailStore: BoundStore<RecipeDetailStore>;
 }
 
-/** The failed variant every operation state in this store shares. */
-type OperationFailed = { status: typeof StoreStatus.Error; failure: Failure };
+/** The failed state of any operation this store runs; the four share one shape. */
+type OperationFailed = CreateRecipeError | GenerateRecipeError | RefineRecipeError | DeleteRecipeError;
 
 /**
  * One operation's state walk: busy, then the use case, then `Error` or what `onOk` builds
@@ -72,10 +74,8 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
     localRecipes: [],
     createState: { status: StoreStatus.Idle },
     generateState: { status: StoreStatus.Idle },
-    importState: { status: StoreStatus.Idle },
     deleteState: { status: StoreStatus.Idle },
     refineState: { status: StoreStatus.Idle },
-    aiDraft: null,
     // localRecipes backs findById; the lean grid list is kept in sync alongside it.
     add: (recipe) =>
       set((s) => {
@@ -133,27 +133,13 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         append: (items) => set((s) => ({ recipes: appendById(s.recipes, items) })),
       });
     },
-    // Generated and imported recipes are previews (not persisted): aiDraft only, never in the list.
+    // A generated recipe is a preview (not persisted): it lives in generateState, never in the list.
     generateRecipe: async (prompt) => {
       await runOperation(
         (generateState: GenerateRecipeState) => set({ generateState }),
         { status: StoreStatus.Generating },
         deps.generateRecipeUseCase.execute({ prompt }),
-        (recipe) => {
-          set({ aiDraft: recipe });
-          return { status: StoreStatus.Success, recipe };
-        },
-      );
-    },
-    importInstagram: async (url) => {
-      await runOperation(
-        (importState: GenerateRecipeState) => set({ importState }),
-        { status: StoreStatus.Generating },
-        deps.importInstagramRecipeUseCase.execute({ url }),
-        (recipe) => {
-          set({ aiDraft: recipe });
-          return { status: StoreStatus.Success, recipe };
-        },
+        (recipe) => ({ status: StoreStatus.Success, recipe }),
       );
     },
     // Refine returns a preview: refineState only.
@@ -179,10 +165,8 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
     },
     resetCreateState: () => set({ createState: { status: StoreStatus.Idle } }),
     resetGenerateState: () => set({ generateState: { status: StoreStatus.Idle } }),
-    resetImportState: () => set({ importState: { status: StoreStatus.Idle } }),
     resetRefineState: () => set({ refineState: { status: StoreStatus.Idle } }),
     resetDeleteState: () => set({ deleteState: { status: StoreStatus.Idle } }),
-    clearAiDraft: () => set({ aiDraft: null }),
     clear: () => {
       listEpoch.invalidate();
       set({
@@ -190,7 +174,6 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         myRecipesState: { status: StoreStatus.Idle },
         myRecipesPaging: NO_PAGING,
         localRecipes: [],
-        aiDraft: null,
       });
     },
   }));

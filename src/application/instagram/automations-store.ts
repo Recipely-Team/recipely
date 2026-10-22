@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { ok } from '@core/result/result-helpers';
-import { CharConstants } from '@core/constants';
 import { FoodSearchGroup } from '@domain/diary/foods/search/food-search-group';
 import type { DmRuleEntity } from '@domain/instagram/dm/dm-rule-entity';
 import type { DmSend } from '@domain/instagram/activity/dm-send';
@@ -74,7 +73,6 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
       rules: { status: StoreStatus.Idle },
       media: { status: StoreStatus.Idle },
       recipes: { status: StoreStatus.Idle },
-      recipeQuery: CharConstants.empty,
       sends: { status: StoreStatus.Idle },
       opened: { status: StoreStatus.Idle },
 
@@ -100,7 +98,6 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
 
       searchRecipes: (raw) => {
         const query = raw.trim();
-        set({ recipeQuery: query });
         return recipes.load((page) => deps.searchMyRecipes.execute(query, FoodSearchGroup.Mine, page, PageSizes.dmRecipes));
       },
       loadMoreRecipes: () => recipes.loadMore(),
@@ -142,7 +139,7 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
         flips.invalidate();
         opening.invalidate();
         [rules, media, recipes, sends].forEach((loader) => loader.reset());
-        set({ recipeQuery: CharConstants.empty, opened: { status: StoreStatus.Idle } });
+        set({ opened: { status: StoreStatus.Idle } });
       },
     };
   });

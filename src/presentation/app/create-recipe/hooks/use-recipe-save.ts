@@ -126,7 +126,6 @@ export const useRecipeSave = ({
       const newRecipeId = state.recipe.id;
       stopAutosave();
       createdRecipesStore.getState().resetCreateState();
-      createdRecipesStore.getState().clearAiDraft();
       // Fallback for an older backend; the server retires the draft itself (fromDraftId).
       await draftsStore.getState().deleteDraft(activeDraftId);
       return newRecipeId;

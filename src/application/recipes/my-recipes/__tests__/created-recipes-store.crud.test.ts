@@ -4,7 +4,6 @@ import type { CreateRecipeUseCase } from "@application/recipes/create/create-rec
 import type { DeleteRecipeUseCase } from "@application/recipes/delete/delete-recipe-use-case";
 import type { RecipeDetailStore } from "@application/recipes/detail/recipe-detail-store-contract";
 import type { GenerateRecipeUseCase } from "@application/recipes/generate/generate-recipe-use-case";
-import type { ImportInstagramRecipeUseCase } from "@application/recipes/import/import-instagram-recipe-use-case";
 import type { RecipeListStore } from "@application/recipes/list/recipe-list-store-contract";
 import { configureCreatedRecipesStore } from "@application/recipes/my-recipes/created-recipes-store";
 import type { ListMyRecipesUseCase } from "@application/recipes/my-recipes/list-my-recipes-use-case";
@@ -102,9 +101,6 @@ const fakeGenerateUseCase = {
   execute: () => Promise.resolve(fail(new UnknownFailure("not used"))),
 } as unknown as GenerateRecipeUseCase;
 
-const fakeImportUseCase = {
-  execute: () => Promise.resolve(fail(new UnknownFailure("not used"))),
-} as unknown as ImportInstagramRecipeUseCase;
 
 const fakeRefineUseCase = {
   execute: () => Promise.resolve(fail(new UnknownFailure("not used"))),
@@ -154,7 +150,6 @@ const makeStore = (overrides: Partial<Deps> = {}) => {
     createRecipeUseCase: fakeCreateUseCase,
     listMyRecipesUseCase: fakeListMyUseCase,
     generateRecipeUseCase: fakeGenerateUseCase,
-    importInstagramRecipeUseCase: fakeImportUseCase,
     refineRecipeUseCase: fakeRefineUseCase,
     deleteRecipeUseCase: fakeDeleteUseCase,
     recipeListStore: fakeRecipeListStore,

@@ -12,9 +12,8 @@ export interface AutomationsStore {
   rules: PagedList<DmRuleEntity>;
   /** The editor's post picker. */
   media: PagedList<InstagramMedia>;
-  /** The editor's recipe picker: the viewer's own recipes, searched by `recipeQuery`. */
+  /** The editor's recipe picker: the viewer's own recipes matching the last search. */
   recipes: PagedList<RecipeFoodHit>;
-  recipeQuery: string;
   /** The opened rule's activity. */
   sends: PagedList<DmSend>;
   opened: OpenedRuleState;

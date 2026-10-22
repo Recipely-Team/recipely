@@ -9,8 +9,6 @@
  */
 export const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;
 
-/** 10s of headroom over the backend's ~120s yt-dlp + Whisper + vision budget. */
-export const IMPORT_REQUEST_TIMEOUT_MS = 130_000;
 
 /** Generate/refine call the model synchronously; no download, so below the import budget. */
 export const AI_REQUEST_TIMEOUT_MS = 90_000;

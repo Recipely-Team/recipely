@@ -1,4 +1,6 @@
 import { appendById } from '@application/store/paging/append-by-id';
+import type { RecipeListLoaded } from '@application/recipes/list/states/recipe-list-loaded';
+import type { RecipeListError } from '@application/recipes/list/states/recipe-list-error';
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
@@ -35,24 +37,26 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
       const result = await deps.listRecipes.execute(filters);
       if (!isCurrent()) return;
       if (!result.ok) {
-        set((s) => ({
-          state:
-            s.state.status === StoreStatus.Loaded
-              ? { ...s.state, isRefreshing: false, refreshFailure: result.failure }
-              : { status: StoreStatus.Error, failure: result.failure },
-        }));
+        set((s) => {
+          if (s.state.status === StoreStatus.Loaded) {
+            // A failed refresh keeps the rows on screen and says why.
+            const kept: RecipeListLoaded = { ...s.state, isRefreshing: false, refreshFailure: result.failure };
+            return { state: kept };
+          }
+          const failed: RecipeListError = { status: StoreStatus.Error, failure: result.failure };
+          return { state: failed };
+        });
         return;
       }
-      set({
-        state: {
-          status: StoreStatus.Loaded,
-          recipes: [...result.value.items],
-          query: filters?.search ?? CharConstants.empty,
-          page: result.value.page,
-          hasMore: result.value.hasMore,
-          total: result.value.total,
-        },
-      });
+      const loaded: RecipeListLoaded = {
+        status: StoreStatus.Loaded,
+        recipes: [...result.value.items],
+        query: filters?.search ?? CharConstants.empty,
+        page: result.value.page,
+        hasMore: result.value.hasMore,
+        total: result.value.total,
+      };
+      set({ state: loaded });
     },
 
     /**
@@ -81,17 +85,16 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
         set({ state: { ...state, isLoadingMore: false, refreshFailure: result.failure } });
         return;
       }
-      set({
-        state: {
-          ...state,
-          // A recipe published between two pages shifts the server's offsets; never show a row twice.
-          recipes: appendById(state.recipes, result.value.items),
-          page: result.value.page,
-          hasMore: result.value.hasMore,
-          total: result.value.total,
-          isLoadingMore: false,
-        },
-      });
+      const appended: RecipeListLoaded = {
+        ...state,
+        // A recipe published between two pages shifts the server's offsets; never show a row twice.
+        recipes: appendById(state.recipes, result.value.items),
+        page: result.value.page,
+        hasMore: result.value.hasMore,
+        total: result.value.total,
+        isLoadingMore: false,
+      };
+      set({ state: appended });
     },
     remove: (id) =>
       set((s) => {
