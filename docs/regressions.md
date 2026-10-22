@@ -3103,3 +3103,16 @@ reschedule now reaches Crashlytics through `CrashReporterInterface` instead of
 `.catch(() => undefined)`. *The class:* **an action's outcome belongs to the caller that
 started it, returned, never parked in shared state for whoever reads next; and offset
 paging over a live table repeats rows unless the append de-duplicates.**
+
+## A credential in a backup (2026-10-22)
+
+`allowBackup` was on with no rules, so Android Auto Backup copied the assistant's intent token,
+in plain text, to the user's Google Drive backup and to device-to-device transfers. On iOS it
+sat in the App Group `UserDefaults` plist, which device backups include. *Now:* the assistant
+kit plugin writes backup and data-extraction rules that exclude `recipely.assistant.xml` and
+`SecureStore.xml` (`withAssistantKit.test.js`, and the build fails if another plugin already
+claimed those attributes); iOS keeps the token in the Keychain with
+`AfterFirstUnlockThisDeviceOnly` and moves an older build's copy on first read. Verified with a
+local Android `assembleDebug` and an iOS simulator build (after `pod install`, which a new Swift
+file needs). *The class:* **a secret is stored where backups cannot take it: Keychain with a
+ThisDeviceOnly class on iOS, an explicit backup exclusion on Android.**

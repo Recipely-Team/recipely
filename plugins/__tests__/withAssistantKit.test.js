@@ -52,6 +52,7 @@ jest.mock('node:fs', () => {
     mkdirSync: jest.fn(),
     rmSync: jest.fn(),
     copyFileSync: jest.fn(),
+    writeFileSync: jest.fn(),
   };
 });
 
@@ -589,5 +590,31 @@ describe('withAssistantKit — the literals it shares with other files agree', (
     ]) {
       expect(store).toContain(`"${key}"`);
     }
+  });
+});
+
+// Regression: allowBackup is on and no rules were set, so Auto Backup copied the
+// assistant's intent token, in plain text, to the user's Google Drive backup.
+describe('withAssistantKit — Android Auto Backup', () => {
+  it('keeps the assistant token and SecureStore out of cloud backup and device transfer', () => {
+    const config = baseConfig();
+
+    withAssistantKit(config);
+
+    const application = config.__mods.manifest.manifest.application[0];
+    expect(application.$['android:fullBackupContent']).toBe('@xml/recipely_backup_rules');
+    expect(application.$['android:dataExtractionRules']).toBe('@xml/recipely_data_extraction_rules');
+    const written = fs.writeFileSync.mock.calls.map(([file, body]) => [path.basename(file), body]);
+    const extraction = written.find(([name]) => name === 'recipely_data_extraction_rules.xml')?.[1] ?? '';
+    for (const file of withAssistantKit.BACKUP_EXCLUDED_PREFS) {
+      expect(extraction.split(`<exclude domain="sharedpref" path="${file}"/>`)).toHaveLength(3);
+    }
+  });
+
+  it('fails the build instead of silently replacing backup rules another plugin set', () => {
+    const config = baseConfig();
+    config.__mods.manifest.manifest.application[0].$ = { 'android:fullBackupContent': '@xml/someone_else' };
+
+    expect(() => withAssistantKit(config)).toThrow(/fullBackupContent/);
   });
 });
