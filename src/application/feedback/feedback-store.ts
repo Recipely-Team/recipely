@@ -1,6 +1,6 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
-import { UnknownFailure } from '@core/failure';
+import { type Failure, UnknownFailure } from '@core/failure';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
 import type { FeedbackStore } from '@application/feedback/feedback-store-contract';
 import type { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
@@ -10,32 +10,30 @@ interface FeedbackStoreDeps {
 }
 
 /**
- * Creates the Zustand store for the Help & Feedback screen.
- * `submit` returns a boolean so the UI can trigger navigation on success
- * without reading store state in the same render cycle.
+ * Sends Help & Feedback messages, from the sheet and from the assistant.
+ *
+ * @remarks
+ * - **`submit` answers its own caller.** The store used to keep one `error`
+ *   that the sheet read after its await; a report the assistant failed to send
+ *   left that error behind, and the next time the user opened the sheet it
+ *   showed somebody else's failure. Errors are page-scoped, as in the auth and
+ *   favorites stores; only `isSubmitting` is shared.
  */
 export const configureFeedbackStore = (deps: FeedbackStoreDeps): BoundStore<FeedbackStore> => {
   const { submitFeedbackUseCase } = deps;
 
   return create<FeedbackStore>((set) => ({
     isSubmitting: false,
-    error: null,
-    submit: async (input: FeedbackSubmission): Promise<boolean> => {
+    submit: async (input: FeedbackSubmission): Promise<Failure | null> => {
+      set({ isSubmitting: true });
       try {
-        set({ isSubmitting: true, error: null });
         const result = await submitFeedbackUseCase.execute(input);
-        if (!result.ok) {
-          set({ isSubmitting: false, error: result.failure });
-          return false;
-        }
-        set({ isSubmitting: false });
-        return true;
+        return result.ok ? null : result.failure;
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : String(err);
-        set({ isSubmitting: false, error: new UnknownFailure(errorMsg) });
-        return false;
+        return new UnknownFailure(err instanceof Error ? err.message : String(err), err);
+      } finally {
+        set({ isSubmitting: false });
       }
     },
-    reset: () => set({ isSubmitting: false, error: null }),
   }));
 };

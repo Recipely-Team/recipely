@@ -65,11 +65,11 @@ export const useAssistantReportActions = (): void => {
         // Also to Crashlytics, in case the network refuses the form.
         FailureReporter.report(new UnknownFailure(message), CRASH_CONTEXT);
 
-        const sent = await feedbackStore.getState().submit({
+        const failure = await feedbackStore.getState().submit({
           subject: REPORT_SUBJECT,
           message,
         });
-        return sent ? { ok: true } : { ok: false, error: AssistantActionError.ReportNotSent };
+        return failure === null ? { ok: true } : { ok: false, error: AssistantActionError.ReportNotSent };
       },
       [registry, feedbackStore],
     ),

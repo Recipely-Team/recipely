@@ -1,3 +1,4 @@
+import { NetworkFailure } from '@core/failure';
 import { act } from 'react-test-renderer';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
@@ -23,7 +24,7 @@ function harness() {
     getState: () => ({
       submit: async (input: { subject: string; message: string }) => {
         submitted.push(input);
-        return accepts;
+        return accepts ? null : new NetworkFailure("refused");
       },
     }),
   } as unknown as ApplicationStores['feedbackStore'];

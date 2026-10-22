@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { Failure } from '@core/failure';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -22,23 +23,24 @@ export const FeedbackSheet = ({ visible, onClose }: FeedbackSheetProps): React.J
   const { feedbackStore } = useStores();
   const submit = feedbackStore((s) => s.submit);
   const isSubmitting = feedbackStore((s) => s.isSubmitting);
-  const error = feedbackStore((s) => s.error);
-  const reset = feedbackStore((s) => s.reset);
 
   const [subject, setSubject] = useState(CharConstants.empty);
   const [message, setMessage] = useState(CharConstants.empty);
   const [sent, setSent] = useState(false);
+  // This sheet's own failure; another submitter's never shows here.
+  const [error, setError] = useState<Failure | null>(null);
 
   // The UI requires a subject although the domain allows none.
   const canSend = subject.trim().length > ValueConstants.zero && message.trim().length > ValueConstants.zero;
 
   const handleSend = async (): Promise<void> => {
-    const ok = await submit({ subject, message });
-    if (ok) setSent(true);
+    const failure = await submit({ subject, message });
+    setError(failure);
+    if (failure === null) setSent(true);
   };
 
   const handleClose = (): void => {
-    reset();
+    setError(null);
     setSubject(CharConstants.empty);
     setMessage(CharConstants.empty);
     setSent(false);
