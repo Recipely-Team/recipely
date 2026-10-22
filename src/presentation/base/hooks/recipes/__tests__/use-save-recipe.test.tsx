@@ -75,7 +75,6 @@ const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
 
 interface FavoritesStoreOptions {
   isLoading?: boolean;
-  error?: FavoritesStoreState["error"];
   pending?: ReadonlySet<string>;
   addFavorite?: jest.Mock;
   removeFavorite?: jest.Mock;
@@ -84,18 +83,15 @@ interface FavoritesStoreOptions {
 /** Builds a minimal favoritesStore with controllable isLoading / addFavorite / removeFavorite. */
 const makeFavoritesStore = ({
   isLoading = false,
-  error = null,
   pending = new Set<string>(),
-  addFavorite = jest.fn().mockResolvedValue(undefined),
-  removeFavorite = jest.fn().mockResolvedValue(undefined),
+  addFavorite = jest.fn().mockResolvedValue(null),
+  removeFavorite = jest.fn().mockResolvedValue(null),
 }: FavoritesStoreOptions = {}) =>
-  create<FavoritesStoreState>((set) => ({
+  create<FavoritesStoreState>(() => ({
     isLoading,
     pending,
-    error,
     addFavorite,
     removeFavorite,
-    clearError: () => set({ error: null }),
   }));
 
 /** Unwraps a domain `Result`, throwing in-test if construction unexpectedly fails. */
@@ -382,8 +378,9 @@ describe("useSaveRecipe — toggleSave no-op guards", () => {
     favoritesStore.setState({
       addFavorite: async (userId: string, recipeId: string) => {
         favoritesStore.setState({ isLoading: true, pending: new Set([recipeId]) });
-        await originalAdd(userId, recipeId);
+        const failure = await originalAdd(userId, recipeId);
         favoritesStore.setState({ isLoading: false, pending: new Set<string>() });
+        return failure;
       },
     });
 
@@ -437,12 +434,9 @@ describe("useSaveRecipe — error handling", () => {
   it("calls showErrorToast and clearError when the store has an error after toggleSave", async () => {
     const failure = new UnknownFailure("network blip");
 
-    // After addFavorite resolves, the store has an error set (simulating the
-    // real favoritesStore behaviour where the use case returns a failure).
+    // addFavorite answers with its own failure, as the real store does.
     const favoritesStore = makeFavoritesStore({
-      addFavorite: jest.fn().mockImplementation(async () => {
-        favoritesStore.setState({ error: failure });
-      }),
+      addFavorite: jest.fn().mockResolvedValue(failure),
     });
 
     const savedRecipesStore = makeSavedRecipesStore(new Set<string>());
@@ -473,8 +467,6 @@ describe("useSaveRecipe — error handling", () => {
     });
 
     expect(showErrorToast).toHaveBeenCalledWith(failure);
-    // clearError leaves the store error as null after the toast
-    expect(favoritesStore.getState().error).toBeNull();
   });
 
   it("does NOT call showErrorToast when addFavorite completes without an error", async () => {

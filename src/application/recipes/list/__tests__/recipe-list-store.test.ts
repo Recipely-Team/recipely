@@ -236,6 +236,20 @@ describe('recipe-list-store', () => {
       expect(state.status === 'loaded' && state.recipes.map((r) => r.id)).toEqual(['p1', 'p2']);
     });
 
+    // Regression: a recipe published between two scrolls pushed the server's
+    // page 2 back by one row, and the feed showed that row twice.
+    it('a recipe published between two pages is not shown twice', async () => {
+      const useCase = { execute: jest.fn().mockResolvedValue(ok(recipePageOf([makeRecipe({ id: 'p1' }), makeRecipe({ id: 'p2' })], { total: 4, pageSize: 2 }))) };
+      const store = configureRecipeListStore({ listRecipes: useCase as unknown as ListRecipesUseCase });
+      await store.getState().load();
+
+      useCase.execute.mockResolvedValueOnce(ok(recipePageOf([makeRecipe({ id: 'p2' }), makeRecipe({ id: 'p3' })], { page: 2, pageSize: 2, total: 5 })));
+      await store.getState().loadMore();
+
+      const state = store.getState().state;
+      expect(state.status === 'loaded' && state.recipes.map((r) => r.id)).toEqual(['p1', 'p2', 'p3']);
+    });
+
     it('reports there is nothing left once the last page has landed', async () => {
       const useCase = { execute: jest.fn().mockResolvedValue(ok(recipePageOf([makeRecipe()]))) };
       const store = configureRecipeListStore({ listRecipes: useCase as unknown as ListRecipesUseCase });

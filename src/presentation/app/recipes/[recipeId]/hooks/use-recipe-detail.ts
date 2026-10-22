@@ -164,15 +164,11 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
 
   const handleToggleSave = useCallback(async () => {
     if (isLoading || !userId) return;
-    if (isSaved) {
-      await favoritesStore.getState().removeFavorite(userId, recipeId);
-    } else {
-      await favoritesStore.getState().addFavorite(userId, recipeId);
-    }
-    const failure = favoritesStore.getState().error;
+    const failure = isSaved
+      ? await favoritesStore.getState().removeFavorite(userId, recipeId)
+      : await favoritesStore.getState().addFavorite(userId, recipeId);
     if (failure !== null) {
       showErrorToast(failure);
-      favoritesStore.getState().clearError();
     } else if (!isSaved) {
       dmArrivalStore.getState().saved(recipeId);
     }

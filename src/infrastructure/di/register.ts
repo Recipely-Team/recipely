@@ -43,6 +43,7 @@ import { DeviceRepository } from '@infrastructure/device/device-repository';
 import { currentDevicePlatform } from '@infrastructure/device/current-device-platform';
 import { API_BASE_URL } from '@infrastructure/constants/api/api-hosts';
 import { isWeb } from '@infrastructure/constants/platform';
+import { recordCrash } from '@infrastructure/firebase/crashlytics-service';
 import { SessionRefresher } from '@infrastructure/auth/session/session-refresher';
 
 /** Host-app callbacks and providers injected into the infrastructure wiring. */
@@ -81,6 +82,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   // The single source of the active language.
   container.register(TOKENS.LocaleService, () => new LocaleService(preferenceStore, new ExpoDeviceLocaleProvider()));
   container.register(TOKENS.NotificationService, () => new NotificationService());
+  container.register(TOKENS.CrashReporter, () => ({ record: recordCrash }));
   container.register(TOKENS.AlarmAudioService, () => new AlarmAudioService());
   container.register(TOKENS.AdsService, () => new AdsService());
   container.register(TOKENS.AssistantSession, () => new GeminiLiveSession());

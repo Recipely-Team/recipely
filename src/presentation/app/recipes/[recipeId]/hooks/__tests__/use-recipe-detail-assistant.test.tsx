@@ -15,6 +15,9 @@ import { recipeEntityOf } from '@application/__fixtures__/recipe-entity-of';
 import { timerStore } from '@application/timers/timer-store';
 import { configurePortionChoiceStore } from '@application/recipes/cooking/portion-choice-store';
 import { authStoreOf } from '@presentation/base/test-support/auth-store-of';
+import { NetworkFailure } from '@core/failure';
+import { Email } from '@domain/common/email';
+import { UserEntity } from '@domain/auth/user-entity';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useRecipeDetailAssistant } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail-assistant';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
@@ -73,6 +76,14 @@ function harness(over: Partial<UseRecipeDetailResult> = {}, extraStores: Partial
     });
   return { run, vm, view, registry };
 }
+
+const signedInViewer = (): UserEntity => {
+  const email = Email.create('cook@example.com');
+  if (!email.ok) throw new Error('fixture email');
+  const user = UserEntity.create({ id: 'u1', email: email.value, displayName: 'Cook' });
+  if (!user.ok) throw new Error('fixture user');
+  return user.value;
+};
 
 describe('useRecipeDetailAssistant', () => {
   it('unsaves only after the user confirms', async () => {
@@ -154,5 +165,22 @@ describe('useRecipeDetailAssistant', () => {
       timerStore.setState({ timers: {} });
       jest.useRealTimers();
     }
+  });
+
+  // Regression: the store's answer was ignored, so "save this" by voice was
+  // announced as done even when the server refused it.
+  it('does not announce a save the server refused', async () => {
+    const { registry } = harness({}, {
+      authStore: authStoreOf(signedInViewer()),
+      favoritesStore: selectorOf({ addFavorite: jest.fn().mockResolvedValue(new NetworkFailure('offline')), removeFavorite: jest.fn() }),
+      savedRecipesStore: selectorOf({ savedIds: new Set<string>(), listState: { status: StoreStatus.Loaded } }),
+    } as unknown as Partial<ApplicationStores>);
+
+    let answer: unknown;
+    await act(async () => {
+      answer = await registry.run(AssistantAction.Save);
+    });
+
+    expect(answer).toMatchObject({ ok: false });
   });
 });

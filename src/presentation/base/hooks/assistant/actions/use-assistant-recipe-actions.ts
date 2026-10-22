@@ -127,9 +127,9 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
         return { ok: true, title: recipeName };
       }
 
-      if (wanted) await addFavorite(userId, recipeId);
-      else await removeFavorite(userId, recipeId);
-      return { ok: true, title: recipeName };
+      // The assistant must not announce a save that failed.
+      const failure = wanted ? await addFavorite(userId, recipeId) : await removeFavorite(userId, recipeId);
+      return failure === null ? { ok: true, title: recipeName } : { ok: false, error: AssistantActionError.Failed };
     },
     [userId, savedIds, savedListState, recipeId, recipeName, addFavorite, removeFavorite],
   );

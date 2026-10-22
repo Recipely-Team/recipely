@@ -3089,3 +3089,17 @@ Rebuilding the session for a profile edit used to drop the refresh token; it goe
 `AuthSessionEntity.withUser` now. *The class:* **a field the model carries that nothing
 writes is a feature that was never built; and a session rebuilt field by field loses the
 field added next.**
+
+## One shared error field, read after an await (2026-10-22)
+
+`favoritesStore` kept a single `error`; each caller awaited its save and then read that
+field. With two saves in flight one recipe's failure was toasted for the other, and the
+assistant's "save this" never read it at all, so it announced saves the server had refused.
+The feed's `loadMore` also appended pages without de-duplicating, so a recipe published
+between two scrolls appeared twice. *Now:* save and unsave return their own
+`Failure | null` (`favorites-store.test.ts`, `use-recipe-detail-assistant.test.tsx`), and the
+feed appends through `appendById` (`recipe-list-store.test.ts`). A failed reminder
+reschedule now reaches Crashlytics through `CrashReporterInterface` instead of
+`.catch(() => undefined)`. *The class:* **an action's outcome belongs to the caller that
+started it, returned, never parked in shared state for whoever reads next; and offset
+paging over a live table repeats rows unless the append de-duplicates.**
