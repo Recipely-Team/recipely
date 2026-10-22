@@ -13,8 +13,7 @@ import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { toRecipeListQuery } from '@infrastructure/recipes/to-recipe-list-query';
 import { ValueConstants } from '@core/constants';
-import type { FeedFirstPageCache } from '@infrastructure/recipes/list/feed-first-page-cache';
-import { isUnreachableFailure } from '@infrastructure/network/errors/is-unreachable-failure';
+import type { FirstPageCache } from '@infrastructure/network/paging/first-page-cache';
 import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import { MY_RECIPES_PAGE_SIZE, TRENDING_RECIPES_LIMIT } from '@infrastructure/constants/api/api-paging';
@@ -61,21 +60,16 @@ const RECIPE_PHOTO_FIELD = 'photo';
 export class RecipeRepository implements RecipeRepositoryInterface {
   constructor(
     private readonly http: AxiosHttpClient,
-    private readonly feedCache?: FeedFirstPageCache,
+    private readonly feedCache?: FirstPageCache<RecipeListItemDto>,
   ) {}
 
   async listActiveRecipes(filters?: RecipeFilters): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
     const params = toRecipeListQuery(filters);
-    const result = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.recipes.root, { params });
+    const fetched = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.recipes.root, { params });
     const isFirstPage = (filters?.page ?? ValueConstants.one) === ValueConstants.one;
-    const cacheKey = JSON.stringify(params);
-    if (!result.ok) {
-      // The API was unreachable, not refusing: open on the recipes shown last time rather than an error.
-      const cached = isFirstPage && isUnreachableFailure(result.failure) ? await this.feedCache?.load(cacheKey) : null;
-      return cached ? toRecipePage(cached) : result;
-    }
-    if (isFirstPage) void this.feedCache?.save(cacheKey, result.value);
-    return toRecipePage(result.value);
+    // Unreachable, not refusing: open on the recipes shown last time rather than an error.
+    const result = (await this.feedCache?.readThrough(JSON.stringify(params), isFirstPage, fetched)) ?? fetched;
+    return result.ok ? toRecipePage(result.value) : result;
   }
 
   async listTrendingRecipes(limit?: number): Promise<Result<RecipeSummaryEntity[], Failure>> {

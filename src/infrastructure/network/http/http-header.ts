@@ -17,6 +17,8 @@ export const HttpHeader = {
   accept: 'Accept',
   /** Asks the API to deliver the refresh token as an HttpOnly cookie (web). */
   recipelySession: 'X-Recipely-Session',
+  /** One id per request, logged by the API too, so an app failure can be found in the server log. */
+  requestId: 'X-Request-Id',
 } as const;
 
 /** Header values this client sends. */

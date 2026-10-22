@@ -1,7 +1,7 @@
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
-import { SESSION_STORAGE_KEY, SIGNED_IN_MARKER_STORAGE_KEY } from '@infrastructure/constants/storage';
+import { SESSION_STORAGE_KEY, SHOPPING_FIRST_PAGE_STORAGE_KEY, SIGNED_IN_MARKER_STORAGE_KEY } from '@infrastructure/constants/storage';
 
 const mockStore = new Map<string, string>();
 const mockReads = jest.fn();
@@ -94,5 +94,15 @@ describe('SecureTokenStorage', () => {
     expect(await storage.hasSignedInMarker()).toBe(false);
     const loaded = await storage.loadSession();
     expect(loaded.ok && loaded.value).toBeNull();
+  });
+
+  it('signing out wipes the offline copy of the shopping list, so the next account never sees it', async () => {
+    const storage = new SecureTokenStorage(true);
+    await storage.saveSession(session());
+    mockStore.set(SHOPPING_FIRST_PAGE_STORAGE_KEY, '{"query":"20","page":{}}');
+
+    await storage.clear();
+
+    expect(mockStore.has(SHOPPING_FIRST_PAGE_STORAGE_KEY)).toBe(false);
   });
 });

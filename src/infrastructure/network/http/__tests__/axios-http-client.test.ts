@@ -188,3 +188,23 @@ describe('AxiosHttpClient session refresh', () => {
     expect(refreshSession).not.toHaveBeenCalled();
   });
 });
+
+describe('AxiosHttpClient failure breadcrumbs', () => {
+  beforeEach(() => {
+    mockRequest.mockReset();
+  });
+
+  it('notes a failed request with the id it was sent under', async () => {
+    mockRequest.mockResolvedValue({
+      status: 404,
+      data: { error: { code: 'not_found', message: 'gone' } },
+      config: { headers: { 'X-Request-Id': 'rid-7' } },
+    });
+    const onRequestFailed = jest.fn();
+    const { client } = buildClient({ onRequestFailed });
+
+    await client.post('/recipes/r1/favorite');
+
+    expect(onRequestFailed).toHaveBeenCalledWith(expect.stringMatching(/^POST \/recipes\/r1\/favorite → .+ \(request rid-7\)$/));
+  });
+});

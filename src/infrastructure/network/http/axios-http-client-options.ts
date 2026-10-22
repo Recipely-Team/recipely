@@ -29,4 +29,11 @@ export interface AxiosHttpClientOptions {
    * credentials and ask for cookie delivery (`X-Recipely-Session: cookie`).
    */
   cookieSession?: boolean;
+  /** Mints the `X-Request-Id` of each request (a UUID); no header when absent. */
+  requestIdProvider?: () => string;
+  /**
+   * Told about every failed request, with its request id, so the line reaches
+   * the crash log's breadcrumbs. Diagnostic only; never user copy.
+   */
+  onRequestFailed?: (summary: string) => void;
 }

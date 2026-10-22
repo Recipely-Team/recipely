@@ -15,6 +15,9 @@ export const buildCommonHeaders = async (
   const headers: Record<string, string> = {
     [HttpHeader.acceptLanguage]: await options.localeProvider(),
   };
+  if (options.requestIdProvider !== undefined) {
+    headers[HttpHeader.requestId] = options.requestIdProvider();
+  }
   if (options.cookieSession === true) {
     headers[HttpHeader.recipelySession] = HttpMediaType.cookieSession;
   }

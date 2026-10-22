@@ -52,4 +52,15 @@ describe('buildCommonHeaders', () => {
 
     expect((await headers)['Accept-Language']).toBe('tr');
   });
+
+  it('gives every request its own id, so an app failure can be found in the API log', async () => {
+    let n = 0;
+    const options = makeOptions({ requestIdProvider: () => `rid-${++n}` });
+
+    const first = await buildCommonHeaders(options);
+    const second = await buildCommonHeaders(options);
+
+    expect(first['X-Request-Id']).toBe('rid-1');
+    expect(second['X-Request-Id']).toBe('rid-2');
+  });
 });

@@ -16,6 +16,7 @@ import {
   SESSION_STORAGE_KEY,
   LEGACY_SESSION_STORAGE_KEY,
   SIGNED_IN_MARKER_STORAGE_KEY,
+  USER_SCOPED_STORAGE_KEYS,
 } from '@infrastructure/constants/storage';
 
 const SIGNED_IN_MARKER = '1';
@@ -159,6 +160,7 @@ export class SecureTokenStorage {
       await kvStore.removeItem(SESSION_STORAGE_KEY);
       await kvStore.removeItem(LEGACY_SESSION_STORAGE_KEY);
       await kvStore.removeItem(SIGNED_IN_MARKER_STORAGE_KEY);
+      for (const key of USER_SCOPED_STORAGE_KEYS) await kvStore.removeItem(key);
       return ok(undefined);
     } catch (error: unknown) {
       return fail(new UnknownFailure(DiagnosticMessage.storage.clearFailed, error));

@@ -18,6 +18,7 @@ import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-
 import { isSuccessStatus } from '@infrastructure/network/http/http-status';
 import { HttpMethod } from '@infrastructure/network/http/http-method';
 import { CharConstants } from '@core/constants';
+import { isString } from '@core/guards/type-guards';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 
 /** Credential endpoints: a 401 there is a wrong password or a dead refresh token, never a reason to refresh. */
@@ -128,10 +129,20 @@ export class AxiosHttpClient {
         // Backwards compat / non-/api/v1 responses (eg /health) come through unchanged.
         return ok(dataEnvelope as T);
       }
-      return fail(failureFromResponse(response.status, response.data));
+      return this.failed(config, response.config?.headers, failureFromResponse(response.status, response.data));
     } catch (error: unknown) {
-      return fail(mapAxiosError(error));
+      const sent = (error as { config?: { headers?: unknown } } | null)?.config?.headers;
+      return this.failed(config, sent, mapAxiosError(error));
     }
+  }
+
+  /** Notes the failure with the request id it was sent under, then returns it. */
+  private failed<T>(config: AxiosRequestConfig, sentHeaders: unknown, failure: Failure): Result<T, Failure> {
+    const requestId = (sentHeaders as Record<string, unknown> | undefined)?.[HttpHeader.requestId];
+    this.options.onRequestFailed?.(
+      `${String(config.method ?? CharConstants.empty).toUpperCase()} ${config.url ?? CharConstants.empty} → ${failure.code}${isString(requestId) ? ` (request ${requestId})` : CharConstants.empty}`,
+    );
+    return fail(failure);
   }
 
   /**
