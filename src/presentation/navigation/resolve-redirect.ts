@@ -17,7 +17,7 @@ import { CharConstants, RegexConstants, ValueConstants } from '@core/constants';
 export const resolveRedirect = (redirect: string | string[] | undefined): string => {
   if (
     isString(redirect) &&
-    redirect.startsWith('/') &&
+    redirect.startsWith(CharConstants.slash) &&
     !redirect.startsWith('//') &&
     !RegexConstants.unsafeRedirectChar.test(redirect) &&
     !RegexConstants.encodedSlash.test(redirect.split(RegexConstants.queryOrFragmentStart, ValueConstants.one)[ValueConstants.zero] ?? CharConstants.empty) &&

@@ -1,3 +1,4 @@
+import { mailtoShareUrl, smsShareUrl, whatsappShareUrl } from '@presentation/base/constants/external-links';
 import { useState } from 'react';
 import { Linking, Platform, Share, StyleSheet, View } from 'react-native';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
@@ -7,7 +8,7 @@ import { useShareCard } from '@presentation/app/recipes/[recipeId]/hooks/share/u
 import { ShareCardLayout } from '@presentation/app/recipes/[recipeId]/model/share/share-card-layout';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface ShareChannelsProps {
   /** The card is drawn only while the sheet is open, so its photo loads then. */
@@ -21,8 +22,6 @@ export interface ShareChannelsProps {
   ingredients: readonly string[];
 }
 
-/** Opens WhatsApp's own chat picker on phones, WhatsApp Web elsewhere. */
-const WHATSAPP_SHARE_URL = 'https://wa.me/?text=';
 /** The image card needs the native capture and file-share modules; the web shares the link. */
 const CAN_SHARE_CARD = Platform.OS !== 'web';
 
@@ -47,28 +46,21 @@ export const ShareChannels = ({
   const shareText = t().recipes.shareText.replace('{name}', recipeName);
 
   const handleMessage = (): void => {
-    void Linking.openURL(
-      'sms:?body=' + encodeURIComponent(shareText + ' ' + url),
-    ).catch(() => undefined);
+    void Linking.openURL(smsShareUrl(shareText + CharConstants.space + url)).catch(() => undefined);
   };
 
   const handleEmail = (): void => {
-    void Linking.openURL(
-      'mailto:?subject=' +
-        encodeURIComponent(recipeName) +
-        '&body=' +
-        encodeURIComponent(shareText + '\n\n' + url),
-    ).catch(() => undefined);
+    void Linking.openURL(mailtoShareUrl(recipeName, shareText + CharConstants.paragraphBreak + url)).catch(() => undefined);
   };
 
   const handleMore = (): void => {
-    void Share.share({ message: shareText + ' ' + url, url, title: recipeName }).catch(
+    void Share.share({ message: shareText + CharConstants.space + url, url, title: recipeName }).catch(
       () => undefined,
     );
   };
 
   const handleWhatsApp = (): void => {
-    void Linking.openURL(WHATSAPP_SHARE_URL + encodeURIComponent(shareText + ' ' + url)).catch(() => undefined);
+    void Linking.openURL(whatsappShareUrl(shareText + CharConstants.space + url)).catch(() => undefined);
   };
 
   const { cardRef, onCardReady, shareCard } = useShareCard();

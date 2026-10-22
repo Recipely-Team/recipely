@@ -37,7 +37,7 @@ export const StripDayButton = ({ date, selected, isToday, mealCount, kcal, goal,
     isToday ? strings.today : CharConstants.empty,
   ]
     .filter(Boolean)
-    .join(' · ');
+    .join(CharConstants.middotSpaced);
   return (
     <Pressable
       onPress={onPress}

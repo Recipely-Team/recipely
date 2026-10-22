@@ -20,7 +20,7 @@ const dayLines = (day: DiaryDay): string[] => {
         ? `${group.meal} 0 kcal: none`
         : `${group.meal} ${round(group.totals.calories)} kcal: ${group.entries
             .map((entry, i) => `${i + ValueConstants.one}) ${entry.name}, ${entry.servings} serving(s), ${round(entry.nutrients.calories)} kcal`)
-            .join(', ')}`,
+            .join(CharConstants.commaSpace)}`,
     ),
     `goals: ${goals.calories} kcal, protein ${goals.protein} g, carbs ${goals.carbs} g, fat ${goals.fat} g, fiber ${goals.fiber} g, water ${goals.waterGlasses} glasses`,
   ];

@@ -21,6 +21,25 @@ export const CharConstants = {
   /** Display placeholder for a value the backend never sent — NOT a zero. */
   emDash: '—' as string,
   newline: '\n' as string,
+  /** A blank line between paragraphs of plain text (an email body). */
+  paragraphBreak: '\n\n' as string,
   percent: '%' as string,
+  /** Starts a query string; also the placeholder initial of a nameless avatar. */
   questionMark: '?' as string,
+  /** Social handles (`@cook`) and the local/domain split of an email. */
+  at: '@' as string,
+  /** URL fragments and the group marker of an ingredient line. */
+  hash: '#' as string,
+  plus: '+' as string,
+  /** The typographic minus (U+2212) a signed change is shown with; `dash` is the hyphen. */
+  minus: '\u2212' as string,
+  equals: '=' as string,
+  ampersand: '&' as string,
+  openBracket: '[' as string,
+  colonSpace: ': ' as string,
+  semicolonSpace: '; ' as string,
+  /** One character, not three dots: the glyph a truncated label ends with. */
+  ellipsis: '…' as string,
+  /** The pad character of fixed-width numbers (`07`, hex bytes). */
+  zeroDigit: '0' as string,
 } as const;

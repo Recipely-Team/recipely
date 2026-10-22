@@ -6,7 +6,7 @@ import type { ImportSource } from '@presentation/app/notifications/model/import-
 /** The `{handle}` slot the provenance copy leaves for the account name. */
 const HANDLE_SLOT = '{handle}';
 /** Instagram and TikTok accounts are written the way those platforms write them. */
-const AT = '@';
+const AT = CharConstants.at;
 
 const WORDS: Record<SourcePlatformType, { named: () => string; bare: () => string; prefix: string }> = {
   [SourcePlatform.Instagram]: { named: () => t().recipes.originInstagramDetailLabel, bare: () => t().recipes.originInstagramA11y, prefix: AT },

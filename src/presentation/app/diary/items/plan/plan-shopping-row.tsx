@@ -32,7 +32,7 @@ export const PlanShoppingRow = ({ line, checked, onToggle }: PlanShoppingRowProp
       onPress={onToggle}
       accessibilityRole="checkbox"
       accessibilityState={{ checked }}
-      accessibilityLabel={[line.label, amount].filter((part) => part !== CharConstants.empty).join(', ')}
+      accessibilityLabel={[line.label, amount].filter((part) => part !== CharConstants.empty).join(CharConstants.commaSpace)}
       style={({ pressed }) => [styles.row, { opacity: pressed ? opacities.pressedSubtle : opacities.full }]}
     >
       <View
@@ -62,7 +62,7 @@ export const PlanShoppingRow = ({ line, checked, onToggle }: PlanShoppingRowProp
           )}
         </View>
         <SizedText size={fontSizes.small} color={colors.textSubtle} numberOfLines={ValueConstants.one}>
-          {line.sources.join(', ')}
+          {line.sources.join(CharConstants.commaSpace)}
         </SizedText>
       </View>
     </Pressable>

@@ -17,7 +17,7 @@ export interface PlanProposalRowProps {
   onSwap: (key: string) => void;
 }
 
-const META_JOIN = ' · ';
+const META_JOIN = CharConstants.middotSpaced;
 
 /**
  * One open meal in the Plan my week proposal (prototype §2, step 2): the

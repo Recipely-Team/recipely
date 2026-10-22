@@ -43,7 +43,7 @@ export const MealActionsSheet = ({ entry, today, onClose, onStep, onToggleEaten,
       ? CharConstants.empty
       : [planMealLabel(entry.meal), formatPlanDay(entry.date, locale), entry.calories === null ? null : `${formatWholeNumber(entry.calories, locale)} ${strings.kcal}`]
           .filter((part): part is string => part !== null)
-          .join(' · ');
+          .join(CharConstants.middotSpaced);
 
   return (
     <BottomSheet visible={entry !== null} title={strings.mealOptions} onClose={onClose}>

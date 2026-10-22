@@ -1,4 +1,5 @@
 import { CreatorPlatform } from '@domain/creators/creator-platform';
+import { CharConstants } from '@core/constants';
 
 /**
  * The handle rules of docs/creator-tag-contract.md, named once.
@@ -12,10 +13,10 @@ import { CreatorPlatform } from '@domain/creators/creator-platform';
  */
 export const CreatorHandleRules = {
   /** Stripped once from the front, as people paste `@name`. */
-  Prefix: '@',
+  Prefix: CharConstants.at,
   /** Lower-case letters, digits, `.` and `_` — checked after lower-casing. */
   Charset: /^[a-z0-9._]+$/,
-  Dot: '.',
+  Dot: CharConstants.dot,
   DoubleDot: '..',
   Length: {
     [CreatorPlatform.Instagram]: { Min: 1, Max: 30 },

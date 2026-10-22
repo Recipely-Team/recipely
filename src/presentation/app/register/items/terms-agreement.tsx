@@ -5,7 +5,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, borderWidths, BrandColors, targetSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api/api-hosts';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface TermsAgreementProps {
   agree: boolean;
@@ -35,7 +35,7 @@ export const TermsAgreement = ({ agree, onToggle }: TermsAgreementProps): React.
         {agree ? <Ionicons name="checkmark" size={iconSizes.sm} color={colors.primaryText} /> : null}
       </View>
       <ThemedText variant="caption" muted style={styles.termsText}>
-        {t().register.agreeText}{' '}
+        {t().register.agreeText}{CharConstants.space}
         <ThemedText
           variant="caption"
           style={[styles.linkWeight, { color: colors.primary }]}
@@ -45,8 +45,8 @@ export const TermsAgreement = ({ agree, onToggle }: TermsAgreementProps): React.
         >
           {t().register.terms}
         </ThemedText>
-        {' '}
-        {t().register.and}{' '}
+        {CharConstants.space}
+        {t().register.and}{CharConstants.space}
         <ThemedText
           variant="caption"
           style={[styles.linkWeight, { color: colors.primary }]}

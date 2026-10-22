@@ -6,6 +6,7 @@ import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/us
 import { controlSizes, fontSizes, lineHeights, opacities } from '@presentation/base/theme';
 import { photoViewerSizes } from '@presentation/app/recipes/[recipeId]/model/photos/photo-viewer-sizes';
 import { t } from '@presentation/i18n';
+import { CharConstants } from '@core/constants';
 
 const AUTHOR_SLOT = '{author}';
 const LICENSE_SLOT = '{license}';
@@ -32,7 +33,7 @@ export const PhotoCreditLine = ({ credit, framed = false, style }: PhotoCreditLi
   const lineHeight = useTextLineHeight(fontSizes.small, lineHeights.snug);
   if (credit === null) return null;
 
-  const [before = '', after = ''] = t().recipes.photoCredit.replace(LICENSE_SLOT, credit.license).split(AUTHOR_SLOT);
+  const [before = CharConstants.empty, after = CharConstants.empty] = t().recipes.photoCredit.replace(LICENSE_SLOT, credit.license).split(AUTHOR_SLOT);
   const label = t().recipes.photoCreditA11y.replace(AUTHOR_SLOT, credit.author).replace(LICENSE_SLOT, credit.license);
 
   return (

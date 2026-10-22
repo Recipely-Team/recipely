@@ -23,7 +23,7 @@ export interface KeywordsStepProps {
   onRemove: (word: string) => void;
 }
 
-const SEPARATOR = ',';
+const SEPARATOR = CharConstants.comma;
 
 /**
  * Step 2 (spec §3): the trigger words — typed (Enter or a comma adds),

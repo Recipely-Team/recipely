@@ -51,7 +51,7 @@ export const useProfile = (): UseProfileResult => {
   const displayName = user?.displayName ?? CharConstants.empty;
   const email = user?.email.value ?? CharConstants.empty;
   const photoUri = user?.photoUrl ?? undefined;
-  const handle = email.split('@')[ValueConstants.zero];
+  const handle = email.split(CharConstants.at)[ValueConstants.zero];
   const bio = user?.bio?.trim() ?? CharConstants.empty;
   const isCreator = user?.creatorClaims.isCreator ?? false;
 

@@ -1,4 +1,4 @@
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { DEFAULT_IMAGE_MIME, MIME_BY_EXTENSION } from '@infrastructure/constants/image-mime';
 
 const FALLBACK_EXTENSION = 'jpg';
@@ -11,7 +11,7 @@ const MAX_EXTENSION_LENGTH = 4;
  * The one copy for avatar, recipe-photo and create-recipe uploads.
  */
 export function uploadFileMeta(uri: string, namePrefix: string, nameSuffix: string): { fileName: string; mimeType: string } {
-  const ext = uri.split('.').pop()?.toLowerCase() ?? FALLBACK_EXTENSION;
+  const ext = uri.split(CharConstants.dot).pop()?.toLowerCase() ?? FALLBACK_EXTENSION;
   const safeExt = ext.length > ValueConstants.zero && ext.length <= MAX_EXTENSION_LENGTH ? ext : FALLBACK_EXTENSION;
   return {
     fileName: `${namePrefix}-${nameSuffix}.${safeExt}`,

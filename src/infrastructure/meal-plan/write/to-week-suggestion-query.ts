@@ -3,8 +3,9 @@ import type { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import type { MealSlotType } from '@domain/diary/meal-slot';
 import type { WeekSuggestionQueryDto } from '@infrastructure/meal-plan/dtos/week-suggestion-query-dto';
 import { toMealSlotWire } from '@infrastructure/diary/write/to-meal-slot-wire';
+import { CharConstants } from '@core/constants';
 
-const MEAL_SEPARATOR = ',';
+const MEAL_SEPARATOR = CharConstants.comma;
 
 export const toWeekSuggestionQuery: RequestMapper<
   { weekStart: CalendarDate; meals: readonly MealSlotType[]; seed: number },

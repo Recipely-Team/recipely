@@ -5,7 +5,7 @@ import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, fontWeights, iconSizes, decorSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 interface ForgotPasswordSuccessViewProps {
   email: string;
@@ -26,7 +26,7 @@ export const ForgotPasswordSuccessView = ({ email, onBack, onTryDifferent }: For
       </ThemedText>
 
       <ThemedText variant="body" muted style={styles.cardSubtitle}>
-        {t().forgotPassword.sentBody}{' '}
+        {t().forgotPassword.sentBody}{CharConstants.space}
         <ThemedText variant="body" style={{ fontWeight: fontWeights.bold }}>
           {email}
         </ThemedText>

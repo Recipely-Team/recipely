@@ -17,7 +17,7 @@ export interface IngredientChipProps {
 
 /** Names longer than this are cut with an ellipsis on the chip; the full name is still spoken. */
 const NAME_MAX = 24;
-const ELLIPSIS = '…';
+const ELLIPSIS = CharConstants.ellipsis;
 
 const shown = (name: string): string => (name.length > NAME_MAX ? name.slice(ValueConstants.zero, NAME_MAX - ValueConstants.one) + ELLIPSIS : name);
 

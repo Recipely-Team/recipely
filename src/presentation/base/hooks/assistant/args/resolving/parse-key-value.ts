@@ -15,7 +15,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
  *   same `expected_..._equals_value` the model can act on: it knows the shape,
  *   so being told the shape was missing is enough to retry correctly.
  */
-const SEPARATOR = '=';
+const SEPARATOR = CharConstants.equals;
 
 export function parseKeyValue(arg: string | undefined): { key: string; value: string } | null {
   const raw = arg ?? CharConstants.empty;

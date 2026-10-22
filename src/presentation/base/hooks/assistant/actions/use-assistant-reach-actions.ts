@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { router, usePathname } from 'expo-router';
 import type { Href } from 'expo-router';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import type { AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
@@ -9,7 +9,7 @@ import { ASSISTANT_ACTION_HOMES } from '@presentation/base/hooks/assistant/args/
 import { ASSISTANT_NAVIGATION_TARGETS } from '@presentation/base/hooks/assistant/args/targets/assistant-navigation-targets';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
-const QUERY_START = '?';
+const QUERY_START = CharConstants.questionMark;
 
 /** How long a screen has to mount and register what it answers. */
 const SCREEN_ARRIVAL_TIMEOUT_MS = 4_000;

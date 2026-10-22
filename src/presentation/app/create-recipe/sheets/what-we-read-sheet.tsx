@@ -5,6 +5,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, borderWidths, controlSizes, lineHeightFor, lineHeights, layoutSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { ImportReview } from '@presentation/app/create-recipe/model/review/import-review';
+import { CharConstants } from '@core/constants';
 
 /** The backend keeps this much of the caption and transcript; at the cap, say so. */
 const SOURCE_TEXT_CAP = 4000;
@@ -24,7 +25,7 @@ export interface WhatWeReadSheetProps {
 export const WhatWeReadSheet = ({ visible, review, onClose }: WhatWeReadSheetProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const copy = t().createRecipe.importReview;
-  const text = review.sourceText ?? '';
+  const text = review.sourceText ?? CharConstants.empty;
   const url = review.sourceUrl;
   return (
     <BottomSheet

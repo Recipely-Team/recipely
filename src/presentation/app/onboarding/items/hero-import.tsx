@@ -8,9 +8,9 @@ import { ArtCard } from '@presentation/app/onboarding/items/art-card';
 import { ArtChip } from '@presentation/app/onboarding/items/art-chip';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
 import type { HeroProps } from '@presentation/app/onboarding/model/hero-props';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
-const SOURCE_SEPARATOR = ' · ';
+const SOURCE_SEPARATOR = CharConstants.middotSpaced;
 const CHIP_STEP_MS = 60;
 const LINK_DELAY_MS = 260;
 const RECIPE_DELAY_MS = 420;

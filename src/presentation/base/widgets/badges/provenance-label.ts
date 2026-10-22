@@ -1,5 +1,6 @@
 import { ProvenanceMark, type ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
 import { t } from '@presentation/i18n';
+import { CharConstants } from '@core/constants';
 
 type SourceMarkType = Exclude<ProvenanceMarkType, typeof ProvenanceMark.Ai | typeof ProvenanceMark.Curated>;
 
@@ -26,6 +27,6 @@ export const provenanceLabel = (marks: readonly ProvenanceMarkType[]): string =>
     (mark): mark is SourceMarkType => mark !== ProvenanceMark.Ai && mark !== ProvenanceMark.Curated,
   );
   const base = platform === undefined ? null : PLATFORM_A11Y[platform]();
-  if (base === null) return byModel ? t().recipes.originAiA11y : '';
+  if (base === null) return byModel ? t().recipes.originAiA11y : CharConstants.empty;
   return byModel ? `${base}${t().recipes.originEditedByAiSuffix}` : base;
 };

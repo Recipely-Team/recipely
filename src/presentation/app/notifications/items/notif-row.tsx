@@ -44,7 +44,7 @@ const CREATOR_SLOT = '{creator}';
 const splitAround = (template: string, slot: string): string[] => template.split(slot).flatMap((part, i) => (i === ValueConstants.zero ? [part] : [slot, part]));
 
 /** What a screen reader says for the row; a new recipe reads "New recipe from Refika: Menemen". */
-const LABEL_JOIN = ': ';
+const LABEL_JOIN = CharConstants.colonSpace;
 const rowLabel = (item: NotifItem, sourceLine: string | undefined): string =>
   item.kind === NotifKind.CreatorRecipe
     ? [actionText(item), item.recipeName].filter(Boolean).join(LABEL_JOIN)
@@ -136,7 +136,7 @@ const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element =>
         ) : (
           <ThemedText variant="body" style={styles.actionLine} numberOfLines={ValueConstants.two}>
             <ThemedText variant="body" style={{ fontWeight: fontWeights.bold }}>{item.actor}</ThemedText>
-            {' '}{actionText(item)}
+            {CharConstants.space}{actionText(item)}
           </ThemedText>
         )}
         {sourceLine !== undefined ? (

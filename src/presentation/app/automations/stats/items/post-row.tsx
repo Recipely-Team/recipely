@@ -26,7 +26,7 @@ export const PostRow = ({ post, wide, onPress }: PostRowProps): React.JSX.Elemen
   const copy = t().creatorStats;
   const rate = post.sent > ValueConstants.zero ? `${funnelRate(post.opened, post.sent)}%` : CharConstants.emDash;
   const n = (value: number): string => formatWholeNumber(value, locale);
-  const label = `${post.keywords.join(', ')} · ${copy.rowMeta.replace('{s}', n(post.sent)).replace('{o}', n(post.opened)).replace('{v}', n(post.saved))} · ${copy.colRate} ${rate}`;
+  const label = `${post.keywords.join(CharConstants.commaSpace)} · ${copy.rowMeta.replace('{s}', n(post.sent)).replace('{o}', n(post.opened)).replace('{v}', n(post.saved))} · ${copy.colRate} ${rate}`;
 
   return (
     <Pressable

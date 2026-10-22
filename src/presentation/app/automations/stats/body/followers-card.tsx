@@ -44,12 +44,12 @@ export const FollowersCard = ({ stats, wide }: FollowersCardProps): React.JSX.El
   const hi = Math.max(...values);
   const xOf = (day: string): number => PAD + ((width - PAD * EDGES) * Math.max(ValueConstants.zero, slots.indexOf(day))) / span;
   const yOf = (v: number): number => (hi === lo ? height / HALF : PAD + (height - PAD * EDGES) * (ValueConstants.one - (v - lo) / (hi - lo)));
-  const line = points.map((p, i) => `${i === ValueConstants.zero ? 'M' : 'L'}${xOf(p.day).toFixed(ValueConstants.one)} ${yOf(p.followers).toFixed(ValueConstants.one)}`).join(' ');
+  const line = points.map((p, i) => `${i === ValueConstants.zero ? 'M' : 'L'}${xOf(p.day).toFixed(ValueConstants.one)} ${yOf(p.followers).toFixed(ValueConstants.one)}`).join(CharConstants.space);
   const first = points[ValueConstants.zero];
   const lastPoint = points[points.length - ValueConstants.one];
   const area = first !== undefined && lastPoint !== undefined ? `${line} L${xOf(lastPoint.day).toFixed(ValueConstants.one)} ${height} L${xOf(first.day).toFixed(ValueConstants.one)} ${height} Z` : CharConstants.empty;
   const changeColor = change !== null && change < ValueConstants.zero ? surfaces.danger.text : surfaces.success.text;
-  const sign = change !== null && change > ValueConstants.zero ? '+' : change !== null && change < ValueConstants.zero ? '−' : '';
+  const sign = change !== null && change > ValueConstants.zero ? CharConstants.plus : change !== null && change < ValueConstants.zero ? CharConstants.minus : CharConstants.empty;
 
   return (
     <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>

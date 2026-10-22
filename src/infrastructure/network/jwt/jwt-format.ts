@@ -1,3 +1,4 @@
+import { CharConstants } from '@core/constants';
 /**
  * Shape of a JWT on the wire, as RFC 7519 defines it.
  *
@@ -9,7 +10,7 @@
 export const JwtFormat = {
   /** header.payload.signature */
   segmentCount: 3,
-  separator: '.',
+  separator: CharConstants.dot,
   /** Index of the claims segment. */
   payloadIndex: 1,
 } as const;
@@ -22,9 +23,9 @@ export const Base64Url = {
   /** base64url -> base64: `-` becomes `+`, `_` becomes `/`. */
   minusToPlus: /-/g,
   underscoreToSlash: /_/g,
-  plus: '+',
-  slash: '/',
+  plus: CharConstants.plus,
+  slash: CharConstants.slash,
   /** base64 is decoded in four-character blocks, padded with `=`. */
   blockSize: 4,
-  padding: '=',
+  padding: CharConstants.equals,
 } as const;

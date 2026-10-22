@@ -181,7 +181,8 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
    The test is reuse, not type. A vocabulary (status, error code, platform, role, a screen's own states) is ONE
    const object referenced everywhere; `Failure.message` sentences live in `DiagnosticMessage` (`@core/failure`);
    narrowing unknown values goes through `@core/guards/type-guards`; no raw number sequences in components.
-   `check:structure` rules P and Y.
+   Separator and character literals (`'@'`, `', '`, `'\n'`, `''`) are `CharConstants`; a URL scheme is `UrlConstants`.
+   `check:structure` rules P, Y and AV.
 6. **StyleSheet.create() for static styles** — inline objects only for dynamic values: `[styles.base, { color: dynamic }]`.
 6b. **Responsive sizing** — `minHeight`, never `height`, on boxes with text; never an absolute `lineHeight`
    (`useTextLineHeight` / `lineHeightFor`); `aspectRatio` over pinned image heights, capping **width** not

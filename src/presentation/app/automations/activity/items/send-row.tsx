@@ -15,7 +15,7 @@ export interface SendRowProps {
   send: DmSend;
 }
 
-const AT = '@';
+const AT = CharConstants.at;
 const OPEN_QUOTE = '“';
 const CLOSE_QUOTE = '”';
 

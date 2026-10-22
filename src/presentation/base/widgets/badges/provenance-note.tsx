@@ -1,6 +1,6 @@
 import { Linking, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { ProvenanceMark, type ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
-import { CharConstants, ValueConstants } from '@core/constants';
+import { CharConstants, UrlConstants, ValueConstants } from '@core/constants';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { instagramProfileUrl, tiktokProfileUrl } from '@presentation/base/constants';
@@ -13,8 +13,8 @@ import { t } from '@presentation/i18n';
 /** The `{handle}` slot the import copy leaves for the account name. */
 const HANDLE_SLOT = '{handle}';
 /** Handles are shown the way the platforms write them, not the way we store them. */
-const HANDLE_PREFIX = '@';
-const WEB_SCHEME = 'https://';
+const HANDLE_PREFIX = CharConstants.at;
+const WEB_SCHEME = UrlConstants.httpsScheme;
 
 /** The marks that name an outside source; the AI mark qualifies one and Recipely Kitchen is ours. */
 type SourceMarkType = Exclude<ProvenanceMarkType, typeof ProvenanceMark.Ai | typeof ProvenanceMark.Curated>;
@@ -134,11 +134,11 @@ export const ProvenanceNote = ({ marks, sourceHandle, sourceUrl, style }: Proven
   }
 
   const words = SOURCE_WORDS[platform];
-  const tail = marks.includes(ProvenanceMark.Ai) ? t().recipes.originEditedByAiSuffix : '';
+  const tail = marks.includes(ProvenanceMark.Ai) ? t().recipes.originEditedByAiSuffix : CharConstants.empty;
   // No handle: still say where it came from.
   const [before, after] =
-    sourceHandle === undefined ? [words.fallback(), ''] : words.sentence().split(HANDLE_SLOT);
-  const shownHandle = `${words.prefix}${sourceHandle ?? ''}`;
+    sourceHandle === undefined ? [words.fallback(), CharConstants.empty] : words.sentence().split(HANDLE_SLOT);
+  const shownHandle = `${words.prefix}${sourceHandle ?? CharConstants.empty}`;
   const href = sourceHandle === undefined ? null : words.href(sourceHandle, sourceUrl);
 
   return (

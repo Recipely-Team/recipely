@@ -15,7 +15,7 @@ import { AssistantActionError } from '@domain/assistant/actions/assistant-action
 const REPORT_SUBJECT = 'Voice assistant report';
 /** Separates the user's own words from the facts the app attached. */
 const DIAGNOSTIC_RULE = '\n\n--- diagnostics ---\n';
-const LINE_BREAK = '\n';
+const LINE_BREAK = CharConstants.newline;
 /** Where the crash report files this, next to the other `Assistant.*` contexts. */
 const CRASH_CONTEXT = 'Assistant.reportProblem';
 /** Said in place of the user's words when they only pointed at the failure. */

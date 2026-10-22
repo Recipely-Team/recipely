@@ -6,7 +6,7 @@ import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** Between the route and what is on it — "screen=/recipes; recipes=1) Baklava". */
-const SCREEN_LINE_SEPARATOR = '; ';
+const SCREEN_LINE_SEPARATOR = CharConstants.semicolonSpace;
 
 /** What a remembered failure says when the handler did not name a reason. */
 const UNNAMED_ERROR = 'failed';

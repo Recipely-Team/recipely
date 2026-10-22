@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { DmRuleEntity } from "@domain/instagram/dm/dm-rule-entity";
-import { ValueConstants } from "@core/constants";
+import { CharConstants, ValueConstants } from "@core/constants";
 import { useTheme } from "@presentation/base/theme/context/use-theme";
 import { useLayout } from "@presentation/base/responsive/use-layout";
 import { SizedText } from "@presentation/base/widgets/text/sized-text";
@@ -52,7 +52,7 @@ export const RuleCard = ({
         ...rule.keywords,
       ]
         .filter((part) => part !== null)
-        .join(", ")}
+        .join(CharConstants.commaSpace)}
       style={({ pressed }) => [
         styles.card,
         {

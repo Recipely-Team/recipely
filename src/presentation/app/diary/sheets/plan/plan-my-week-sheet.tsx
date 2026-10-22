@@ -9,7 +9,7 @@ import { mealLabel } from '@presentation/base/utils/diary/meal-label';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, mealPlanSizes, radii, spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { PlanWeekStep } from '@presentation/app/diary/model/plan/plan-week-step';
 import type { UsePlanMyWeekResult } from '@presentation/app/diary/model/plan/use-plan-my-week-result';
 import { PlanProposalRow } from '@presentation/app/diary/items/plan/plan-proposal-row';
@@ -100,7 +100,7 @@ export const PlanMyWeekSheet = ({ vm, rangeLabel, onBrowseRecipes }: PlanMyWeekS
         <View style={styles.stack}>
           <View style={styles.summary}>
             <SizedText size={fontSizes.caption} color={colors.textMuted} style={styles.grow}>
-              {[rangeLabel, chosen.map(mealLabel).join(', ')].join(' · ')}
+              {[rangeLabel, chosen.map(mealLabel).join(CharConstants.commaSpace)].join(CharConstants.middotSpaced)}
             </SizedText>
             <Pressable onPress={vm.change} accessibilityRole="button" accessibilityLabel={strings.change}>
               <SizedText size={fontSizes.body} weight={fontWeights.bold} color={colors.primary}>{strings.change}</SizedText>

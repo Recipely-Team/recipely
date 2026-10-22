@@ -11,7 +11,7 @@ import { t } from '@presentation/i18n';
 import { ArtCard } from '@presentation/app/onboarding/items/art-card';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
 import type { HeroProps } from '@presentation/app/onboarding/model/hero-props';
-import { TimeConstants, ValueConstants } from '@core/constants';
+import { CharConstants, TimeConstants, ValueConstants } from '@core/constants';
 
 const REPLY_DELAY_MS = 380;
 const STEP_DELAY_MS = 560;
@@ -27,7 +27,7 @@ const ORB_SIZE = 56;
 /** The timer the art counts down from, in seconds: 24:58. */
 const TIMER_START_S = 1498;
 const ART_WIDTH = 270;
-const pad = (n: number): string => String(n).padStart(ValueConstants.two, '0');
+const pad = (n: number): string => String(n).padStart(ValueConstants.two, CharConstants.zeroDigit);
 
 /** Slide 2, "Cook hands-free": a spoken "next step", the assistant's reply, the step, a live timer. */
 export const HeroCook = ({ active = true }: HeroProps): React.JSX.Element => {

@@ -67,6 +67,8 @@
  *      Security nor sets usesCleartextTraffic (CLAUDE.md §24).
  *   AU. No Intl API Hermes lacks (PluralRules, RelativeTimeFormat, ListFormat,
  *      Segmenter, DisplayNames, Locale, DurationFormat) outside tests (§24).
+ *   AV. No bare separator or character literal ('@', ', ', '\n', '', …) where
+ *      CharConstants names it (§5).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -1337,6 +1339,80 @@ function openingTag(src, at) {
   };
 
   if (fs.existsSync(PRESENTATION)) walk(PRESENTATION);
+}
+
+// --- AV: no bare separator literal where CharConstants names it (CLAUDE.md §5) --
+// `email.split('@')`, `join(', ')`, `{' '}`, `padStart(2, '0')` and four copies
+// of `const AT = '@'` had crept in beside a CharConstants that already named
+// most of them. The values below are read from char-constants.ts itself, so a
+// character added there is enforced everywhere at once.
+//
+// A tokenizer, not a regex: `['92%', '78%']` holds the text `', '` between two
+// literals, which a regex reads as a separator. Template literals are skipped
+// whole (their text is the template), as are comments. A `| ''` union is a
+// type, not a value.
+{
+  const charSource = fs.readFileSync(path.join(SRC, 'core/constants/char-constants.ts'), 'utf8');
+  const NAMED = new Map();
+  for (const m of charSource.matchAll(/^\s*(\w+):\s*'((?:\\.|[^'\\])*)'\s+as string,/gm)) {
+    NAMED.set(JSON.parse(`"${m[2].replace(/"/g, '\\"').replace(/\\u2212/g, '\u2212')}"`), m[1]);
+  }
+  // A digit is data far more often than a pad character (SVG offsets, stored flags).
+  NAMED.delete('0');
+
+  /** Every quoted literal in `src` with what precedes it, skipping comments and templates. */
+  const literals = function* (src) {
+    let i = 0;
+    while (i < src.length) {
+      const c = src[i];
+      if (c === '/' && src[i + 1] === '/') { i = src.indexOf('\n', i); if (i < 0) return; continue; }
+      if (c === '/' && src[i + 1] === '*') { i = src.indexOf('*/', i + 2); if (i < 0) return; i += 2; continue; }
+      if (c === '`') {
+        let depth = 0;
+        for (i += 1; i < src.length; i += 1) {
+          if (src[i] === '\\') { i += 1; continue; }
+          if (src[i] === '$' && src[i + 1] === '{') { depth += 1; i += 1; continue; }
+          if (src[i] === '}' && depth > 0) { depth -= 1; continue; }
+          if (src[i] === '`' && depth === 0) break;
+        }
+        i += 1;
+        continue;
+      }
+      if (c === "'" || c === '"') {
+        const start = i;
+        let raw = '';
+        for (i += 1; i < src.length && src[i] !== c && src[i] !== '\n'; i += 1) {
+          if (src[i] === '\\') { raw += src[i] + src[i + 1]; i += 1; continue; }
+          raw += src[i];
+        }
+        i += 1;
+        yield { raw, before: src.slice(Math.max(0, start - 3), start), at: start };
+        continue;
+      }
+      i += 1;
+    }
+  };
+
+  const decode = (raw) => { try { return JSON.parse(`"${raw.replace(/"/g, '\\"')}"`); } catch { return raw; } };
+
+  for (const file of files) {
+    if (isTest(file) || file.startsWith('core/constants/') || file.startsWith('presentation/i18n/locales/')) continue;
+    if (/__fixtures__|__mocks__/.test(file)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (/^import /m.test(src) === false && !/\.(ts|tsx)$/.test(file)) continue;
+    const found = new Set();
+    for (const { raw, before, at } of literals(src)) {
+      const value = decode(raw);
+      if (!NAMED.has(value)) continue;
+      if (/\|\s*$/.test(before)) continue;
+      const lineStart = src.lastIndexOf('\n', at) + 1;
+      if (/^\s*import\b/.test(src.slice(lineStart, at))) continue;
+      found.add(`'${raw}' → CharConstants.${NAMED.get(value)}`);
+    }
+    if (found.size > 0) {
+      errors.push(`${file}: bare character literal(s) — ${[...found].slice(0, 3).join(', ')} (CLAUDE.md §5)`);
+    }
+  }
 }
 
 // --- AJ: no accessibility props on a react-native-svg <Svg> (CLAUDE.md §24) --
