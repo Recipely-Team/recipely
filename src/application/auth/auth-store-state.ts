@@ -30,8 +30,9 @@ export interface AuthStoreState {
    * persisted session and flips the store to `unauthenticated` so the auth
    * guard redirects to login. No-op unless the current status is
    * `authenticated` — it must never clobber an idle/loading/login flow (e.g. a
-   * wrong-password 401 during sign-in). There is no token-refresh path on the
-   * backend, so an expired/invalid JWT is terminal for the session.
+   * wrong-password 401 during sign-in). The HTTP client has already tried to
+   * renew the session with the refresh token, so reaching here means the
+   * sign-in itself is over (revoked, expired, or the account was closed).
    */
   expireSession: () => Promise<void>;
   hydrate: () => Promise<void>;

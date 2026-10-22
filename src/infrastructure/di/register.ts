@@ -42,6 +42,8 @@ import { StoredDeviceIdentity } from '@infrastructure/device/stored-device-ident
 import { DeviceRepository } from '@infrastructure/device/device-repository';
 import { currentDevicePlatform } from '@infrastructure/device/current-device-platform';
 import { API_BASE_URL } from '@infrastructure/constants/api/api-hosts';
+import { isWeb } from '@infrastructure/constants/platform';
+import { SessionRefresher } from '@infrastructure/auth/session/session-refresher';
 
 /** Host-app callbacks and providers injected into the infrastructure wiring. */
 interface InfrastructureOptions {
@@ -62,7 +64,9 @@ interface InfrastructureOptions {
  * - **Use cases:** none — the application registrars build them over these ports.
  */
 export const registerInfrastructure = (container: Container, opts?: InfrastructureOptions): void => {
-  const storage = new SecureTokenStorage();
+  // Web keeps tokens in memory and the refresh token in the API's HttpOnly cookie.
+  const cookieSession = isWeb();
+  const storage = new SecureTokenStorage(!cookieSession);
   const deviceIdentity = new StoredDeviceIdentity(
     kvStore,
     randomUUID,
@@ -103,13 +107,18 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
       return localeService.getLocale();
     },
     enableLogging: __DEV__,
+    cookieSession,
+    // Read at call time: the refresher is built after the client it renews for.
+    refreshSession: () => refresher.run(),
   };
   if (opts?.onUnauthorized) {
     httpClientOptions.onUnauthorized = opts.onUnauthorized;
   }
   const http = new AxiosHttpClient(httpClientOptions);
+  const authRepository = new AuthRepository(http, storage, deviceIdentity, cookieSession);
+  const refresher = new SessionRefresher(() => authRepository.refreshSession());
 
-  container.register(TOKENS.AuthRepository, () => new AuthRepository(http, storage, deviceIdentity));
+  container.register(TOKENS.AuthRepository, () => authRepository);
   container.register(TOKENS.DeviceRepository, () => new DeviceRepository(http));
   container.register(TOKENS.RecipeRepository, () => new RecipeRepository(http, new FeedFirstPageCache(kvStore)));
   container.register(TOKENS.TaxonomyRepository, () => new TaxonomyRepository(http));

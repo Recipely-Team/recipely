@@ -1,11 +1,15 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import type { Failure } from '@core/failure';
+import { type Failure, UnauthorizedFailure } from '@core/failure';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { optional } from '@core/guards/type-guards';
+import type { RefreshSessionRequestDto } from '@infrastructure/auth/dtos/refresh-session-request-dto';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 import { AVATAR_UPLOAD_URL } from '@infrastructure/constants/api/api-hosts';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
+import { REFRESH_RACE_RETRY_MS } from '@infrastructure/constants/api/api-timeouts';
 import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
 import type { RecipelyAuthSessionDto } from '@infrastructure/auth/session/recipely-auth-session-dto';
@@ -54,12 +58,17 @@ import { signedInUser } from '@infrastructure/auth/session/signed-in-user';
  *   verify and social auth carry `device`, so the backend records the install
  *   in the same round-trip. An unreadable identity sends none rather than
  *   failing the sign-in over bookkeeping.
+ * - **Sessions renew instead of ending.** An expired access token is traded
+ *   for a new one with the refresh token (`refreshSession`); the HTTP client
+ *   does the same on a 401. `refreshByCookie` (web) sends no token: the API
+ *   reads its HttpOnly cookie.
  */
 export class AuthRepository implements AuthRepositoryInterface {
   constructor(
     private readonly http: AxiosHttpClient,
     private readonly storage: SecureTokenStorage,
     private readonly deviceIdentity: DeviceIdentityInterface,
+    private readonly refreshByCookie: boolean = false,
   ) {}
 
   async signIn(email: string, password: string): Promise<Result<AuthSessionEntity, Failure>> {
@@ -115,7 +124,10 @@ export class AuthRepository implements AuthRepositoryInterface {
     return this.exchangeFirebaseToken(tokenResult.value);
   }
 
+  /** Revokes this sign-in on the server (best effort: signing out never waits on the network to succeed), then forgets it. */
   async signOut(): Promise<Result<void, Failure>> {
+    const body = await this.refreshBody();
+    if (body !== null) await this.http.post<void>(ApiRoutes.auth.logout, body);
     const clearResult = await this.storage.clear();
     if (!clearResult.ok) {
       return fail(clearResult.failure);
@@ -123,8 +135,38 @@ export class AuthRepository implements AuthRepositoryInterface {
     return ok(undefined);
   }
 
+  /**
+   * The stored session, renewed first when its access token has expired, or
+   * restored from the refresh cookie on a web reload. A refresh the server
+   * refuses means signed out; one that cannot reach it keeps the stored
+   * session, so a cold start offline does not sign anyone out.
+   */
   async getCurrentSession(): Promise<Result<AuthSessionEntity | null, Failure>> {
-    return this.storage.loadSession();
+    const stored = await this.storage.loadSession();
+    if (!stored.ok) return stored;
+    const session = stored.value;
+    if (session !== null && !session.isExpired()) return stored;
+    if (session === null && !(this.refreshByCookie && (await this.storage.hasSignedInMarker()))) return stored;
+    const refreshed = await this.refreshSession();
+    if (refreshed.ok) return refreshed;
+    if (refreshed.failure instanceof UnauthorizedFailure) {
+      await this.storage.clear();
+      return ok(null);
+    }
+    return stored;
+  }
+
+  /** Trades the refresh token for a new session and stores it. */
+  async refreshSession(): Promise<Result<AuthSessionEntity, Failure>> {
+    const body = await this.refreshBody();
+    if (body === null) return fail(new UnauthorizedFailure(DiagnosticMessage.auth.noRefreshToken));
+    let result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.refresh, body);
+    if (!result.ok && this.refreshByCookie && result.failure instanceof UnauthorizedFailure) {
+      await new Promise((resolve) => setTimeout(resolve, REFRESH_RACE_RETRY_MS));
+      result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.refresh, body);
+    }
+    if (!result.ok) return result;
+    return this.persistSession(result.value);
   }
 
   async requestPasswordReset(email: string): Promise<Result<void, Failure>> {
@@ -235,6 +277,14 @@ export class AuthRepository implements AuthRepositoryInterface {
     return identity.ok ? { device: toDeviceContextDto(identity.value) } : {};
   }
 
+  /** What `/auth/refresh` and `/auth/logout` need, or `null` when there is no refresh token to send. */
+  private async refreshBody(): Promise<RefreshSessionRequestDto | null> {
+    if (this.refreshByCookie) return {};
+    const current = await this.storage.loadSession();
+    const refreshToken = current.ok ? current.value?.refreshToken : undefined;
+    return refreshToken === undefined ? null : { refreshToken };
+  }
+
   /** Maps a backend session DTO to an `AuthSessionEntity` and persists it to storage. */
   private async persistSession(
     dto: RecipelyAuthSessionDto,
@@ -245,6 +295,7 @@ export class AuthRepository implements AuthRepositoryInterface {
     const sessionResult = AuthSessionEntity.create({
       id: dto.user.id,
       accessToken: dto.token,
+      ...optional('refreshToken', dto.refreshToken),
       expiresAt: expiresAtFromToken(dto.token),
       user: userResult.value,
     });

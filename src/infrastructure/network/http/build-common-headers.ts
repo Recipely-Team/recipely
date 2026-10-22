@@ -1,5 +1,5 @@
 import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-http-client-options';
-import { HttpHeader, BEARER_PREFIX } from '@infrastructure/network/http/http-header';
+import { HttpHeader, HttpMediaType, BEARER_PREFIX } from '@infrastructure/network/http/http-header';
 
 /**
  * Builds the headers every backend request carries, regardless of transport:
@@ -15,6 +15,9 @@ export const buildCommonHeaders = async (
   const headers: Record<string, string> = {
     [HttpHeader.acceptLanguage]: await options.localeProvider(),
   };
+  if (options.cookieSession === true) {
+    headers[HttpHeader.recipelySession] = HttpMediaType.cookieSession;
+  }
   const token = await options.tokenProvider();
   if (token !== null) {
     headers[HttpHeader.authorization] = `${BEARER_PREFIX}${token}`;

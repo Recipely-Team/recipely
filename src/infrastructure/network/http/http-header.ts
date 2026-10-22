@@ -15,11 +15,15 @@ export const HttpHeader = {
   authorization: 'Authorization',
   contentType: 'Content-Type',
   accept: 'Accept',
+  /** Asks the API to deliver the refresh token as an HttpOnly cookie (web). */
+  recipelySession: 'X-Recipely-Session',
 } as const;
 
 /** Header values this client sends. */
 export const HttpMediaType = {
   json: 'application/json',
+  /** The `X-Recipely-Session` value for cookie delivery. */
+  cookieSession: 'cookie',
 } as const;
 
 /** The `Authorization` scheme prefix, trailing space included. */

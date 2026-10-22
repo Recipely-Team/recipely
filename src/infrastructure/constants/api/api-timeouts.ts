@@ -29,3 +29,10 @@ export const FILE_IMPORT_TIMEOUT_MS = 70_000;
  * connection or a 502/503/504 — long enough for a restarting API to answer.
  */
 export const READ_RETRY_DELAY_MS = 800;
+
+/**
+ * Web: how long a refresh the API refused waits before asking once more. Two
+ * tabs refreshing together share one cookie; the loser is refused, and by now
+ * the winner's reply has put the successor token in the cookie jar.
+ */
+export const REFRESH_RACE_RETRY_MS = 1_000;

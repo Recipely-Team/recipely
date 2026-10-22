@@ -47,6 +47,11 @@ export class AuthSessionEntity extends BaseEntity<AuthSessionEntityProps> {
     return this.props.user;
   }
 
+  /** The same session for an updated user; tokens and expiry carry over. */
+  withUser(user: UserEntity): Result<AuthSessionEntity, ValidationFailure> {
+    return AuthSessionEntity.create({ ...this.props, user });
+  }
+
   /**
    * Returns `true` when `now` is at or past `expiresAt`, indicating the token
    * should be refreshed or the user prompted to sign in again.

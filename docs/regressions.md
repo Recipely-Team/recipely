@@ -3074,3 +3074,18 @@ had worked; the raw-XHR uploader did the same. The `EnvelopeDecryptError` branch
 (`build-response-interceptor.test.ts`, `upload-multipart.test.ts`, each sealing a reply with
 the wrong key). *The class:* **a catch that only logs turns a failure into whatever the next
 line assumes; a `catch` in a transport path either returns a `Failure` or rethrows.**
+
+## Every user signed out when their access token expired (2026-10-22)
+
+The backend issued one 7-day JWT and no refresh token; the app stored a `refreshToken`
+field nothing filled, and its first 401 ended the session. Web kept the JWT in
+`localStorage`, where any script on the page could read it. *Now:* sign-in also returns a
+rotating refresh token (backend `refresh-session-use-case.test.ts`: reuse revokes the
+family, a two-tab race does not), the HTTP client renews once on a 401 and replays
+(`axios-http-client.test.ts`, single-flight in `session-refresher.test.ts`), a cold start
+with an expired token renews (`auth-repository.refresh.test.ts`), and web keeps tokens in
+memory with the refresh token in an HttpOnly cookie (`session-token-storage.test.ts`).
+Rebuilding the session for a profile edit used to drop the refresh token; it goes through
+`AuthSessionEntity.withUser` now. *The class:* **a field the model carries that nothing
+writes is a feature that was never built; and a session rebuilt field by field loses the
+field added next.**

@@ -15,7 +15,10 @@ import { readCreatorClaims } from '@infrastructure/creators/read-creator-claims'
 import {
   SESSION_STORAGE_KEY,
   LEGACY_SESSION_STORAGE_KEY,
+  SIGNED_IN_MARKER_STORAGE_KEY,
 } from '@infrastructure/constants/storage';
+
+const SIGNED_IN_MARKER = '1';
 
 /** The stored form of the claims — the wire shape, so one reader serves both; absent when there are none. */
 const toStoredClaims = (claims: CreatorClaims): CreatorClaimDto[] | undefined =>
@@ -30,6 +33,15 @@ const toStoredClaims = (claims: CreatorClaims): CreatorClaimDto[] | undefined =>
  * flushed by bumping the key suffix.
  *
  * @remarks
+ * - **Read once, then from memory.** Every request asks for the access token;
+ *   the session is kept in memory after the first read or write, so a request
+ *   no longer costs a Keychain / Keystore read, a JSON parse and three entity
+ *   builds.
+ * - **`persistTokens: false` (web) writes no token to disk.** `localStorage` is
+ *   readable by any script on the page; the session stays in memory and comes
+ *   back on reload from the API's HttpOnly refresh cookie. Only a non-secret
+ *   signed-in marker is stored. A session an older build left in
+ *   `localStorage` is moved into memory and deleted on first read.
  * **Reads fall back to the legacy key once.** This class used to hold its own
  * `'layerly.session.v1'` while `SESSION_STORAGE_KEY` went unread, so a device
  * that last signed in on an older build still has its session under the old
@@ -37,12 +49,19 @@ const toStoredClaims = (claims: CreatorClaims): CreatorClaimDto[] | undefined =>
  * new key alone would have signed those users out.
  */
 export class SecureTokenStorage {
+  /** `undefined` until the first read or write; `null` once known to be signed out. */
+  private cached: AuthSessionEntity | null | undefined = undefined;
+
+  constructor(private readonly persistTokens: boolean = true) {}
+
   async saveSession(session: AuthSessionEntity): Promise<Result<void, Failure>> {
+    this.cached = session;
+    if (!this.persistTokens) return this.markSignedIn();
     try {
       const payload: SerializedSession = {
         id: session.id,
         accessToken: session.accessToken,
-        refreshToken: session.refreshToken,
+        ...optional('refreshToken', session.refreshToken),
         expiresAt: session.expiresAt.toISOString(),
         user: {
           id: session.user.id,
@@ -63,6 +82,26 @@ export class SecureTokenStorage {
   }
 
   async loadSession(): Promise<Result<AuthSessionEntity | null, Failure>> {
+    if (this.cached !== undefined) return ok(this.cached);
+    const loaded = await this.readStoredSession();
+    if (!loaded.ok) return loaded;
+    this.cached = loaded.value;
+    if (!this.persistTokens && loaded.value !== null) {
+      // An older web build left tokens in localStorage: keep them in memory only.
+      await kvStore.removeItem(SESSION_STORAGE_KEY);
+      await kvStore.removeItem(LEGACY_SESSION_STORAGE_KEY);
+      await this.markSignedIn();
+    }
+    return ok(loaded.value);
+  }
+
+  /** Web: whether this browser has a sign-in the refresh cookie may restore. */
+  async hasSignedInMarker(): Promise<boolean> {
+    const read = await kvStore.getItem(SIGNED_IN_MARKER_STORAGE_KEY);
+    return read.ok && read.value === SIGNED_IN_MARKER;
+  }
+
+  private async readStoredSession(): Promise<Result<AuthSessionEntity | null, Failure>> {
     let raw: string | null;
     try {
       const read = await kvStore.getItem(SESSION_STORAGE_KEY);
@@ -115,13 +154,20 @@ export class SecureTokenStorage {
   }
 
   async clear(): Promise<Result<void, Failure>> {
+    this.cached = null;
     try {
       await kvStore.removeItem(SESSION_STORAGE_KEY);
       await kvStore.removeItem(LEGACY_SESSION_STORAGE_KEY);
+      await kvStore.removeItem(SIGNED_IN_MARKER_STORAGE_KEY);
       return ok(undefined);
     } catch (error: unknown) {
       return fail(new UnknownFailure(DiagnosticMessage.storage.clearFailed, error));
     }
+  }
+
+  private async markSignedIn(): Promise<Result<void, Failure>> {
+    const written = await kvStore.setItem(SIGNED_IN_MARKER_STORAGE_KEY, SIGNED_IN_MARKER);
+    return written.ok ? ok(undefined) : fail(new UnknownFailure(DiagnosticMessage.storage.persistFailed, written.failure));
   }
 
   /**

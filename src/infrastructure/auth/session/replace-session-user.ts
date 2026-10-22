@@ -2,7 +2,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { type Failure, UnauthorizedFailure } from '@core/failure';
-import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
+import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { UserEntity } from '@domain/auth/user-entity';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 
@@ -43,12 +43,7 @@ export const replaceSessionUser = async (
   if (!userResult.ok) return userResult;
   if (userResult.value === current.user) return ok(current);
 
-  const updatedResult = AuthSessionEntity.create({
-    id: current.id,
-    accessToken: current.accessToken,
-    expiresAt: current.expiresAt,
-    user: userResult.value,
-  });
+  const updatedResult = current.withUser(userResult.value);
   if (!updatedResult.ok) return updatedResult;
 
   const saveResult = await storage.saveSession(updatedResult.value);
