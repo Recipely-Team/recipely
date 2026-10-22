@@ -5,7 +5,7 @@ import { HttpStatus , isSuccessStatus } from '@infrastructure/network/http/http-
 import { HttpMethod } from '@infrastructure/network/http/http-method';
 import { HttpHeader, HttpMediaType } from '@infrastructure/network/http/http-header';
 import type { Result } from '@core/result/result';
-import { type Failure, NetworkFailure, TimeoutFailure } from '@core/failure';
+import { type Failure, NetworkFailure, TimeoutFailure, ValidationFailure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
 import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { decryptEnvelope } from '@infrastructure/crypto/aes-envelope';
@@ -77,6 +77,9 @@ export const uploadMultipart = async <T>(
           if (enableLogging) {
             console.log(`${LogTag.multipartResponse} ${DECRYPT_FAILED_LOG} ${(err as Error).message}`);
           }
+          // An undecryptable reply is a failure, never a 2xx success carrying the raw envelope.
+          resolve(fail(new ValidationFailure(DiagnosticMessage.network.badEnvelope((err as Error).message))));
+          return;
         }
       }
       if (isSuccessStatus(status)) {

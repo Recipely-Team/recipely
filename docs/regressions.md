@@ -3063,3 +3063,14 @@ pad by `useScrollEndPadding()`; `useKeyboardHeight` measures from the keyboard's
 `npm run maestro:largest-text` and `npm run maestro:small-screen`. *The class:* **test at
 the largest text and the smallest screen, and look at the screenshots — a cut label still
 holds its full string, so no text assertion fails.**
+
+## A reply nobody could decrypt, reported as a success (2026-10-22)
+
+The response interceptor caught `EnvelopeDecryptError`, logged it in dev, and left the raw
+`{ payload, iv }` in place. `AxiosHttpClient.request` then saw a 2xx body with no `data` key
+and returned `ok(envelope)`, so a write answered by a backend on another key looked like it
+had worked; the raw-XHR uploader did the same. The `EnvelopeDecryptError` branch in
+`mapAxiosError` was unreachable. *Guard:* both paths now fail with a `ValidationFailure`
+(`build-response-interceptor.test.ts`, `upload-multipart.test.ts`, each sealing a reply with
+the wrong key). *The class:* **a catch that only logs turns a failure into whatever the next
+line assumes; a `catch` in a transport path either returns a `Failure` or rethrows.**

@@ -7,8 +7,14 @@ import { CharConstants } from '@core/constants';
 
 /**
  * Builds the axios response interceptor that decrypts AES-GCM envelopes back
- * into plain JSON. A decrypt failure is logged (dev only) and the raw body is
- * left in place so downstream mapping can still fail cleanly.
+ * into plain JSON.
+ *
+ * @remarks
+ * - **A decrypt failure rejects the response.** The `EnvelopeDecryptError`
+ *   propagates to `AxiosHttpClient.request`, where `mapAxiosError` turns it
+ *   into a `ValidationFailure`. Leaving the raw envelope in place let a 2xx
+ *   reply with no `data` key pass as `ok(envelope)`, so a write answered with
+ *   the wrong key reported success.
  */
 export const buildResponseInterceptor = (
   options: AxiosHttpClientOptions,
@@ -22,6 +28,7 @@ export const buildResponseInterceptor = (
         if (options.enableLogging) {
           console.log(`${LogTag.httpResponse} ${DECRYPT_FAILED_LOG} ${(err as Error).message}`);
         }
+        throw err;
       }
     }
     if (options.enableLogging) {
