@@ -1,9 +1,9 @@
 import { memo, useCallback, useEffect } from 'react';
-import { StoreStatus } from '@application/store/store-status';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import { useIsSignedIn } from '@presentation/base/hooks/auth/use-is-signed-in';
 
 export interface RecipeListItemProps {
   recipe: RecipeSummaryEntity;
@@ -31,10 +31,9 @@ export interface RecipeListItemProps {
  * to hand every row a new `onPress` on every render.
  */
 const RecipeListItemComponent = ({ recipe, onOpen, hoverEffect }: RecipeListItemProps): React.JSX.Element => {
-  const { likesStore, authStore } = useStores();
+  const { likesStore } = useStores();
   const { cuisineLabel } = useTaxonomyLabel();
-  const authState = authStore((s) => s.state);
-  const isAuthenticated = authState.status === StoreStatus.Authenticated;
+  const isAuthenticated = useIsSignedIn();
 
   const likeState = likesStore((s) => s.byRecipe[recipe.id]);
   const seed = likesStore((s) => s.seed);

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assistant-mascot';
 import { AssistantStatus } from '@application/assistant/session/assistant-status';
@@ -27,7 +28,7 @@ export interface AssistantBubbleProps {
  *   the conversation: a turn is laid straight over whatever the screen is
  *   showing, and over a photograph an unlifted bubble is unreadable.
  */
-export const AssistantBubble = ({ speaker, text }: AssistantBubbleProps): React.JSX.Element => {
+const AssistantBubbleComponent = ({ speaker, text }: AssistantBubbleProps): React.JSX.Element => {
   const { colors } = useTheme();
   const mine = speaker === ChatRole.User;
 
@@ -80,3 +81,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
 });
+
+/** Memoized: rendered once per list item, it re-renders only when its own props change. */
+export const AssistantBubble = memo(AssistantBubbleComponent);

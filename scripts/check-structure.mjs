@@ -69,6 +69,8 @@
  *      Segmenter, DisplayNames, Locale, DurationFormat) outside tests (§24).
  *   AV. No bare separator or character literal ('@', ', ', '\n', '', …) where
  *      CharConstants names it (§5).
+ *   AW. No `authStore((s) => s.state)` in presentation — select what is used
+ *      (useSignedInUserId / useIsSignedIn / useSignedInUser, or s.state.status).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -1411,6 +1413,22 @@ function openingTag(src, at) {
     }
     if (found.size > 0) {
       errors.push(`${file}: bare character literal(s) — ${[...found].slice(0, 3).join(', ')} (CLAUDE.md §5)`);
+    }
+  }
+}
+
+// --- AW: no subscription to the whole auth state (CLAUDE.md §8) --------------
+// Zustand re-renders a subscriber when its selected value changes by
+// Object.is. Fifteen components selected `s.state` from the auth store to read
+// an id or "signed in?", so every replacement of the session (a profile edit,
+// a creator-claim refresh) re-rendered all of them, each feed row included.
+{
+  const WHOLE_AUTH_STATE = /\bauthStore\(\s*\(s\)\s*=>\s*s\.state\s*\)/;
+  for (const file of files) {
+    if (isTest(file) || !file.startsWith('presentation/')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (WHOLE_AUTH_STATE.test(src)) {
+      errors.push(`${file}: selects the whole auth state — use useSignedInUserId / useIsSignedIn / useSignedInUser, or s.state.status (CLAUDE.md §8)`);
     }
   }
 }

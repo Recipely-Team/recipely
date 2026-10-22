@@ -3116,3 +3116,18 @@ claimed those attributes); iOS keeps the token in the Keychain with
 local Android `assembleDebug` and an iOS simulator build (after `pod install`, which a new Swift
 file needs). *The class:* **a secret is stored where backups cannot take it: Keychain with a
 ThisDeviceOnly class on iOS, an explicit backup exclusion on Android.**
+
+## Screens that re-rendered for changes they never showed (2026-10-23)
+
+Fifteen components selected the whole auth `state` to read an id or "signed in?", every
+feed row among them, so replacing the session re-rendered all of them. `useAuthGuard` ran
+inside `RootStack` and subscribes to the pathname and every URL parameter, so each
+navigation re-rendered the Stack with a new inline `screenOptions` and, through it, every
+mounted screen. Nine list rows were not memoized (the assistant transcript re-rendered
+every bubble on each new line), and three parents passed fresh arrows that would have
+defeated `memo` anyway. *Now:* `useSignedInUserId` / `useIsSignedIn` / `useSignedInUser`
+select only what is read (`use-signed-in-selectors.test.tsx` counts renders), the
+navigation hooks live in a `RootEffects` sibling that renders nothing, `screenOptions` is
+memoized, and the rows are `memo` with stable callbacks. `check:structure` rule AW blocks
+`authStore((s) => s.state)`. *The class:* **select the value you render, not the object
+that holds it; and anything that listens to navigation renders nothing under it.**

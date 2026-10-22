@@ -28,13 +28,13 @@ export const LoginScreen = (): React.JSX.Element => {
   const isLandscapeShell = split.isSplit;
 
   const { authStore } = useStores();
-  const state = authStore((s) => s.state);
+  const authStatus = authStore((s) => s.state.status);
 
   useEffect(() => {
-    if (state.status === StoreStatus.Authenticated) {
+    if (authStatus === StoreStatus.Authenticated) {
       router.replace(resolveRedirect(redirect) as Href);
     }
-  }, [state.status, router, redirect]);
+  }, [authStatus, router, redirect]);
 
   if (isLandscapeShell) {
     return (

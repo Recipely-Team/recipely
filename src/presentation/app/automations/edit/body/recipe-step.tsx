@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, TextInput, View } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -27,6 +27,8 @@ export interface RecipeStepProps {
  * from the first page.
  */
 export const RecipeStep = ({ selected, onSelect, scrollable }: RecipeStepProps): React.JSX.Element => {
+  // Stable, so a memoized RecipeOptionRow is not re-rendered by a new arrow on every render.
+  const onSelectHit = useCallback((hit: { id: string; name: string; imageUrl: string | null }) => onSelect(hit.id, hit.name, hit.imageUrl), [onSelect]);
   const colors = useTheme().colors;
   const { automationsStore } = useStores();
   const recipes = automationsStore((s) => s.recipes);
@@ -46,7 +48,7 @@ export const RecipeStep = ({ selected, onSelect, scrollable }: RecipeStepProps):
       data={recipes.status === StoreStatus.Loaded ? recipes.items : []}
       keyExtractor={(hit) => hit.key}
       accessibilityRole="radiogroup"
-      renderItem={({ item }) => <RecipeOptionRow hit={item} selected={item.id === selected} onSelect={(hit) => onSelect(hit.id, hit.name, hit.imageUrl)} />}
+      renderItem={({ item }) => <RecipeOptionRow hit={item} selected={item.id === selected} onSelect={onSelectHit} />}
       ListHeaderComponent={
         <View style={styles.header}>
           <SizedText accessibilityRole="header" size={fontSizes.subtitle} weight={fontWeights.heavy}>

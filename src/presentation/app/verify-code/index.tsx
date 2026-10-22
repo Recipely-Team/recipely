@@ -36,14 +36,14 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   const initialExpiresAt = isString(params.expiresAt) ? params.expiresAt : CharConstants.empty;
 
   const { authStore } = useStores();
-  const state = authStore((s) => s.state);
+  const authStatus = authStore((s) => s.state.status);
 
   useEffect(() => {
-    if (state.status === StoreStatus.Authenticated) {
+    if (authStatus === StoreStatus.Authenticated) {
     // The sign-up detour is spent: replace the stack.
       enterApp(router, resolveRedirect(params.redirect) as Href);
     }
-  }, [state.status, router, params.redirect]);
+  }, [authStatus, router, params.redirect]);
 
   if (isLandscapeShell) {
     return (

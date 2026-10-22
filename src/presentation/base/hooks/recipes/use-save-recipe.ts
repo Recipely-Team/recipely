@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
-import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { toastStore } from '@presentation/base/feedback/toast-store';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { t } from '@presentation/i18n';
 import type { UseSaveRecipeResult } from '@presentation/base/hooks/recipes/use-save-recipe-result';
+import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-user-id';
 
 /**
  * Shared favorites wiring for the recipe cards and hero card. Reads the
@@ -18,10 +18,9 @@ import type { UseSaveRecipeResult } from '@presentation/base/hooks/recipes/use-s
  * - **Unsaving offers Undo** — on the Saved tab the card vanishes at once.
  */
 export const useSaveRecipe = (): UseSaveRecipeResult => {
-  const { savedRecipesStore, favoritesStore, authStore } = useStores();
+  const { savedRecipesStore, favoritesStore } = useStores();
   const savedIds = savedRecipesStore((s) => s.savedIds);
-  const authState = authStore((s) => s.state);
-  const userId = authState.status === StoreStatus.Authenticated ? authState.session.user.id : null;
+  const userId = useSignedInUserId();
 
   const isSaved = useCallback((recipeId: string): boolean => savedIds.has(recipeId), [savedIds]);
 

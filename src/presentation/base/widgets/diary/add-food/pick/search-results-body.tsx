@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useFoodSearchQuery } from '@presentation/base/hooks/diary/use-food-search-query';
 import { FoodSearchGroup, type FoodSearchGroupType } from '@domain/diary/foods/search/food-search-group';
@@ -39,11 +40,27 @@ export const SearchResultsBody = ({ rawQuery, onChoose, onChooseProduct, onQuick
   const recipes = foodSearchStore((s) => s.recipes);
   const strings = t().diary;
   const isTab = query.length === ValueConstants.zero;
-  const lists = { saved, mine, products, recipes };
+  const lists = useMemo(() => ({ saved, mine, products, recipes }), [saved, mine, products, recipes]);
   const phase = phaseOfLists(isTab ? [saved, mine, recipes] : [saved, mine, products, recipes]);
-  const loadMore = (key: string): void => {
+  const loadMore = useCallback((key: string): void => {
     if (isSearchGroup(key)) void foodSearchStore.getState().loadMore(key);
-  };
+  }, [foodSearchStore]);
+  // Rows and handlers stay the same objects until their inputs change, so the memoized rows skip re-rendering.
+  const rows = useMemo(
+    () =>
+      searchRows(lists, {
+        [FoodSearchGroup.Saved]: strings.groupSaved,
+        [FoodSearchGroup.Mine]: strings.groupMine,
+        [FoodSearchGroup.Products]: strings.groupProducts,
+        [FoodSearchGroup.Recipes]: isTab ? strings.groupFeed : strings.groupRecipes,
+      }),
+    [lists, strings, isTab],
+  );
+  const onPickRecipe = useCallback((hit: { food: LoggableFood }) => onChoose(hit.food), [onChoose]);
+  const onEndReached = useCallback(() => {
+    const next = nextListToLoad(SEARCH_GROUP_ORDER.map((key) => ({ key, list: lists[key] })));
+    if (next !== null) loadMore(next);
+  }, [lists, loadMore]);
 
   switch (phase.phase) {
     case PickPhase.Loading:
@@ -69,17 +86,9 @@ export const SearchResultsBody = ({ rawQuery, onChoose, onChooseProduct, onQuick
     case PickPhase.Ready:
       return (
         <FoodPickList
-          rows={searchRows(lists, {
-            [FoodSearchGroup.Saved]: strings.groupSaved,
-            [FoodSearchGroup.Mine]: strings.groupMine,
-            [FoodSearchGroup.Products]: strings.groupProducts,
-            [FoodSearchGroup.Recipes]: isTab ? strings.groupFeed : strings.groupRecipes,
-          })}
-          onEndReached={() => {
-            const next = nextListToLoad(SEARCH_GROUP_ORDER.map((key) => ({ key, list: lists[key] })));
-            if (next !== null) loadMore(next);
-          }}
-          onPickRecipe={(hit) => onChoose(hit.food)}
+          rows={rows}
+          onEndReached={onEndReached}
+          onPickRecipe={onPickRecipe}
           onPickProduct={onChooseProduct}
           onRetryMore={loadMore}
         />

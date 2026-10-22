@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { StoreStatus } from '@application/store/store-status';
 import { type Href, useRouter, usePathname } from 'expo-router';
 import { useGuestRouteGate } from '@presentation/base/hooks/auth/use-guest-route-gate';
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
@@ -19,6 +18,7 @@ import { WebHeaderSearch } from '@presentation/base/widgets/web-header/web-heade
 import { WebHeaderActions } from '@presentation/base/widgets/web-header/web-header-actions';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { useSignedInUser } from '@presentation/base/hooks/auth/use-signed-in-user';
 
 const HEADER_HEIGHT = 68;
 
@@ -55,11 +55,11 @@ export const WebHeader = (): React.JSX.Element => {
   const gate = useGuestRouteGate();
   const pathname = usePathname();
   const colors = useTheme().colors;
-  const { authStore, notificationsStore, shoppingListStore } = useStores();
+  const { notificationsStore, shoppingListStore } = useStores();
   const toBuy = shoppingListStore((s) => s.toBuy) ?? ValueConstants.zero;
-  const authState = authStore((s) => s.state);
+  const user = useSignedInUser();
   const unreadCount = notificationsStore((s) => s.unreadCount);
-  const signedIn = authState.status === StoreStatus.Authenticated;
+  const signedIn = user !== null;
   useEffect(() => {
     if (signedIn) void shoppingListStore.getState().loadToBuy();
   }, [shoppingListStore, signedIn]);
@@ -75,7 +75,6 @@ export const WebHeader = (): React.JSX.Element => {
     { key: 'diary', label: t().navigation.diary, icon: { family: TabIconFamily.Ionicons, name: 'calendar-outline' } },
   ];
 
-  const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
   // Empty for guests, so the avatar shows the person mark.
   const displayName = user?.displayName ?? CharConstants.empty;
   const avatarUri = user?.photoUrl ?? undefined;
@@ -96,7 +95,7 @@ export const WebHeader = (): React.JSX.Element => {
   const goDiscover = (): void => router.push(RoutePaths.onboarding);
 
   // Discover is guest-only and on the Recipes tab.
-  const isAuthenticated = authState.status === StoreStatus.Authenticated;
+  const isAuthenticated = signedIn;
   const showDiscover = activeTab === WebHeaderTabKey.Recipes && !isAuthenticated;
 
   // Search only on the Recipes listing, which reads it.

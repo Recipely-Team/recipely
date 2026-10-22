@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { StoreStatus } from '@application/store/store-status';
@@ -28,6 +28,8 @@ export interface PostStepProps {
  * serves twenty pages at most). Posts another automation watches say so.
  */
 export const PostStep = ({ handle, selected, onSelect, scrollable }: PostStepProps): React.JSX.Element => {
+  // Stable, so a memoized PostTile is not re-rendered by a new arrow on every render.
+  const onPressTile = useCallback((media: { id: string }) => onSelect(media.id), [onSelect]);
   const colors = useTheme().colors;
   const { isExpanded } = useLayout();
   const { automationsStore } = useStores();
@@ -55,7 +57,7 @@ export const PostStep = ({ handle, selected, onSelect, scrollable }: PostStepPro
       columnWrapperStyle={styles.gap}
       contentContainerStyle={styles.gap}
       renderItem={({ item }) => (
-        <PostTile media={item} selected={item.id === selected} hasRule={watched.has(item.id) && item.id !== selected} onPress={(m) => onSelect(m.id)} />
+        <PostTile media={item} selected={item.id === selected} hasRule={watched.has(item.id) && item.id !== selected} onPress={onPressTile} />
       )}
       ListHeaderComponent={
         <View style={styles.header}>

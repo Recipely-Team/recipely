@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
 import { ValueConstants } from '@core/constants';
@@ -20,7 +21,7 @@ export interface RecipeOptionRowProps {
  * a radio. A recipe that is not published cannot be sent to a stranger, so
  * it shows why and cannot be chosen.
  */
-export const RecipeOptionRow = ({ hit, selected, onSelect }: RecipeOptionRowProps): React.JSX.Element => {
+const RecipeOptionRowComponent = ({ hit, selected, onSelect }: RecipeOptionRowProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const locale = useLocale();
   const copy = t().instagram;
@@ -68,3 +69,6 @@ const styles = StyleSheet.create({
   },
   dot: { width: AutomationMetrics.radio / ValueConstants.two, height: AutomationMetrics.radio / ValueConstants.two, borderRadius: radii.round },
 });
+
+/** Memoized: rendered once per list item, it re-renders only when its own props change. */
+export const RecipeOptionRow = memo(RecipeOptionRowComponent);

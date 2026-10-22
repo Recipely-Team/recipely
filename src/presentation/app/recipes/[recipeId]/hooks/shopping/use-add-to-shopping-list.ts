@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { type Href, usePathname, useRouter } from 'expo-router';
 import { ValueConstants } from '@core/constants';
-import { StoreStatus } from '@application/store/store-status';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
@@ -15,6 +14,7 @@ import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/sh
 import type { ShoppingSource } from '@presentation/app/recipes/[recipeId]/model/shopping/shopping-source';
 import type { UseAddToShoppingListResult } from '@presentation/app/recipes/[recipeId]/model/shopping/use-add-to-shopping-list-result';
 import { t } from '@presentation/i18n';
+import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-user-id';
 
 const summary = (result: ShoppingAddResult): string =>
   t().shopping.addedSummary.replace('{added}', String(result.added)).replace('{merged}', String(result.merged));
@@ -35,8 +35,8 @@ const summary = (result: ShoppingAddResult): string =>
 export const useAddToShoppingList = (source: ShoppingSource): UseAddToShoppingListResult => {
   const router = useRouter();
   const pathname = usePathname();
-  const { authStore, shoppingListStore } = useStores();
-  const userId = authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.id : null));
+  const { shoppingListStore } = useStores();
+  const userId = useSignedInUserId();
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const [isAdding, setAdding] = useState(false);
   const { recipeId, recipeName, lines } = source;

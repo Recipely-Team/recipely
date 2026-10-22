@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { FoodPickList } from '@presentation/base/widgets/diary/add-food/pick/food-pick-list';
@@ -31,6 +31,13 @@ export const RecentTabBody = ({ onChooseRecent }: RecentTabBodyProps): React.JSX
   }, [foodCatalogStore]);
 
   const phase = phaseOfLists([recent]);
+  // Stable rows and handlers: the memoized rows re-render only when the recent list itself changes.
+  const rows = useMemo(
+    () => pagedRows(recent, RECENT, (item) => ({ type: PickRowType.Recent, key: item.key, recent: item })),
+    [recent],
+  );
+  const loadMoreRecent = useCallback(() => void foodCatalogStore.getState().loadMoreRecent(), [foodCatalogStore]);
+
   switch (phase.phase) {
     case PickPhase.Loading:
       return <PickSkeleton />;
@@ -47,10 +54,10 @@ export const RecentTabBody = ({ onChooseRecent }: RecentTabBodyProps): React.JSX
     case PickPhase.Ready:
       return (
         <FoodPickList
-          rows={pagedRows(recent, RECENT, (item) => ({ type: PickRowType.Recent, key: item.key, recent: item }))}
-          onEndReached={() => void foodCatalogStore.getState().loadMoreRecent()}
+          rows={rows}
+          onEndReached={loadMoreRecent}
           onPickRecent={onChooseRecent}
-          onRetryMore={() => void foodCatalogStore.getState().loadMoreRecent()}
+          onRetryMore={loadMoreRecent}
         />
       );
   }

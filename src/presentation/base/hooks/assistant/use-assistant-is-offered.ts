@@ -1,7 +1,6 @@
 import { usePathname } from 'expo-router';
 import { RoutePaths } from '@presentation/base/constants';
-import { StoreStatus } from '@application/store/store-status';
-import { useStores } from '@presentation/bootstrap/use-stores';
+import { useIsSignedIn } from '@presentation/base/hooks/auth/use-is-signed-in';
 
 /**
  * The routes where the assistant has nothing to offer, so it is not there.
@@ -33,10 +32,9 @@ const CLOSED_TO_ASSISTANT: readonly string[] = [
  *   take themselves, and it cannot type a password.
  */
 export const useAssistantIsOffered = (): boolean => {
-  const { authStore } = useStores();
-  const authState = authStore((s) => s.state);
+  const isSignedIn = useIsSignedIn();
   const pathname = usePathname();
 
-  if (authState.status !== StoreStatus.Authenticated) return false;
+  if (!isSignedIn) return false;
   return !CLOSED_TO_ASSISTANT.some((route) => pathname.startsWith(route));
 };

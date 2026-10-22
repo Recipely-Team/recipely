@@ -19,6 +19,7 @@ import { formatCompactCount } from '@presentation/base/utils/format-compact-coun
 import { CreatorProfileMetrics } from '@presentation/app/creators/[userId]/model/creator-profile-metrics';
 import type { UseCreatorProfileResult } from '@presentation/app/creators/[userId]/model/use-creator-profile-result';
 import { creatorAddress } from '@domain/creators/creator-address';
+import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-user-id';
 
 /**
  * Orchestrates /creators/[userId]: opens the creator in the profile store on
@@ -44,7 +45,7 @@ export const useCreatorProfile = (): UseCreatorProfileResult => {
   const params = useLocalSearchParams<{ userId: string }>();
   const userId = isString(params.userId) ? params.userId : CharConstants.empty;
 
-  const { creatorProfileStore, authStore } = useStores();
+  const { creatorProfileStore } = useStores();
   const profileState = creatorProfileStore((s) => s.profileState);
   const recipesState = creatorProfileStore((s) => s.recipes);
   const isFollowPending = creatorProfileStore((s) => s.isFollowPending);
@@ -52,7 +53,7 @@ export const useCreatorProfile = (): UseCreatorProfileResult => {
   const refresh = creatorProfileStore((s) => s.refresh);
   const loadMoreRecipes = creatorProfileStore((s) => s.loadMoreRecipes);
   const toggleFollow = creatorProfileStore((s) => s.toggleFollow);
-  const viewerId = authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.id : null));
+  const viewerId = useSignedInUserId();
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(viewerId);
   const [isPullRefreshing, setPullRefreshing] = useState(false);
 

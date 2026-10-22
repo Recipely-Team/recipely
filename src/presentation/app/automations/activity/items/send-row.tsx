@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { DmSend } from '@domain/instagram/activity/dm-send';
@@ -20,7 +21,7 @@ const OPEN_QUOTE = '“';
 const CLOSE_QUOTE = '”';
 
 /** One matched comment (spec §4): initials, @handle and when, the comment quoted, and how its reply went. */
-export const SendRow = ({ send }: SendRowProps): React.JSX.Element => {
+const SendRowComponent = ({ send }: SendRowProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const look = sendLookFor(send);
   const surface = useSeveritySurfaces()[look.severity];
@@ -81,3 +82,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.xxs,
   },
 });
+
+/** Memoized: rendered once per list item, it re-renders only when its own props change. */
+export const SendRow = memo(SendRowComponent);

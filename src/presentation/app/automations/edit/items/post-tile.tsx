@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { InstagramMedia } from '@domain/instagram/instagram-media';
@@ -27,7 +28,7 @@ export interface PostTileProps {
  *   background and a media-type glyph; when it only drew the image, a post
  *   with a null `thumbnailUrl` was an invisible cell and the grid looked empty.
  */
-export const PostTile = ({ media, selected, hasRule, onPress }: PostTileProps): React.JSX.Element => {
+const PostTileComponent = ({ media, selected, hasRule, onPress }: PostTileProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const isReel = media.mediaType === InstagramMediaType.Video;
   const placeholderIcon = isReel ? 'videocam-outline' : media.mediaType === InstagramMediaType.Carousel ? 'albums-outline' : 'image-outline';
@@ -91,3 +92,6 @@ const styles = StyleSheet.create({
   },
   tag: { position: 'absolute', bottom: spacing.xs, left: spacing.xs, paddingHorizontal: spacing.xs, borderRadius: radii.sm },
 });
+
+/** Memoized: rendered once per list item, it re-renders only when its own props change. */
+export const PostTile = memo(PostTileComponent);

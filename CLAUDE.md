@@ -195,7 +195,10 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
    and `FlatList` turns it ON by default on Android, so leaving it out is not enough (v1.7.0). Bound mounted rows with
    `windowSize` / `maxToRenderPerBatch` / `initialNumToRender`. `check:structure` rule R.
 7. **Component props interface** — `ComponentNameProps`, exported, above the component in the same file.
-8. **Custom hooks** — prefix `use`, one hook per file, no store state passed as props.
+8. **Custom hooks** — prefix `use`, one hook per file, no store state passed as props. Select the narrowest
+   value a component reads (`s.state.status`, `s.savedIds.has(id)`), never a whole state object for one field;
+   list rows are `memo` with stable callbacks. Auth goes through `useSignedInUserId` / `useIsSignedIn` /
+   `useSignedInUser`. `check:structure` rule AW.
 9. **FlatList keyExtractor** — always stable, never the array index for mutable lists.
 10. **Accessibility** — every `Pressable` / `TouchableOpacity` has `accessibilityRole`, and
     `accessibilityLabel` when the visual label is not plain text.

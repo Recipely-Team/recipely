@@ -6,10 +6,10 @@ import type { AssistantActionResultType } from '@domain/assistant/actions/assist
 import type { AssistantRecipeRow } from '@presentation/base/hooks/assistant/args/resolving/assistant-recipe-row';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { RoutePaths } from '@presentation/base/constants';
-import { StoreStatus } from '@application/store/store-status';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { useIsSignedIn } from '@presentation/base/hooks/auth/use-is-signed-in';
 
 /** How long the recipe screen has to mount and register what it answers. */
 const SCREEN_ARRIVAL_TIMEOUT_MS = 4_000;
@@ -39,13 +39,13 @@ const SCREEN_ARRIVAL_TIMEOUT_MS = 4_000;
  *   instead of ending it.
  */
 export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[]): void => {
-  const { assistantActionRegistry: registry, authStore, likesStore } = useStores();
+  const { assistantActionRegistry: registry, likesStore } = useStores();
   const setLikedInStore = likesStore((s) => s.setLiked);
   const favourites = useSaveRecipe();
-  const authState = authStore((s) => s.state);
+  const isSignedIn = useIsSignedIn();
   // Read through a ref so list re-renders do not re-register the actions.
-  const latest = useRef({ rows, favourites, isSignedIn: authState.status === StoreStatus.Authenticated });
-  latest.current = { rows, favourites, isSignedIn: authState.status === StoreStatus.Authenticated };
+  const latest = useRef({ rows, favourites, isSignedIn });
+  latest.current = { rows, favourites, isSignedIn };
   // One hop at a time, so a failed navigation cannot loop back here.
   const travelling = useRef(false);
 

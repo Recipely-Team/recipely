@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
@@ -16,7 +17,7 @@ export interface PlanPickRowProps {
 }
 
 /** One recipe in the add sheet's list: thumb 48, name, "350 kcal per serving" and a plus disc. */
-export const PlanPickRow = ({ hit, onPress }: PlanPickRowProps): React.JSX.Element => {
+const PlanPickRowComponent = ({ hit, onPress }: PlanPickRowProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const locale = useLocale();
   return (
@@ -53,3 +54,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+/** Memoized: rendered once per list item, it re-renders only when its own props change. */
+export const PlanPickRow = memo(PlanPickRowComponent);

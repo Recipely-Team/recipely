@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { DmRuleEntity } from "@domain/instagram/dm/dm-rule-entity";
@@ -33,7 +34,7 @@ export interface RuleCardProps {
 }
 
 /** One automation (spec §2 → Rule card): the post, its keywords, the recipe, "124 sent · Off", and its switch. Tap opens Activity. */
-export const RuleCard = ({
+const RuleCardComponent = ({
   rule,
   isPaused,
   onOpen,
@@ -153,3 +154,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
+
+/** Memoized: rendered once per list item, it re-renders only when its own props change. */
+export const RuleCard = memo(RuleCardComponent);

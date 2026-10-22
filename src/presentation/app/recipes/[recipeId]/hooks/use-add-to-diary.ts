@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
 import { type Href, usePathname, useRouter } from 'expo-router';
-import { StoreStatus } from '@application/store/store-status';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -11,6 +10,7 @@ import { useAssistantLogFood } from '@presentation/base/hooks/diary/use-assistan
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import type { UseAddToDiaryResult } from '@presentation/app/recipes/[recipeId]/model/use-add-to-diary-result';
 import { t } from '@presentation/i18n';
+import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-user-id';
 
 /** Recipe Detail does not move anywhere when the assistant logs from it. */
 const noop = (): void => undefined;
@@ -30,9 +30,8 @@ const today = (): CalendarDate => CalendarDate.today();
 export const useAddToDiary = (recipe: RecipeEntity): UseAddToDiaryResult => {
   const router = useRouter();
   const pathname = usePathname();
-  const { authStore, buildLoggableFoodFromRecipe } = useStores();
-  const authState = authStore((s) => s.state);
-  const userId = authState.status === StoreStatus.Authenticated ? authState.session.user.id : null;
+  const { buildLoggableFoodFromRecipe } = useStores();
+  const userId = useSignedInUserId();
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const [request, setRequest] = useState<AddFoodRequestType | null>(null);
 

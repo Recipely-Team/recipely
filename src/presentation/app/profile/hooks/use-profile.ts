@@ -7,6 +7,7 @@ import { useAvatarUpload } from '@presentation/base/hooks/profile/use-avatar-upl
 import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { useSignedInUser } from '@presentation/base/hooks/auth/use-signed-in-user';
 
 /** View model returned by {@link useProfile} for the profile screen. */
 interface UseProfileResult {
@@ -40,13 +41,12 @@ export const useProfile = (): UseProfileResult => {
   const { pickAndUpload, isUploading, uploadError, onDismissUploadError } = useAvatarUpload();
 
   const { authStore, userProfileStore, savedRecipesStore } = useStores();
-  const authState = authStore((s) => s.state);
   const profileState = userProfileStore((s) => s.state);
   const loadProfile = userProfileStore((s) => s.load);
   const refreshCreatorClaim = authStore((s) => s.refreshCreatorClaim);
   const savedCount = savedRecipesStore((s) => s.savedIds.size);
 
-  const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
+  const user = useSignedInUser();
   const userId = user?.id;
   const displayName = user?.displayName ?? CharConstants.empty;
   const email = user?.email.value ?? CharConstants.empty;

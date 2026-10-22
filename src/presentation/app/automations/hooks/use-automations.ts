@@ -59,6 +59,23 @@ export const useAutomations = (): UseAutomationsResult => {
             ? AutomationsViewKind.Rules
             : AutomationsViewKind.Locked;
 
+  // Stable: every RuleCard in the list receives these, and a new function per render defeats its memo.
+  const onOpen = useCallback(
+    (rule: DmRuleEntity) => router.push(RoutePaths.automationActivity(rule.id) as Href),
+    [router],
+  );
+  const onToggle = useCallback(
+    (rule: DmRuleEntity, enabled: boolean) => {
+      void automationsStore
+        .getState()
+        .setEnabled(rule, enabled)
+        .then((result) => {
+          if (!result.ok) showErrorToast(result.failure);
+        });
+    },
+    [automationsStore],
+  );
+
   return {
     view,
     connectionFailure,
@@ -76,16 +93,8 @@ export const useAutomations = (): UseAutomationsResult => {
       rules.status === StoreStatus.Loaded &&
       rules.items.length > ValueConstants.zero,
     onStats: () => router.push(RoutePaths.automationStats),
-    onOpen: (rule) =>
-      router.push(RoutePaths.automationActivity(rule.id) as Href),
-    onToggle: (rule, enabled) => {
-      void automationsStore
-        .getState()
-        .setEnabled(rule, enabled)
-        .then((result) => {
-          if (!result.ok) showErrorToast(result.failure);
-        });
-    },
+    onOpen,
+    onToggle,
     pendingDelete,
     isDeleting,
     onAskDelete: setPendingDelete,

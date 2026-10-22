@@ -34,6 +34,7 @@ import { feedContentWidth } from '@presentation/app/recipes/model/feed-content-w
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-user-id';
 
 const RECIPE_CARD_MIN_WIDTH = 300;
 const GRID_GAP = spacing.lg2;
@@ -94,9 +95,9 @@ type AssistantScrollHandleType = Parameters<AssistantScrollableProps['ref']>[0];
 export const useRecipeList = (): UseRecipeListResult => {
   const router = useRouter();
   const pathname = usePathname();
-  const { recipeListStore, savedRecipesStore, loadFavoritesUseCase, authStore, createdRecipesStore } = useStores();
+  const { recipeListStore, savedRecipesStore, loadFavoritesUseCase, createdRecipesStore } = useStores();
   const { isSaved, toggleSave } = useSaveRecipe();
-  const userId = authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.id : null));
+  const userId = useSignedInUserId();
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const onGoToSignIn = useCallback(() => {
     closePrompt();

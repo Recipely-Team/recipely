@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import { StoreStatus } from '@application/store/store-status';
 import { useLeaveGuard } from '@presentation/base/hooks/navigation/use-leave-guard';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { RoutePaths } from '@presentation/base/constants';
@@ -16,6 +15,7 @@ import {
 } from '@presentation/app/edit-profile/model/edit-profile-save-outcome';
 import { CharConstants } from '@core/constants';
 import { isBlank } from '@core/guards/type-guards';
+import { useSignedInUser } from '@presentation/base/hooks/auth/use-signed-in-user';
 
 /**
  * Orchestrates the edit-profile form: seeds the display name / bio from the
@@ -41,10 +41,9 @@ export const useEditProfile = (): UseEditProfileResult => {
   const { pickAndUpload, isUploading, uploadError, onDismissUploadError } = useAvatarUpload();
 
   const { authStore } = useStores();
-  const authState = authStore((s) => s.state);
   const updateProfile = authStore((s) => s.updateProfile);
 
-  const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
+  const user = useSignedInUser();
   const initialDisplayName = user?.displayName ?? CharConstants.empty;
   const initialBio = user?.bio ?? CharConstants.empty;
   const photoUri = user?.photoUrl ?? undefined;

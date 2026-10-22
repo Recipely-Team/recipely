@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { CharConstants, ValueConstants } from '@core/constants';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
@@ -36,7 +37,7 @@ const productMeta = (product: FoodProduct, locale: string): string => {
 };
 
 /** One row of the pick step's list, drawn by its type. */
-export const PickRowView = ({ row, onPickRecipe, onPickProduct, onPickRecent, onRetryMore }: PickRowViewProps): React.JSX.Element => {
+const PickRowViewComponent = ({ row, onPickRecipe, onPickProduct, onPickRecent, onRetryMore }: PickRowViewProps): React.JSX.Element => {
   const locale = useLocale();
   const strings = t().diary;
   const perServing = (kcal: number): string => strings.perServingMeta.replace('{k}', formatWholeNumber(kcal, locale));
@@ -99,3 +100,6 @@ export const PickRowView = ({ row, onPickRecipe, onPickProduct, onPickRecent, on
     }
   }
 };
+
+/** Memoized: rendered once per list item, it re-renders only when its own props change. */
+export const PickRowView = memo(PickRowViewComponent);

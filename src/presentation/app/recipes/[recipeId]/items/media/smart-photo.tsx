@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { Image, type ImageLoadEventData } from 'expo-image';
 import { RecipePlaceholder } from '@presentation/base/widgets/media/recipe-placeholder';
@@ -38,7 +38,7 @@ export interface SmartPhotoProps {
  *   reached yet has no focus and stays centred — the spec's own fallback. A
  *   portrait photo is shown whole, so its position does not matter.
  */
-export const SmartPhoto = ({ url, accessibilityLabel, focus }: SmartPhotoProps): React.JSX.Element => {
+const SmartPhotoComponent = ({ url, accessibilityLabel, focus }: SmartPhotoProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const [frameRatio, setFrameRatio] = useState<number | null>(null);
   const [photoRatio, setPhotoRatio] = useState<number | null>(null);
@@ -115,3 +115,6 @@ const styles = StyleSheet.create({
     opacity: opacities.onMediaFaint,
   },
 });
+
+/** Memoized: rendered once per list item, it re-renders only when its own props change. */
+export const SmartPhoto = memo(SmartPhotoComponent);

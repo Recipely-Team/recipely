@@ -23,6 +23,7 @@ import type { MediaItem } from '@domain/recipes/media/media-item';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { durations } from '@presentation/base/theme';
+import { useSignedInUser } from '@presentation/base/hooks/auth/use-signed-in-user';
 
 /** No step ticked yet: one shared empty list, so the selector result stays stable. */
 const NO_STEPS_DONE: readonly boolean[] = [];
@@ -59,7 +60,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = isString(params.recipeId) ? params.recipeId : CharConstants.empty;
 
-  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore, userProfileStore, stepProgressStore, dmArrivalStore } = useStores();
+  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, favoritesStore, commentsStore, likesStore, userProfileStore, stepProgressStore, dmArrivalStore } = useStores();
   useDmArrival(recipeId);
   const { cuisineLabel } = useTaxonomyLabel();
   const networkState = recipeDetailStore((s) => s.byId[recipeId]);
@@ -67,8 +68,8 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const localRecipe = createdRecipesStore((s) => s.findById(recipeId));
   const isSaved = savedRecipesStore((s) => s.savedIds.has(recipeId));
   const isLoading = favoritesStore((s) => s.pending.has(recipeId));
-  const authState = authStore((s) => s.state);
-  const userId = authState.status === StoreStatus.Authenticated ? authState.session.user.id : null;
+  const signedInUser = useSignedInUser();
+  const userId = signedInUser?.id ?? null;
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const onGoToSignIn = useCallback(() => {
     closePrompt();
@@ -81,10 +82,10 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const ownProfileState = userProfileStore((s) => s.state);
   const loadOwnProfile = userProfileStore((s) => s.load);
   const owner: ResolvedAuthor | null =
-    isOwner && authState.status === StoreStatus.Authenticated && ownProfileState.status === StoreStatus.Loaded
+    isOwner && signedInUser !== null && ownProfileState.status === StoreStatus.Loaded
       ? {
-          authorName: authState.session.user.displayName,
-          authorPhotoUrl: authState.session.user.photoUrl,
+          authorName: signedInUser.displayName,
+          authorPhotoUrl: signedInUser.photoUrl,
           recipeCount: ownProfileState.profile.recipeCount,
           isOwner: true,
         }
