@@ -114,6 +114,9 @@ for (const l of LAYERS) if (fs.existsSync(path.join(SRC, l))) walk(path.join(SRC
 const isTest = (f) => /__tests__|\.test\.tsx?$/.test(f);
 const isBarrel = (f) => path.basename(f) === 'index.ts';
 
+/** A .tsx past this many lines is printed as a warning; 300 blocks (rule F). */
+const TSX_SOFT_LINE_LIMIT = 250;
+const nearSizeLimit = [];
 for (const file of files) {
   const src = fs.readFileSync(path.join(SRC, file), 'utf8');
   const layer = file.split(path.sep)[0];
@@ -241,8 +244,11 @@ for (const file of files) {
   // --- F: Smart-UI size guard (CLAUDE.md §18) --------------------------------
   // A .tsx over 300 lines is a blocking violation: split it into body/items/
   // sheets/hooks/model parts (or a hook) instead of growing the component.
+  // Past 250 it is a warning: files were landing at 295-299 lines, split only
+  // when the gate forced it, so the warning asks for the split while it is cheap.
   if (file.endsWith('.tsx')) {
     const lines = src.split('\n').length;
+    if (lines > TSX_SOFT_LINE_LIMIT && lines <= 300) nearSizeLimit.push(`${file} (${String(lines)})`);
     if (lines > 300) {
       errors.push(`${file}: ${lines} lines — .tsx files must stay under 300 lines (CLAUDE.md §18); split into parts`);
     } else if (/^presentation\/app\/(.+\/)?index\.tsx$/.test(file) && lines > 200) {
@@ -316,6 +322,12 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
   console.warn(
     `check:structure — ${String(crowded.length)} folder(s) past the ${String(SOFT_FILE_LIMIT)}-file soft limit; look for a grouping before adding another:\n` +
       crowded.sort().map((c) => '  · ' + c).join('\n'),
+  );
+}
+if (nearSizeLimit.length > 0 && process.env.CI !== 'true') {
+  console.warn(
+    `check:structure — ${String(nearSizeLimit.length)} .tsx file(s) past ${String(TSX_SOFT_LINE_LIMIT)} lines; split before 300 blocks:\n` +
+      nearSizeLimit.sort().map((c) => '  · ' + c).join('\n'),
   );
 }
 
