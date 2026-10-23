@@ -1,3 +1,5 @@
+import { NetworkFailure, UnauthorizedFailure } from '@core/failure';
+import { fail, ok } from '@core/result/result-helpers';
 import { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-http-client-options';
 
@@ -155,7 +157,7 @@ describe('AxiosHttpClient session refresh', () => {
 
   it('an expired access token is renewed and the request sent again, without signing out', async () => {
     mockRequest.mockResolvedValueOnce(unauthorized).mockResolvedValueOnce({ status: 200, data: { data: { id: 'r1' } } });
-    const refreshSession = jest.fn(() => Promise.resolve(true));
+    const refreshSession = jest.fn(() => Promise.resolve(ok(undefined)));
     const { client, onUnauthorized } = buildClient({ refreshSession });
 
     const result = await client.get('/me/favorites');
@@ -168,7 +170,7 @@ describe('AxiosHttpClient session refresh', () => {
 
   it('signs out when the renewal is refused', async () => {
     mockRequest.mockResolvedValue(unauthorized);
-    const { client, onUnauthorized } = buildClient({ refreshSession: () => Promise.resolve(false) });
+    const { client, onUnauthorized } = buildClient({ refreshSession: () => Promise.resolve(fail(new UnauthorizedFailure('refused'))) });
 
     const result = await client.get('/me/favorites');
 
@@ -177,9 +179,19 @@ describe('AxiosHttpClient session refresh', () => {
     expect(onUnauthorized).toHaveBeenCalledTimes(1);
   });
 
+  it('a renewal that cannot reach the API keeps the user signed in and reports the network failure', async () => {
+    mockRequest.mockResolvedValue(unauthorized);
+    const { client, onUnauthorized } = buildClient({ refreshSession: () => Promise.resolve(fail(new NetworkFailure('offline'))) });
+
+    const result = await client.get('/me/favorites');
+
+    expect(!result.ok && result.failure).toBeInstanceOf(NetworkFailure);
+    expect(onUnauthorized).not.toHaveBeenCalled();
+  });
+
   it('a wrong password does not try to refresh', async () => {
     mockRequest.mockResolvedValue(unauthorized);
-    const refreshSession = jest.fn(() => Promise.resolve(true));
+    const refreshSession = jest.fn(() => Promise.resolve(ok(undefined)));
     const { client } = buildClient({ refreshSession });
 
     await client.post('/auth/login', { email: 'a@b.c', password: 'x' });

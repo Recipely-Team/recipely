@@ -158,8 +158,11 @@ export class AxiosHttpClient {
   ): Promise<Result<T, Failure>> {
     const first = await send();
     if (first.ok || !(first.failure instanceof UnauthorizedFailure)) return first;
-    const canRefresh = this.options.refreshSession !== undefined && !CREDENTIAL_ROUTES.has(url ?? CharConstants.empty);
-    const answer = canRefresh && (await this.options.refreshSession?.()) === true ? await send() : first;
+    const refresh = this.options.refreshSession;
+    const renewed = refresh !== undefined && !CREDENTIAL_ROUTES.has(url ?? CharConstants.empty) ? await refresh() : undefined;
+    // A renewal that never reached the API is not a refusal: keep the session and report why.
+    if (renewed !== undefined && !renewed.ok && !(renewed.failure instanceof UnauthorizedFailure)) return fail(renewed.failure);
+    const answer = renewed?.ok === true ? await send() : first;
     if (!answer.ok && answer.failure instanceof UnauthorizedFailure) {
       this.options.onUnauthorized?.();
     }

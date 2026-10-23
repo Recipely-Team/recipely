@@ -49,6 +49,61 @@ const http = (answer: Result<unknown, unknown>) => {
 const repo = (client: ReturnType<typeof http>['client'], storage: ReturnType<typeof memoryStorage>, cookie = false) =>
   new AuthRepository(client, storage as unknown as SecureTokenStorage, new FixedDeviceIdentity(), cookie);
 
+/** An API whose refresh answers in order: the first renewal succeeds, a second presenting the spent token is refused. */
+const singleUseRefreshApi = () => {
+  const calls: { url?: string | undefined; data?: unknown }[] = [];
+  const answers: Result<unknown, unknown>[] = [
+    ok({ token: NEW_JWT, refreshToken: 'rt-2', user: USER_DTO }),
+    fail(new UnauthorizedFailure('refresh token reused')),
+  ];
+  const client = withHttpVerbs(jest.fn((config: { url?: string; data?: unknown }) => {
+    calls.push({ url: config.url, data: config.data });
+    const answer = answers.shift() ?? fail(new UnauthorizedFailure('no more answers'));
+    return new Promise((resolve) => setTimeout(() => resolve(answer), 0));
+  }));
+  return { client, calls };
+};
+
+describe('AuthRepository renewal is single-flight', () => {
+  const PAST = new Date('2020-01-01');
+
+  it('a cold start whose first request also got a 401 renews once and stays signed in', async () => {
+    const storage = memoryStorage(session(PAST, 'rt-1'));
+    const { client, calls } = singleUseRefreshApi();
+    const auth = repo(client, storage);
+
+    const [restored, renewedFor401] = await Promise.all([auth.getCurrentSession(), auth.refreshSession()]);
+
+    expect(calls).toHaveLength(1);
+    expect(restored.ok && restored.value?.accessToken).toBe(NEW_JWT);
+    expect(renewedFor401.ok).toBe(true);
+    expect(storage.clear).not.toHaveBeenCalled();
+    expect(storage.current?.refreshToken).toBe('rt-2');
+  });
+
+  it('two requests that hit a 401 together share one renewal', async () => {
+    const storage = memoryStorage(session(PAST, 'rt-1'));
+    const { client, calls } = singleUseRefreshApi();
+    const auth = repo(client, storage);
+
+    const [first, second] = await Promise.all([auth.refreshSession(), auth.refreshSession()]);
+
+    expect(calls).toHaveLength(1);
+    expect(first.ok && second.ok).toBe(true);
+  });
+
+  it('a later renewal, after the first finished, sends the new token', async () => {
+    const storage = memoryStorage(session(PAST, 'rt-1'));
+    const { client, calls } = singleUseRefreshApi();
+    const auth = repo(client, storage);
+
+    await auth.refreshSession();
+    await auth.refreshSession();
+
+    expect(calls.map((c) => c.data)).toEqual([{ refreshToken: 'rt-1' }, { refreshToken: 'rt-2' }]);
+  });
+});
+
 describe('AuthRepository session renewal', () => {
   const PAST = new Date('2020-01-01');
   const FUTURE = new Date('2030-01-01');

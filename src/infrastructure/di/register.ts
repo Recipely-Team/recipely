@@ -47,7 +47,6 @@ import { currentDevicePlatform } from '@infrastructure/device/current-device-pla
 import { API_BASE_URL } from '@infrastructure/constants/api/api-hosts';
 import { isWeb } from '@infrastructure/constants/platform';
 import { logCrashBreadcrumb, recordCrash } from '@infrastructure/firebase/crashlytics-service';
-import { SessionRefresher } from '@infrastructure/auth/session/session-refresher';
 
 /** Host-app callbacks and providers injected into the infrastructure wiring. */
 interface InfrastructureOptions {
@@ -113,8 +112,8 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
     },
     enableLogging: __DEV__,
     cookieSession: isCookieSession,
-    // Read at call time: the refresher is built after the client it renews for.
-    refreshSession: () => refresher.run(),
+    // Read at call time: the repository is built after the client it renews for.
+    refreshSession: () => authRepository.refreshSession(),
     requestIdProvider: randomUUID,
     onRequestFailed: logCrashBreadcrumb,
   };
@@ -123,7 +122,6 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   }
   const http = new AxiosHttpClient(httpClientOptions);
   const authRepository = new AuthRepository(http, storage, deviceIdentity, isCookieSession);
-  const refresher = new SessionRefresher(() => authRepository.refreshSession());
 
   container.register(TOKENS.AuthRepository, () => authRepository);
   container.register(TOKENS.AccountRepository, () => new AccountRepository(http, storage));

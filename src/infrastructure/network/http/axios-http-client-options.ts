@@ -1,3 +1,6 @@
+import type { Result } from '@core/result/result';
+import type { Failure } from '@core/failure';
+
 export interface AxiosHttpClientOptions {
   baseUrl: string;
   tokenProvider: () => Promise<string | null>;
@@ -20,10 +23,11 @@ export interface AxiosHttpClientOptions {
    */
   onUnauthorized?: () => void;
   /**
-   * Renews the session after a 401; `true` when it did. The failed request is
-   * then sent once more, and `onUnauthorized` fires only if the renewal failed.
+   * Renews the session after a 401. On success the failed request is sent once
+   * more; `onUnauthorized` fires only when the API refused the renewal. A renewal
+   * that could not reach the API returns its own failure and keeps the session.
    */
-  refreshSession?: () => Promise<boolean>;
+  refreshSession?: () => Promise<Result<unknown, Failure>>;
   /**
    * Web: the refresh token lives in the API's HttpOnly cookie. Requests carry
    * credentials and ask for cookie delivery (`X-Recipely-Session: cookie`).

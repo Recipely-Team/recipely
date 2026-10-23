@@ -47,6 +47,8 @@ import { toDeviceContextDto } from '@infrastructure/device/to-device-context-dto
  *   reads its HttpOnly cookie.
  */
 export class AuthRepository implements AuthRepositoryInterface {
+  private renewal: Promise<Result<AuthSessionEntity, Failure>> | null = null;
+
   constructor(
     private readonly http: AxiosHttpClient,
     private readonly storage: SecureTokenStorage,
@@ -139,8 +141,23 @@ export class AuthRepository implements AuthRepositoryInterface {
     return stored;
   }
 
-  /** Trades the refresh token for a new session and stores it. */
-  async refreshSession(): Promise<Result<AuthSessionEntity, Failure>> {
+  /**
+   * Trades the refresh token for a new session and stores it, one renewal at a time.
+   *
+   * @remarks
+   * - **Single-flight.** Refresh tokens work once, so a start-up restore and a
+   *   401 renewing at the same moment must share one request: the second would
+   *   present a spent token, be refused, and `getCurrentSession` would then
+   *   clear the session the first had just saved.
+   */
+  refreshSession(): Promise<Result<AuthSessionEntity, Failure>> {
+    this.renewal ??= this.renewSession().finally(() => {
+      this.renewal = null;
+    });
+    return this.renewal;
+  }
+
+  private async renewSession(): Promise<Result<AuthSessionEntity, Failure>> {
     const body = await this.refreshBody();
     if (body === null) return fail(new UnauthorizedFailure(DiagnosticMessage.auth.noRefreshToken));
     let result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.refresh, body);
