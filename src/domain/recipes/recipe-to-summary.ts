@@ -1,5 +1,5 @@
 import type { Result } from '@core/result/result';
-import { ValidationFailure } from '@core/failure';
+import { type ValidationFailure } from '@core/failure';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 

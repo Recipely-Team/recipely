@@ -53,8 +53,8 @@ export const RefineProposalCard = ({
 
   const valueLabel = (field: CreateRecipeFieldKeyType, value: string): string => {
     if (value.length === ValueConstants.zero) return t.createRecipe.changeEmptyValue;
-    if (field === 'cuisine') return cuisineLabel(value)?.name ?? value;
-    if (field === 'category') return categoryLabel(value)?.name ?? value;
+    if (field === 'cuisine') return cuisineLabel(value).name;
+    if (field === 'category') return categoryLabel(value).name;
     return value;
   };
 

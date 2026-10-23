@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from 'zustand';
-import { type Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -107,7 +107,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
   );
 
   const start = useCallback((): void => {
-    if (activeUrl === null || activeUrl === undefined) return;
+    if (activeUrl === null) return;
     startWith(activeUrl);
   }, [activeUrl, startWith]);
 
@@ -186,12 +186,12 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     }
 
     FailureReporter.trail(ImportTrail.navigatingToEditor);
-    router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } } as Href);
+    router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } });
   }, [job, router]);
 
   // No URL means the paste screen (always on web).
   const isAwaitingLink =
-    (activeUrl === null || activeUrl === undefined) && state.status === StoreStatus.Idle;
+    activeUrl === null && state.status === StoreStatus.Idle;
 
   const jobStatus = job?.status ?? null;
   const queuePosition = job?.queuePosition ?? null;
@@ -200,7 +200,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     job !== null && job.status === ImportJobStatus.Failed
       ? new UnknownFailure(DiagnosticMessage.recipeImport.jobFailed, undefined, job.errorKey ?? undefined)
       : null;
-  const link = activeUrl === null || activeUrl === undefined ? null : ImportLink.create(activeUrl);
+  const link = activeUrl === null ? null : ImportLink.create(activeUrl);
   const platform = link !== null && link.ok ? link.value.platform : SourcePlatform.Instagram;
   const host = link !== null && link.ok ? link.value.host : CharConstants.empty;
   const stageCount = importStageKeysFor(platform).length;

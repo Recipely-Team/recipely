@@ -129,7 +129,9 @@ export class AxiosHttpClient {
         // Backwards compat / non-/api/v1 responses (eg /health) come through unchanged.
         return ok(dataEnvelope as T);
       }
-      return this.failed(config, response.config?.headers, failureFromResponse(response.status, response.data));
+      // Typed as always present; a response built outside axios (an adapter, a test) can lack it.
+      const sentConfig = response.config as typeof response.config | undefined;
+      return this.failed(config, sentConfig?.headers, failureFromResponse(response.status, response.data));
     } catch (error: unknown) {
       const sent = (error as { config?: { headers?: unknown } } | null)?.config?.headers;
       return this.failed(config, sent, mapAxiosError(error));

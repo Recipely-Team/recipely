@@ -31,7 +31,7 @@ export const useEditableRecipe = () => {
   const onUpdateField = useCallback(
     <K extends keyof EditableRecipe>(key: K, value: EditableRecipe[K]): void => {
       setRecipe((r) => ({ ...r, [key]: value }));
-      if (key !== 'media') clearFieldError(key as CreateRecipeFieldKeyType);
+      if (key !== 'media') clearFieldError(key);
     },
     [clearFieldError],
   );

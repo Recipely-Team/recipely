@@ -109,7 +109,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   }, [closePrompt, pathname, router]);
   const onOpenCreate = useCallback(() => requestGate(() => router.push(RoutePaths.createRecipe)), [requestGate, router]);
   const onCreateWithAi = useCallback(
-    (query: string) => requestGate(() => router.push({ pathname: RoutePaths.createRecipe, params: { prompt: query } } as Href)),
+    (query: string) => requestGate(() => router.push({ pathname: RoutePaths.createRecipe, params: { prompt: query } })),
     [requestGate, router],
   );
   // Stable, so the memoised cards do not re-render when the page does.

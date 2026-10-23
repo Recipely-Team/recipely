@@ -80,7 +80,7 @@ export class NotificationService implements NotificationServiceInterface {
     try {
       Notifications.setNotificationHandler({
         handleNotification: async (n: NotificationsType.Notification) => {
-          const type = (n.request.content.data as Record<string, unknown> | undefined)?.['type'];
+          const type = (n.request.content.data)?.['type'];
           const isReminder = type === ENGAGEMENT_REMINDER;
           return {
             shouldShowBanner: !isReminder,

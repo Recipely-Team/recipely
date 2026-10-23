@@ -220,7 +220,7 @@ export const MyRecipesList = ({
       {...scrollable}
       refreshControl={refreshControl}
       key={`grid-${gridColumns}`}
-      data={items as RecipeSummaryEntity[]}
+      data={items}
       keyExtractor={idKey}
       numColumns={gridColumns}
       renderItem={renderRecipe}

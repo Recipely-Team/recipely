@@ -4,7 +4,7 @@ import { useStore } from 'zustand';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { CalendarDate } from '@domain/diary/calendar/calendar-date';
+import { type CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { CalendarMonth } from '@domain/diary/calendar/calendar-month';
 import { ValueConstants } from '@core/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';

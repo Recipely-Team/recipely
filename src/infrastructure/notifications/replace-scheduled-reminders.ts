@@ -5,7 +5,7 @@ import { isAndroid } from '@infrastructure/constants/platform';
 import { REMINDER_CHANNEL } from '@infrastructure/notifications/notification-channels';
 
 const isReminder = (request: NotificationsType.NotificationRequest): boolean =>
-  (request.content.data as Record<string, unknown> | undefined)?.['type'] === ENGAGEMENT_REMINDER;
+  (request.content.data)?.['type'] === ENGAGEMENT_REMINDER;
 
 /**
  * Swaps the pending come-back series for `reminders`.

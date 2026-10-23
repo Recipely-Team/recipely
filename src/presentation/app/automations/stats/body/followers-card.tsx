@@ -85,7 +85,7 @@ export const FollowersCard = ({ stats, wide }: FollowersCardProps): React.JSX.El
           </Svg>
         ) : null}
       </View>
-      {doesStartInside && trackingSince !== null ? (
+      {doesStartInside ? (
         <View style={styles.note}>
           <Ionicons name="information-circle-outline" size={iconSizes.sm} color={colors.text} />
           <SizedText size={fontSizes.small} weight={fontWeights.semibold}>

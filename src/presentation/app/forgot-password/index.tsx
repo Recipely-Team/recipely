@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from 'zustand';
-import { useRouter, type Href } from 'expo-router';
+import { useRouter} from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { AuthHeroLayout } from '@presentation/base/widgets/layout/auth-hero-layout';
 import { ForgotPasswordInputView } from '@presentation/app/forgot-password/body/forgot-password-input-view';
@@ -22,7 +22,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
   const [sendError, setSendError] = useState<string | undefined>(undefined);
 
   // A reload or a direct visit leaves no history on the web: go to login instead of nowhere.
-  const goBack = (): void => (router.canGoBack() ? router.back() : router.replace(RoutePaths.login as Href));
+  const goBack = (): void => (router.canGoBack() ? router.back() : router.replace(RoutePaths.login));
 
   const handleSend = async (): Promise<void> => {
     if (isBlank(email)) return;

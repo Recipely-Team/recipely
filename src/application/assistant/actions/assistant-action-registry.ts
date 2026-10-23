@@ -243,7 +243,9 @@ export class AssistantActionRegistry {
     const stack = this.handlers.get(action) ?? [];
     for (let at = stack.length - ValueConstants.one; at >= ValueConstants.zero; at -= ValueConstants.one) {
       try {
-        const result = await stack[at]!(arg);
+        const handler = stack[at];
+        if (handler === undefined) continue;
+        const result = await handler(arg);
         if (result.notMine !== true) return this.withContext(result);
       } catch {
         return this.withContext({ ok: false, error: AssistantActionError.Failed });

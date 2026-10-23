@@ -36,7 +36,7 @@ import { PlanMyWeekButton } from '@presentation/app/diary/body/plan/plan-my-week
 import { PlanMyWeekSheet } from '@presentation/app/diary/sheets/plan/plan-my-week-sheet';
 import { formatWeekRange } from '@presentation/base/utils/meal-plan/format-week-range';
 import { RoutePaths } from '@presentation/base/constants/route-paths';
-import { type Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 export interface PlanViewProps {
   view: PlanViewState;
@@ -190,7 +190,7 @@ export const PlanView = (props: PlanViewProps): React.JSX.Element => {
         rangeLabel={formatWeekRange(weekStart, locale)}
         onBrowseRecipes={() => {
           planWeek.close();
-          router.push(RoutePaths.recipes as Href);
+          router.push(RoutePaths.recipes);
         }}
       />
       {week === null ? null : <PlanShoppingSheet visible={sheets.sheet.kind === PlanSheetKind.Shopping} week={week} onClose={sheets.close} />}

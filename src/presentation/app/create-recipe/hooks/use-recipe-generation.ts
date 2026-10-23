@@ -88,8 +88,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   const t = useTranslations();
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
-  // ?? {} only for test stubs; the real hook returns {} without params.
-  const params = useLocalSearchParams<{ prompt?: string; fromRecipeId?: string }>() ?? {};
+  const params = useLocalSearchParams<{ prompt?: string; fromRecipeId?: string }>();
   const promptParam = params.prompt;
   const fromRecipeId = params.fromRecipeId;
 
@@ -154,12 +153,13 @@ const GEN_STEP_INTERVAL_MS = 620;
   // Resume a draft passed via ?draftId once on mount.
   useEffect(() => {
     if (draftId === undefined) return;
-    let isCancelled = false;
+    // An object, not a let: the cleanup flips it after the await, which a narrowed let cannot show.
+    const run = { isCancelled: false };
     FailureReporter.trail(ImportTrail.editorMounted);
     void (async () => {
       FailureReporter.trail(ImportTrail.draftFetchStarted);
       const result = await draftsStore.getState().getDraft(draftId);
-      if (isCancelled) return;
+      if (run.isCancelled) return;
       // An unreadable draft falls back to the prompt phase and says why.
       if (!result.ok) {
         FailureReporter.trail(ImportTrail.draftFetchFailed);
@@ -192,7 +192,7 @@ const GEN_STEP_INTERVAL_MS = 620;
       FailureReporter.trail(ImportTrail.editorReady);
     })();
     return () => {
-      isCancelled = true;
+      run.isCancelled = true;
     };
   }, [draftId, draftsStore, setRecipe, router, t]);
 

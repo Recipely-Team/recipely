@@ -1,4 +1,4 @@
-import { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
+import { type StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import type { Failure } from '@presentation/base/types';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';

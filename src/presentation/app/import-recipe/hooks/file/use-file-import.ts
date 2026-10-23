@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useStore } from 'zustand';
-import { type Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import type { Failure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
@@ -95,7 +95,7 @@ export const useFileImport = (): UseFileImportResult => {
 
   useEffect(() => {
     if (draftId === null) return;
-    router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } } as Href);
+    router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } });
   }, [draftId, router]);
 
   const { add, remove, move } = pages;

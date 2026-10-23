@@ -52,7 +52,7 @@ export const uploadMultipart = async <T>(
     }
     // No Content-Type: XHR sets the multipart boundary itself.
 
-    if (onProgress !== undefined && xhr.upload) {
+    if (onProgress !== undefined) {
       xhr.upload.onprogress = (ev: ProgressEvent): void => {
         onProgress({ loaded: ev.loaded, total: ev.total });
       };

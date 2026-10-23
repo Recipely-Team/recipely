@@ -14,7 +14,8 @@ import { ValueConstants } from '@core/constants';
  */
 export const useBackLabel = (): string => {
   const t = useTranslations();
-  const state = useRootNavigationState();
+  // Typed as always present, but undefined until the navigator is ready.
+  const state = useRootNavigationState() as ReturnType<typeof useRootNavigationState> | undefined;
   const previous = state?.routes[state.index - ValueConstants.one]?.name;
   return previous === RoutePaths.recipesRouteName ? t.recipes.backToRecipes : t.common.back;
 };

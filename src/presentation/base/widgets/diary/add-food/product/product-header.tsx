@@ -1,6 +1,6 @@
 import { useToday } from '@presentation/base/hooks/lifecycle/use-today';
 import { StyleSheet, View } from 'react-native';
-import { CalendarDate } from '@domain/diary/calendar/calendar-date';
+import { type CalendarDate } from '@domain/diary/calendar/calendar-date';
 import type { LoggableProduct } from '@domain/diary/foods/loggable-product';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { FoodThumb } from '@presentation/base/widgets/diary/food-thumb';

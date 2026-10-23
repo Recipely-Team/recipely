@@ -175,8 +175,11 @@ const FALLBACK_ICON: IoniconNameType = 'sad-outline';
 const dedicatedKeyFor = (failure: Failure): FailureContentKeyType | undefined =>
   failure.messageKey === undefined ? undefined : MESSAGE_KEY_TO_CONTENT_KEY[failure.messageKey];
 
+/** Read as partial: a code from a newer server than this table still lands on the generic copy. */
+const KEY_BY_CODE: Partial<Record<string, FailureContentKeyType>> = CODE_TO_KEY;
+
 const keyFor = (failure: Failure): FailureContentKeyType =>
-  dedicatedKeyFor(failure) ?? CODE_TO_KEY[failure.code] ?? 'unknown';
+  dedicatedKeyFor(failure) ?? KEY_BY_CODE[failure.code] ?? 'unknown';
 
 /** The semantic severity a failure should be rendered with (defaults to danger). */
 export const failureSeverity = (failure: Failure): SeverityType =>

@@ -55,12 +55,12 @@ export const useRecipeDetailAssistant = (
   const recipeName = vm.recipe?.name ?? CharConstants.empty;
   const cookMinutes = vm.recipe?.cookTimeMinutes ?? ValueConstants.zero;
   const startCookTimer = useCallback(
-    () => startTimer(timerId, vm.recipeId, recipeName, cookMinutes),
+    () => void startTimer(timerId, vm.recipeId, recipeName, cookMinutes),
     [timerId, vm.recipeId, recipeName, cookMinutes],
   );
-  const pauseCookTimer = useCallback(() => pauseTimer(timerId), [timerId]);
-  const resumeCookTimer = useCallback(() => resumeTimer(timerId), [timerId]);
-  const stopCookTimer = useCallback(() => stopTimer(timerId), [timerId]);
+  const pauseCookTimer = useCallback(() => void pauseTimer(timerId), [timerId]);
+  const resumeCookTimer = useCallback(() => void resumeTimer(timerId), [timerId]);
+  const stopCookTimer = useCallback(() => void stopTimer(timerId), [timerId]);
   useAssistantRecipeActions({
     recipeId: vm.recipeId,
     recipeName,

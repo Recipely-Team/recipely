@@ -4,7 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { SelectChip } from '@presentation/app/recipes/items/filters/select-chip';
 import { sortKeyLabels } from '@presentation/app/recipes/model/sorting/recipe-sort';
-import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
+import { type SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import { formatLabel } from '@presentation/app/recipes/model/format-label';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { TIME_OPTIONS } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';

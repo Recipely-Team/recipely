@@ -142,7 +142,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             items={items}
             gridColumns={gridColumns}
             isExpanded={isExpanded}
-            onToggleSave={toggleSave}
+            onToggleSave={(recipeId) => void toggleSave(recipeId)}
             onOpenRecipe={openRecipe}
             onOpenDraft={openDraft}
             onDeleteDraft={assistant.requestDraftDelete}

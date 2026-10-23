@@ -1,6 +1,6 @@
 import type { Failure } from '@core/failure';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
-import { StoreStatus } from '@application/store/store-status';
+import { type StoreStatus } from '@application/store/store-status';
 
 export interface TaxonomyStore {
   cuisines: readonly TaxonomyItem[];

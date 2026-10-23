@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import type { LoggableFood } from '@domain/diary/entry/loggable-food';
 import type { Servings } from '@domain/diary/entry/servings';
 import type { MealSlotType } from '@domain/diary/meal-slot';
-import { CalendarDate } from '@domain/diary/calendar/calendar-date';
+import { type CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { FoodThumb } from '@presentation/base/widgets/diary/food-thumb';
 import { FoodThumbIcon } from '@presentation/base/widgets/diary/food-thumb-icon';
 import { RoundIconButton } from '@presentation/base/widgets/buttons/round-icon-button';

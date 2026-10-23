@@ -156,8 +156,8 @@ export const NotificationsScreen = (): React.JSX.Element => {
         onEndReachedThreshold={ListConstants.endReachedThreshold}
         ListFooterComponent={
           <FeedFooter
-            isLoadingMore={state.status === StoreStatus.Loaded && state.isLoadingMore}
-            failure={state.status === StoreStatus.Loaded ? state.moreFailure : null}
+            isLoadingMore={state.isLoadingMore}
+            failure={state.moreFailure}
             onRetry={() => void loadMore()}
           />
         }

@@ -73,12 +73,12 @@ export const useAssistantReachActions = (): void => {
           return { ok: false, error: AssistantActionError.ScreenDidNotOpen };
         }
 
-        const first = await registry.run(action as AssistantActionType, arg);
+        const first = await registry.run(action, arg);
         if (first.error !== AssistantActionError.NotReady) return first;
 
         // One retry after a settle, only on not_ready and only for side-effect-free reads.
         await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
-        return registry.run(action as AssistantActionType, arg);
+        return registry.run(action, arg);
       };
 
       return registry.registerFallback(action as AssistantActionType, reach);

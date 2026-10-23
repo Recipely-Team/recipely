@@ -70,6 +70,6 @@ export const useCreatorsScreen = (): UseCreatorsScreenResult => {
     onRefresh,
     onEndReached: () => void loadMore(),
     onOpenCreator,
-    onApplyAsCreator: () => router.push(RoutePaths.editProfileCreatorAccount as Href),
+    onApplyAsCreator: () => router.push(RoutePaths.editProfileCreatorAccount),
   };
 };

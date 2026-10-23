@@ -154,6 +154,26 @@ module.exports = defineConfig([
     ignores: ['**/__tests__/**', '**/__fixtures__/**', '**/__mocks__/**', 'src/presentation/base/test-support/**'],
     languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: __dirname } },
     rules: {
+      // A promise nobody awaits or voids is a failure nobody hears about.
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/await-thenable': 'error',
+      // require-await stays off on purpose: an `async` handler with no await still turns a throw into a
+      // rejection the caller's catch sees (the assistant registry relies on that).
+      // A switch over a union handles every member, so a new one is a compile-time question.
+      '@typescript-eslint/switch-exhaustiveness-check': ['error', { considerDefaultExhaustiveForUnions: true }],
+      // App code handles the missing case instead of asserting it away (tests may assert).
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+      // `if (x === null) x = …` stays allowed: it reads as the explicit null sentinel it is.
+      '@typescript-eslint/prefer-nullish-coalescing': ['error', { ignoreIfStatements: true }],
+      '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
+      '@typescript-eslint/no-unsafe-argument': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-call': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
       '@typescript-eslint/naming-convention': [
         'error',
         { selector: 'variable', types: ['boolean'], format: ['PascalCase'], prefix: BOOLEAN_PREFIXES },

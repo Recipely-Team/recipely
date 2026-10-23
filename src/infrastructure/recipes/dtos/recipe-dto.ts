@@ -16,8 +16,10 @@ export interface RecipeDto {
   instructions: string[];
   prepTimeMinutes: number;
   cookTimeMinutes: number;
-  servings: number;
-  caloriesPerServing: number;
+  /** Older servers omit it. */
+  servings?: number;
+  /** Older servers omit it. */
+  caloriesPerServing?: number;
   nutrition?: NutritionDto;
   image: string;
   /** The cover's focal point; absent until the backend's focus sweep has found it. */
@@ -30,13 +32,17 @@ export interface RecipeDto {
   tags: string[];
   mealType: string[];
   ownerId: string;
-  likeCount: number;
-  likedByMe: boolean;
-  commentCount: number;
+  /** Older servers omit it. */
+  likeCount?: number;
+  /** Absent for a guest: the detail route answers without a session. */
+  likedByMe?: boolean;
+  /** Older servers omit it. */
+  commentCount?: number;
   media?: MediaDto[] | undefined;
   createdAt: string;
   updatedAt: string;
-  viewCount: number;
+  /** Older servers omit it. */
+  viewCount?: number;
   /** Where the text came from: `USER`, `AI`, `IMPORT` or `CURATED`. */
   origin?: string;
   /** The post an import came from. */

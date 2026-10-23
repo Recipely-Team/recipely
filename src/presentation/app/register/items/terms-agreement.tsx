@@ -42,7 +42,7 @@ export const TermsAgreement = ({ agree, onToggle }: TermsAgreementProps): React.
           style={[styles.linkWeight, { color: colors.primary }]}
           accessibilityRole="link"
           accessibilityLabel={t.register.terms}
-          onPress={() => Linking.openURL(TERMS_OF_USE_URL)}
+          onPress={() => void Linking.openURL(TERMS_OF_USE_URL).catch(() => undefined)}
         >
           {t.register.terms}
         </ThemedText>
@@ -53,7 +53,7 @@ export const TermsAgreement = ({ agree, onToggle }: TermsAgreementProps): React.
           style={[styles.linkWeight, { color: colors.primary }]}
           accessibilityRole="link"
           accessibilityLabel={t.register.privacy}
-          onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+          onPress={() => void Linking.openURL(PRIVACY_POLICY_URL).catch(() => undefined)}
         >
           {t.register.privacy}
         </ThemedText>

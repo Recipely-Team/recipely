@@ -86,7 +86,7 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
           style={[
             styles.collapsedPill,
             { backgroundColor: colors.surface, borderColor: colors.border },
-            shadows.md as object,
+            shadows.md,
           ]}
         >
           <Ionicons name="timer-outline" size={iconSizes.xl} color={colors.primary} />
@@ -108,7 +108,7 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
         style={[
           styles.barInner,
           { backgroundColor: colors.surface, borderColor: colors.border },
-          shadows.md as object,
+          shadows.md,
         ]}
       >
         <ScrollView

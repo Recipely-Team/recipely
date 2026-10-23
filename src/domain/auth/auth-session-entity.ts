@@ -4,7 +4,7 @@ import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
-import { UserEntity } from '@domain/auth/user-entity';
+import { type UserEntity } from '@domain/auth/user-entity';
 import { isBlank } from '@core/guards/type-guards';
 
 

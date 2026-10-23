@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { type Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { DetailBackButton } from '@presentation/app/recipes/[recipeId]/items/detail-back-button';
 import { RecipeDetailSheets } from '@presentation/app/recipes/[recipeId]/sheets/recipe-detail-sheets';
@@ -33,7 +33,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
   // Cast: a RoutePaths string is not in the typed-routes union.
-  const browseRecipes = (): void => router.dismissTo(RoutePaths.recipes as Href);
+  const browseRecipes = (): void => router.dismissTo(RoutePaths.recipes);
   const colors = useTheme().colors;
   const backLabel = useBackLabel();
   const { isExpanded } = useLayout();

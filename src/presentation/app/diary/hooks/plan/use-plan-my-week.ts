@@ -80,9 +80,12 @@ export const usePlanMyWeek = (weekStart: CalendarDate, today: CalendarDate): Use
   );
 
   const days = useMemo(() => {
-    const byDay = new Map<string, ProposalRow[]>();
-    for (const row of rows) byDay.set(row.date.value, [...(byDay.get(row.date.value) ?? []), row]);
-    return [...byDay.entries()].map(([key, dayRows]) => ({ key, label: formatPlanDay(dayRows[ValueConstants.zero]!.date, locale), rows: dayRows }));
+    const byDay = new Map<string, { date: CalendarDate; rows: ProposalRow[] }>();
+    for (const row of rows) {
+      const day = byDay.get(row.date.value) ?? { date: row.date, rows: [] };
+      byDay.set(row.date.value, { date: day.date, rows: [...day.rows, row] });
+    }
+    return [...byDay.entries()].map(([key, day]) => ({ key, label: formatPlanDay(day.date, locale), rows: day.rows }));
   }, [rows, locale]);
 
   const toAdd = rows.filter((row) => row.shown !== null);

@@ -1,3 +1,4 @@
+import type { AssistantOrbMenuItem } from '@presentation/base/widgets/assistant/views/assistant-orb-menu-item';
 import type { TranslationsType } from '@presentation/i18n';
 import { useState } from 'react';
 import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
@@ -72,10 +73,10 @@ export const AssistantOrbSurface = ({
     ? sheet.bottom + sheet.height + spacing.lg
     : Math.max(height * ORB_RESTING_SHARE, restingBottom);
 
-  const items = [
+  const items: AssistantOrbMenuItem[] = [
     {
       key: 'voice',
-      icon: (isLive && isMuted ? 'mic-off' : 'mic') as 'mic' | 'mic-off',
+      icon: isLive && isMuted ? 'mic-off' : 'mic',
       label: !isLive ? t.assistant.start : isMuted ? t.assistant.unmute : t.assistant.mute,
       isOn: isLive && isMuted,
       onPress: () => {

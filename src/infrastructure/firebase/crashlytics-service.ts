@@ -1,8 +1,9 @@
+import type * as CrashlyticsExports from '@react-native-firebase/crashlytics';
 import { isWeb } from '@infrastructure/constants/platform';
 import { CrashSentinel } from '@infrastructure/firebase/crash-sentinel';
 
 // WHY: same lazy-require pattern as analytics-service — see that file for rationale.
-type CrashlyticsModule = typeof import('@react-native-firebase/crashlytics');
+type CrashlyticsModule = typeof CrashlyticsExports;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const mod: CrashlyticsModule | null = (() => { try { return require('@react-native-firebase/crashlytics') as CrashlyticsModule; } catch { return null; } })();

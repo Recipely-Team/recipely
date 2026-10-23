@@ -132,7 +132,7 @@ export const WebRecipeDetailComments = ({
           ]}
         >
           <ThemedText variant="caption" muted>
-            {commentState?.isLoadingMore === true ? t.common.loading : t.comments.loadMore}
+            {commentState.isLoadingMore === true ? t.common.loading : t.comments.loadMore}
           </ThemedText>
         </Pressable>
       ) : null}

@@ -95,8 +95,10 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
         // Decline, not fail: the global handler can open it by name or id.
         if (found === null) return { ok: false, notMine: true };
 
-        onOpenRecipe(items[found]!.id);
-        return { ok: true, title: items[found]!.name };
+        const item = items[found];
+        if (item === undefined) return { ok: false, notMine: true };
+        onOpenRecipe(item.id);
+        return { ok: true, title: item.name };
       },
       [items, onOpenRecipe],
     ),
@@ -109,8 +111,10 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
         const found = rowAt(drafts.map(draftName), arg);
         if (found === null) return { ok: false, error: AssistantActionError.NotFound };
 
-        onOpenDraft(drafts[found]!.id);
-        return { ok: true, title: draftName(drafts[found]!) };
+        const draft = drafts[found];
+        if (draft === undefined) return { ok: false, error: AssistantActionError.NotFound };
+        onOpenDraft(draft.id);
+        return { ok: true, title: draftName(draft) };
       },
       [drafts, onOpenDraft],
     ),
@@ -123,8 +127,10 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
         const found = rowAt(drafts.map(draftName), arg);
         if (found === null) return { ok: false, error: AssistantActionError.NotFound };
 
-        onRequestDeleteDraft(drafts[found]!.id);
-        return { ok: true, awaiting: true, title: draftName(drafts[found]!) };
+        const draft = drafts[found];
+        if (draft === undefined) return { ok: false, error: AssistantActionError.NotFound };
+        onRequestDeleteDraft(draft.id);
+        return { ok: true, awaiting: true, title: draftName(draft) };
       },
       [drafts, onRequestDeleteDraft],
     ),

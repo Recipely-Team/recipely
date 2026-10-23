@@ -14,5 +14,7 @@ import type { AssistantActionType } from '@domain/assistant/actions/assistant-ac
  *   worse than a vaguer truth.
  */
 export function assistantActionLabel(t: TranslationsType, action: AssistantActionType): string {
-  return t.assistant.actions[action] ?? t.assistant.actionDone;
+  // Read as partial: an action newer than this catalogue still gets a label.
+  const labels: Partial<Record<AssistantActionType, string>> = t.assistant.actions;
+  return labels[action] ?? t.assistant.actionDone;
 }

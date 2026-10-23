@@ -79,7 +79,7 @@ export const PhotoPager = ({ media, width, height, current, onSwipe }: PhotoPage
       // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
       removeClippedSubviews={false}
       ref={listRef}
-      data={media as MediaItem[]}
+      data={media}
       extraData={width}
       keyExtractor={photoKey}
       renderItem={({ item, index }) => (

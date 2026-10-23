@@ -40,15 +40,16 @@ export const useOsAssistantCredentials = (): void => {
       return;
     }
 
-    let isCurrent = true;
+    // An object, not a let: the cleanup flips it after the await, which a narrowed let cannot show.
+    const run = { isCurrent: true };
     void (async () => {
       const minted = await assistantTokens.mintIntentToken();
-      if (!isCurrent || !minted.ok) return;
+      if (!run.isCurrent || !minted.ok) return;
       await osAssistant.publishCredentials(minted.value.token, locale);
     })();
 
     return () => {
-      isCurrent = false;
+      run.isCurrent = false;
     };
   }, [osAssistant, authStore, assistantTokens, isSignedIn, locale]);
 };

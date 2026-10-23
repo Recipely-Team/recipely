@@ -1,7 +1,7 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import { RecipeEntity } from '@domain/recipes/recipe-entity';
+import { type RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { RecipeDetail } from '@domain/recipes/recipe-detail';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
