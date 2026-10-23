@@ -1,4 +1,4 @@
-import { contrastRatio, relativeLuminance } from "@presentation/base/theme";
+import { contrastRatio, relativeLuminance } from "@presentation/base/theme/colors/contrast/contrast";
 import type { ThemeColors } from "@presentation/base/theme/colors/palette/theme-colors";
 import {
   ALL_THEMES,

@@ -14,5 +14,3 @@ export const ModerationStatus = {
   Approved: 'approved',
   Rejected: 'rejected',
 } as const;
-
-export type ModerationStatusType = (typeof ModerationStatus)[keyof typeof ModerationStatus];

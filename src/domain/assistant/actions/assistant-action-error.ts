@@ -58,5 +58,3 @@ export const AssistantActionError = {
   UnknownTab: 'unknown_tab',
   UnknownTheme: 'unknown_theme',
 } as const;
-
-export type AssistantActionErrorType = (typeof AssistantActionError)[keyof typeof AssistantActionError];

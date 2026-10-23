@@ -3,5 +3,3 @@ export const MealParseInputKind = {
   Text: 'text',
   Photo: 'photo',
 } as const;
-
-export type MealParseInputKindType = (typeof MealParseInputKind)[keyof typeof MealParseInputKind];

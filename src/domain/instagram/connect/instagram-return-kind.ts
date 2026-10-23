@@ -9,5 +9,3 @@ export const InstagramReturnKind = {
   /** The user closed the login before it finished. */
   Cancelled: 'cancelled',
 } as const;
-
-export type InstagramReturnKindType = (typeof InstagramReturnKind)[keyof typeof InstagramReturnKind];

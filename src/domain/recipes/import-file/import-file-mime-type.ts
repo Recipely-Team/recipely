@@ -12,5 +12,3 @@ export const ImportFileMimeType = {
   Heif: 'image/heif',
   Pdf: 'application/pdf',
 } as const;
-
-export type ImportFileMimeTypeType = (typeof ImportFileMimeType)[keyof typeof ImportFileMimeType];

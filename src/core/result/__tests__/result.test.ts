@@ -1,4 +1,4 @@
-import { fail, flatMapResult, isFail, isOk, mapResult, ok } from '@core/result/result-helpers';
+import { fail, flatMapResult, mapResult, ok } from '@core/result/result-helpers';
 
 describe('Result', () => {
   it('wraps a value in ok', () => {
@@ -13,16 +13,6 @@ describe('Result', () => {
 
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.failure).toBe('boom');
-  });
-
-  it('narrows via isOk and isFail', () => {
-    const good = ok(1);
-    const bad = fail('nope');
-
-    expect(isOk(good)).toBe(true);
-    expect(isFail(good)).toBe(false);
-    expect(isOk(bad)).toBe(false);
-    expect(isFail(bad)).toBe(true);
   });
 
   it('maps over ok but leaves fail untouched', () => {

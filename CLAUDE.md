@@ -242,7 +242,8 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
     `check:structure` rules B, C and AO.
 15b. **Keep the map fresh** — after adding/moving/deleting files run `npm run map`; never hand-edit
     `PROJECT-MAP.md`. `check:structure` rule J.
-16. **Structure gate** — `npm run check:structure` must be green before any commit/PR. It enforces rules 1,
+16. **Structure gate** — `npm run check:structure` must be green before any commit/PR. It also runs `knip` (no unused files,
+    exports or types in `src/`) and `assert-i18n-keys-used` (no translation key nothing reads). It enforces rules 1,
     6b, 8, 14, 14c, 15, 15b, 18, 21, 22, 23, 23b, 23c, 25, 24 (rules AB, AC, AQ, AR, AS and others), 27 (rule AD) and the
     vocabulary half of rule 5 (rule P); the full letter list heads `scripts/check-structure.mjs`. `KNOWN_DEBT`
     only shrinks; never add to it without user approval. New rules land here from rule 24.

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "src/presentation/app/**/{index,_layout,+html,+not-found,+native-intent,_sitemap}.tsx",
+    "src/**/*.{web,native,ios,android}.{ts,tsx}",
+    "src/presentation/navigation/route-context.js",
+    "app.config.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx,js}"
+  ],
+  "expo": false,
+  "eslint": false,
+  "include": [
+    "files",
+    "exports",
+    "types",
+    "nsExports",
+    "nsTypes",
+    "enumMembers"
+  ]
+}

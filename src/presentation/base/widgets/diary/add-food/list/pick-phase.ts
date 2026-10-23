@@ -8,5 +8,3 @@ export const PickPhase = {
   Empty: 'empty',
   Ready: 'ready',
 } as const;
-
-export type PickPhaseType = (typeof PickPhase)[keyof typeof PickPhase];

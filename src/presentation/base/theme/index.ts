@@ -44,9 +44,8 @@ export { diarySizes } from '@presentation/base/theme/tokens/sizing/diary-sizes';
 export { mealPlanSizes } from '@presentation/base/theme/tokens/sizing/meal-plan-sizes';
 export { fridgeSizes } from '@presentation/base/theme/tokens/sizing/fridge-sizes';
 export { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-export { SCALE_FACTOR, scale, scaleFont } from '@presentation/base/theme/tokens/scale';
+export { scale } from '@presentation/base/theme/tokens/scale';
 
 // ── colors/ — palette vocabulary ──────────────────────────────────────────
 export { type ThemeColors } from '@presentation/base/theme/colors/palette/theme-colors';
 export { BrandColors } from '@presentation/base/theme/colors/palette/brand-colors';
-export { relativeLuminance, contrastRatio } from '@presentation/base/theme/colors/contrast/contrast';
