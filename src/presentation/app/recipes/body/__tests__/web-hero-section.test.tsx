@@ -106,7 +106,6 @@ const renderBand = (state: TrendingRecipesState): ReactTestInstance => {
         <WebHeroSection
           onOpenRecipe={jest.fn()}
           onOpenCreate={jest.fn()}
-          isSaved={() => false}
           onToggleSave={jest.fn()}
         />
       </StoresProvider>

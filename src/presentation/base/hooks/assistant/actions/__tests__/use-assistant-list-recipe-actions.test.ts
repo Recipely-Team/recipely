@@ -35,7 +35,6 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@presentation/base/hooks/recipes/use-save-recipe', () => ({
   useSaveRecipe: () => ({
-    isSaved: (id: string) => (globalThis as never as { __rows: Probe }).__rows.saved.has(id),
     toggleSave: async (id: string) => {
       const state = (globalThis as never as { __rows: Probe }).__rows;
       state.toggled.push(id);
@@ -46,10 +45,15 @@ jest.mock('@presentation/base/hooks/recipes/use-save-recipe', () => ({
 }));
 
 const mockRegistry = new AssistantActionRegistry();
+// The hook reads the saved set at action time, not through a subscription.
+const mockSavedRecipesStore = {
+  getState: () => ({ savedIds: (globalThis as never as { __rows: Probe }).__rows.saved }),
+};
 const mockAuth = { in: StoreStatus.Authenticated, out: StoreStatus.Unauthenticated };
 jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: () => ({
     assistantActionRegistry: mockRegistry,
+    savedRecipesStore: mockSavedRecipesStore,
     authStore: (select: (s: { state: { status: string } }) => unknown) =>
       select({
         state: {

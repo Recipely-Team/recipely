@@ -50,7 +50,6 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
         <WebHeroSection
           onOpenRecipe={vm.onOpenRecipe}
           onOpenCreate={vm.onOpenCreate}
-          isSaved={vm.isSaved}
           onToggleSave={vm.onToggleSave}
         />
         <WebCuisineRail
@@ -94,7 +93,6 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
       gridColumns={vm.gridColumns}
       gridCellMaxWidth={vm.gridCellMaxWidth}
       onOpenRecipe={vm.onOpenRecipe}
-      isSaved={vm.isSaved}
       onToggleSave={vm.onToggleSave}
     />
   </ScrollView>

@@ -176,7 +176,6 @@ const driveHook = (
   } as unknown as ApplicationStores;
 
   let latest: UseSaveRecipeResult = {
-    isSaved: () => false,
     toggleSave: async () => {},
   };
 
@@ -196,36 +195,6 @@ const driveHook = (
 
 afterEach(() => {
   jest.clearAllMocks();
-});
-
-// ─── isSaved ─────────────────────────────────────────────────────────────────
-
-describe("useSaveRecipe — isSaved", () => {
-  it("returns false for a recipe id that is not in savedIds", () => {
-    const { latest } = driveHook({ savedIds: new Set(["recipe-A"]) });
-
-    expect(latest().isSaved("recipe-B")).toBe(false);
-  });
-
-  it("returns true for a recipe id that is present in savedIds", () => {
-    const { latest } = driveHook({ savedIds: new Set(["recipe-A"]) });
-
-    expect(latest().isSaved("recipe-A")).toBe(true);
-  });
-
-  it("reflects a live store update — becomes true after the id is added", async () => {
-    const { latest, savedRecipesStore } = driveHook({
-      savedIds: new Set<string>(),
-    });
-
-    expect(latest().isSaved("recipe-X")).toBe(false);
-
-    await act(async () => {
-      savedRecipesStore.getState().addLocal("recipe-X");
-    });
-
-    expect(latest().isSaved("recipe-X")).toBe(true);
-  });
 });
 
 // ─── toggleSave — add path ────────────────────────────────────────────────────
@@ -389,8 +358,7 @@ describe("useSaveRecipe — toggleSave no-op guards", () => {
     } as unknown as ApplicationStores;
 
     let latestResult: UseSaveRecipeResult = {
-      isSaved: () => false,
-      toggleSave: async () => {},
+        toggleSave: async () => {},
     };
     const Probe = (): null => {
       latestResult = useSaveRecipe();
@@ -444,8 +412,7 @@ describe("useSaveRecipe — error handling", () => {
     } as unknown as ApplicationStores;
 
     let latestResult: UseSaveRecipeResult = {
-      isSaved: () => false,
-      toggleSave: async () => {},
+        toggleSave: async () => {},
     };
     const Probe = (): null => {
       latestResult = useSaveRecipe();

@@ -18,6 +18,7 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 import { ValueConstants } from '@core/constants';
 import { HeroGradientConstants } from '@presentation/app/recipes/model/hero/hero-gradient-constants';
 import { formatRating } from '@presentation/base/utils/format-rating';
+import { useStores } from '@presentation/bootstrap/use-stores';
 
 /**
  * Lines the hero title is allowed before it truncates.
@@ -33,7 +34,6 @@ export interface WebHeroFeaturedCardProps {
   onPress: (id: string) => void;
   /** When provided, renders the cosmetic frosted "Save" button. */
   onSave?: (id: string) => void;
-  savedByMe?: boolean;
 }
 
 /** Large featured hero card: bleed image, diagonal overlay, title + actions. */
@@ -41,9 +41,9 @@ export const WebHeroFeaturedCard = ({
   recipe,
   onPress,
   onSave,
-  savedByMe = false,
 }: WebHeroFeaturedCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const savedByMe = useStores().savedRecipesStore((s) => s.savedIds.has(recipe.id));
   const totalMin = recipe.totalTimeMinutes;
   return (
     <View style={styles.card}>

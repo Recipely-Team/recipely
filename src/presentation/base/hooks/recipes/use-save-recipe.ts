@@ -19,10 +19,7 @@ import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-u
  */
 export const useSaveRecipe = (): UseSaveRecipeResult => {
   const { savedRecipesStore, favoritesStore } = useStores();
-  const savedIds = savedRecipesStore((s) => s.savedIds);
   const userId = useSignedInUserId();
-
-  const isSaved = useCallback((recipeId: string): boolean => savedIds.has(recipeId), [savedIds]);
 
   const toggleSave = useCallback(
     async (recipeId: string): Promise<void> => {
@@ -52,5 +49,5 @@ export const useSaveRecipe = (): UseSaveRecipeResult => {
     [favoritesStore, savedRecipesStore, userId],
   );
 
-  return { isSaved, toggleSave };
+  return { toggleSave };
 };

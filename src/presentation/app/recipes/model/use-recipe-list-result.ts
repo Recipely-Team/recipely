@@ -103,7 +103,6 @@ export interface UseRecipeListResult {
   searchedQuery: string;
   /** Opens the AI recipe screen already generating `query`; asks a guest to sign in first. */
   onCreateWithAi: (query: string) => void;
-  isSaved: (id: string) => boolean;
   onToggleSave: (id: string) => void;
   onChangeSort: (key: SortKey) => void;
 

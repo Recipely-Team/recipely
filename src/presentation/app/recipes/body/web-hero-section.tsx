@@ -26,8 +26,6 @@ export interface WebHeroSectionProps {
   onOpenRecipe: (id: string) => void;
   /** Opens the AI generator; its panel is the row's third block. */
   onOpenCreate: () => void;
-  /** True when the recipe id is in the signed-in user's saved set. */
-  isSaved: (id: string) => boolean;
   onToggleSave: (id: string) => void;
 }
 
@@ -46,7 +44,6 @@ const MINI_CARD_RANKS = { first: 2, second: 3 } as const;
 export const WebHeroSection = ({
   onOpenRecipe,
   onOpenCreate,
-  isSaved,
   onToggleSave,
 }: WebHeroSectionProps): React.JSX.Element | null => {
   const { trendingRecipesStore } = useStores();
@@ -122,7 +119,6 @@ export const WebHeroSection = ({
         <WebHeroFeaturedCard
           recipe={featured}
           onPress={onOpenRecipe}
-          savedByMe={isSaved(featured.id)}
           onSave={onToggleSave}
         />
       </View>

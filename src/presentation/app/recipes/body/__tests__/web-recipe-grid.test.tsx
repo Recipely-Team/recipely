@@ -58,7 +58,6 @@ const baseProps: WebRecipeGridProps = {
   isLoading: false,
   isRefreshing: false,
   onOpenRecipe: jest.fn(),
-  isSaved: () => false,
   onToggleSave: jest.fn(),
 };
 

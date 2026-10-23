@@ -96,7 +96,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   const router = useRouter();
   const pathname = usePathname();
   const { recipeListStore, savedRecipesStore, loadFavoritesUseCase, myRecipesStore } = useStores();
-  const { isSaved, toggleSave } = useSaveRecipe();
+  const { toggleSave } = useSaveRecipe();
   const userId = useSignedInUserId();
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const onGoToSignIn = useCallback(() => {
@@ -107,6 +107,11 @@ export const useRecipeList = (): UseRecipeListResult => {
   const onCreateWithAi = useCallback(
     (query: string) => requestGate(() => router.push({ pathname: RoutePaths.createRecipe, params: { prompt: query } } as Href)),
     [requestGate, router],
+  );
+  // Stable, so the memoised cards do not re-render when the page does.
+  const onToggleSave = useCallback(
+    (id: string) => requestGate(() => void toggleSave(id), t().recipes.signInToSave),
+    [requestGate, toggleSave],
   );
   const { cuisineLabel } = useTaxonomyLabel();
   const state = recipeListStore((s) => s.state);
@@ -450,8 +455,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     onOpenCreate,
     searchedQuery: debouncedSearch,
     onCreateWithAi,
-    isSaved,
-    onToggleSave: (id: string) => requestGate(() => void toggleSave(id), t().recipes.signInToSave),
+    onToggleSave,
     onChangeSort: (key: SortKey) => {
       setSortBy(key);
       void load(buildApiFilters(filters, key, debouncedSearch));

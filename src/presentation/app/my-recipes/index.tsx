@@ -36,7 +36,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const { isWebShell, isExpanded, width } = useLayout();
   const { savedRecipesStore, likedRecipesStore, myRecipesStore, draftsStore } = useStores();
-  const { isSaved, toggleSave } = useSaveRecipe();
+  const { toggleSave } = useSaveRecipe();
 
   const savedListState = savedRecipesStore((s) => s.saved);
   const likedListState = likedRecipesStore((s) => s.liked);
@@ -157,7 +157,6 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             items={items}
             gridColumns={gridColumns}
             isExpanded={isExpanded}
-            isSaved={isSaved}
             onToggleSave={toggleSave}
             onOpenRecipe={openRecipe}
             onOpenDraft={openDraft}

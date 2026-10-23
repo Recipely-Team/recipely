@@ -39,7 +39,6 @@ export interface MyRecipesListProps {
   items: readonly RecipeSummaryEntity[];
   gridColumns: number;
   isExpanded: boolean;
-  isSaved: (id: string) => boolean;
   onToggleSave: (id: string) => void;
   onOpenRecipe: (id: string) => void;
   onOpenDraft: (id: string) => void;
@@ -96,7 +95,6 @@ export const MyRecipesList = ({
   items,
   gridColumns,
   isExpanded,
-  isSaved,
   onToggleSave,
   onOpenRecipe,
   onOpenDraft,
@@ -128,13 +126,12 @@ export const MyRecipesList = ({
         recipe={item}
         gridColumns={gridColumns}
         isExpanded={isExpanded}
-        saved={isSaved(item.id)}
         ownedByMe={tab === TabType.Created}
         onOpen={onOpenRecipe}
         onToggleSave={onToggleSave}
       />
     ),
-    [gridColumns, isExpanded, isSaved, onOpenRecipe, onToggleSave, tab],
+    [gridColumns, isExpanded, onOpenRecipe, onToggleSave, tab],
   );
   // tintColor (iOS) and colors (Android) both theme the spinner.
   const refreshControl = (

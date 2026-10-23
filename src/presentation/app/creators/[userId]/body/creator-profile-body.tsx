@@ -42,7 +42,7 @@ const keyOf = (cell: GridCell): string => cell.id;
 export const CreatorProfileBody = ({ vm, scrollable }: CreatorProfileBodyProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { isExpanded } = useLayout();
-  const { profileState, recipesState, gridColumns, onOpenRecipe, isSaved, onToggleSave } = vm;
+  const { profileState, recipesState, gridColumns, onOpenRecipe, onToggleSave } = vm;
   const rowGap = isExpanded ? CreatorProfileMetrics.gapExpanded : CreatorProfileMetrics.rowGap;
   const columnGap = isExpanded ? CreatorProfileMetrics.gapExpanded : CreatorProfileMetrics.columnGap;
 
@@ -59,12 +59,11 @@ export const CreatorProfileBody = ({ vm, scrollable }: CreatorProfileBodyProps):
         <CreatorRecipeCell
           recipe={item}
           expanded={isExpanded}
-          saved={isSaved(item.id)}
           onOpen={onOpenRecipe}
           onToggleSave={onToggleSave}
         />
       ),
-    [isExpanded, isSaved, onOpenRecipe, onToggleSave],
+    [isExpanded, onOpenRecipe, onToggleSave],
   );
 
   if (profileState.status === StoreStatus.Error) {

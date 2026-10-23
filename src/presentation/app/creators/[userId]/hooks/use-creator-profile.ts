@@ -41,7 +41,7 @@ export const useCreatorProfile = (): UseCreatorProfileResult => {
   const onBack = useCreatorsBack();
   const share = useShareCreator();
   const { isExpanded, width } = useLayout();
-  const { isSaved, toggleSave } = useSaveRecipe();
+  const { toggleSave } = useSaveRecipe();
   const params = useLocalSearchParams<{ userId: string }>();
   const userId = isString(params.userId) ? params.userId : CharConstants.empty;
 
@@ -84,7 +84,6 @@ export const useCreatorProfile = (): UseCreatorProfileResult => {
     isFollowPending,
     isPullRefreshing,
     gridColumns,
-    isSaved,
     onToggleSave: (id) => requestGate(() => void toggleSave(id), t().recipes.signInToSave),
     formatCount: (value) => formatCompactCount(value, getLocale()),
     onRefresh: () => {

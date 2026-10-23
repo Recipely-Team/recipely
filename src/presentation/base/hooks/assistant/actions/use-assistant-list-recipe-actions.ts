@@ -39,7 +39,7 @@ const SCREEN_ARRIVAL_TIMEOUT_MS = 4_000;
  *   instead of ending it.
  */
 export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[]): void => {
-  const { assistantActionRegistry: registry, likesStore } = useStores();
+  const { assistantActionRegistry: registry, likesStore, savedRecipesStore } = useStores();
   const setLikedInStore = likesStore((s) => s.setLiked);
   const favourites = useSaveRecipe();
   const isSignedIn = useIsSignedIn();
@@ -62,10 +62,10 @@ export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[
       const row = find(arg);
       if (row === null) return { ok: false, notMine: true };
       // Already saved is success, not a toggle.
-      if (!saved.isSaved(row.id)) await saved.toggleSave(row.id);
+      if (!savedRecipesStore.getState().savedIds.has(row.id)) await saved.toggleSave(row.id);
       return { ok: true, title: row.name };
     },
-    [find],
+    [find, savedRecipesStore],
   );
 
   /** Opens the recipe and lets its own screen answer, so the change is seen. */

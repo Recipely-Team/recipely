@@ -60,8 +60,6 @@ export interface WebRecipeGridProps {
   /** The query these results answer; an empty answer offers to create it with AI. */
   query: string;
   onCreateWithAi: (query: string) => void;
-  /** True when the recipe id is in the signed-in user's saved set. */
-  isSaved: (id: string) => boolean;
   onToggleSave: (id: string) => void;
 }
 
@@ -72,7 +70,7 @@ export interface WebRecipeGridProps {
 export const WebRecipeGrid = ({
   recipes, isSearching, activeCuisineLabel, sortBy, onChangeSort,
   onOpenFilter, activeFilterCount, activeDifficulty, onDifficultyChange,
-  gridColumns, gridCellMaxWidth, isLoading, isRefreshing, onOpenRecipe, isSaved, onToggleSave, query, onCreateWithAi, total,
+  gridColumns, gridCellMaxWidth, isLoading, isRefreshing, onOpenRecipe, onToggleSave, query, onCreateWithAi, total,
 }: WebRecipeGridProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -87,13 +85,12 @@ export const WebRecipeGrid = ({
       <View style={[styles.gridCell, { maxWidth: gridCellMaxWidth }]}>
         <WebRecipeListItem
           recipe={item}
-          saved={isSaved(item.id)}
           onOpen={onOpenRecipe}
           onToggleSave={onToggleSave}
         />
       </View>
     ),
-    [onOpenRecipe, isSaved, onToggleSave, gridCellMaxWidth],
+    [onOpenRecipe, onToggleSave, gridCellMaxWidth],
   );
 
   const segButton = (key: string, label: string, active: boolean, onPress: () => void): React.JSX.Element => (
