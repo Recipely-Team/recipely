@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, type LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { isWeb } from '@infrastructure/constants/platform';
@@ -33,7 +33,7 @@ export const HeroFridge = ({ active = true }: HeroProps): React.JSX.Element => {
   const a = t().onboarding.art;
   const reducedMotion = useReducedMotion();
   const [frameHeight, setFrameHeight] = useState(ValueConstants.zero);
-  const sweep = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const [sweep] = useState(() => new Animated.Value(ValueConstants.zero));
 
   useEffect(() => {
     if (!active || reducedMotion) return;

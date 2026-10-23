@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { MealPlanLimits } from '@domain/meal-plan/meal-plan-limits';
@@ -52,13 +52,10 @@ export const useMealPlanWeek = (): MealPlanWeekModel => {
     if (signedIn) void diaryStore.getState().loadGoals();
   }, [diaryStore, signedIn]);
 
-  const showWeek = useCallback(
-    (day: CalendarDate) => {
-      mealPlanStore.getState().showWeek(day);
-      setSelected(day);
-    },
-    [mealPlanStore],
-  );
+  const showWeek = (day: CalendarDate): void => {
+    mealPlanStore.getState().showWeek(day);
+    setSelected(day);
+  };
 
   return {
     view: toPlanView(signedIn, state),
@@ -69,13 +66,13 @@ export const useMealPlanWeek = (): MealPlanWeekModel => {
     goal,
     isRefreshing,
     select: setSelected,
-    page: useCallback((direction: number) => showWeek(selected.addDays(direction * MealPlanLimits.daysPerWeek)), [selected, showWeek]),
-    goToThisWeek: useCallback(() => showWeek(today), [showWeek, today]),
-    refresh: useCallback(async () => {
+    page: (direction: number) => showWeek(selected.addDays(direction * MealPlanLimits.daysPerWeek)),
+    goToThisWeek: () => showWeek(today),
+    refresh: async () => {
       setRefreshing(true);
       await mealPlanStore.getState().load(weekStart);
       setRefreshing(false);
-    }, [mealPlanStore, weekStart]),
-    retry: useCallback(() => void mealPlanStore.getState().load(weekStart), [mealPlanStore, weekStart]),
+    },
+    retry: () => void mealPlanStore.getState().load(weekStart),
   };
 };

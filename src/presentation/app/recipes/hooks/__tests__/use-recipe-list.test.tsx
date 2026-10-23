@@ -37,7 +37,6 @@ import type { ApplicationStores } from '@application/di/application-stores';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
 import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
 import { FEED_STALE_AFTER_MS } from '@presentation/app/recipes/model/feed-stale-after-ms';
-import { useFocusEffect } from 'expo-router';
 import { configureRecipeListStore } from '@application/recipes/list/recipe-list-store';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
@@ -63,12 +62,24 @@ jest.mock('expo-router', () => ({
   // No `?q=`: these cover the ordinary feed. Arriving with a query — how the
   // assistant searches — is covered in its own test below.
   useLocalSearchParams: jest.fn(() => ({})),
-  // The real hook runs its callback whenever the screen gains focus; an effect
-  // is close enough here (the hook skips the mount focus via its own ref).
-  useFocusEffect: jest.fn((callback: () => void) => {
-    jest.requireActual<typeof import('react')>('react').useEffect(callback, [callback]);
-  }),
 }));
+
+// Focus the test can flip, as the navigator does on a tab switch or a pop.
+const mockFocus = { focused: true, listeners: new Set<() => void>() };
+jest.mock('@presentation/base/hooks/assistant/use-is-screen-focused', () => ({
+  useIsScreenFocused: () =>
+    jest.requireActual<typeof import('react')>('react').useSyncExternalStore(
+      (onChange: () => void) => {
+        mockFocus.listeners.add(onChange);
+        return () => mockFocus.listeners.delete(onChange);
+      },
+      () => mockFocus.focused,
+    ),
+}));
+const setFocused = (focused: boolean): void => {
+  mockFocus.focused = focused;
+  mockFocus.listeners.forEach((onChange) => onChange());
+};
 
 // The feed reads its query from ITS OWN state on a phone and from the shared
 // header field on the web, so a `?q=` that lands in only one of them does
@@ -780,16 +791,15 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     }
   });
 
-  /** Re-runs the screen's focus callback, as returning to the feed tab would. */
+  /** Blurs and re-focuses the screen, as leaving and returning to the feed tab would. */
   const refocus = async (): Promise<void> => {
-    const calls = (useFocusEffect as jest.Mock).mock.calls;
-    const onFocus = calls[calls.length - 1][0] as () => void;
     // Let the first load settle completely — its success is what stamps the feed fresh.
     await act(async () => {
       await new Promise((resolve) => setImmediate(resolve));
     });
+    act(() => setFocused(false));
     await act(async () => {
-      onFocus();
+      setFocused(true);
       await Promise.resolve();
     });
   };

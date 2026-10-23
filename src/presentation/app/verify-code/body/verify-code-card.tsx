@@ -49,12 +49,14 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
   const [resent, setResent] = useState(false);
   // Absolute expiry, so the countdown survives re-renders and backgrounding.
   const [expiresAt, setExpiresAt] = useState(initialExpiresAt);
-  const [remaining, setRemaining] = useState(() => computeRemaining(initialExpiresAt));
+  // Tagged with the expiry it counts toward: a resent code restarts the count in the same render.
+  const [countdown, setCountdown] = useState(() => ({ expiresAt, remaining: computeRemaining(expiresAt) }));
+  if (countdown.expiresAt !== expiresAt) setCountdown({ expiresAt, remaining: computeRemaining(expiresAt) });
+  const { remaining } = countdown;
 
   useEffect(() => {
-    setRemaining(computeRemaining(expiresAt));
     if (expiresAt.length === ValueConstants.zero) return;
-    const id = setInterval(() => setRemaining(computeRemaining(expiresAt)), SECOND_MS);
+    const id = setInterval(() => setCountdown({ expiresAt, remaining: computeRemaining(expiresAt) }), SECOND_MS);
     return () => clearInterval(id);
   }, [expiresAt]);
 

@@ -1,7 +1,7 @@
 import type { NotificationEntity } from '@domain/notifications/notification-entity';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
-import { TimeConstants, ValueConstants } from '@core/constants';
+import { daysSince } from '@presentation/app/notifications/model/days-since';
 import type { ImportSource } from '@presentation/app/notifications/model/import-source';
 import { SiteMetadata } from '@presentation/base/constants/site-metadata';
 
@@ -67,6 +67,3 @@ function resolveKind(notification: NotificationEntity): NotifKind {
 }
 
 /** Whole days, which is all the date grouping and the row's caption need. */
-function daysSince(createdAt: Date): number {
-  return Math.max(ValueConstants.zero, Math.floor((Date.now() - createdAt.getTime()) / TimeConstants.millisecondsPerDay));
-}

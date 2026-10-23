@@ -12,13 +12,14 @@ import type { WindowPostureInterface } from '@domain/display/window-posture-inte
  *   than waiting for the next change.
  */
 export const useWindowPosture = (source: WindowPostureInterface | undefined): WindowPosture | null => {
-  const [posture, setPosture] = useState<WindowPosture | null>(() => source?.current() ?? null);
+  // Tagged with the source it was read from: a new source is read in the render it arrives in.
+  const [reading, setReading] = useState(() => ({ source, posture: source?.current() ?? null }));
+  if (reading.source !== source) setReading({ source, posture: source?.current() ?? null });
 
   useEffect(() => {
     if (source === undefined) return undefined;
-    setPosture(source.current());
-    return source.subscribe(setPosture);
+    return source.subscribe((posture) => setReading({ source, posture }));
   }, [source]);
 
-  return posture;
+  return reading.source === source ? reading.posture : (source?.current() ?? null);
 };

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { MealSlot, type MealSlotType } from '@domain/diary/meal-slot';
 import { Servings } from '@domain/diary/entry/servings';
@@ -58,15 +58,19 @@ export const useAddToPlanSheet = (request: AddToPlanRequest | null, onClose: () 
   const [isSubmitting, setSubmitting] = useState(false);
   const inFlight = useRef(false);
 
-  useEffect(() => {
-    if (request === null) return;
-    const start = request.date.isBefore(today) ? today : request.date;
-    setRecipe(request.recipe);
-    setDate(start);
-    setPickerWeek(start.weekStart());
-    setMeal(request.meal ?? request.recipe?.meal ?? MealSlot.Dinner);
-    setServings(Servings.one());
-  }, [request, today]);
+  // Each request starts the form afresh, in the render it arrives in.
+  const [startedFor, setStartedFor] = useState<AddToPlanRequest | null>(null);
+  if (request !== startedFor) {
+    setStartedFor(request);
+    if (request !== null) {
+      const start = request.date.isBefore(today) ? today : request.date;
+      setRecipe(request.recipe);
+      setDate(start);
+      setPickerWeek(start.weekStart());
+      setMeal(request.meal ?? request.recipe?.meal ?? MealSlot.Dinner);
+      setServings(Servings.one());
+    }
+  }
 
   const choose = useCallback(
     (choice: PlanRecipeChoice) => {

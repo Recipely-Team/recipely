@@ -81,9 +81,10 @@ export const useCommentHighlight = ({
       : null;
 
   const { commentsStore } = useStores();
-  const [highlightedCommentId, setHighlightedCommentId] = useState<
-    string | null
-  >(null);
+  // The target last flashed, tagged with its recipe: a new target is not highlighted until it flashes.
+  const [flashed, setFlashed] = useState<{ recipeId: string; targetId: string } | null>(null);
+  const highlightedCommentId =
+    targetId !== null && flashed?.targetId === targetId && flashed.recipeId === recipeId ? targetId : null;
   const nodeRef = useRef<CommentNodeType | null>(null);
   // Bumped when the target card mounts, so the scroll effect re-runs with a node.
   const [nodeVersion, setNodeVersion] = useState(ValueConstants.zero);
@@ -106,7 +107,6 @@ export const useCommentHighlight = ({
     lastYRef.current = null;
     attemptsRef.current = ValueConstants.zero;
     lastCountRef.current = -1;
-    setHighlightedCommentId(null);
   }, [targetId, recipeId]);
 
   // Paging: walk forward until the target lands in `items` or the walk is spent.
@@ -172,8 +172,8 @@ export const useCommentHighlight = ({
     if (targetId === null || flashedRef.current || nodeRef.current === null)
       return;
     flashedRef.current = true;
-    setHighlightedCommentId(targetId);
-  }, [targetId, nodeVersion]);
+    setFlashed({ recipeId, targetId });
+  }, [targetId, recipeId, nodeVersion]);
 
   // First pass, as soon as the target card hands over its node.
   useEffect(() => {

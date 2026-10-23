@@ -84,8 +84,8 @@ export const RecipeCard = ({
   const heartScale = useSharedValue(ValueConstants.one);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
+    transform: [{ scale: scale.get() }],
+    opacity: opacity.get(),
   }));
 
   // Web-only hover lift: scale up slightly when the pointer enters the card.
@@ -93,22 +93,22 @@ export const RecipeCard = ({
     hoverEffect && isWeb()
       ? {
           onMouseEnter: () => {
-            scale.value = withTiming(CARD_HOVER_LIFT, { duration: durations.hover });
+            scale.set(withTiming(CARD_HOVER_LIFT, { duration: durations.hover }));
           },
           onMouseLeave: () => {
-            scale.value = withTiming(ValueConstants.one, { duration: durations.hover });
+            scale.set(withTiming(ValueConstants.one, { duration: durations.hover }));
           },
         }
       : {};
 
   const heartStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: heartScale.value }],
+    transform: [{ scale: heartScale.get() }],
   }));
 
   const handleLike = () => {
-    heartScale.value = withSpring(HEART_POP.scale, { damping: HEART_POP.damping }, () => {
-      heartScale.value = withSpring(ValueConstants.one);
-    });
+    heartScale.set(withSpring(HEART_POP.scale, { damping: HEART_POP.damping }, () => {
+      heartScale.set(withSpring(ValueConstants.one));
+    }));
     onLike?.();
   };
 
@@ -118,12 +118,12 @@ export const RecipeCard = ({
       {...hoverProps}
       onPress={onPress}
       onPressIn={() => {
-        scale.value = withTiming(PRESS_SCALE, { duration: PRESS_IN_MS });
-        opacity.value = withTiming(opacities.pressedFaint, { duration: PRESS_IN_MS });
+        scale.set(withTiming(PRESS_SCALE, { duration: PRESS_IN_MS }));
+        opacity.set(withTiming(opacities.pressedFaint, { duration: PRESS_IN_MS }));
       }}
       onPressOut={() => {
-        scale.value = withTiming(ValueConstants.one, { duration: PRESS_OUT_MS });
-        opacity.value = withTiming(opacities.full, { duration: PRESS_OUT_MS });
+        scale.set(withTiming(ValueConstants.one, { duration: PRESS_OUT_MS }));
+        opacity.set(withTiming(opacities.full, { duration: PRESS_OUT_MS }));
       }}
       style={[
         styles.card,

@@ -47,14 +47,14 @@ export const useGeneratingAnimation = (): GeneratingAnimationResult => {
   const breathe = useSharedValue(ValueConstants.zero);
 
   useEffect(() => {
-    spin.value = withRepeat(
+    spin.set(withRepeat(
       withTiming(AnimationConstants.progressMax, {
         duration: SPIN_DURATION_MS,
         easing: Easing.linear,
       }),
       INFINITE_REPEAT,
-    );
-    breathe.value = withRepeat(
+    ));
+    breathe.set(withRepeat(
       withSequence(
         withTiming(AnimationConstants.progressMax, {
           duration: BREATHE_DURATION_MS,
@@ -66,17 +66,17 @@ export const useGeneratingAnimation = (): GeneratingAnimationResult => {
         }),
       ),
       INFINITE_REPEAT,
-    );
+    ));
   }, [spin, breathe]);
 
   const orbitStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${spin.value * FULL_TURN_DEG}deg` }],
+    transform: [{ rotate: `${spin.get() * FULL_TURN_DEG}deg` }],
   }));
   const ringStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${spin.value * -FULL_TURN_DEG}deg` }],
+    transform: [{ rotate: `${spin.get() * -FULL_TURN_DEG}deg` }],
   }));
   const coreStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: AnimationConstants.progressMax + breathe.value * BREATHE_SCALE_GAIN }],
+    transform: [{ scale: AnimationConstants.progressMax + breathe.get() * BREATHE_SCALE_GAIN }],
   }));
 
   return { orbitStyle, ringStyle, coreStyle };

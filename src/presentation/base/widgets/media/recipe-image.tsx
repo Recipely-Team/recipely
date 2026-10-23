@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { isString } from '@core/guards/type-guards';
 import { Image } from 'expo-image';
 import type { ImageStyle, StyleProp } from 'react-native';
@@ -57,12 +57,9 @@ export const RecipeImage = ({
   placeholderCompact,
   focus,
 }: RecipeImageProps): React.JSX.Element => {
-  const [failed, setFailed] = useState(false);
-
-  // Rows are recycled: reset the failed flag when the uri changes.
-  useEffect(() => {
-    setFailed(false);
-  }, [uri]);
+  // Rows are recycled, so a failure belongs to the uri that failed, not to the row.
+  const [failedUri, setFailedUri] = useState<string | null>(null);
+  const failed = failedUri !== null && failedUri === uri;
 
   const hasImage = isString(uri) && uri.trim().length > ValueConstants.zero;
 
@@ -82,7 +79,7 @@ export const RecipeImage = ({
       cachePolicy="memory-disk"
       transition={durations.imageFade}
       recyclingKey={uri}
-      onError={() => setFailed(true)}
+      onError={() => setFailedUri(uri)}
     />
   );
 };

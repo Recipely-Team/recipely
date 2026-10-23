@@ -21,12 +21,12 @@ const FloatingChip = ({ spot, still }: { spot: ChipSpotType; still: boolean }): 
   const lift = useSharedValue(ValueConstants.zero);
   useEffect(() => {
     if (still) return;
-    lift.value = withDelay(
+    lift.set(withDelay(
       spot.delay,
       withRepeat(withTiming(-M.bobDistance, { duration: M.bobMs / ValueConstants.two, easing: Easing.inOut(Easing.sin) }), -ValueConstants.one, true),
-    );
+    ));
   }, [lift, spot.delay, still]);
-  const bob = useAnimatedStyle(() => ({ transform: [{ translateY: lift.value }] }));
+  const bob = useAnimatedStyle(() => ({ transform: [{ translateY: lift.get() }] }));
   const { icon, delay: _delay, ...place } = spot;
   return (
     <Animated.View style={[styles.chip, shadows.sm, place, bob, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>

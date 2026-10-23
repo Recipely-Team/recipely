@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react';
 import { isString } from '@core/guards/type-guards';
 import { StoreStatus } from '@application/store/store-status';
-import { ScrollView } from 'react-native';
+import type { ScrollView } from 'react-native';
 import { type Href, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
@@ -27,6 +27,7 @@ import { useSignedInUser } from '@presentation/base/hooks/auth/use-signed-in-use
 
 /** No step ticked yet: one shared empty list, so the selector result stays stable. */
 const NO_STEPS_DONE: readonly boolean[] = [];
+const NO_INGREDIENT_TICKS: { forCount: number; checked: readonly boolean[] } = { forCount: ValueConstants.zero, checked: NO_STEPS_DONE };
 
 /**
  * Orchestrates the recipe-detail screen: resolves the recipe (local or network),
@@ -53,7 +54,7 @@ const NO_STEPS_DONE: readonly boolean[] = [];
  *   profile store; resolving it through the shared store would clobber the
  *   signed-in user's cached profile, so other authors load in `useRecipeAuthor`.
  */
-export const useRecipeDetail = (): UseRecipeDetailResult => {
+export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): UseRecipeDetailResult => {
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
   const pathname = usePathname();
@@ -112,7 +113,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const [showDeleteSheet, setShowDeleteSheet] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const scrollViewRef = useRef<ScrollView>(null);
   const revealCommentInput = useScrollToEndOnKeyboard(scrollViewRef);
 
   const onConfirmDelete = useCallback(async () => {
@@ -207,7 +207,8 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   );
   const onOpenDelete = useCallback(() => setShowDeleteSheet(true), []);
 
-  const [checkedIngredients, setCheckedIngredients] = useState<boolean[]>([]);
+  // Tagged with the ingredient count it was ticked against: a different list starts unticked.
+  const [ingredientTicks, setIngredientTicks] = useState(NO_INGREDIENT_TICKS);
   // Shared with cook mode, so a step ticked there reads as done here.
   const completedSteps = stepProgressStore((s) => s.byRecipe[recipeId]) ?? NO_STEPS_DONE;
   const toggleStoredStep = stepProgressStore((s) => s.toggleStep);
@@ -242,11 +243,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
 
   const ingredientCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.ingredients.length : ValueConstants.zero;
 
-  useEffect(() => {
-    if (ingredientCount > ValueConstants.zero) {
-      setCheckedIngredients(new Array(ingredientCount).fill(false) as boolean[]);
-    }
-  }, [ingredientCount]);
+  const checkedIngredients = ingredientTicks.forCount === ingredientCount ? ingredientTicks.checked : NO_STEPS_DONE;
 
   const onRetry = useCallback(() => {
     if (recipeId.length > ValueConstants.zero) {
@@ -254,13 +251,16 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     }
   }, [recipeId, load]);
 
-  const onToggleIngredient = useCallback((index: number) => {
-    setCheckedIngredients((prev) => {
-      const next = [...prev];
-      next[index] = !next[index];
-      return next;
-    });
-  }, []);
+  const onToggleIngredient = useCallback(
+    (index: number) => {
+      setIngredientTicks((prev) => {
+        const next = prev.forCount === ingredientCount ? [...prev.checked] : [];
+        next[index] = !(next[index] ?? false);
+        return { forCount: ingredientCount, checked: next };
+      });
+    },
+    [ingredientCount],
+  );
 
   const onToggleStep = useCallback(
     (index: number) => toggleStoredStep(recipeId, index),
@@ -311,7 +311,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     commentState,
     submitError,
     onFocusCommentInput: revealCommentInput,
-    scrollViewRef,
     checkedIngredients,
     completedSteps,
     onToggleIngredient,

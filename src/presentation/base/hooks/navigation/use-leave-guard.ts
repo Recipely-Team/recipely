@@ -18,14 +18,15 @@ interface LeaveGuard {
  * - **Why**: create-recipe and edit-profile asked only from their own close
  *   button; a back gesture left with the work gone.
  */
-export const useLeaveGuard = (shouldAsk: boolean, onAsk: () => void): LeaveGuard => {
+export const useLeaveGuard = (shouldAsk: boolean, onAsk: (release: () => void) => void): LeaveGuard => {
   const navigation = useNavigation();
   const [released, setReleased] = useState(false);
   const held = useRef<NavigationAction | null>(null);
+  const release = (): void => setReleased(true);
 
   usePreventRemove(shouldAsk && !released, ({ data }) => {
     held.current = data.action;
-    onAsk();
+    onAsk(release);
   });
 
   useEffect(() => {
@@ -35,5 +36,5 @@ export const useLeaveGuard = (shouldAsk: boolean, onAsk: () => void): LeaveGuard
     navigation.dispatch(action);
   }, [released, navigation]);
 
-  return { release: () => setReleased(true) };
+  return { release };
 };

@@ -1,4 +1,5 @@
 import { useCallback, useReducer, useRef } from 'react';
+import { useLatestRef } from '@presentation/base/hooks/lifecycle/use-latest-ref';
 import { ValueConstants } from '@core/constants';
 import { FridgeLimits } from '@domain/fridge/fridge-limits';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -37,8 +38,7 @@ export const useFridgeFlow = () => {
   const pick = useFridgePhotoPick();
   const [state, dispatch] = useReducer(fridgeFlowReducer, undefined, initialFridgeFlow);
   const ticket = useRef(ValueConstants.zero);
-  const latest = useRef<FridgeFlowState>(state);
-  latest.current = state;
+  const latest = useLatestRef<FridgeFlowState>(state);
 
   const next = (): number => {
     ticket.current += ValueConstants.one;
@@ -50,7 +50,7 @@ export const useFridgeFlow = () => {
       const photos = await pick(source, FridgeLimits.photosMax - latest.current.photos.length);
       if (photos.length > ValueConstants.zero) dispatch({ type: 'photosAdded', photos });
     },
-    [pick],
+    [pick, latest],
   );
 
   const findIngredients = useCallback(async (): Promise<void> => {
@@ -61,7 +61,7 @@ export const useFridgeFlow = () => {
     const result = await fridgeStore.getState().scan({ photos, locale });
     if (mine !== ticket.current) return;
     dispatch(result.ok ? { type: 'scanSucceeded', ingredients: result.value } : { type: 'scanFailed', failure: result.failure });
-  }, [fridgeStore, locale]);
+  }, [fridgeStore, locale, latest]);
 
   const fetchIdeas = useCallback(
     async (query: FridgeIdeasQuery, exclude: readonly string[]): Promise<void> => {
@@ -83,7 +83,7 @@ export const useFridgeFlow = () => {
       dispatch({ type: 'ideasStarted', query });
       void fetchIdeas(query, []);
     },
-    [fetchIdeas],
+    [fetchIdeas, latest],
   );
 
   const showMore = useCallback((): void => {
@@ -91,7 +91,7 @@ export const useFridgeFlow = () => {
     if (view.step !== FridgeStep.Ideas || view.load !== IdeasLoad.Idle) return;
     dispatch({ type: 'moreStarted' });
     void fetchIdeas(view.query, view.ideas.map((idea) => idea.title));
-  }, [fetchIdeas]);
+  }, [fetchIdeas, latest]);
 
   const removeChip = useCallback((chip: FridgeChip): void => {
     const index = latest.current.chips.findIndex((c) => c.key === chip.key);
@@ -102,7 +102,7 @@ export const useFridgeFlow = () => {
       actionLabel: t().fridge.undo,
       onAction: () => dispatch({ type: 'chipRestored', chip, index }),
     });
-  }, []);
+  }, [latest]);
 
   return {
     state,

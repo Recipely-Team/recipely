@@ -62,20 +62,20 @@ export const CommentCard = ({
 
   useEffect(() => {
     if (!highlighted) return;
-    flash.value = withSequence(
+    flash.set(withSequence(
       withTiming(ValueConstants.one, { duration: FLASH_IN_MS }),
       withDelay(FLASH_HOLD_MS, withTiming(ValueConstants.zero, { duration: FLASH_OUT_MS })),
-    );
+    ));
   }, [highlighted, flash]);
 
   const flashStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
-      flash.value,
+      flash.get(),
       AnimationConstants.progressRange,
       [colors.cardBackground, colors.primaryLight],
     ),
     borderColor: interpolateColor(
-      flash.value,
+      flash.get(),
       AnimationConstants.progressRange,
       [colors.cardBorder, colors.primary],
     ),

@@ -86,6 +86,8 @@ import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-
 import { RecipeDetailContent } from '@presentation/app/recipes/[recipeId]/body/recipe-detail-content';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 
+const scrollViewRef = { current: null };
+
 const RECIPE_ID = 'recipe-3';
 const USER_ID = 'user-1';
 
@@ -142,7 +144,7 @@ const highlight: UseCommentHighlightResult = {
 
 const DetailPage = (): React.JSX.Element => {
   mockRenders['page'] = (mockRenders['page'] ?? 0) + 1;
-  const vm = useRecipeDetail();
+  const vm = useRecipeDetail(scrollViewRef);
   return (
     <RecipeDetailContent vm={vm} isExpanded={false} ownerPhotoControls={undefined} commentHighlight={highlight} onBack={() => undefined} />
   );

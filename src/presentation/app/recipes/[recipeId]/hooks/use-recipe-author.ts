@@ -14,6 +14,10 @@ const KITCHEN_AUTHOR: ResolvedAuthor = {
   isKitchen: true,
 };
 
+const KITCHEN: RecipeAuthorState = { status: StoreStatus.Resolved, author: KITCHEN_AUTHOR };
+const LOADING: RecipeAuthorState = { status: StoreStatus.Loading };
+const UNAVAILABLE: RecipeAuthorState = { status: StoreStatus.Unavailable };
+
 /**
  * Resolves the public profile of a recipe's author for the detail-screen author
  * card. The owner case is resolved by the caller and passed via `owner`; any
@@ -29,50 +33,40 @@ export const useRecipeAuthor = ({
   isKitchen = false,
 }: RecipeAuthorInput): RecipeAuthorState => {
   const { getUserProfile } = useStores();
-  const [state, setState] = useState<RecipeAuthorState>({ status: StoreStatus.Loading });
+  // Tagged with the author it answers for, so a different author reads as loading until fetched.
+  const [fetched, setFetched] = useState<{ ownerId: string; state: RecipeAuthorState } | null>(null);
+  const lookupId =
+    isKitchen || owner !== null || isOwner || ownerId === null || ownerId.length === ValueConstants.zero ? null : ownerId;
 
   useEffect(() => {
-    if (isKitchen) {
-      setState({ status: StoreStatus.Resolved, author: KITCHEN_AUTHOR });
-      return;
-    }
-    if (owner !== null) {
-      setState({ status: StoreStatus.Resolved, author: owner });
-      return;
-    }
-    // Own recipe: wait for the caller to resolve the signed-in profile.
-    if (isOwner) {
-      setState({ status: StoreStatus.Loading });
-      return;
-    }
-    if (ownerId === null || ownerId.length === ValueConstants.zero) {
-      setState({ status: StoreStatus.Unavailable });
-      return;
-    }
-
+    if (lookupId === null) return;
     let active = true;
-    setState({ status: StoreStatus.Loading });
-    void getUserProfile.execute({ userId: ownerId }).then((result) => {
+    void getUserProfile.execute({ userId: lookupId }).then((result) => {
       if (!active) return;
-      if (!result.ok) {
-        setState({ status: StoreStatus.Unavailable });
-        return;
-      }
-      setState({
-        status: StoreStatus.Resolved,
-        author: {
-          authorName: result.value.displayName,
-          authorPhotoUrl: result.value.photoUrl ?? undefined,
-          recipeCount: result.value.recipeCount,
-          isOwner: false,
-        },
+      setFetched({
+        ownerId: lookupId,
+        state: result.ok
+          ? {
+              status: StoreStatus.Resolved,
+              author: {
+                authorName: result.value.displayName,
+                authorPhotoUrl: result.value.photoUrl ?? undefined,
+                recipeCount: result.value.recipeCount,
+                isOwner: false,
+              },
+            }
+          : UNAVAILABLE,
       });
     });
-
     return () => {
       active = false;
     };
-  }, [ownerId, owner, isOwner, isKitchen, getUserProfile]);
+  }, [lookupId, getUserProfile]);
 
-  return state;
+  if (isKitchen) return KITCHEN;
+  if (owner !== null) return { status: StoreStatus.Resolved, author: owner };
+  // Own recipe: wait for the caller to resolve the signed-in profile.
+  if (isOwner) return LOADING;
+  if (lookupId === null) return UNAVAILABLE;
+  return fetched?.ownerId === lookupId ? fetched.state : LOADING;
 };

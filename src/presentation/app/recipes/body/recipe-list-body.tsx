@@ -64,7 +64,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   const { state, recipes, isExpanded, isSearching, gridColumns } = vm;
 
   // Stable across renders so the row memo holds; each row binds its own id.
-  const { onOpenRecipe } = vm;
+  const { onOpenRecipe, attachList } = vm;
 
   const { rows, keyExtractor, adUnitId, adWidth } = useFeedRows({
     recipes,
@@ -115,7 +115,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
       <Animated.FlatList
         // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
         removeClippedSubviews={false}
-        ref={vm.attachList}
+        ref={attachList}
         // Emptied while the next set loads; the header stays.
         data={rows}
         keyExtractor={keyExtractor}

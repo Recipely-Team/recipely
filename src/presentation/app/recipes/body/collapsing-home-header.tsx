@@ -55,13 +55,13 @@ export const CollapsingHomeHeader = ({
   const insets = useSafeAreaInsets();
 
   const bandStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: reduceMotion ? ValueConstants.zero : headerTranslateY.value }],
+    transform: [{ translateY: reduceMotion ? ValueConstants.zero : headerTranslateY.get() }],
   }));
 
   const titleStyle = useAnimatedStyle(() => {
     const scale = reduceMotion
       ? ValueConstants.one
-      : interpolate(scrollY.value, [ValueConstants.zero, layoutSizes.homeTitleShrink], HomeHeaderAnimation.titleScale, Extrapolation.CLAMP);
+      : interpolate(scrollY.get(), [ValueConstants.zero, layoutSizes.homeTitleShrink], HomeHeaderAnimation.titleScale, Extrapolation.CLAMP);
     return { transform: [{ scale }] };
   });
 
@@ -69,7 +69,7 @@ export const CollapsingHomeHeader = ({
     opacity: reduceMotion
       ? ValueConstants.one
       : interpolate(
-          scrollY.value,
+          scrollY.get(),
           [ValueConstants.zero, layoutSizes.homeTitleShrink * HomeHeaderAnimation.midpoint],
           HomeHeaderAnimation.eyebrowOpacity,
           Extrapolation.CLAMP,
@@ -80,7 +80,7 @@ export const CollapsingHomeHeader = ({
     opacity: reduceMotion
       ? ValueConstants.one
       : interpolate(
-          scrollY.value,
+          scrollY.get(),
           [layoutSizes.homeTitleShrink * HomeHeaderAnimation.midpoint, layoutSizes.homeTitleShrink],
           HomeHeaderAnimation.searchOpacity,
           Extrapolation.CLAMP,

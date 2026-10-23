@@ -29,7 +29,7 @@ export interface MobileRecipeDetailProps {
   /** The backend is still computing nutrition; the empty state says so. */
   isNutritionCalculating: boolean;
   userId: string | null;
-  checkedIngredients: boolean[];
+  checkedIngredients: readonly boolean[];
   portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
   completedSteps: readonly boolean[];

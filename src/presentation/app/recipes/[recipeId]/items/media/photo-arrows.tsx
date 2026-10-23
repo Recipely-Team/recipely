@@ -26,10 +26,10 @@ export const PhotoArrows = ({ current, total, revealed, onStep }: PhotoArrowsPro
   const opacity = useSharedValue(revealed ? ValueConstants.one : ValueConstants.zero);
 
   useEffect(() => {
-    opacity.value = withTiming(revealed ? ValueConstants.one : ValueConstants.zero, { duration: durations.hover });
+    opacity.set(withTiming(revealed ? ValueConstants.one : ValueConstants.zero, { duration: durations.hover }));
   }, [revealed, opacity]);
 
-  const fade = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  const fade = useAnimatedStyle(() => ({ opacity: opacity.get() }));
   const pointer = revealed ? 'auto' : 'none';
 
   return (

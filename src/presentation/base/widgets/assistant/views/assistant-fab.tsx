@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assistant-mascot';
@@ -32,7 +32,7 @@ export interface AssistantFabProps {
 export const AssistantFab = ({ status, onOpen }: AssistantFabProps): React.JSX.Element => {
   const { colors } = useTheme();
   const reduceMotion = useReduceMotion();
-  const ring = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const [ring] = useState(() => new Animated.Value(ValueConstants.zero));
   const idle = status === AssistantStatus.Idle;
 
   useEffect(() => {

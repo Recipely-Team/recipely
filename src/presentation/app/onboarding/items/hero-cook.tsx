@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -34,14 +34,20 @@ export const HeroCook = ({ active = true }: HeroProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const a = t().onboarding.art;
   const reducedMotion = useReducedMotion();
-  const [left, setLeft] = useState(TIMER_START_S);
+  const running = active && !reducedMotion;
+  // Starting or stopping the slide's timer winds it back to the top, in the same render.
+  const [timer, setTimer] = useState({ running, left: TIMER_START_S });
+  if (timer.running !== running) setTimer({ running, left: TIMER_START_S });
+  const left = timer.running === running ? timer.left : TIMER_START_S;
 
   useEffect(() => {
-    setLeft(TIMER_START_S);
-    if (!active || reducedMotion) return;
-    const id = setInterval(() => setLeft((s) => Math.max(ValueConstants.zero, s - ValueConstants.one)), TimeConstants.millisecondsPerSecond);
+    if (!running) return;
+    const id = setInterval(
+      () => setTimer((current) => ({ ...current, left: Math.max(ValueConstants.zero, current.left - ValueConstants.one) })),
+      TimeConstants.millisecondsPerSecond,
+    );
     return () => clearInterval(id);
-  }, [active, reducedMotion]);
+  }, [running]);
 
   return (
     <View style={styles.root}>
@@ -75,7 +81,7 @@ export const HeroCook = ({ active = true }: HeroProps): React.JSX.Element => {
 
 /** Five bars breathing out of phase: the assistant listening. Static with reduced motion. */
 const Waveform = ({ color, running }: { color: string; running: boolean }): React.JSX.Element => {
-  const bars = useRef(Array.from({ length: BAR_COUNT }, () => new Animated.Value(ValueConstants.one))).current;
+  const [bars] = useState(() => Array.from({ length: BAR_COUNT }, () => new Animated.Value(ValueConstants.one)));
   useEffect(() => {
     if (!running) return;
     const loops = bars.map((bar, i) =>

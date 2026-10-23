@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { isWeb } from '@infrastructure/constants/platform';
@@ -31,7 +31,7 @@ export const useOnboardingAutoplay = (index: number, count: number, advance: () 
   const reducedMotion = useReducedMotion();
   const [screenReader, setScreenReader] = useState(false);
   const [stopped, setStopped] = useState(false);
-  const progress = useRef(new Animated.Value(AnimationConstants.progressMin)).current;
+  const [progress] = useState(() => new Animated.Value(AnimationConstants.progressMin));
   const running = !stopped && !reducedMotion && !screenReader && index < count - ValueConstants.one;
 
   useEffect(() => {

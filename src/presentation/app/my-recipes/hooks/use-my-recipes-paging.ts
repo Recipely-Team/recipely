@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import type { Failure } from '@core/failure';
 import { StoreStatus } from '@application/store/store-status';
@@ -30,11 +29,11 @@ export const useMyRecipesPaging = (
   const mine = myRecipesStore((s) => s.mine);
   const active = tab === TabType.Saved ? saved : tab === TabType.Liked ? liked : tab === TabType.Created ? mine : null;
 
-  const onItemsEndReached = useCallback((): void => {
+  const onItemsEndReached = (): void => {
     if (tab === TabType.Saved) void savedRecipesStore.getState().loadMoreSaved();
     else if (tab === TabType.Liked) void likedRecipesStore.getState().loadMoreLiked();
     else if (tab === TabType.Created) void myRecipesStore.getState().loadMoreMine();
-  }, [tab, savedRecipesStore, likedRecipesStore, myRecipesStore]);
+  };
 
   const loaded = active?.status === StoreStatus.Loaded ? active : null;
   const itemsFooter = { isLoadingMoreItems: loaded?.isLoadingMore === true, itemsMoreFailure: loaded?.moreFailure ?? null };

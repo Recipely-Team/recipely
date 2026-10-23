@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { Dimensions } from 'react-native';
-import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import { type RefObject, useCallback, useMemo, useRef, useState } from 'react';
+import { Dimensions, type NativeScrollEvent, type NativeSyntheticEvent, type ScrollView } from 'react-native';
 import { recipeFacts } from '@presentation/app/recipes/[recipeId]/model/recipe-facts';
 import { usePortionScaling } from '@presentation/app/recipes/[recipeId]/hooks/use-portion-scaling';
 import { spokenIngredientLines } from '@presentation/app/recipes/[recipeId]/model/portions/spoken-ingredient-lines';
@@ -36,16 +35,19 @@ interface RecipeDetailAssistant {
  * - **One confirmation at a time**: delete is a modal over everything, and sheets drawn later
  *   (share, sign-in) take the spoken answer away from unsave.
  */
-export const useRecipeDetailAssistant = (vm: UseRecipeDetailResult): RecipeDetailAssistant => {
+export const useRecipeDetailAssistant = (
+  vm: UseRecipeDetailResult,
+  scrollViewRef: RefObject<ScrollView | null>,
+): RecipeDetailAssistant => {
   const [unsavePending, setUnsavePending] = useState(false);
   const scrollOffset = useRef(ValueConstants.zero);
   const scrollDetail = useCallback(
     (direction: AssistantScrollDirectionType): boolean =>
       moveScrollTo(
-        vm.scrollViewRef.current,
+        scrollViewRef.current,
         scrollTargetFor(direction, scrollOffset.current, Dimensions.get('window').height),
       ),
-    [vm.scrollViewRef],
+    [scrollViewRef],
   );
   const portions = usePortionScaling(vm.recipe ?? null);
   const ingredients = useMemo(() => spokenIngredientLines(portions.ingredients), [portions.ingredients]);

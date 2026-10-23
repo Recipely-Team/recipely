@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -39,7 +39,7 @@ const HAPTIC_INTERVAL_MS = 1500;
 export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JSX.Element => {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const scale = useRef(new Animated.Value(ValueConstants.one)).current;
+  const [scale] = useState(() => new Animated.Value(ValueConstants.one));
 
   useEffect(() => {
     // Pulse animation

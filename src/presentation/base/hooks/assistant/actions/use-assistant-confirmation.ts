@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { useIsScreenFocused } from '@presentation/base/hooks/assistant/use-is-screen-focused';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -34,27 +34,24 @@ export const useAssistantConfirmation = (
 ): void => {
   const { assistantActionRegistry } = useStores();
   const isFocused = useIsScreenFocused();
-  const handlers = useRef({ onConfirm, onCancel });
-  handlers.current = { onConfirm, onCancel };
-
-  const confirm = useCallback(async () => {
-    handlers.current.onConfirm();
-    return { ok: true };
-  }, []);
-  const cancel = useCallback(async () => {
-    handlers.current.onCancel();
-    return { ok: true };
-  }, []);
+  const confirm = useEffectEvent(onConfirm);
+  const cancel = useEffectEvent(onCancel);
 
   useEffect(() => {
     // Focus too: a sheet on a screen the user left must not take the answer.
     if (!visible || !isFocused) return;
 
-    const unregisterConfirm = assistantActionRegistry.register(AssistantAction.Confirm, confirm);
-    const unregisterCancel = assistantActionRegistry.register(AssistantAction.Cancel, cancel);
+    const unregisterConfirm = assistantActionRegistry.register(AssistantAction.Confirm, () => {
+      confirm();
+      return Promise.resolve({ ok: true });
+    });
+    const unregisterCancel = assistantActionRegistry.register(AssistantAction.Cancel, () => {
+      cancel();
+      return Promise.resolve({ ok: true });
+    });
     return () => {
       unregisterConfirm();
       unregisterCancel();
     };
-  }, [visible, isFocused, assistantActionRegistry, confirm, cancel]);
+  }, [visible, isFocused, assistantActionRegistry]);
 };

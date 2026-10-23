@@ -21,7 +21,7 @@ export interface RecipeStepsProps {
   recipeId: string;
   isOwner: boolean;
   isExpanded: boolean;
-  checkedIngredients: boolean[];
+  checkedIngredients: readonly boolean[];
   portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
   completedSteps: readonly boolean[];

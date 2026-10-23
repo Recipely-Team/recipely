@@ -71,17 +71,23 @@ export const useFileImport = (): UseFileImportResult => {
   const pick = usePickImportFiles();
   const isDragging = useFileDrop(pages.add);
   const [selected, setSelected] = useState<number | null>(null);
-  const [ticks, setTicks] = useState(ValueConstants.zero);
+  // Tagged with whether a read is running: a new read starts its stages from the first.
+  const [stage, setStage] = useState({ isReading: false, ticks: ValueConstants.zero });
 
   const isReading = state.status === StoreStatus.Loading;
   const draftId = state.status === StoreStatus.Loaded ? state.receipt.draftId : null;
 
   useEffect(() => () => fileImportStore.getState().clear(), [fileImportStore]);
 
+  if (stage.isReading !== isReading) setStage({ isReading, ticks: ValueConstants.zero });
+  const ticks = stage.isReading === isReading ? stage.ticks : ValueConstants.zero;
+
   useEffect(() => {
     if (!isReading) return;
-    setTicks(ValueConstants.zero);
-    const tick = setInterval(() => setTicks((n) => n + ValueConstants.one), FILE_STAGE_TICK_MS);
+    const tick = setInterval(
+      () => setStage((current) => ({ ...current, ticks: current.ticks + ValueConstants.one })),
+      FILE_STAGE_TICK_MS,
+    );
     return () => clearInterval(tick);
   }, [isReading]);
 

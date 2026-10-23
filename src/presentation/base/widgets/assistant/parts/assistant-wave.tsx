@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { radii } from '@presentation/base/theme';
@@ -36,7 +36,7 @@ export interface AssistantWaveProps {
 export const AssistantWave = ({ active, color, bars, height }: AssistantWaveProps): React.JSX.Element => {
   // Read here, not passed down: the level ticks every 80 ms and only the bars draw it.
   const level = useStores().assistantSessionStore((s) => s.level);
-  const animated = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const [animated] = useState(() => new Animated.Value(ValueConstants.zero));
 
   useEffect(() => {
     Animated.timing(animated, {

@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { Image, type ImageLoadEventData } from 'expo-image';
 import { RecipePlaceholder } from '@presentation/base/widgets/media/recipe-placeholder';
@@ -41,14 +41,12 @@ export interface SmartPhotoProps {
 const SmartPhotoComponent = ({ url, accessibilityLabel, focus }: SmartPhotoProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const [frameRatio, setFrameRatio] = useState<number | null>(null);
-  const [photoRatio, setPhotoRatio] = useState<number | null>(null);
-  const [failed, setFailed] = useState(false);
+  // What the decoder said, tagged with the url it said it about: a new url starts unknown.
+  const [decoded, setDecoded] = useState<{ url: string; ratio: number | null; failed: boolean } | null>(null);
+  const current = decoded?.url === url ? decoded : null;
+  const photoRatio = current?.ratio ?? null;
+  const failed = current?.failed ?? false;
   const portrait = isPortraitPhoto(photoRatio, frameRatio);
-
-  useEffect(() => {
-    setFailed(false);
-    setPhotoRatio(null);
-  }, [url]);
 
   const onLayout = (event: LayoutChangeEvent): void => {
     const { width, height } = event.nativeEvent.layout;
@@ -57,7 +55,7 @@ const SmartPhotoComponent = ({ url, accessibilityLabel, focus }: SmartPhotoProps
 
   const onLoad = (event: ImageLoadEventData): void => {
     const { width, height } = event.source;
-    if (height > ValueConstants.zero) setPhotoRatio(width / height);
+    if (height > ValueConstants.zero) setDecoded({ url, ratio: width / height, failed: false });
   };
 
   return (
@@ -87,7 +85,7 @@ const SmartPhotoComponent = ({ url, accessibilityLabel, focus }: SmartPhotoProps
             transition={durations.imageFade}
             accessibilityLabel={accessibilityLabel}
             onLoad={onLoad}
-            onError={() => setFailed(true)}
+            onError={() => setDecoded({ url, ratio: null, failed: true })}
             style={StyleSheet.absoluteFill}
           />
         </>

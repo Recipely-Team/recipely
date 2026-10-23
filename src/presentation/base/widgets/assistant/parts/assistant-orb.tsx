@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 import { AssistantOrbAura } from '@presentation/base/widgets/assistant/parts/assistant-orb-aura';
@@ -58,8 +58,8 @@ export const AssistantOrb = ({ status, isMuted }: AssistantOrbProps): React.JSX.
   const speaking = status === AssistantStatus.Speaking && !isMuted;
   const live = assistantIsLive(status);
 
-  const drift = useRef(new Animated.Value(ValueConstants.zero)).current;
-  const sweep = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const [drift] = useState(() => new Animated.Value(ValueConstants.zero));
+  const [sweep] = useState(() => new Animated.Value(ValueConstants.zero));
 
   useEffect(() => {
     if (reduceMotion) return;

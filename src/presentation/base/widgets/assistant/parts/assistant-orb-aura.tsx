@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { useReduceMotion } from '@presentation/base/hooks/accessibility/use-reduce-motion';
@@ -32,8 +32,8 @@ export interface AssistantOrbAuraProps {
 export const AssistantOrbAura = ({ isSpeaking }: AssistantOrbAuraProps): React.JSX.Element => {
   const { colors } = useTheme();
   const reduceMotion = useReduceMotion();
-  const ring = useRef(new Animated.Value(ValueConstants.zero)).current;
-  const orbit = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const [ring] = useState(() => new Animated.Value(ValueConstants.zero));
+  const [orbit] = useState(() => new Animated.Value(ValueConstants.zero));
 
   useEffect(() => {
     if (reduceMotion) return;

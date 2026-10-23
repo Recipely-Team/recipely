@@ -71,15 +71,15 @@ export const WebRecipeCard = ({
   const scale = useSharedValue(ValueConstants.one);
   const totalMin = recipe.totalTimeMinutes;
 
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.get() }] }));
   const hoverProps =
     isWeb()
       ? {
           onMouseEnter: () => {
-            scale.value = withTiming(CARD_HOVER_LIFT, { duration: durations.hover });
+            scale.set(withTiming(CARD_HOVER_LIFT, { duration: durations.hover }));
           },
           onMouseLeave: () => {
-            scale.value = withTiming(ValueConstants.one, { duration: durations.hover });
+            scale.set(withTiming(ValueConstants.one, { duration: durations.hover }));
           },
         }
       : {};

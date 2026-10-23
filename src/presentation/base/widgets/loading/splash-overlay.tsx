@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { isWeb } from '@infrastructure/constants/platform';
 import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -40,7 +40,7 @@ export const SplashOverlay = (): React.JSX.Element | null => {
   const colors = useTheme().colors;
   const [visible, setVisible] = useState(!isWeb());
   const [leaving, setLeaving] = useState(false);
-  const opacity = useRef(new Animated.Value(ValueConstants.one)).current;
+  const [opacity] = useState(() => new Animated.Value(ValueConstants.one));
 
   const dismiss = useCallback((): void => {
     setLeaving(true);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { ListConstants, scrollThrottleMs, RoutePaths } from '@presentation/base/constants';
 import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/scrolling/assistant-scroll-direction';
@@ -9,7 +9,7 @@ import type { AssistantScrollableProps } from '@presentation/base/hooks/assistan
 import { StoreStatus } from '@application/store/store-status';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Easing, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
-import { type Href, useFocusEffect, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
+import { type Href, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { hiddenHeaderOffset } from '@presentation/app/recipes/model/hidden-header-offset';
@@ -35,6 +35,8 @@ import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-user-id';
+import { useLatestRef } from '@presentation/base/hooks/lifecycle/use-latest-ref';
+import { useIsScreenFocused } from '@presentation/base/hooks/assistant/use-is-screen-focused';
 
 const RECIPE_CARD_MIN_WIDTH = 300;
 const GRID_GAP = spacing.lg2;
@@ -119,8 +121,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   // When the feed last loaded successfully — what the focus refetch's staleness reads.
   const lastLoadedAtRef = useRef<number | null>(null);
   // Who the feed was loaded for: its rows carry viewer state (liked, saved), so a sign-in makes it stale.
-  const userIdRef = useRef(userId);
-  userIdRef.current = userId;
+  const userIdRef = useLatestRef(userId);
   const loadedForRef = useRef<string | null>(null);
   const load = useCallback(
     async (next: RecipeFilters): Promise<void> => {
@@ -132,7 +133,7 @@ export const useRecipeList = (): UseRecipeListResult => {
         loadedForRef.current = loadingFor;
       }
     },
-    [loadFromStore, recipeListStore],
+    [loadFromStore, recipeListStore, userIdRef],
   );
   const loadMore = recipeListStore((s) => s.loadMore);
   const { isWebShell, isExpanded, width, height } = useLayout();
@@ -172,35 +173,35 @@ export const useRecipeList = (): UseRecipeListResult => {
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       const y = event.contentOffset.y;
-      scrollY.value = y;
+      scrollY.set(y);
       if (reduceMotion) return;
-      const delta = y - lastScrollY.value;
+      const delta = y - lastScrollY.get();
       if (y <= layoutSizes.homeHeaderMax) {
-        if (headerHidden.value !== ValueConstants.zero) {
-          headerHidden.value = ValueConstants.zero;
-          headerTranslateY.value = withTiming(ValueConstants.zero, HEADER_TIMING);
+        if (headerHidden.get() !== ValueConstants.zero) {
+          headerHidden.set(ValueConstants.zero);
+          headerTranslateY.set(withTiming(ValueConstants.zero, HEADER_TIMING));
         }
-      } else if (delta > ValueConstants.zero && headerHidden.value !== ValueConstants.one) {
-        headerHidden.value = ValueConstants.one;
-        headerTranslateY.value = withTiming(hiddenHeaderY, HEADER_TIMING);
-      } else if (delta < -REVEAL_THRESHOLD && headerHidden.value !== ValueConstants.zero) {
-        headerHidden.value = ValueConstants.zero;
-        headerTranslateY.value = withTiming(ValueConstants.zero, HEADER_TIMING);
+      } else if (delta > ValueConstants.zero && headerHidden.get() !== ValueConstants.one) {
+        headerHidden.set(ValueConstants.one);
+        headerTranslateY.set(withTiming(hiddenHeaderY, HEADER_TIMING));
+      } else if (delta < -REVEAL_THRESHOLD && headerHidden.get() !== ValueConstants.zero) {
+        headerHidden.set(ValueConstants.zero);
+        headerTranslateY.set(withTiming(ValueConstants.zero, HEADER_TIMING));
       }
-      lastScrollY.value = y;
+      lastScrollY.set(y);
     },
     // Snap the band to whichever edge is nearer when scrolling settles.
     onMomentumEnd: () => {
       if (reduceMotion) return;
-      const hide = headerTranslateY.value < hiddenHeaderY / ValueConstants.two;
-      headerHidden.value = hide ? ValueConstants.one : ValueConstants.zero;
-      headerTranslateY.value = withTiming(hide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING);
+      const hide = headerTranslateY.get() < hiddenHeaderY / ValueConstants.two;
+      headerHidden.set(hide ? ValueConstants.one : ValueConstants.zero);
+      headerTranslateY.set(withTiming(hide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING));
     },
     onEndDrag: () => {
       if (reduceMotion) return;
-      const hide = headerTranslateY.value < hiddenHeaderY / ValueConstants.two;
-      headerHidden.value = hide ? ValueConstants.one : ValueConstants.zero;
-      headerTranslateY.value = withTiming(hide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING);
+      const hide = headerTranslateY.get() < hiddenHeaderY / ValueConstants.two;
+      headerHidden.set(hide ? ValueConstants.one : ValueConstants.zero);
+      headerTranslateY.set(withTiming(hide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING));
     },
   });
 
@@ -275,21 +276,21 @@ export const useRecipeList = (): UseRecipeListResult => {
     })();
   }, [load, filters, sortBy, debouncedSearch, buildApiFilters]);
 
-  // Refs, so these effects see the latest values without re-running on them.
-  const filtersRef = useRef(filters);
-  const sortByRef = useRef(sortBy);
-  const searchRef = useRef(debouncedSearch);
-  filtersRef.current = filters;
-  sortByRef.current = sortBy;
-  searchRef.current = debouncedSearch;
+  // Effect Events, so these effects read the latest filters without re-running on them.
+  const reloadCurrent = useEffectEvent(() => {
+    void reload(buildApiFilters(filters, sortBy, debouncedSearch));
+  });
+  const loadCurrent = useEffectEvent(() => {
+    void load(buildApiFilters(filters, sortBy, debouncedSearch));
+  });
   const didMountRef = useRef(false);
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
       return;
     }
-    void reload(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
-  }, [language, reload, buildApiFilters]);
+    reloadCurrent();
+  }, [language]);
 
   // Skips the mount run: the idle-load effect above already issued that request.
   const didSearchRef = useRef(false);
@@ -298,8 +299,8 @@ export const useRecipeList = (): UseRecipeListResult => {
       didSearchRef.current = true;
       return;
     }
-    void reload(buildApiFilters(filtersRef.current, sortByRef.current, debouncedSearch));
-  }, [debouncedSearch, reload, buildApiFilters]);
+    reloadCurrent();
+  }, [debouncedSearch]);
 
   // Re-fetch quietly on focus once the feed is stale; skip the mount focus.
   const didFocusRef = useRef(false);
@@ -312,20 +313,24 @@ export const useRecipeList = (): UseRecipeListResult => {
       }),
     [myRecipesStore],
   );
-  useFocusEffect(
-    useCallback(() => {
-      if (!didFocusRef.current) {
-        didFocusRef.current = true;
-        return;
-      }
-      const lastLoadedAt = lastLoadedAtRef.current;
-      const fresh = lastLoadedAt !== null && Date.now() - lastLoadedAt < FEED_STALE_AFTER_MS;
-      const sameViewer = loadedForRef.current === userIdRef.current;
-      if (fresh && sameViewer && !ownRecipesChangedRef.current) return;
-      ownRecipesChangedRef.current = false;
-      void load(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
-    }, [load, buildApiFilters]),
-  );
+  // Focus as state, not useFocusEffect: the refetch is an Effect Event, which runs only inside an effect.
+  const isFocused = useIsScreenFocused();
+  const refetchIfStale = useEffectEvent(() => {
+    const lastLoadedAt = lastLoadedAtRef.current;
+    const fresh = lastLoadedAt !== null && Date.now() - lastLoadedAt < FEED_STALE_AFTER_MS;
+    const sameViewer = loadedForRef.current === userId;
+    if (fresh && sameViewer && !ownRecipesChangedRef.current) return;
+    ownRecipesChangedRef.current = false;
+    loadCurrent();
+  });
+  useEffect(() => {
+    if (!isFocused) return;
+    if (!didFocusRef.current) {
+      didFocusRef.current = true;
+      return;
+    }
+    refetchIfStale();
+  }, [isFocused]);
 
   useRefreshFailureToast(state.status === StoreStatus.Loaded ? state.refreshFailure : undefined);
 
@@ -399,8 +404,8 @@ export const useRecipeList = (): UseRecipeListResult => {
     state.status === StoreStatus.Loaded && state.hasMore && answersCurrentQuery && !isLoadingMore;
   const onEndReached = useCallback((): void => {
     if (!canLoadMore) return;
-    void loadMore(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
-  }, [canLoadMore, loadMore, buildApiFilters]);
+    void loadMore(buildApiFilters(filters, sortBy, debouncedSearch));
+  }, [canLoadMore, loadMore, buildApiFilters, filters, sortBy, debouncedSearch]);
 
   return {
     state,
@@ -426,7 +431,7 @@ export const useRecipeList = (): UseRecipeListResult => {
       },
       onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
         const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-        scrollY.value = contentOffset.y;
+        scrollY.set(contentOffset.y);
 
         // The wide grid is nested in this ScrollView, so this scroll asks for the next page.
         const remaining = contentSize.height - (contentOffset.y + layoutMeasurement.height);
@@ -442,7 +447,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     },
     // One viewport minus a sliver, so the reader keeps their place.
     onAssistantScroll: (direction: AssistantScrollDirectionType): boolean =>
-      moveScrollTo(listRef.current, scrollTargetFor(direction, scrollY.value, height)),
+      moveScrollTo(listRef.current, scrollTargetFor(direction, scrollY.get(), height)),
     scrollY,
     headerTranslateY,
     reduceMotion,

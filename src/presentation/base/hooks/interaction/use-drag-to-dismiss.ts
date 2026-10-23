@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useLatestRef } from '@presentation/base/hooks/lifecycle/use-latest-ref';
 import { Animated, PanResponder } from 'react-native';
 import { shouldDismissDrag } from '@presentation/base/utils/should-dismiss-drag';
 import type { UseDragToDismissResult } from '@presentation/base/hooks/interaction/use-drag-to-dismiss-result';
@@ -20,9 +21,10 @@ const SNAP_BACK_DURATION_MS = 200;
  * dismissed mid-drag re-opens from a clean position.
  */
 export const useDragToDismiss = (onClose: () => void, visible: boolean): UseDragToDismissResult => {
-  const translateY = useRef(new Animated.Value(ValueConstants.zero)).current;
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+  // Not compiled: create() stores its callbacks, which the compiler reads as a ref access in render.
+  'use no memo';
+  const [translateY] = useState(() => new Animated.Value(ValueConstants.zero));
+  const onCloseRef = useLatestRef(onClose);
 
   useEffect(() => {
     if (visible) translateY.setValue(ValueConstants.zero);
@@ -38,6 +40,7 @@ export const useDragToDismiss = (onClose: () => void, visible: boolean): UseDrag
 
   const panResponder = useMemo(
     () =>
+      // eslint-disable-next-line react-hooks/refs -- create() stores the callbacks; the ref is read on release, never during render.
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onPanResponderGrant: () => {

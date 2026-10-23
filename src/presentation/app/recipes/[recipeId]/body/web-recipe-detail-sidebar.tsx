@@ -20,7 +20,7 @@ import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/us
 
 export interface WebRecipeDetailSidebarProps {
   recipe: RecipeEntity;
-  checkedIngredients: boolean[];
+  checkedIngredients: readonly boolean[];
   portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
   /** The backend is still computing nutrition; the empty state says so. */

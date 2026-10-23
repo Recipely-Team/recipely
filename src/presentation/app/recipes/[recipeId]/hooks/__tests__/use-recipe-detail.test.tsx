@@ -56,6 +56,8 @@ import { t } from '@presentation/i18n';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 import { configureStepProgressStore } from '@application/recipes/cooking/step-progress-store';
 
+const scrollViewRef = { current: null };
+
 const RECIPE_ID = 'recipe-3';
 const USER_ID = 'user-1';
 
@@ -269,7 +271,7 @@ const driveHook = (
   let latest: UseRecipeDetailResult | null = null;
 
   const Probe = (): null => {
-    latest = useRecipeDetail();
+    latest = useRecipeDetail(scrollViewRef);
     return null;
   };
 

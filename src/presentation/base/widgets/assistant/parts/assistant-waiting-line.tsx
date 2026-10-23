@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -50,7 +50,7 @@ export const AssistantWaitingLine = ({
 }: AssistantWaitingLineProps): React.JSX.Element | null => {
   const { colors } = useTheme();
   const reduceMotion = useReduceMotion();
-  const pulse = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const [pulse] = useState(() => new Animated.Value(ValueConstants.zero));
   // Muted outranks the other states.
   const isMutedLive = isMuted && status !== AssistantStatus.Idle;
   const isWaiting = WAITING.includes(status) || isMutedLive;

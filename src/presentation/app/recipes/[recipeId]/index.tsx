@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { type Href, useRouter } from 'expo-router';
@@ -36,9 +37,11 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const backLabel = useBackLabel();
   const { isExpanded } = useLayout();
   const insets = useSafeAreaInsets();
-  const vm = useRecipeDetail();
+  // The screen renders the ScrollView, so it owns the handle; the hooks borrow it.
+  const scrollViewRef = useRef<ScrollView>(null);
+  const vm = useRecipeDetail(scrollViewRef);
   useReportFailure(vm.failure ?? null, 'RecipeDetailScreen');
-  const assistant = useRecipeDetailAssistant(vm);
+  const assistant = useRecipeDetailAssistant(vm, scrollViewRef);
   // Removing a photo asks first (it may be the only one).
   const photos = useRecipePhotoUpload(vm.recipeId);
   const photoRemoval = usePhotoRemoval(photos.remove);
@@ -48,7 +51,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const commentHighlight = useCommentHighlight({
     recipeId: vm.recipeId,
     commentState: vm.commentState,
-    scrollViewRef: vm.scrollViewRef,
+    scrollViewRef,
   });
 
   return (
@@ -58,7 +61,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       <PageTitle subject={vm.recipe?.name} />
       <ResponsiveContainer route="recipeDetail" gutter={false} fill>
         <ScrollView
-          ref={vm.scrollViewRef}
+          ref={scrollViewRef}
           scrollEventThrottle={SCROLL_EVENT_THROTTLE_MS}
           onScroll={assistant.onScroll}
           contentContainerStyle={styles.scroll}

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 import { useIsScreenFocused } from '@presentation/base/hooks/assistant/use-is-screen-focused';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
@@ -22,12 +22,11 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 export const useAssistantScreenReading = (read: () => string): void => {
   const { assistantActionRegistry } = useStores();
   const isFocused = useIsScreenFocused();
-  const latest = useRef(read);
-  latest.current = read;
+  const current = useEffectEvent(read);
 
   // Focus, not mount: screens under the stack stay mounted.
   useEffect(() => {
     if (!isFocused) return;
-    return assistantActionRegistry.registerScreenReading(() => latest.current());
+    return assistantActionRegistry.registerScreenReading(() => current());
   }, [assistantActionRegistry, isFocused]);
 };

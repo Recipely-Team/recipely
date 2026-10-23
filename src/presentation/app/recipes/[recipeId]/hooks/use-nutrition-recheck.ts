@@ -39,27 +39,25 @@ export const useNutritionRecheck = (
   hasNutrition: boolean,
   reload: (id: string) => Promise<void>,
 ): boolean => {
-  const [waiting, setWaiting] = useState(false);
+  /** The recipe whose recheck has come back, whatever it said. */
+  const [answeredFor, setAnsweredFor] = useState<string | null>(null);
   /** The recipe this hook has already spent its one recheck on. */
   const rechecked = useRef<string | null>(null);
+  const missing = recipeId.length > ValueConstants.zero && !hasNutrition;
 
   useEffect(() => {
-    if (recipeId.length === ValueConstants.zero || hasNutrition) {
-      setWaiting(false);
-      return;
-    }
-    if (rechecked.current === recipeId) return;
-    rechecked.current = recipeId;
+    if (!missing || rechecked.current === recipeId) return;
 
-    setWaiting(true);
+    // Spent when it fires, not when it is scheduled: a cancelled timer gets another go.
     const timer = setTimeout(() => {
-      void reload(recipeId).finally(() => setWaiting(false));
+      rechecked.current = recipeId;
+      void reload(recipeId).finally(() => setAnsweredFor(recipeId));
     }, RECHECK_DELAY_MS);
 
     return () => {
       clearTimeout(timer);
     };
-  }, [recipeId, hasNutrition, reload]);
+  }, [recipeId, missing, reload]);
 
-  return waiting;
+  return missing && answeredFor !== recipeId;
 };

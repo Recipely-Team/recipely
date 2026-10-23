@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { SEVERITY_ICON } from '@presentation/base/theme/colors/surfaces/severity-icon';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -49,7 +49,7 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
   const { scheme } = useTheme();
   const surfaces = useSeveritySurfaces();
   const accent = surfaces[item.severity].icon;
-  const anim = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const [anim] = useState(() => new Animated.Value(ValueConstants.zero));
   const screenReader = useScreenReaderEnabled();
   useAnnounce(item.message);
 

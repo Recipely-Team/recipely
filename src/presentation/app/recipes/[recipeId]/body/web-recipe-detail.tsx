@@ -54,7 +54,7 @@ export interface WebRecipeDetailProps {
   onToggleSave: () => void;
   onCopyToDraft: () => void;
   onDelete: () => void;
-  checkedIngredients: boolean[];
+  checkedIngredients: readonly boolean[];
   portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
   completedSteps: readonly boolean[];

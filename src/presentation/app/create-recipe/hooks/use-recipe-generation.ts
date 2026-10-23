@@ -112,7 +112,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   const [genStep, setGenStep] = useState(ValueConstants.zero);
   const [prompt, setPrompt] = useState(CharConstants.empty);
   const [generateError, setGenerateError] = useState<string | null>(null);
-  const originalPrompt = useRef(CharConstants.empty);
+  const [originalPrompt, setOriginalPrompt] = useState(CharConstants.empty);
 
   // The assistant generates via ?prompt=; a ?draftId= being resumed wins.
   const startedFromParam = useRef(false);
@@ -133,23 +133,28 @@ const GEN_STEP_INTERVAL_MS = 620;
    * Leaving with the recipe still identical to it means there is nothing to
    * decide — see {@link onClose}.
    */
-  const openedAs = useRef<string | null>(null);
+  const [openedAs, setOpenedAs] = useState<string | null>(null);
   /**
    * The snapshot this screen adopted, kept whole. The editor has no field for
    * an import's `category`, `tags`, `tips`, `nutrition` or cover, and autosave
    * fires on open — so without carrying the original forward, merely LOOKING at
    * an imported draft overwrote everything the AI had extracted.
    */
-  const carried = useRef<DraftRecipeSnapshot | undefined>(undefined);
+  const [carried, setCarried] = useState<DraftRecipeSnapshot | undefined>(undefined);
 
   const refining = refineState.status === StoreStatus.Refining;
+
+  // router.replace changes the param on an already-mounted screen: that draft resumes too.
+  const [resumingFor, setResumingFor] = useState(draftId);
+  if (draftId !== resumingFor) {
+    setResumingFor(draftId);
+    if (draftId !== undefined) setPhase(PhaseType.Resuming);
+  }
 
   // Resume a draft passed via ?draftId once on mount.
   useEffect(() => {
     if (draftId === undefined) return;
     let cancelled = false;
-    // Also here: router.replace changes the param on an already-mounted screen.
-    setPhase(PhaseType.Resuming);
     FailureReporter.trail(ImportTrail.editorMounted);
     void (async () => {
       FailureReporter.trail(ImportTrail.draftFetchStarted);
@@ -177,11 +182,11 @@ const GEN_STEP_INTERVAL_MS = 620;
       FailureReporter.trail(ImportTrail.draftFetchOk);
       const loaded = result.value;
       const resumed = snapshotToEditable(loaded.snapshot);
-      carried.current = loaded.snapshot;
+      setCarried(loaded.snapshot);
       setRecipe(resumed);
-      openedAs.current = JSON.stringify(editableToSnapshot(resumed, loaded.snapshot));
+      setOpenedAs(JSON.stringify(editableToSnapshot(resumed, loaded.snapshot)));
       setChatHistory([...loaded.chatHistory]);
-      originalPrompt.current = loaded.prompt;
+      setOriginalPrompt(loaded.prompt);
       setPrompt(loaded.prompt);
       setPhase(PhaseType.Preview);
       FailureReporter.trail(ImportTrail.editorReady);
@@ -213,14 +218,13 @@ const GEN_STEP_INTERVAL_MS = 620;
     const opened = recipeToEditable(editing, []);
     setRecipe(opened);
     // What "unchanged" is measured against when the user leaves.
-    openedAs.current = JSON.stringify(editableToSnapshot(opened, undefined));
+    setOpenedAs(JSON.stringify(editableToSnapshot(opened, undefined)));
     setPhase(PhaseType.Preview);
   }, [editing, setRecipe]);
 
   // Drive the generating checklist while the backend works.
   useEffect(() => {
     if (phase !== PhaseType.Generating) return;
-    setGenStep(ValueConstants.zero);
     const id = setInterval(() => {
       setGenStep((s) => Math.min(GEN_STEP_COUNT - ValueConstants.one, s + ValueConstants.one));
     }, GEN_STEP_INTERVAL_MS);
@@ -228,10 +232,10 @@ const GEN_STEP_INTERVAL_MS = 620;
   }, [phase]);
 
   const { cancel: cancelAutosave, flush: flushDraft } = useDraftAutosave({
-    carried: carried.current,
+    carried,
     enabled: phase === PhaseType.Preview && editRecipeId === undefined,
     draftId: activeDraftId,
-    prompt: originalPrompt.current,
+    prompt: originalPrompt,
     recipe,
     chatHistory,
     upsertDraft,
@@ -257,8 +261,9 @@ const GEN_STEP_INTERVAL_MS = 620;
     async (text: string): Promise<void> => {
       const trimmed = text.trim();
       if (trimmed.length === ValueConstants.zero) return;
-      originalPrompt.current = trimmed;
+      setOriginalPrompt(trimmed);
       setGenerateError(null);
+      setGenStep(ValueConstants.zero);
       setPhase(PhaseType.Generating);
       generation.current += ValueConstants.one;
       const mine = generation.current;
@@ -352,7 +357,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   const onStartBlank = useCallback((): void => {
     setRecipe(emptyEditable());
     setChatHistory([]);
-    originalPrompt.current = CharConstants.empty;
+    setOriginalPrompt(CharConstants.empty);
     setPhase(PhaseType.Preview);
   }, [setRecipe]);
 
@@ -365,12 +370,11 @@ const GEN_STEP_INTERVAL_MS = 620;
   /** Work that is not in the drafts list yet — the only thing worth asking about. */
   const hasUnkeptWork = useCallback((): boolean => {
     const unchanged =
-      openedAs.current !== null &&
-      openedAs.current === JSON.stringify(editableToSnapshot(recipe, carried.current));
+      openedAs !== null && openedAs === JSON.stringify(editableToSnapshot(recipe, carried));
     // Editing a saved recipe asks about ANY change — clearing a field is one too.
     if (editRecipeId !== undefined) return phase === PhaseType.Preview && !unchanged;
     return phase === PhaseType.Preview && editableHasContent(recipe) && !unchanged;
-  }, [editRecipeId, phase, recipe]);
+  }, [editRecipeId, phase, recipe, openedAs, carried]);
 
   const onClose = useCallback((): boolean => {
     if (hasUnkeptWork()) {
@@ -407,8 +411,8 @@ const GEN_STEP_INTERVAL_MS = 620;
   );
 
   // The system's own back (Android back, iOS swipe) asks the same question as the close button.
-  const leaveGuard = useLeaveGuard(hasUnkeptWork(), () => {
-    afterExit.current = () => leaveGuard.release();
+  useLeaveGuard(hasUnkeptWork(), (release) => {
+    afterExit.current = release;
     setExitOpen(true);
   });
 
@@ -429,13 +433,13 @@ const GEN_STEP_INTERVAL_MS = 620;
   const onSaveDraftAndExit = useCallback(async (): Promise<void> => {
     await upsertDraft({
       id: activeDraftId,
-      prompt: originalPrompt.current,
-      snapshot: editableToSnapshot(recipe, carried.current),
+      prompt: originalPrompt,
+      snapshot: editableToSnapshot(recipe, carried),
       chatHistory,
     });
     setExitOpen(false);
     leave();
-  }, [upsertDraft, activeDraftId, recipe, chatHistory, leave]);
+  }, [upsertDraft, activeDraftId, recipe, chatHistory, leave, originalPrompt, carried]);
 
   const onDiscardAndExit = useCallback(async (): Promise<void> => {
     // Cancel autosave BEFORE deleting, or a pending save re-creates the draft.
@@ -447,7 +451,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   }, [cancelAutosave, draftsStore, activeDraftId, editRecipeId, leave]);
 
   return {
-    importReview: importReviewOf(carried.current),
+    importReview: importReviewOf(carried),
     flushDraft,
     stopAutosave: cancelAutosave,
     phase,
@@ -471,8 +475,8 @@ const GEN_STEP_INTERVAL_MS = 620;
     chatExpanded,
     onExpandChat: () => setChatExpanded(true),
     onCollapseChat: () => setChatExpanded(false),
-    canRegenerate: originalPrompt.current.length > ValueConstants.zero,
-    onRegenerate: () => void runGenerate(originalPrompt.current),
+    canRegenerate: originalPrompt.length > ValueConstants.zero,
+    onRegenerate: () => void runGenerate(originalPrompt),
     proposal,
     onSubmitRefine,
     onAcceptProposal,

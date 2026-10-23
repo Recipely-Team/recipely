@@ -77,15 +77,15 @@ export const ImportProgressRing = ({ progress, done, look, dish }: ImportProgres
   const bloom = useSharedValue(ValueConstants.zero);
 
   useEffect(() => {
-    bloom.value = withRepeat(
+    bloom.set(withRepeat(
       withTiming(ValueConstants.one, { duration: durations.pulse, easing: Easing.inOut(Easing.ease) }),
       -ValueConstants.one,
       true,
-    );
+    ));
   }, [bloom]);
 
   const bloomStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: BLOOM_MIN_SCALE + bloom.value * (BLOOM_MAX_SCALE - BLOOM_MIN_SCALE) }],
+    transform: [{ scale: BLOOM_MIN_SCALE + bloom.get() * (BLOOM_MAX_SCALE - BLOOM_MIN_SCALE) }],
   }));
 
   return (

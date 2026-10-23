@@ -67,9 +67,9 @@ export const FilterSortFab = ({
 
   const containerStyle = useAnimatedStyle(() => {
     // At rest the button takes its natural width, so a late font can still widen it.
-    if (reduceMotion || extendedWidth === ValueConstants.zero || scrollY.value <= morphRange[ValueConstants.zero]) return {};
+    if (reduceMotion || extendedWidth === ValueConstants.zero || scrollY.get() <= morphRange[ValueConstants.zero]) return {};
     const width = interpolate(
-      scrollY.value,
+      scrollY.get(),
       morphRange,
       [extendedWidth, controlSizes.fab],
       Extrapolation.CLAMP,
@@ -78,10 +78,10 @@ export const FilterSortFab = ({
   });
 
   const labelStyle = useAnimatedStyle(() => {
-    if (reduceMotion || labelWidth === ValueConstants.zero || scrollY.value <= morphRange[ValueConstants.zero]) {
+    if (reduceMotion || labelWidth === ValueConstants.zero || scrollY.get() <= morphRange[ValueConstants.zero]) {
       return { opacity: ValueConstants.one, marginLeft: spacing.xs2 };
     }
-    const progress = interpolate(scrollY.value, morphRange, [ValueConstants.one, ValueConstants.zero], Extrapolation.CLAMP);
+    const progress = interpolate(scrollY.get(), morphRange, [ValueConstants.one, ValueConstants.zero], Extrapolation.CLAMP);
     return {
       opacity: progress,
       width: labelWidth * progress,

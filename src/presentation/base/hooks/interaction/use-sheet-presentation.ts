@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, useWindowDimensions, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import { ValueConstants } from '@core/constants';
 
@@ -53,13 +53,15 @@ export const useSheetPresentation = (
   const { height: windowHeight } = useWindowDimensions();
   const [isMounted, setIsMounted] = useState(visible);
   const [panelHeight, setPanelHeight] = useState<number | null>(null);
-  const scrim = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const [scrim] = useState(() => new Animated.Value(ValueConstants.zero));
   /** 0 while resting, 1 while off-screen. */
-  const away = useRef(new Animated.Value(ValueConstants.one)).current;
+  const [away] = useState(() => new Animated.Value(ValueConstants.one));
+
+  // Opening mounts the sheet in the same render, so it is there for the enter animation.
+  if (visible && !isMounted) setIsMounted(true);
 
   useEffect(() => {
     if (visible) {
-      setIsMounted(true);
       Animated.timing(scrim, {
         toValue: ValueConstants.one,
         duration: SCRIM_ENTER_MS,

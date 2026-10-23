@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { useLatestRef } from '@presentation/base/hooks/lifecycle/use-latest-ref';
 import { editableHasContent } from '@presentation/app/create-recipe/model/drafting/editable-has-content';
 import { editableToSnapshot } from '@presentation/app/create-recipe/model/drafting/editable-to-snapshot';
 import type { ChatMessage } from '@domain/drafts/chat-message';
@@ -51,8 +52,7 @@ export const useDraftAutosave = ({
   upsertDraft,
 }: UseDraftAutosaveArgs): { cancel: () => void; flush: () => Promise<void> } => {
   // Latest values in a ref: the timer reads fresh data without re-arming.
-  const latest = useRef({ prompt, recipe, carried, chatHistory });
-  latest.current = { prompt, recipe, carried, chatHistory };
+  const latest = useLatestRef({ prompt, recipe, carried, chatHistory });
 
   const cancelled = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -65,7 +65,7 @@ export const useDraftAutosave = ({
         snapshot: editableToSnapshot(latest.current.recipe, latest.current.carried),
         chatHistory: latest.current.chatHistory,
       }),
-    [draftId, upsertDraft],
+    [draftId, upsertDraft, latest],
   );
 
   useEffect(() => {

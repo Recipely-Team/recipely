@@ -22,6 +22,8 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { useRecipeDetailAssistant } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail-assistant';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
 
+const scrollViewRef = { current: null };
+
 /**
  * **"Remove this from my saved recipes" by voice.** Unsaving a curated recipe asks first: the
  * assistant only marks it pending and the save flips on the spoken Confirm. While the delete sheet
@@ -37,7 +39,6 @@ function harness(over: Partial<UseRecipeDetailResult> = {}, extraStores: Partial
   const vm = {
     recipeId: 'r1',
     recipe: recipeEntityOf({ id: 'r1', name: 'Soup' }),
-    scrollViewRef: { current: null },
     commentState: null,
     isOwner: false,
     checkedIngredients: [],
@@ -59,7 +60,7 @@ function harness(over: Partial<UseRecipeDetailResult> = {}, extraStores: Partial
   const view: { pending: boolean; renders: number } = { pending: false, renders: 0 };
   const Probe = (): null => {
     view.renders += 1;
-    view.pending = useRecipeDetailAssistant(vm).unsavePending;
+    view.pending = useRecipeDetailAssistant(vm, scrollViewRef).unsavePending;
     return null;
   };
   const stores = {

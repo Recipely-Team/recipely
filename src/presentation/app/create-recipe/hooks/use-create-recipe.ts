@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useState } from 'react';
 import { isString } from '@core/guards/type-guards';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,7 +24,7 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
   const editRecipeId = isString(params.editRecipeId) ? params.editRecipeId : undefined;
 
   // Stable UUID for a new draft; resumed drafts keep their own id.
-  const newDraftId = useRef(Crypto.randomUUID()).current;
+  const [newDraftId] = useState(() => Crypto.randomUUID());
   const activeDraftId = draftId ?? newDraftId;
 
   const editable = useEditableRecipe();
