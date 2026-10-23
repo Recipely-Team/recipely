@@ -1,7 +1,7 @@
-Create a missing dish with AI from search, easier reading with large text, and fixes.
+Faster screens, staying signed in, an offline shopping list, and fixes.
 
-• Opening an imported draft no longer closes the app on Android.
-• Search for a missing dish and create it with AI in one tap.
-• Ask the assistant how to cook a dish and it explains.
-• Easier to read with large text; photos described for screen readers.
-• The feed shows when more recipes are loading.
+• Smoother screens: the assistant, recipe pages and the feed respond faster.
+• You stay signed in: your session renews itself instead of ending.
+• Your shopping list and saved recipes open without a connection.
+• A recipe added while you scroll no longer shows up twice.
+• Changing the language updates every screen at once.

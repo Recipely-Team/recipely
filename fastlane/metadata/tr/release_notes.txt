@@ -1,7 +1,7 @@
-Aramada olmayan yemeği yapay zekâyla oluştur, büyük yazıda daha rahat okuma ve düzeltmeler.
+Daha hızlı ekranlar, açık kalan oturum, çevrimdışı alışveriş listesi ve düzeltmeler.
 
-• Android'de içe aktarılan taslağı açmak artık uygulamayı kapatmıyor.
-• Bulunmayan bir yemeği tek dokunuşla yapay zekâyla oluştur.
-• Asistana bir yemeğin nasıl yapıldığını sor, anlatsın.
-• Büyük yazıda daha rahat okuma; fotoğraflar ekran okuyucular için tanımlı.
-• Akışta daha fazla tarif yüklenirken görüyorsun.
+• Daha akıcı ekranlar: asistan, tarif sayfaları ve akış daha hızlı tepki veriyor.
+• Oturumun açık kalıyor: oturum kapanmak yerine kendiliğinden yenileniyor.
+• Alışveriş listen ve kaydettiğin tarifler internet olmadan da açılıyor.
+• Kaydırırken eklenen bir tarif artık iki kez görünmüyor.
+• Dili değiştirince tüm ekranlar hemen güncelleniyor.
