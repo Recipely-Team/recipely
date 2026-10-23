@@ -23,7 +23,6 @@ import { t } from '@presentation/i18n';
 
 export interface AssistantVoiceStageProps {
   status: AssistantStatusType;
-  level: number;
   isMuted: boolean;
   onStart: () => void;
   onStop: () => void;
@@ -49,7 +48,6 @@ export interface AssistantVoiceStageProps {
  */
 export const AssistantVoiceStage = ({
   status,
-  level,
   isMuted,
   onStart,
   onStop,
@@ -64,7 +62,6 @@ export const AssistantVoiceStage = ({
     <View style={styles.stage}>
       <View style={styles.waveRow}>
         <AssistantWave
-          level={level}
           active={isSounding}
           color={colors.primary}
           bars={assistantMetrics.wavePanelBars}

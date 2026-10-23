@@ -11,8 +11,6 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 interface AssistantSessionView {
   status: AssistantStatusType;
   view: AssistantViewType;
-  /** 0..1, already scaled for a bar — see the store. Scaling it again pins a whisper at the top. */
-  level: number;
   isMuted: boolean;
   transcript: AssistantTranscriptLineType[];
   remainingSeconds: number;
@@ -46,7 +44,6 @@ export const useAssistantSession = (): AssistantSessionView => {
 
   const status = assistantSessionStore((s) => s.session.status);
   const view = assistantSessionStore((s) => s.view);
-  const level = assistantSessionStore((s) => s.level);
   const isMuted = assistantSessionStore((s) => s.isMuted);
   const transcript = assistantSessionStore((s) => s.transcript);
   const remainingSeconds = assistantSessionStore((s) => s.remainingSeconds);
@@ -73,7 +70,6 @@ export const useAssistantSession = (): AssistantSessionView => {
   return {
     status,
     view,
-    level,
     isMuted,
     transcript,
     remainingSeconds,

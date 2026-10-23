@@ -17,7 +17,6 @@ import { t } from '@presentation/i18n';
 
 export interface AssistantMiniBarProps {
   status: AssistantStatusType;
-  level: number;
   isMuted: boolean;
   onExpand: () => void;
   onToggleMute: () => void;
@@ -40,7 +39,6 @@ export interface AssistantMiniBarProps {
  */
 export const AssistantMiniBar = ({
   status,
-  level,
   isMuted,
   onExpand,
   onToggleMute,
@@ -79,7 +77,6 @@ export const AssistantMiniBar = ({
           {assistantStatusLabel(status)}
         </ThemedText>
         <AssistantWave
-          level={level}
           active={isSounding}
           color={colors.primary}
           bars={assistantMetrics.waveMiniBars}

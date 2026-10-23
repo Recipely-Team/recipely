@@ -16,7 +16,6 @@ import { t } from '@presentation/i18n';
 
 export interface AssistantOrbSurfaceProps {
   status: AssistantStatusType;
-  level: number;
   isMuted: boolean;
   transcript: AssistantTranscriptLineType[];
   notice: string | null;
@@ -48,7 +47,6 @@ export interface AssistantOrbSurfaceProps {
  */
 export const AssistantOrbSurface = ({
   status,
-  level,
   isMuted,
   transcript,
   notice,
@@ -141,7 +139,7 @@ export const AssistantOrbSurface = ({
           accessibilityLabel={t().assistant.title}
           accessibilityValue={{ text: assistantStatusValue(status, isMuted) }}
         >
-          <AssistantOrb status={status} level={level} isMuted={isMuted} />
+          <AssistantOrb status={status} isMuted={isMuted} />
         </Pressable>
       </View>
     </>

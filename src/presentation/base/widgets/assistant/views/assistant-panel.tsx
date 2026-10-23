@@ -72,7 +72,6 @@ export const AssistantPanel = ({
   const { height } = useWindowDimensions();
   const {
     status,
-    level,
     isMuted,
     transcript,
     deniedReason,
@@ -185,7 +184,6 @@ export const AssistantPanel = ({
         ) : (
           <AssistantVoiceStage
             status={status}
-            level={level}
             isMuted={isMuted}
             onStart={toggleVoice}
             onStop={toggleVoice}

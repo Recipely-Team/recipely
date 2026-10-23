@@ -36,6 +36,8 @@ jest.mock('@presentation/base/hooks/assistant/use-assistant-session', () => ({
 }));
 
 import { act } from 'react-test-renderer';
+import { create } from 'zustand';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { Linking } from 'react-native';
 import { AssistantPanel } from '@presentation/base/widgets/assistant/views/assistant-panel';
 import { AssistantStatus } from '@application/assistant/session/assistant-status';
@@ -49,6 +51,8 @@ const mounted: { unmount: () => void }[] = [];
 const render = () => {
   const result = renderComponent(
     <AssistantPanel onClose={jest.fn()} onMinimize={jest.fn()} bottomOffset={0} />,
+    // The wave reads the level from the session store itself.
+    { assistantSessionStore: create(() => ({ level: 0 })) } as unknown as Partial<ApplicationStores>,
   );
   mounted.push(result.renderer);
   return result;

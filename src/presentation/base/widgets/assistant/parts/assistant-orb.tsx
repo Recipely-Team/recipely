@@ -11,10 +11,10 @@ import { useReduceMotion } from '@presentation/base/hooks/accessibility/use-redu
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, colorAlphas, opacities, radii, spacing } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
+import { useStores } from '@presentation/bootstrap/use-stores';
 
 export interface AssistantOrbProps {
   status: AssistantStatusType;
-  level: number;
   isMuted: boolean;
 }
 
@@ -51,7 +51,8 @@ const ORB_SHAPE = {
  *   and two drifting highlights; React Native has no radial gradient and no
  *   blur, so a CSS translation of this design would have been flat circles.
  */
-export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): React.JSX.Element => {
+export const AssistantOrb = ({ status, isMuted }: AssistantOrbProps): React.JSX.Element => {
+  const level = useStores().assistantSessionStore((s) => s.level);
   const { colors } = useTheme();
   const reduceMotion = useReduceMotion();
   const speaking = status === AssistantStatus.Speaking && !isMuted;
@@ -180,7 +181,6 @@ export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): Rea
           <View style={[styles.lift, { backgroundColor: colors.primary + colorAlphas.faint }]} />
           <View style={[styles.waveBadge, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
             <AssistantWave
-              level={level}
               active
               color={colors.primary}
               bars={assistantMetrics.orbWaveBars}

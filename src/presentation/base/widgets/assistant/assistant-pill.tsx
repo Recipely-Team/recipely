@@ -70,7 +70,6 @@ export const AssistantPill = (): React.JSX.Element | null => {
     status,
     view,
     setView,
-    level,
     isMuted,
     transcript,
     deniedReason,
@@ -151,7 +150,6 @@ export const AssistantPill = (): React.JSX.Element | null => {
         {isOpen ? (
           <AssistantOrbSurface
             status={status}
-            level={level}
             isMuted={isMuted}
             transcript={transcript}
             notice={error !== null ? t().assistant.requestFailed : assistantNotice(status, deniedReason)}
@@ -185,7 +183,6 @@ export const AssistantPill = (): React.JSX.Element | null => {
       {view === AssistantView.Mini ? (
         <AssistantMiniBar
           status={status}
-          level={level}
           isMuted={isMuted}
           onExpand={() => setView(AssistantView.Open)}
           onToggleMute={toggleMute}
