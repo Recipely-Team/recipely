@@ -3,7 +3,7 @@ import { digestStringAsync, CryptoDigestAlgorithm } from 'expo-crypto';
 import { CharConstants, RadixConstants } from '@core/constants';
 
 /** Pad character for a single-digit hex byte. */
-const HEX_PAD = '0';
+const HEX_PAD = CharConstants.zeroDigit;
 
 /** Generates a cryptographically random hex nonce of the given byte length. */
 /** 32 bytes of entropy — what Apple's Sign In documentation asks for. */

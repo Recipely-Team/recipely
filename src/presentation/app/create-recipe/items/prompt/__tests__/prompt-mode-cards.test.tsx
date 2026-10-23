@@ -16,13 +16,13 @@ const storesWith = (availability: FridgeAvailabilityType): Partial<ApplicationSt
 describe('PromptModeCards', () => {
   it('draws nothing while "Cook from my fridge" is off, so the AI screen is unchanged', () => {
     const { root } = renderComponent(<PromptModeCards />, storesWith(FridgeAvailability.Off));
-    expect(root.findAll((node) => node.props.accessibilityRole === 'tab')).toHaveLength(0);
+    expect(root.findAll((node) => node.props['accessibilityRole'] === 'tab')).toHaveLength(0);
   });
 
   it('opens the fridge flow from its card when the flag is on', () => {
     const { root } = renderComponent(<PromptModeCards />, storesWith(FridgeAvailability.On));
-    const tabs = root.findAll((node) => node.props.accessibilityRole === 'tab' && typeof node.props.onPress === 'function');
-    const fridge = tabs.find((node) => node.props.disabled === false);
+    const tabs = root.findAll((node) => node.props['accessibilityRole'] === 'tab' && typeof node.props['onPress'] === 'function');
+    const fridge = tabs.find((node) => node.props['disabled'] === false);
     act(() => (fridge?.props as { onPress: () => void }).onPress());
     expect(mockPush).toHaveBeenCalledWith(RoutePaths.fridge);
   });

@@ -7,7 +7,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { borderWidths, fontSizes, fontWeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface EditorFooterProps {
   isLast: boolean;
@@ -19,10 +19,11 @@ export interface EditorFooterProps {
 
 /** The editor's pinned actions (spec §3): Back, and Next — or Save on the last step — disabled until the step is valid. */
 export const EditorFooter = ({ isLast, canContinue, isSaving, onBack, onNext }: EditorFooterProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
-  const copy = t().instagram;
+  const copy = t.instagram;
   return (
     <View style={[styles.footer, { borderTopColor: colors.border, paddingBottom: (isWebShell ? ValueConstants.zero : insets.bottom) + spacing.md }]}>
       <Pressable onPress={onBack} accessibilityRole="button" style={[styles.back, { borderColor: colors.cardBorder }]}>

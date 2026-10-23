@@ -3,7 +3,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { borderWidths, fontSizes, fontWeights, lineHeights, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import type { MacroReading } from '@domain/recipes/nutrition/macro-reading';
 import { ValueConstants } from '@core/constants';
 import { formatNutritionNumber } from '@presentation/app/recipes/[recipeId]/model/nutrition/format-nutrition-number';
@@ -17,8 +17,9 @@ export interface MacroTileProps {
 
 /** One macro: grams, its name, and a bar filled to its share of the daily reference. */
 export const MacroTile = ({ reading, compact }: MacroTileProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().nutrition;
+  const strings = t.nutrition;
   const locale = useLocale();
   const valueLineHeight = useTextLineHeight(fontSizes.subtitle, lineHeights.tight);
   const smallLineHeight = useTextLineHeight(fontSizes.small, lineHeights.snug);

@@ -1,5 +1,6 @@
 import { ImportSource } from '@presentation/base/constants/import-source';
 import { EditProfileSection } from '@presentation/base/constants/edit-profile-section';
+import { CharConstants } from '@core/constants';
 
 /**
  * Every in-app expo-router navigation target in one place, so route strings
@@ -9,7 +10,7 @@ import { EditProfileSection } from '@presentation/base/constants/edit-profile-se
  */
 export const RoutePaths = {
   /** The app root — the launch gate that sends a visitor to onboarding or the feed. */
-  root: '/',
+  root: CharConstants.slash,
   onboarding: '/onboarding',
   login: '/login',
   register: '/register',

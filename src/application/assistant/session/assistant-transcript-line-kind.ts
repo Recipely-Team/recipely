@@ -10,5 +10,3 @@ export const AssistantTranscriptLineKind = {
   Speech: 'speech',
   Action: 'action',
 } as const;
-
-export type AssistantTranscriptLineKindType = (typeof AssistantTranscriptLineKind)[keyof typeof AssistantTranscriptLineKind];

@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, controlSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface CheckChipProps {
   /** The legend's copy of the chip is decoration; a row's chip is announced. */
@@ -15,15 +15,16 @@ export interface CheckChipProps {
  * text line; it disappears once the line is edited.
  */
 export const CheckChip = ({ decorative = false }: CheckChipProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <View
       style={[styles.chip, { backgroundColor: colors.chipBackground }]}
       accessible={!decorative}
       importantForAccessibility={decorative ? 'no-hide-descendants' : 'auto'}
-      accessibilityLabel={decorative ? undefined : t().createRecipe.importReview.chipA11y}
+      accessibilityLabel={decorative ? undefined : t.createRecipe.importReview.chipA11y}
     >
-      <ThemedText style={[styles.label, { color: colors.chipText }]}>{t().createRecipe.importReview.check}</ThemedText>
+      <ThemedText style={[styles.label, { color: colors.chipText }]}>{t.createRecipe.importReview.check}</ThemedText>
     </View>
   );
 };

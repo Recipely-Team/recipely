@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface StatsButtonProps {
   onPress: () => void;
@@ -15,9 +15,10 @@ export interface StatsButtonProps {
  * "Entry points"): an icon on a narrow window, an outlined "Stats" pill when expanded.
  */
 export const StatsButton = ({ onPress }: StatsButtonProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { isExpanded } = useLayout();
-  const copy = t().creatorStats;
+  const copy = t.creatorStats;
   return (
     <Pressable
       onPress={onPress}

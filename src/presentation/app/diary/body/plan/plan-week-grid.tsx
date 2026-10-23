@@ -11,7 +11,7 @@ import { formatPlanWeekday } from '@presentation/base/utils/meal-plan/format-pla
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { planMealLabel } from '@presentation/base/utils/meal-plan/plan-meal-label';
 import { borderWidths, fontSizes, fontWeights, mealPlanSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface PlanWeekGridProps {
@@ -36,10 +36,11 @@ const MEALS: readonly MealSlotType[] = Object.values(MealSlot);
  * outlined head marks the column instead.
  */
 export const PlanWeekGrid = ({ week, today, goal, onAdd, onOpen, onStep, onOptions }: PlanWeekGridProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().mealPlan;
-  const days = week.days;
+  const strings = t.mealPlan;
+  const days = week.days();
 
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scroll}>
@@ -85,7 +86,7 @@ export const PlanWeekGrid = ({ week, today, goal, onAdd, onOpen, onStep, onOptio
           <View key={meal} style={styles.row}>
             <View style={styles.headColumn}>
               <SizedText size={fontSizes.caption} weight={fontWeights.bold}>
-                {planMealLabel(meal)}
+                {planMealLabel(t, meal)}
               </SizedText>
             </View>
             {days.map((date) => {
@@ -107,7 +108,7 @@ export const PlanWeekGrid = ({ week, today, goal, onAdd, onOpen, onStep, onOptio
                     <Pressable
                       onPress={() => onAdd(date, meal)}
                       accessibilityRole="button"
-                      accessibilityLabel={strings.addTo.replace('{slot}', planMealLabel(meal))}
+                      accessibilityLabel={strings.addTo.replace('{slot}', planMealLabel(t, meal))}
                       style={({ pressed }) => [
                         styles.add,
                         isEmpty ? styles.addFill : null,

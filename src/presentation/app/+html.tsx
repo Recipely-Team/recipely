@@ -3,6 +3,7 @@ import { PROD_WEB_APP_BASE_URL } from '@infrastructure/constants/api/api-hosts';
 import type { PropsWithChildren } from 'react';
 import { SiteMetadata } from '@presentation/base/constants/site-metadata';
 import { BrandColors } from '@presentation/base/theme/colors/palette/brand-colors';
+import { WebShimmer } from '@presentation/base/widgets/loading/web-shimmer';
 
 const SITE_URL = PROD_WEB_APP_BASE_URL;
 
@@ -81,6 +82,8 @@ export const RootHtml = ({ children }: PropsWithChildren): React.ReactElement =>
       <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       <script dangerouslySetInnerHTML={{ __html: SERVICE_WORKER_REGISTRATION }} />
       <ScrollViewStyleReset />
+      {/* In the static HTML, not injected by script: prerendered skeletons stay frozen until hydration otherwise. */}
+      <style id={WebShimmer.keyframesId} dangerouslySetInnerHTML={{ __html: WebShimmer.keyframesCss }} />
     </head>
     <body>{children}</body>
   </html>

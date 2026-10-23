@@ -1,10 +1,11 @@
-import type { Failure } from '@core/failure';
-import type { StoreStatus } from '@application/store/store-status';
-import type { FileImportReceipt } from '@domain/recipes/import-file/file-import-receipt';
+import type { FileImportIdle } from '@application/recipes/import-file/states/file-import-idle';
+import type { FileImportLoading } from '@application/recipes/import-file/states/file-import-loading';
+import type { FileImportLoaded } from '@application/recipes/import-file/states/file-import-loaded';
+import type { FileImportError } from '@application/recipes/import-file/states/file-import-error';
 
 /** One reading of picked pages: not started, being read, read into a draft, or refused. */
 export type FileImportState =
-  | { status: typeof StoreStatus.Idle }
-  | { status: typeof StoreStatus.Loading }
-  | { status: typeof StoreStatus.Loaded; receipt: FileImportReceipt }
-  | { status: typeof StoreStatus.Error; failure: Failure };
+  | FileImportIdle
+  | FileImportLoading
+  | FileImportLoaded
+  | FileImportError;

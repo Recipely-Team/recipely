@@ -32,6 +32,6 @@ const OCCUPIED_CORNERS: readonly string[] = [RoutePaths.recipes, RoutePaths.auto
 export const useAssistantFloatingClearance = (): number => {
   const pathname = usePathname();
   // Exact match: /recipes/42 has no filter button.
-  const occupied = OCCUPIED_CORNERS.includes(pathname);
-  return occupied ? controlSizes.fabExtended + spacing.lg : ValueConstants.zero;
+  const isOccupied = OCCUPIED_CORNERS.includes(pathname);
+  return isOccupied ? controlSizes.fabExtended + spacing.lg : ValueConstants.zero;
 };

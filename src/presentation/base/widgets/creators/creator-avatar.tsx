@@ -6,7 +6,7 @@ import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { CreatorPlatformMark } from '@presentation/base/widgets/creators/creator-platform-mark';
 import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
 import { creatorPlatformName } from '@presentation/base/widgets/creators/creator-platform-name';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface CreatorAvatarProps {
   name: string;
@@ -33,13 +33,14 @@ const MARK_OFFSET = -(spacing.xxs + borderWidths.medium);
  * - **The seals are one image** for assistive tech: "Verified on Instagram and TikTok".
  */
 export const CreatorAvatar = ({ name, photoUrl, platforms, size, markSize, groundColor }: CreatorAvatarProps): React.JSX.Element => {
+  const t = useTranslations();
   const [primary] = platforms;
   // Pulls the second seal over the primary until their centres are `shift` apart.
   const overlap = Math.round(markSize * creatorMarkGeometry.overlapShare) - markSize - borderWidths.medium * ValueConstants.two;
   const label =
     platforms.length > ValueConstants.one || primary === undefined
-      ? t().creators.verifiedOnBoth
-      : t().creators.verifiedOn.replace('{platform}', creatorPlatformName(primary));
+      ? t.creators.verifiedOnBoth
+      : t.creators.verifiedOn.replace('{platform}', creatorPlatformName(t, primary));
 
   return (
     <View style={{ width: size, height: size }}>

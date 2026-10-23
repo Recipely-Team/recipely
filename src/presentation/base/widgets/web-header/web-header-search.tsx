@@ -69,6 +69,8 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
     borderWidth: borderWidths.hairline,
   },
+  // `outlineStyle` is react-native-web only; RN's TextStyle has no such key, hence the widening.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   input: {
     flex: ValueConstants.one,
     alignSelf: 'stretch',

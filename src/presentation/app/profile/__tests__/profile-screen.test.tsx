@@ -19,9 +19,9 @@ import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { ProfileScreen } from '@presentation/app/profile';
-import type { AuthStoreState } from '@application/auth/auth-store-state';
-import type { UserProfileStoreState } from '@application/user-profile/user-profile-store-state';
-import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import type { AuthStore } from '@application/auth/auth-store-contract';
+import type { UserProfileStore } from '@application/user-profile/user-profile-store-contract';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
@@ -96,7 +96,7 @@ const buildSession = (bio: string | undefined): AuthSessionEntity => {
 
 /** Builds an authStore whose session user carries the given bio. */
 const makeAuthStore = (bio: string | undefined) =>
-  create<AuthStoreState>(() => ({
+  create<AuthStore>(() => ({
     state: { status: 'authenticated', session: buildSession(bio) },
     signIn: jest.fn(),
     register: jest.fn(),
@@ -118,17 +118,16 @@ const makeAuthStore = (bio: string | undefined) =>
   }));
 
 const makeUserProfileStore = () =>
-  create<UserProfileStoreState>(() => ({
+  create<UserProfileStore>(() => ({
     state: { status: 'idle' },
     load: jest.fn(),
     reset: jest.fn(),
   }));
 
 const makeSavedRecipesStore = () =>
-  create<SavedRecipesStoreState>(() => ({
-    savedRecipes: [],
+  create<SavedRecipesStore>(() => ({
+    saved: { status: 'idle' },
     savedIds: new Set<string>(),
-    listState: { status: 'idle' },
     has: () => false,
     toggle: jest.fn(),
     addLocal: jest.fn(),
@@ -136,7 +135,6 @@ const makeSavedRecipesStore = () =>
     setSaved: jest.fn(),
     loadSaved: jest.fn(),
     loadMoreSaved: jest.fn(),
-    paging: { page: 0, total: 0, pageSize: 20, hasMore: false, isLoadingMore: false, removed: 0, moreFailure: null },
     clear: jest.fn(),
   }));
 

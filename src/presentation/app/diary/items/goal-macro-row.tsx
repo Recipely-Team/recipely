@@ -3,7 +3,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SuffixField } from '@presentation/base/widgets/diary/suffix-field';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { controlSizes, diarySizes, fontSizes, fontWeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface GoalMacroRowProps {
@@ -16,6 +16,7 @@ export interface GoalMacroRowProps {
 
 /** One gram goal on the Daily goals sheet: label, its share of the calories, and a gram field. */
 export const GoalMacroRow = ({ label, value, onChange, share }: GoalMacroRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <View style={[styles.row, { backgroundColor: colors.surface }]}>
@@ -29,7 +30,7 @@ export const GoalMacroRow = ({ label, value, onChange, share }: GoalMacroRowProp
           </SizedText>
         )}
       </View>
-      <SuffixField value={value} onChangeText={onChange} accessibilityLabel={label} suffix={t().nutrition.g} numeric style={styles.field} />
+      <SuffixField value={value} onChangeText={onChange} accessibilityLabel={label} suffix={t.nutrition.g} numeric style={styles.field} />
     </View>
   );
 };

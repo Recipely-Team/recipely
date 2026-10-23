@@ -1,6 +1,6 @@
 ---
 name: paged-list
-description: Building or changing any list that pages from the backend in the Recipely app — the repository/DTO side (page envelope, RequestMapper), the store side (PagedListLoader or ListPaging helpers), and the UI side (FlatList onEndReached, FeedFooter, refresh on focus, session reset). Use whenever a list screen, a list endpoint integration, infinite scroll, pull-to-refresh, a list count, or a "list doesn't load more / shows stale data / skips rows" bug is involved.
+description: Building or changing any list that pages from the backend in the Recipely app — the repository/DTO side (page envelope, RequestMapper), the store side (PagedListLoader), and the UI side (FlatList onEndReached, FeedFooter, refresh on focus, session reset). Use whenever a list screen, a list endpoint integration, infinite scroll, pull-to-refresh, a list count, or a "list doesn't load more / shows stale data / skips rows" bug is involved.
 ---
 
 # Paged lists (service → store → UI)
@@ -29,12 +29,12 @@ without it.
   field. It already handles: newest first page wins (generation), no double load, a failure that
   keeps the rows and records `moreFailure`, `refresh` without a skeleton, removals shifting the
   next page's offset, `reset`.
-- **Only if the rows must live outside a `PagedList`** (Saved / Liked / Created keep `ListPaging`
-  beside their rows), use the shared helpers in `@application/store/paging/list-paging/`:
-  `loadMorePaging` for the next page, `pagingAfterRemoval` for every removed row, `pagingOf` for
-  a landed first page, `NO_PAGING` to start. **Never hand-roll `page + 1`.**
-- **Every local removal goes through the loader/helper** (`removeItem`, `rewriteItems`,
-  `pagingAfterRemoval`). A removal moves every later server row up; asking `page + 1` skips them.
+- **There is no second mechanism.** Saved, Liked and Created used to keep rows, status and a
+  `ListPaging` cursor in three fields beside each other, which let the status say "loaded" over
+  another load's rows. They are `PagedList`s now; the `list-paging/` helpers are gone. A store
+  that needs membership as well (Saved's `savedIds`) derives it in the loader's `write`.
+  **Never hand-roll `page + 1`.**
+- **Every local removal goes through the loader** (`removeItem`, `rewriteItems`). A removal moves every later server row up; asking `page + 1` skips them.
 - **A failed reload clears `isLoadingMore`** — a reload supersedes an in-flight next page, and a
   flag left on stops paging for good.
 - **Counts read the server's `total`**, never `items.length`.

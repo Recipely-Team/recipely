@@ -5,7 +5,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { BrandColors } from '@presentation/base/theme/colors/palette/brand-colors';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { controlSizes, durations, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface PhotoArrowsProps {
@@ -23,13 +23,14 @@ export interface PhotoArrowsProps {
  * broken.
  */
 export const PhotoArrows = ({ current, total, revealed, onStep }: PhotoArrowsProps): React.JSX.Element => {
+  const t = useTranslations();
   const opacity = useSharedValue(revealed ? ValueConstants.one : ValueConstants.zero);
 
   useEffect(() => {
-    opacity.value = withTiming(revealed ? ValueConstants.one : ValueConstants.zero, { duration: durations.hover });
+    opacity.set(withTiming(revealed ? ValueConstants.one : ValueConstants.zero, { duration: durations.hover }));
   }, [revealed, opacity]);
 
-  const fade = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  const fade = useAnimatedStyle(() => ({ opacity: opacity.get() }));
   const pointer = revealed ? 'auto' : 'none';
 
   return (
@@ -38,7 +39,7 @@ export const PhotoArrows = ({ current, total, revealed, onStep }: PhotoArrowsPro
         <Animated.View style={[styles.arrow, styles.left, fade]} pointerEvents={pointer}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t().recipes.previousPhoto}
+            accessibilityLabel={t.recipes.previousPhoto}
             onPress={() => onStep(-ValueConstants.one)}
             style={[styles.button, shadows.md]}
           >
@@ -50,7 +51,7 @@ export const PhotoArrows = ({ current, total, revealed, onStep }: PhotoArrowsPro
         <Animated.View style={[styles.arrow, styles.right, fade]} pointerEvents={pointer}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t().recipes.nextPhoto}
+            accessibilityLabel={t.recipes.nextPhoto}
             onPress={() => onStep(ValueConstants.one)}
             style={[styles.button, shadows.md]}
           >

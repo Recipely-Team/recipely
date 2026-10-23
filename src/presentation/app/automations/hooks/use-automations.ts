@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useStore } from 'zustand';
 import { type Href, useFocusEffect, useRouter } from "expo-router";
 import { StoreStatus } from "@application/store/store-status";
 import { CharConstants, ValueConstants } from "@core/constants";
@@ -9,7 +10,7 @@ import {
   showSuccessToast,
 } from "@presentation/base/feedback/show-toast";
 import type { DmRuleEntity } from "@domain/instagram/dm/dm-rule-entity";
-import { t } from "@presentation/i18n";
+import { useTranslations } from '@presentation/i18n';
 import { RoutePaths } from "@presentation/base/constants";
 import { AutomationsViewKind } from "@presentation/app/automations/model/automations-view-kind";
 import type { UseAutomationsResult } from "@presentation/app/automations/model/use-automations-result";
@@ -26,10 +27,11 @@ import type { UseAutomationsResult } from "@presentation/app/automations/model/u
  * - **A refused switch flips back** (the store) and says why (a toast).
  */
 export const useAutomations = (): UseAutomationsResult => {
+  const t = useTranslations();
   const router = useRouter();
   const { instagramStore, automationsStore } = useStores();
-  const connection = instagramStore((s) => s.connection);
-  const rules = automationsStore((s) => s.rules);
+  const connection = useStore(instagramStore, (s) => s.connection);
+  const rules = useStore(automationsStore, (s) => s.rules);
   const { phase, connect } = useInstagramConnect();
   const linked =
     connection.status === StoreStatus.Loaded ? connection.connection : null;
@@ -59,6 +61,23 @@ export const useAutomations = (): UseAutomationsResult => {
             ? AutomationsViewKind.Rules
             : AutomationsViewKind.Locked;
 
+  // Stable: every RuleCard in the list receives these, and a new function per render defeats its memo.
+  const onOpen = useCallback(
+    (rule: DmRuleEntity) => router.push(RoutePaths.automationActivity(rule.id) as Href),
+    [router],
+  );
+  const onToggle = useCallback(
+    (rule: DmRuleEntity, isEnabled: boolean) => {
+      void automationsStore
+        .getState()
+        .setEnabled(rule, isEnabled)
+        .then((result) => {
+          if (!result.ok) showErrorToast(result.failure);
+        });
+    },
+    [automationsStore],
+  );
+
   return {
     view,
     connectionFailure,
@@ -76,16 +95,8 @@ export const useAutomations = (): UseAutomationsResult => {
       rules.status === StoreStatus.Loaded &&
       rules.items.length > ValueConstants.zero,
     onStats: () => router.push(RoutePaths.automationStats),
-    onOpen: (rule) =>
-      router.push(RoutePaths.automationActivity(rule.id) as Href),
-    onToggle: (rule, enabled) => {
-      void automationsStore
-        .getState()
-        .setEnabled(rule, enabled)
-        .then((result) => {
-          if (!result.ok) showErrorToast(result.failure);
-        });
-    },
+    onOpen,
+    onToggle,
     pendingDelete,
     isDeleting,
     onAskDelete: setPendingDelete,
@@ -99,7 +110,7 @@ export const useAutomations = (): UseAutomationsResult => {
           setDeleting(false);
           setPendingDelete(null);
           if (!result.ok) return void showErrorToast(result.failure);
-          showSuccessToast(t().instagram.deleted);
+          showSuccessToast(t.instagram.deleted);
         });
     },
     onCloseDelete: () => setPendingDelete(null),

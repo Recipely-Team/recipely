@@ -8,7 +8,7 @@ import { getRandomValues as expoGetRandomValues } from 'expo-crypto';
 const polyfill = expoGetRandomValues as unknown as Crypto['getRandomValues'];
 
 const target = globalThis as { crypto?: { getRandomValues?: Crypto['getRandomValues'] } };
-if (typeof target.crypto !== 'object' || target.crypto === null) {
+if (typeof target.crypto !== 'object') {
   target.crypto = { getRandomValues: polyfill };
 } else if (typeof target.crypto.getRandomValues !== 'function') {
   target.crypto.getRandomValues = polyfill;

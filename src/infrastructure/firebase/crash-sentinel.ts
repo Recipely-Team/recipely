@@ -52,7 +52,7 @@ export const CrashSentinel = {
    */
   async arm(): Promise<void> {
     if (isWeb()) return;
-    armed = true;
+    isArmed = true;
     await kvStore.setItem(CRASH_SENTINEL_STORAGE_KEY, lastStep);
   },
 
@@ -63,18 +63,18 @@ export const CrashSentinel = {
    */
   async noteStep(step: string): Promise<void> {
     lastStep = step;
-    if (isWeb() || !armed) return;
+    if (isWeb() || !isArmed) return;
     await kvStore.setItem(CRASH_SENTINEL_STORAGE_KEY, step);
   },
 
   /** The user left on purpose: this session owes no explanation. */
   async disarm(): Promise<void> {
     if (isWeb()) return;
-    armed = false;
+    isArmed = false;
     await kvStore.removeItem(CRASH_SENTINEL_STORAGE_KEY);
   },
 };
 
-let armed = false;
+let isArmed = false;
 /** The step a session is on before it has reached anything of its own. */
 let lastStep = 'app: launched';

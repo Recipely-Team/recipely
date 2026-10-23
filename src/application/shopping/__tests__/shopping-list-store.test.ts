@@ -35,7 +35,7 @@ describe('ShoppingListStore', () => {
     const a = loadedItems(store.getState().list)[0];
     let answer: (r: Result<ShoppingItemEntity, Failure>) => void = () => undefined;
     repo.update.mockReturnValue(new Promise((resolve) => (answer = resolve)));
-    const pending = store.getState().setChecked(a, true);
+    const pending = store.getState().setChecked(a!, true);
     expect(ids(store)).toEqual(['b', 'a+', 'c+']);
     answer(fail(new NetworkFailure('offline')));
     const r = await pending;
@@ -46,9 +46,9 @@ describe('ShoppingListStore', () => {
   it('lets a later tick of the same line decide when an earlier one fails', async () => {
     const { repo, store } = await loaded();
     const a = loadedItems(store.getState().list)[0];
-    repo.update.mockResolvedValueOnce(fail(new NetworkFailure('x'))).mockResolvedValueOnce(ok(a));
-    const first = store.getState().setChecked(a, true);
-    const second = store.getState().setChecked(a.withChecked(true), false);
+    repo.update.mockResolvedValueOnce(fail(new NetworkFailure('x'))).mockResolvedValueOnce(ok(a!));
+    const first = store.getState().setChecked(a!, true);
+    const second = store.getState().setChecked(a!.withChecked(true), false);
     expect((await first).ok).toBe(true);
     await second;
     expect(ids(store)).toEqual(['a', 'b', 'c+']);
@@ -58,7 +58,7 @@ describe('ShoppingListStore', () => {
     const { repo, store } = await loaded();
     const b = loadedItems(store.getState().list)[1];
     repo.remove.mockResolvedValue(fail(new ConflictFailure('changed')));
-    const pending = store.getState().remove(b);
+    const pending = store.getState().remove(b!);
     expect(ids(store)).toEqual(['a', 'c+']);
     await pending;
     expect(ids(store)).toEqual(['a', 'b', 'c+']);

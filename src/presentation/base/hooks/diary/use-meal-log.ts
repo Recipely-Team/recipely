@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { CharConstants, ValueConstants } from '@core/constants';
 import type { MealSlotType } from '@domain/diary/meal-slot';
 import type { MealCandidate } from '@domain/diary/meal/meal-candidate';
@@ -46,29 +46,52 @@ export const useMealLog = ({ initialText, onLog }: MealLogOptions): MealLog => {
   const { parseMeal } = useStores();
   const locale = useLocale();
   const pickPhotoInput = useMealPhotoPick(locale);
-  const [state, setState] = useState<MealLogState>({ phase: MealLogPhase.Compose });
+  // A description handed in at mount is being parsed from the first render.
+  const [state, setState] = useState<MealLogState>({
+    phase: initialText === null ? MealLogPhase.Compose : MealLogPhase.Parsing,
+  });
   const [text, setText] = useState(initialText ?? CharConstants.empty);
-  const [photoDenied, setPhotoDenied] = useState(false);
+  const [isPhotoDenied, setPhotoDenied] = useState(false);
   const latest = useRef(ValueConstants.zero);
 
-  const parse = useCallback(
-    async (input: MealParseInputType): Promise<void> => {
+  /** The state a parse leads to, or null when a later request superseded it. */
+  const request = useCallback(
+    async (input: MealParseInputType): Promise<MealLogState | null> => {
       latest.current += ValueConstants.one;
       const ticket = latest.current;
-      setState({ phase: MealLogPhase.Parsing });
       const result = await parseMeal.execute(input);
-      if (ticket !== latest.current) return;
-      if (!result.ok) return setState({ phase: MealLogPhase.Failed, failure: result.failure, retry: input });
-      setState({ phase: MealLogPhase.Review, rows: result.value.items.map(rowOf), note: result.value.note });
+      if (ticket !== latest.current) return null;
+      return result.ok
+        ? { phase: MealLogPhase.Review, rows: result.value.items.map(rowOf), note: result.value.note }
+        : { phase: MealLogPhase.Failed, failure: result.failure, retry: input };
     },
     [parseMeal],
   );
+  const land = (next: MealLogState | null): void => {
+    if (next !== null) setState(next);
+  };
+  const parse = useCallback(
+    async (input: MealParseInputType): Promise<void> => {
+      setState({ phase: MealLogPhase.Parsing });
+      land(await request(input));
+    },
+    [request],
+  );
 
+  // A new assistant description replaces the field in the render it arrives in, and is parsed.
+  const [described, setDescribed] = useState(initialText);
+  if (initialText !== described) {
+    setDescribed(initialText);
+    if (initialText !== null) {
+      setText(initialText);
+      setState({ phase: MealLogPhase.Parsing });
+    }
+  }
+  const parseDescription = useEffectEvent((description: string) => {
+    void request({ kind: MealParseInputKind.Text, text: description, locale }).then(land);
+  });
   useEffect(() => {
-    if (initialText === null) return;
-    setText(initialText);
-    void parse({ kind: MealParseInputKind.Text, text: initialText, locale });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only a new assistant description re-parses
+    if (initialText !== null) parseDescription(initialText);
   }, [initialText]);
 
   const updateRows = (change: (row: MealReviewRow) => MealReviewRow) =>
@@ -81,7 +104,7 @@ export const useMealLog = ({ initialText, onLog }: MealLogOptions): MealLog => {
     state,
     text,
     setText,
-    photoDenied,
+    photoDenied: isPhotoDenied,
     parseText: () => void parse({ kind: MealParseInputKind.Text, text, locale }),
     pickPhoto: () => {
       setPhotoDenied(false);
@@ -106,7 +129,7 @@ export const useMealLog = ({ initialText, onLog }: MealLogOptions): MealLog => {
         return { ...row, candidate, gramsText: value };
       }),
     selectedCount: chosen.length,
-    selectedCalories: chosen.reduce((sum, row) => sum + row.candidate.nutrients.calories, ValueConstants.zero),
+    selectedCalories: chosen.reduce((sum, row) => sum + row.candidate.nutrients().calories, ValueConstants.zero),
     add: async (meal) => {
       if (chosen.length === ValueConstants.zero) return;
       const saved = await onLog(chosen.map((row) => row.candidate), meal);

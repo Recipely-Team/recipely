@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 
@@ -25,6 +25,7 @@ export const EditProfileHeader = ({
   onBack,
   onSave,
 }: EditProfileHeaderProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -39,12 +40,12 @@ export const EditProfileHeader = ({
         hitSlop={TARGET_SLOP}
         style={[styles.backBtn, { backgroundColor: colors.surface }]}
         accessibilityRole="button"
-        accessibilityLabel={t().errors.back}
+        accessibilityLabel={t.errors.back}
       >
         <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.text} />
       </Pressable>
       <ThemedText variant="subtitle" style={styles.headerTitle}>
-        {t().editProfile.title}
+        {t.editProfile.title}
       </ThemedText>
       <Pressable
         onPress={onSave}
@@ -52,13 +53,13 @@ export const EditProfileHeader = ({
         hitSlop={TARGET_SLOP}
         style={[styles.saveBtn, { backgroundColor: colors.primary }, saveEnabled ? null : styles.saveBtnDisabled]}
         accessibilityRole="button"
-        accessibilityLabel={t().editProfile.save}
+        accessibilityLabel={t.editProfile.save}
       >
         {isSaving ? (
           <ActivityIndicator size="small" color={colors.primaryText} />
         ) : (
           <ThemedText style={[styles.saveBtnLabel, { color: colors.primaryText }]}>
-            {t().editProfile.save}
+            {t.editProfile.save}
           </ThemedText>
         )}
       </Pressable>

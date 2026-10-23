@@ -1,4 +1,5 @@
 import { memo, useEffect } from 'react';
+import { useStore } from 'zustand';
 import { WebRecipeCard, type WebRecipeCardProps } from '@presentation/base/widgets/cards/web-recipe-card';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
@@ -16,11 +17,15 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  * Seeding on mount is what `RecipeListItem` does and for the same reason: the
  * store is the one place both the card and the assistant agree to read.
  */
-const WebRecipeListItemComponent = (props: WebRecipeCardProps): React.JSX.Element => {
-  const { likesStore } = useStores();
+/** The card's props minus `saved`, which the item reads for its own recipe. */
+export type WebRecipeListItemProps = Omit<WebRecipeCardProps, 'saved'>;
+
+const WebRecipeListItemComponent = (props: WebRecipeListItemProps): React.JSX.Element => {
+  const { likesStore, savedRecipesStore } = useStores();
   const { recipe } = props;
-  const likeState = likesStore((state) => state.byRecipe[recipe.id]);
-  const seed = likesStore((state) => state.seed);
+  const isSaved = useStore(savedRecipesStore, (state) => state.savedIds.has(recipe.id));
+  const likeState = useStore(likesStore, (state) => state.byRecipe[recipe.id]);
+  const seed = useStore(likesStore, (state) => state.seed);
 
   useEffect(() => {
     seed(recipe.id, recipe.likeCount, recipe.likedByMe);
@@ -29,6 +34,7 @@ const WebRecipeListItemComponent = (props: WebRecipeCardProps): React.JSX.Elemen
   return (
     <WebRecipeCard
       {...props}
+      saved={isSaved}
       likedByMe={likeState?.likedByMe ?? recipe.likedByMe}
       likeCount={likeState?.likeCount ?? recipe.likeCount}
     />

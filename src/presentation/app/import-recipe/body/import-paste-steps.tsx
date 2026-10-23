@@ -8,7 +8,7 @@ import {
   decorSizes,
   borderWidths,
 } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 const STEP_KEYS = ['pasteStep0', 'pasteStep1', 'pasteStep2'] as const;
@@ -20,8 +20,9 @@ const STEP_KEYS = ['pasteStep0', 'pasteStep1', 'pasteStep2'] as const;
  * cannot find it cannot use the feature at all.
  */
 export const ImportPasteSteps = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().importRecipe;
+  const copy = t.importRecipe;
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>

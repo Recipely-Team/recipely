@@ -14,7 +14,7 @@ import { ChefsComingSoon } from '@presentation/app/creators/items/chefs-coming-s
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { CreatorsGridMetrics } from '@presentation/app/creators/model/creators-grid-metrics';
 import type { UseCreatorsScreenResult } from '@presentation/app/creators/model/use-creators-screen-result';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface CreatorsGridProps {
   vm: UseCreatorsScreenResult;
@@ -29,6 +29,7 @@ const keyOf = (creator: CreatorSummaryEntity): string => creator.id;
  * Every settled branch is pull-to-refresh.
  */
 export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { listState, onOpenCreator, cellWidth, gap } = vm;
   const renderItem = useCallback(
@@ -51,14 +52,14 @@ export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.E
         </View>
       );
     case StoreStatus.Error: {
-      const content = failureContent(listState.failure);
+      const content = failureContent(t, listState.failure);
       return (
         <ErrorState
           severity={failureSeverity(listState.failure)}
           icon={failureIcon(listState.failure)}
           title={content.title}
           body={content.body}
-          primaryLabel={t().errors.retry}
+          primaryLabel={t.errors.retry}
           onPrimary={vm.onRefresh}
         />
       );

@@ -70,7 +70,7 @@ describe('useMealLog', () => {
     const h = setup();
     await parse(h);
     act(() => h.get().setGrams('0', '300'));
-    expect(h.rows()[0]?.candidate.nutrients.calories).toBe(400);
+    expect(h.rows()[0]?.candidate.nutrients().calories).toBe(400);
     expect(h.get().selectedCalories).toBe(600);
     act(() => h.get().setGrams('0', ''));
     expect([h.rows()[0]?.gramsText, h.rows()[0]?.candidate.grams]).toEqual(['', 300]);

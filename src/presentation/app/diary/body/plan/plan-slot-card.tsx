@@ -8,7 +8,7 @@ import { PlannedMealRow } from '@presentation/app/diary/items/plan/planned-meal-
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { planMealLabel } from '@presentation/base/utils/meal-plan/plan-meal-label';
 import { borderWidths, fontSizes, fontWeights, iconSizes, mealPlanSizes, opacities, radii, shadows, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface PlanSlotCardProps {
@@ -29,10 +29,11 @@ export interface PlanSlotCardProps {
  * dashed "Nothing planned · + Add" button when it is empty.
  */
 export const PlanSlotCard = ({ meal, entries, kcal, canAdd, onAdd, onOpen, onStep, onOptions }: PlanSlotCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().mealPlan;
-  const label = planMealLabel(meal);
+  const strings = t.mealPlan;
+  const label = planMealLabel(t, meal);
   const isEmpty = entries.length === ValueConstants.zero;
   return (
     <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>

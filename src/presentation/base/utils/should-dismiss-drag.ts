@@ -16,6 +16,6 @@ const DISMISS_VELOCITY = 0.8;
  */
 export const shouldDismissDrag = (gesture: DragReleaseGesture): boolean => {
   const isTap = Math.abs(gesture.dx) < TAP_SLOP && Math.abs(gesture.dy) < TAP_SLOP;
-  const clearsThreshold = gesture.dy > DISMISS_DISTANCE || gesture.vy > DISMISS_VELOCITY;
-  return isTap || clearsThreshold;
+  const doesClearThreshold = gesture.dy > DISMISS_DISTANCE || gesture.vy > DISMISS_VELOCITY;
+  return isTap || doesClearThreshold;
 };

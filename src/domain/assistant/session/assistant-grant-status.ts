@@ -8,5 +8,3 @@ export const AssistantGrantStatus = {
   Granted: 'granted',
   Denied: 'denied',
 } as const;
-
-export type AssistantGrantStatusType = (typeof AssistantGrantStatus)[keyof typeof AssistantGrantStatus];

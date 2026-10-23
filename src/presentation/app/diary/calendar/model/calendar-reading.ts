@@ -30,7 +30,7 @@ export const calendarReading = (
     ...head,
     logged.length === ValueConstants.zero
       ? 'logged days: none'
-      : `logged days: ${logged.map((date) => `${date.value} ${Math.round(diaryMonth.caloriesOn(date))} kcal ${diaryMonth.statusFor(date)}`).join(', ')}`,
+      : `logged days: ${logged.map((date) => `${date.value} ${Math.round(diaryMonth.caloriesOn(date))} kcal ${diaryMonth.statusFor(date)}`).join(CharConstants.commaSpace)}`,
     `stats: daily average ${stats.dailyAverage === null ? 'none yet' : `${Math.round(stats.dailyAverage)} kcal`}, days on target ${stats.daysOnTarget}/${stats.daysLogged}, streak ${stats.streak} days`,
   ].join(CharConstants.newline);
 };

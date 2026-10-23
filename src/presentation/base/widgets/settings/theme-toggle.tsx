@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, controlSizes } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { ThemePreference } from '@presentation/base/theme/context/theme-preference';
 
@@ -19,21 +19,22 @@ const options: { key: ThemePreference; labelKey: 'themeSystem' | 'themeLight' | 
 
 /** Three-segment toggle for selecting system, light, or dark colour scheme. */
 export const ThemeToggle = ({ value, onChange }: ThemeToggleProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.inputBackground }]}>
       {options.map((opt) => {
-        const active = value === opt.key;
+        const isActive = value === opt.key;
         return (
           <Pressable
             key={opt.key}
             accessibilityRole="radio"
-            accessibilityState={{ selected: active, checked: active }}
+            accessibilityState={{ selected: isActive, checked: isActive }}
             onPress={() => onChange(opt.key)}
             style={[
               styles.segment,
-              active ? { backgroundColor: colors.primary } : undefined,
+              isActive ? { backgroundColor: colors.primary } : undefined,
             ]}
           >
             <ThemedText
@@ -41,10 +42,10 @@ export const ThemeToggle = ({ value, onChange }: ThemeToggleProps): React.JSX.El
               numberOfLines={ValueConstants.one}
               style={[
                 styles.segmentLabel,
-                { color: active ? colors.primaryText : colors.textMuted },
+                { color: isActive ? colors.primaryText : colors.textMuted },
               ]}
             >
-              {t().settings[opt.labelKey]}
+              {t.settings[opt.labelKey]}
             </ThemedText>
           </Pressable>
         );

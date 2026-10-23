@@ -2,7 +2,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, iconSizes, controlSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface PasswordEyeToggleProps {
   visible: boolean;
@@ -14,6 +14,7 @@ export interface PasswordEyeToggleProps {
  * next action to screen readers. Positioning is owned by the caller's slot.
  */
 export const PasswordEyeToggle = ({ visible, onToggle }: PasswordEyeToggleProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -22,7 +23,7 @@ export const PasswordEyeToggle = ({ visible, onToggle }: PasswordEyeToggleProps)
       hitSlop={spacing.sm}
       style={styles.button}
       accessibilityRole="button"
-      accessibilityLabel={visible ? t().common.hidePassword : t().common.showPassword}
+      accessibilityLabel={visible ? t.common.hidePassword : t.common.showPassword}
     >
       <Ionicons
         name={visible ? 'eye-off-outline' : 'eye-outline'}

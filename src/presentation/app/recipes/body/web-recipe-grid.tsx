@@ -8,11 +8,11 @@ import { WebSectionHead } from '@presentation/app/recipes/items/web-section-head
 import { WebSortMenu } from '@presentation/app/recipes/items/filters/web-sort-menu';
 import { SkeletonCard } from '@presentation/base/widgets/cards/skeleton-card';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
-import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
+import { type SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, zIndices } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
@@ -60,8 +60,6 @@ export interface WebRecipeGridProps {
   /** The query these results answer; an empty answer offers to create it with AI. */
   query: string;
   onCreateWithAi: (query: string) => void;
-  /** True when the recipe id is in the signed-in user's saved set. */
-  isSaved: (id: string) => boolean;
   onToggleSave: (id: string) => void;
 }
 
@@ -72,39 +70,39 @@ export interface WebRecipeGridProps {
 export const WebRecipeGrid = ({
   recipes, isSearching, activeCuisineLabel, sortBy, onChangeSort,
   onOpenFilter, activeFilterCount, activeDifficulty, onDifficultyChange,
-  gridColumns, gridCellMaxWidth, isLoading, isRefreshing, onOpenRecipe, isSaved, onToggleSave, query, onCreateWithAi, total,
+  gridColumns, gridCellMaxWidth, isLoading, isRefreshing, onOpenRecipe, onToggleSave, query, onCreateWithAi, total,
 }: WebRecipeGridProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   const title = isSearching
-    ? t().recipes.webSearchResults
+    ? t.recipes.webSearchResults
     : activeCuisineLabel !== null
-      ? t().recipes.webCuisineRecipes.replace('{cuisine}', activeCuisineLabel)
-      : t().recipes.webAllRecipes;
+      ? t.recipes.webCuisineRecipes.replace('{cuisine}', activeCuisineLabel)
+      : t.recipes.webAllRecipes;
 
   const renderItem = useCallback(
     ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => (
       <View style={[styles.gridCell, { maxWidth: gridCellMaxWidth }]}>
         <WebRecipeListItem
           recipe={item}
-          saved={isSaved(item.id)}
           onOpen={onOpenRecipe}
           onToggleSave={onToggleSave}
         />
       </View>
     ),
-    [onOpenRecipe, isSaved, onToggleSave, gridCellMaxWidth],
+    [onOpenRecipe, onToggleSave, gridCellMaxWidth],
   );
 
-  const segButton = (key: string, label: string, active: boolean, onPress: () => void): React.JSX.Element => (
+  const segButton = (key: string, label: string, isActive: boolean, onPress: () => void): React.JSX.Element => (
     <Pressable
       key={key}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      style={[styles.segBtn, active ? [shadows.sm, { backgroundColor: colors.cardBackground }] : null]}
+      style={[styles.segBtn, isActive ? [shadows.sm, { backgroundColor: colors.cardBackground }] : null]}
     >
-      <ThemedText style={[styles.segText, { color: colors.text, fontWeight: active ? fontWeights.bold : fontWeights.regular }]}>
+      <ThemedText style={[styles.segText, { color: colors.text, fontWeight: isActive ? fontWeights.bold : fontWeights.regular }]}>
         {label}
       </ThemedText>
     </Pressable>
@@ -117,24 +115,24 @@ export const WebRecipeGrid = ({
           size="small"
           color={colors.primary}
           testID="web-recipe-grid-refresh-indicator"
-          accessibilityLabel={t().recipes.refreshing}
+          accessibilityLabel={t.recipes.refreshing}
         />
       ) : null}
       <View style={[styles.segment, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-        {segButton('ALL', t().recipes.difficultyAll, activeDifficulty === null, () => onDifficultyChange(null))}
+        {segButton('ALL', t.recipes.difficultyAll, activeDifficulty === null, () => onDifficultyChange(null))}
         {DIFFICULTY_VALUES.map((d) =>
-          segButton(d, difficultyLabel(d), activeDifficulty === d, () => onDifficultyChange(d)),
+          segButton(d, difficultyLabel(t, d), activeDifficulty === d, () => onDifficultyChange(d)),
         )}
       </View>
       <Pressable
         onPress={onOpenFilter}
         accessibilityRole="button"
-        accessibilityLabel={t().recipes.filter}
+        accessibilityLabel={t.recipes.filter}
         style={[styles.filterBtn, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
       >
         <Ionicons name="funnel-outline" size={iconSizes.md} color={colors.textMuted} />
         <ThemedText style={[styles.filterLabel, { color: colors.text }]}>
-          {t().recipes.filter}
+          {t.recipes.filter}
         </ThemedText>
         {activeFilterCount > ValueConstants.zero ? (
           <View style={[styles.filterBadge, { backgroundColor: colors.primary }]}>
@@ -160,7 +158,7 @@ export const WebRecipeGrid = ({
         <WebSectionHead
           title={title}
           // No count while reloading.
-          sub={isLoading ? undefined : t().recipes.webRecipesCount.replace('{n}', String(total ?? recipes.length))}
+          sub={isLoading ? undefined : t.recipes.webRecipesCount.replace('{n}', String(total ?? recipes.length))}
           right={right}
         />
       </View>

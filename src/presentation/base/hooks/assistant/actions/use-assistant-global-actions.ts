@@ -1,4 +1,5 @@
 import { AssistantModelNote } from '@application/assistant/actions/assistant-model-note';
+import { useStore } from 'zustand';
 import { useCallback } from 'react';
 import { router, type Href } from 'expo-router';
 import { isAssistantExternalName } from '@presentation/base/hooks/assistant/args/targets/assistant-external-targets';
@@ -45,7 +46,7 @@ const looksLikeId = (arg: string): boolean =>
 
 export const useAssistantGlobalActions = (): void => {
   const { assistantActionRegistry: registry, assistantSessionStore, recipeListStore } = useStores();
-  const stopVoice = assistantSessionStore((s) => s.stopVoice);
+  const stopVoice = useStore(assistantSessionStore, (s) => s.stopVoice);
 
   useAssistantAction(
     AssistantAction.ReadScreen,

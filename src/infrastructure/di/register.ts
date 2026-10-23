@@ -8,6 +8,8 @@ import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-
 import { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { PreferenceStore } from '@infrastructure/storage/preference-store';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
+import { AccountRepository } from '@infrastructure/auth/account-repository';
+import { CreatorClaimRepository } from '@infrastructure/auth/creator-claim-repository';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { TaxonomyRepository } from '@infrastructure/recipes/taxonomy/taxonomy-repository';
 import { RecipeDraftRepository } from '@infrastructure/drafts/recipe-draft-repository';
@@ -24,7 +26,8 @@ import { FeatureFlagRepository } from '@infrastructure/flags/feature-flag-reposi
 import { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
 import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 import { kvStore } from '@infrastructure/storage/kv-store';
-import { FeedFirstPageCache } from '@infrastructure/recipes/list/feed-first-page-cache';
+import { FirstPageCache } from '@infrastructure/network/paging/first-page-cache';
+import { FEED_FIRST_PAGE_STORAGE_KEY, SAVED_FIRST_PAGE_STORAGE_KEY, SHOPPING_FIRST_PAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
 import { NotificationService } from '@infrastructure/notifications/notification-service';
 import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 import { AdsService } from '@infrastructure/ads/ads-service';
@@ -42,6 +45,8 @@ import { StoredDeviceIdentity } from '@infrastructure/device/stored-device-ident
 import { DeviceRepository } from '@infrastructure/device/device-repository';
 import { currentDevicePlatform } from '@infrastructure/device/current-device-platform';
 import { API_BASE_URL } from '@infrastructure/constants/api/api-hosts';
+import { isWeb } from '@infrastructure/constants/platform';
+import { logCrashBreadcrumb, recordCrash } from '@infrastructure/firebase/crashlytics-service';
 
 /** Host-app callbacks and providers injected into the infrastructure wiring. */
 interface InfrastructureOptions {
@@ -62,7 +67,9 @@ interface InfrastructureOptions {
  * - **Use cases:** none — the application registrars build them over these ports.
  */
 export const registerInfrastructure = (container: Container, opts?: InfrastructureOptions): void => {
-  const storage = new SecureTokenStorage();
+  // Web keeps tokens in memory and the refresh token in the API's HttpOnly cookie.
+  const isCookieSession = isWeb();
+  const storage = new SecureTokenStorage(!isCookieSession);
   const deviceIdentity = new StoredDeviceIdentity(
     kvStore,
     randomUUID,
@@ -77,6 +84,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   // The single source of the active language.
   container.register(TOKENS.LocaleService, () => new LocaleService(preferenceStore, new ExpoDeviceLocaleProvider()));
   container.register(TOKENS.NotificationService, () => new NotificationService());
+  container.register(TOKENS.CrashReporter, () => ({ record: recordCrash }));
   container.register(TOKENS.AlarmAudioService, () => new AlarmAudioService());
   container.register(TOKENS.AdsService, () => new AdsService());
   container.register(TOKENS.AssistantSession, () => new GeminiLiveSession());
@@ -103,25 +111,33 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
       return localeService.getLocale();
     },
     enableLogging: __DEV__,
+    cookieSession: isCookieSession,
+    // Read at call time: the repository is built after the client it renews for.
+    refreshSession: () => authRepository.refreshSession(),
+    requestIdProvider: randomUUID,
+    onRequestFailed: logCrashBreadcrumb,
   };
   if (opts?.onUnauthorized) {
     httpClientOptions.onUnauthorized = opts.onUnauthorized;
   }
   const http = new AxiosHttpClient(httpClientOptions);
+  const authRepository = new AuthRepository(http, storage, deviceIdentity, isCookieSession);
 
-  container.register(TOKENS.AuthRepository, () => new AuthRepository(http, storage, deviceIdentity));
+  container.register(TOKENS.AuthRepository, () => authRepository);
+  container.register(TOKENS.AccountRepository, () => new AccountRepository(http, storage));
+  container.register(TOKENS.CreatorClaimRepository, () => new CreatorClaimRepository(http, storage));
   container.register(TOKENS.DeviceRepository, () => new DeviceRepository(http));
-  container.register(TOKENS.RecipeRepository, () => new RecipeRepository(http, new FeedFirstPageCache(kvStore)));
+  container.register(TOKENS.RecipeRepository, () => new RecipeRepository(http, new FirstPageCache(kvStore, FEED_FIRST_PAGE_STORAGE_KEY)));
   container.register(TOKENS.TaxonomyRepository, () => new TaxonomyRepository(http));
   container.register(TOKENS.RecipeDraftRepository, () => new RecipeDraftRepository(http));
-  container.register(TOKENS.FavoritesRepository, () => new FavoritesRepository(http));
+  container.register(TOKENS.FavoritesRepository, () => new FavoritesRepository(http, new FirstPageCache(kvStore, SAVED_FIRST_PAGE_STORAGE_KEY)));
   container.register(TOKENS.FoodDiaryRepository, () => new FoodDiaryRepository(http));
   container.register(TOKENS.FoodCatalogRepository, () => new FoodCatalogRepository(http));
   container.register(TOKENS.InstagramRepository, () => new InstagramRepository(http));
   container.register(TOKENS.CommentRepository, () => new CommentRepository(http));
   container.register(TOKENS.LikeRepository, () => new LikeRepository(http));
   container.register(TOKENS.NotificationRepository, () => new NotificationRepository(http));
-  container.register(TOKENS.ShoppingListRepository, () => new ShoppingListRepository(http));
+  container.register(TOKENS.ShoppingListRepository, () => new ShoppingListRepository(http, new FirstPageCache(kvStore, SHOPPING_FIRST_PAGE_STORAGE_KEY)));
   container.register(TOKENS.MealPlanRepository, () => new MealPlanRepository(http));
   container.register(TOKENS.FridgeRepository, () => new FridgeRepository(http));
   container.register(TOKENS.UserProfileRepository, () => new UserProfileRepository(http));

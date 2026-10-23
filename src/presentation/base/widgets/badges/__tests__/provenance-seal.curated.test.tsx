@@ -25,7 +25,7 @@ describe('the Recipely Kitchen mark', () => {
     const { root } = renderComponent(<ProvenanceNote marks={CURATED} />);
 
     expect(root.findAllByType(RecipelyLogo)).toHaveLength(1);
-    expect(root.findAll((n) => n.props.children === t().recipes.originCuratedDetailLabel).length).toBeGreaterThan(0);
+    expect(root.findAll((n) => n.props['children'] === t().recipes.originCuratedDetailLabel).length).toBeGreaterThan(0);
     expect(root.findAll((n) => n.props['accessibilityRole'] === 'link')).toHaveLength(0);
   });
 });

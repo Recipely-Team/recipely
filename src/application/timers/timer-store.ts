@@ -1,15 +1,15 @@
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import { getPreferenceStore } from '@application/storage/get-preference-store';
 import { PreferenceSlot } from '@domain/storage/preference-slot';
 import type { TimerEntry } from '@application/timers/timer-entry';
-import type { TimerStoreState } from '@application/timers/timer-store-state';
+import type { TimerStore } from '@application/timers/timer-store-contract';
 import { ValueConstants } from '@core/constants';
 
 const persist = async (timers: Record<string, TimerEntry>): Promise<void> => {
   await getPreferenceStore().set(PreferenceSlot.Timers, JSON.stringify(timers));
 };
 
-export const timerStore = create<TimerStoreState>((set, get) => ({
+export const timerStore = createStore<TimerStore>((set, get) => ({
   timers: {},
   hydrated: false,
 

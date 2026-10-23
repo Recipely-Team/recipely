@@ -39,7 +39,7 @@ describe('EditProfileForm — input length caps', () => {
     const capFor = (placeholder: string): unknown =>
       tree.root
         .findAllByType(TextInput)
-        .find((input) => input.props.placeholder === placeholder)?.props.maxLength;
+        .find((input) => input.props['placeholder'] === placeholder)?.props['maxLength'];
 
     expect(capFor(t().editProfile.displayNamePlaceholder)).toBe(DISPLAY_NAME_MAX);
     expect(capFor(t().editProfile.bioPlaceholder)).toBe(BIO_MAX);

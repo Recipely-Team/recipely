@@ -1,3 +1,4 @@
+import { CharConstants } from '@core/constants';
 const DEFAULT_AES_KEY_HEX =
   "0000000000000000000000000000000000000000000000000000000000000000";
 
@@ -15,4 +16,4 @@ export const API_AES_KEY_HEX: string =
 
 /** Firebase Console → Authentication → Sign-in method → Google, "Web client". */
 export const GOOGLE_WEB_CLIENT_ID: string =
-  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "";
+  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? CharConstants.empty;

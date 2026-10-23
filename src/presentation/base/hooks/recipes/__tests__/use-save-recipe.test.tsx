@@ -15,11 +15,10 @@
  * and only assert on the store interactions that matter.
  */
 
-import type { AuthStoreState } from "@application/auth/auth-store-state";
-import type { FavoritesStoreState } from "@application/favorites/favorites-store-state";
-import type { SavedRecipesStoreState } from "@application/recipes/saved/saved-recipes-store-state";
+import type { AuthStore } from "@application/auth/auth-store-contract";
+import type { FavoritesStore } from "@application/favorites/favorites-store-contract";
+import type { SavedRecipesStore } from "@application/recipes/saved/saved-recipes-store-contract";
 import { UnknownFailure } from "@core/failure";
-import { ok } from "@core/result/result-helpers";
 import { AuthSessionEntity } from "@domain/auth/auth-session-entity";
 import { UserEntity } from "@domain/auth/user-entity";
 import { Email } from "@domain/common/email";
@@ -31,7 +30,6 @@ import type { ApplicationStores } from "@application/di/application-stores";
 import { StoresProvider } from "@presentation/bootstrap/stores-context";
 import { act } from "react-test-renderer";
 import { create } from "zustand";
-import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 
 // ─── module mock — keep toast side-effects out of these unit tests ────────────
 jest.mock("@presentation/base/feedback/show-toast", () => ({
@@ -42,10 +40,9 @@ jest.mock("@presentation/base/feedback/show-toast", () => ({
 
 /** Builds a savedRecipesStore whose savedIds can be seeded and mutated. */
 const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
-  create<SavedRecipesStoreState>((set, get) => ({
-    savedRecipes: [],
+  create<SavedRecipesStore>((set, get) => ({
+    saved: { status: 'idle' },
     savedIds: initial,
-    listState: { status: "idle" },
     has: (id) => get().savedIds.has(id),
     toggle: (id) =>
       set((s) => {
@@ -67,15 +64,13 @@ const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
         return { savedIds: next };
       }),
     setSaved: (): void => undefined,
-    loadSaved: () => Promise.resolve(ok(recipePageOf([]))),
+    loadSaved: () => Promise.resolve(null),
     loadMoreSaved: () => Promise.resolve(),
-    paging: { page: 0, total: 0, pageSize: 20, hasMore: false, isLoadingMore: false, removed: 0, moreFailure: null },
     clear: (): void => undefined,
   }));
 
 interface FavoritesStoreOptions {
   isLoading?: boolean;
-  error?: FavoritesStoreState["error"];
   pending?: ReadonlySet<string>;
   addFavorite?: jest.Mock;
   removeFavorite?: jest.Mock;
@@ -84,18 +79,15 @@ interface FavoritesStoreOptions {
 /** Builds a minimal favoritesStore with controllable isLoading / addFavorite / removeFavorite. */
 const makeFavoritesStore = ({
   isLoading = false,
-  error = null,
   pending = new Set<string>(),
-  addFavorite = jest.fn().mockResolvedValue(undefined),
-  removeFavorite = jest.fn().mockResolvedValue(undefined),
+  addFavorite = jest.fn().mockResolvedValue(null),
+  removeFavorite = jest.fn().mockResolvedValue(null),
 }: FavoritesStoreOptions = {}) =>
-  create<FavoritesStoreState>((set) => ({
+  create<FavoritesStore>(() => ({
     isLoading,
     pending,
-    error,
     addFavorite,
     removeFavorite,
-    clearError: () => set({ error: null }),
   }));
 
 /** Unwraps a domain `Result`, throwing in-test if construction unexpectedly fails. */
@@ -124,7 +116,7 @@ const buildSession = (userId: string): AuthSessionEntity => {
 
 /** Builds an authStore that returns the given userId (null = unauthenticated). */
 const makeAuthStore = (userId: string | null) =>
-  create<AuthStoreState>(() => ({
+  create<AuthStore>(() => ({
     state:
       userId !== null
         ? { status: "authenticated", session: buildSession(userId) }
@@ -184,7 +176,6 @@ const driveHook = (
   } as unknown as ApplicationStores;
 
   let latest: UseSaveRecipeResult = {
-    isSaved: () => false,
     toggleSave: async () => {},
   };
 
@@ -206,40 +197,10 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-// ─── isSaved ─────────────────────────────────────────────────────────────────
-
-describe("useSaveRecipe — isSaved", () => {
-  it("returns false for a recipe id that is not in savedIds", () => {
-    const { latest } = driveHook({ savedIds: new Set(["recipe-A"]) });
-
-    expect(latest().isSaved("recipe-B")).toBe(false);
-  });
-
-  it("returns true for a recipe id that is present in savedIds", () => {
-    const { latest } = driveHook({ savedIds: new Set(["recipe-A"]) });
-
-    expect(latest().isSaved("recipe-A")).toBe(true);
-  });
-
-  it("reflects a live store update — becomes true after the id is added", async () => {
-    const { latest, savedRecipesStore } = driveHook({
-      savedIds: new Set<string>(),
-    });
-
-    expect(latest().isSaved("recipe-X")).toBe(false);
-
-    await act(async () => {
-      savedRecipesStore.getState().addLocal("recipe-X");
-    });
-
-    expect(latest().isSaved("recipe-X")).toBe(true);
-  });
-});
-
 // ─── toggleSave — add path ────────────────────────────────────────────────────
 
 describe("useSaveRecipe — toggleSave (add path)", () => {
-  it("calls addFavorite(userId, recipeId) when the recipe is NOT in savedIds", async () => {
+  it("calls addFavorite(recipeId) when the recipe is NOT in savedIds", async () => {
     const addFavorite = jest.fn().mockResolvedValue(undefined);
     const { latest } = driveHook({
       savedIds: new Set<string>(),
@@ -252,7 +213,7 @@ describe("useSaveRecipe — toggleSave (add path)", () => {
     });
 
     expect(addFavorite).toHaveBeenCalledTimes(1);
-    expect(addFavorite).toHaveBeenCalledWith("user-42", "recipe-new");
+    expect(addFavorite).toHaveBeenCalledWith("recipe-new");
   });
 
   it("does NOT call removeFavorite when adding", async () => {
@@ -273,7 +234,7 @@ describe("useSaveRecipe — toggleSave (add path)", () => {
 // ─── toggleSave — remove path ─────────────────────────────────────────────────
 
 describe("useSaveRecipe — toggleSave (remove path)", () => {
-  it("calls removeFavorite(userId, recipeId) when the recipe IS in savedIds", async () => {
+  it("calls removeFavorite(recipeId) when the recipe IS in savedIds", async () => {
     const removeFavorite = jest.fn().mockResolvedValue(undefined);
     const { latest } = driveHook({
       savedIds: new Set(["recipe-saved"]),
@@ -286,7 +247,7 @@ describe("useSaveRecipe — toggleSave (remove path)", () => {
     });
 
     expect(removeFavorite).toHaveBeenCalledTimes(1);
-    expect(removeFavorite).toHaveBeenCalledWith("user-7", "recipe-saved");
+    expect(removeFavorite).toHaveBeenCalledWith("recipe-saved");
   });
 
   it("does NOT call addFavorite when removing", async () => {
@@ -351,7 +312,7 @@ describe("useSaveRecipe — toggleSave no-op guards", () => {
       await latest().toggleSave("recipe-B");
     });
 
-    expect(addFavorite).toHaveBeenCalledWith("user-1", "recipe-B");
+    expect(addFavorite).toHaveBeenCalledWith("recipe-B");
   });
 
   it("does not call the store twice when toggleSave is called concurrently (no duplicate calls)", async () => {
@@ -380,10 +341,11 @@ describe("useSaveRecipe — toggleSave no-op guards", () => {
     // Set isLoading to true after the first call starts so the second is blocked.
     const originalAdd = favoritesStore.getState().addFavorite;
     favoritesStore.setState({
-      addFavorite: async (userId: string, recipeId: string) => {
+      addFavorite: async (recipeId: string) => {
         favoritesStore.setState({ isLoading: true, pending: new Set([recipeId]) });
-        await originalAdd(userId, recipeId);
+        const failure = await originalAdd(recipeId);
         favoritesStore.setState({ isLoading: false, pending: new Set<string>() });
+        return failure;
       },
     });
 
@@ -396,8 +358,7 @@ describe("useSaveRecipe — toggleSave no-op guards", () => {
     } as unknown as ApplicationStores;
 
     let latestResult: UseSaveRecipeResult = {
-      isSaved: () => false,
-      toggleSave: async () => {},
+        toggleSave: async () => {},
     };
     const Probe = (): null => {
       latestResult = useSaveRecipe();
@@ -437,12 +398,9 @@ describe("useSaveRecipe — error handling", () => {
   it("calls showErrorToast and clearError when the store has an error after toggleSave", async () => {
     const failure = new UnknownFailure("network blip");
 
-    // After addFavorite resolves, the store has an error set (simulating the
-    // real favoritesStore behaviour where the use case returns a failure).
+    // addFavorite answers with its own failure, as the real store does.
     const favoritesStore = makeFavoritesStore({
-      addFavorite: jest.fn().mockImplementation(async () => {
-        favoritesStore.setState({ error: failure });
-      }),
+      addFavorite: jest.fn().mockResolvedValue(failure),
     });
 
     const savedRecipesStore = makeSavedRecipesStore(new Set<string>());
@@ -454,8 +412,7 @@ describe("useSaveRecipe — error handling", () => {
     } as unknown as ApplicationStores;
 
     let latestResult: UseSaveRecipeResult = {
-      isSaved: () => false,
-      toggleSave: async () => {},
+        toggleSave: async () => {},
     };
     const Probe = (): null => {
       latestResult = useSaveRecipe();
@@ -473,8 +430,6 @@ describe("useSaveRecipe — error handling", () => {
     });
 
     expect(showErrorToast).toHaveBeenCalledWith(failure);
-    // clearError leaves the store error as null after the toast
-    expect(favoritesStore.getState().error).toBeNull();
   });
 
   it("does NOT call showErrorToast when addFavorite completes without an error", async () => {

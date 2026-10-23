@@ -19,7 +19,7 @@ import { failureContent, failureIcon, failureSeverity } from '@presentation/base
 import { WebRecipeFeed } from '@presentation/app/recipes/body/web-recipe-feed';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { spacing, controlSizes, layoutSizes } from '@presentation/base/theme';
 import type { FeedRowType } from '@presentation/app/recipes/model/ads/feed-row';
 import { FeedRowView } from '@presentation/app/recipes/items/feed-row-view';
@@ -60,11 +60,12 @@ const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />
  *   skeletons, so this covers only the debounce window.
  */
 export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { state, recipes, isExpanded, isSearching, gridColumns } = vm;
 
   // Stable across renders so the row memo holds; each row binds its own id.
-  const { onOpenRecipe } = vm;
+  const { onOpenRecipe, attachList } = vm;
 
   const { rows, keyExtractor, adUnitId, adWidth } = useFeedRows({
     recipes,
@@ -84,14 +85,14 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
 
   let body: React.JSX.Element;
   if (state.status === StoreStatus.Error) {
-    const content = failureContent(state.failure);
+    const content = failureContent(t, state.failure);
     body = (
       <ErrorState
         severity={failureSeverity(state.failure)}
         icon={failureIcon(state.failure)}
         title={content.title}
         body={content.body}
-        primaryLabel={t().errors.retry}
+        primaryLabel={t.errors.retry}
         onPrimary={vm.onRefresh}
       />
     );
@@ -115,7 +116,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
       <Animated.FlatList
         // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
         removeClippedSubviews={false}
-        ref={vm.attachList}
+        ref={attachList}
         // Emptied while the next set loads; the header stays.
         data={rows}
         keyExtractor={keyExtractor}
@@ -127,7 +128,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         ListHeaderComponent={
           <MobileFeedHeader
             filters={vm.filters}
-            resultCount={state.status === StoreStatus.Loaded ? (state.total ?? recipes.length) : recipes.length}
+            resultCount={state.total ?? recipes.length}
             activeFilterCount={vm.activeFilterCount}
             onOpenCreate={vm.onOpenCreate}
             onToggleCuisine={vm.onToggleCuisineQuick}
@@ -145,17 +146,17 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
             <ErrorState
               icon="search"
               severity={SeverityType.Neutral}
-              title={t().recipes.noResults}
-              body={t().recipes.webEmptyBody}
-              primaryLabel={t().recipes.clearFilters}
+              title={t.recipes.noResults}
+              body={t.recipes.webEmptyBody}
+              primaryLabel={t.recipes.clearFilters}
               onPrimary={vm.onResetFilters}
             />
           ) : (
             <ErrorState
               icon="restaurant-outline"
               severity={SeverityType.Neutral}
-              title={t().recipes.empty}
-              primaryLabel={t().common.retry}
+              title={t.recipes.empty}
+              primaryLabel={t.common.retry}
               onPrimary={vm.onRefresh}
             />
           )

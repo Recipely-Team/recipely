@@ -1,3 +1,4 @@
+import { useTranslations } from '@presentation/i18n';
 import { StyleSheet, View } from 'react-native';
 import { ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -12,10 +13,11 @@ export interface EditorProgressProps {
 
 /** A phone's step progress (spec §3): four segments, filled up to the current step. */
 export const EditorProgress = ({ step }: EditorProgressProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
-    <View style={styles.row} accessibilityRole="progressbar" accessibilityValue={{ now: step + ValueConstants.one, max: editorStepLabels().length }}>
-      {editorStepLabels().map((label, index) => (
+    <View style={styles.row} accessibilityRole="progressbar" accessibilityValue={{ now: step + ValueConstants.one, max: editorStepLabels(t).length }}>
+      {editorStepLabels(t).map((label, index) => (
         <View key={label} style={[styles.segment, { backgroundColor: index <= step ? colors.primary : colors.border }]} />
       ))}
     </View>

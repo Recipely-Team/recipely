@@ -26,24 +26,24 @@ export const parseLogFoodArg = (arg: string | undefined): ArgParse<LogFoodArgs> 
   if (json === undefined) return { ok: true, value: { ...NO_ARGS, name: raw } };
   if (json === null) return { ok: false, error: DiaryArgError.InvalidJson };
 
-  const meal = parseMealArg(json.meal);
+  const meal = parseMealArg(json['meal']);
   if (!meal.ok) return meal;
-  const servings = readNumber(json.servings);
+  const servings = readNumber(json['servings']);
   if (servings !== undefined && Number.isNaN(servings)) return { ok: false, error: DiaryArgError.InvalidServings };
-  const calories = readNumber(json.calories);
+  const calories = readNumber(json['calories']);
   if (calories !== undefined && Number.isNaN(calories)) return { ok: false, error: DiaryArgError.InvalidNumber };
 
   return {
     ok: true,
     value: {
-      name: isNonEmptyString(json.name) ? json.name.trim() : null,
+      name: isNonEmptyString(json['name']) ? json['name'].trim() : null,
       meal: meal.value,
       servings: servings ?? null,
-      date: isString(json.date) ? json.date : null,
+      date: isString(json['date']) ? json['date'] : null,
       perServing:
         calories === undefined
           ? null
-          : { calories, protein: macro(json.protein), carbs: macro(json.carbs), fat: macro(json.fat), fiber: macro(json.fiber) },
+          : { calories, protein: macro(json['protein']), carbs: macro(json['carbs']), fat: macro(json['fat']), fiber: macro(json['fiber']) },
     },
   };
 };

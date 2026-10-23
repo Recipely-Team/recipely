@@ -1,11 +1,11 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import { ValueConstants } from '@core/constants';
 import { withFollowing } from '@domain/user-profile/with-following';
 import { RequestEpoch } from '@application/store/request-epoch';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
-import type { CreatorProfileStoreState } from '@application/creators/profile/creator-profile-store-state';
+import type { CreatorProfileStore } from '@application/creators/profile/creator-profile-store-contract';
 import type { GetViewedUserProfileUseCase } from '@application/user-profile/get-viewed-user-profile-use-case';
 import type { ListUserRecipesUseCase } from '@application/user-profile/recipes/list-user-recipes-use-case';
 import type { SetFollowingUseCase } from '@application/user-profile/follow/set-following-use-case';
@@ -33,12 +33,12 @@ interface CreatorProfileStoreDeps {
  * - **Follow is optimistic.** The button flips at once through `withFollowing`
  *   and flips back if the server refuses; the refusal is returned for a toast.
  */
-export const configureCreatorProfileStore = (deps: CreatorProfileStoreDeps): BoundStore<CreatorProfileStoreState> => {
+export const configureCreatorProfileStore = (deps: CreatorProfileStoreDeps): StoreApi<CreatorProfileStore> => {
   const profileEpoch = new RequestEpoch();
   // Bumped only when the page is replaced (another user, or clear): a same-user re-read keeps it.
   let pageShown = ValueConstants.zero;
 
-  return create<CreatorProfileStoreState>((set, get) => {
+  return createStore<CreatorProfileStore>((set, get) => {
     const recipes = new PagedListLoader(
       () => get().recipes,
       (list) => set({ recipes: list }),
@@ -82,10 +82,10 @@ export const configureCreatorProfileStore = (deps: CreatorProfileStoreDeps): Bou
         const { profileState, isFollowPending } = get();
         if (profileState.status !== StoreStatus.Loaded || isFollowPending) return null;
         const before = profileState.viewed;
-        const following = !before.isFollowedByMe;
-        set({ isFollowPending: true, profileState: { status: StoreStatus.Loaded, viewed: withFollowing(before, following) } });
+        const isFollowing = !before.isFollowedByMe;
+        set({ isFollowPending: true, profileState: { status: StoreStatus.Loaded, viewed: withFollowing(before, isFollowing) } });
         const tappedOn = pageShown;
-        const result = await deps.setFollowing.execute(before.profile.id, following);
+        const result = await deps.setFollowing.execute(before.profile.id, isFollowing);
         // The page was cleared or replaced since the tap: nothing here is this answer's.
         if (pageShown !== tappedOn) return result.ok ? null : result.failure;
         if (result.ok) {

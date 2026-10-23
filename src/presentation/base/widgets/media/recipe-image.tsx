@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { isString } from '@core/guards/type-guards';
 import { Image } from 'expo-image';
 import type { ImageStyle, StyleProp } from 'react-native';
@@ -23,7 +23,7 @@ export interface RecipeImageProps {
   /** Compact placeholder motif (no caption) for dense thumbnails. */
   placeholderCompact?: boolean;
   /** Where the dish sits in the photo; the crop centres on it. Absent crops centred. */
-  focus?: FocalPoint;
+  focus?: FocalPoint | undefined;
 }
 
 /**
@@ -57,16 +57,13 @@ export const RecipeImage = ({
   placeholderCompact,
   focus,
 }: RecipeImageProps): React.JSX.Element => {
-  const [failed, setFailed] = useState(false);
-
-  // Rows are recycled: reset the failed flag when the uri changes.
-  useEffect(() => {
-    setFailed(false);
-  }, [uri]);
+  // Rows are recycled, so a failure belongs to the uri that failed, not to the row.
+  const [failedUri, setFailedUri] = useState<string | null>(null);
+  const hasFailed = failedUri !== null && failedUri === uri;
 
   const hasImage = isString(uri) && uri.trim().length > ValueConstants.zero;
 
-  if (!hasImage || failed) {
+  if (!hasImage || hasFailed) {
     return <RecipePlaceholder label={placeholderLabel} compact={placeholderCompact} />;
   }
 
@@ -82,7 +79,7 @@ export const RecipeImage = ({
       cachePolicy="memory-disk"
       transition={durations.imageFade}
       recyclingKey={uri}
-      onError={() => setFailed(true)}
+      onError={() => setFailedUri(uri)}
     />
   );
 };

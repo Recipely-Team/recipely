@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import { COMMENT_MAX_LENGTH } from '@presentation/app/recipes/[recipeId]/model/comments/comment-limits';
@@ -6,7 +7,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { CommentCard } from '@presentation/app/recipes/[recipeId]/items/comment-card';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { spacing, radii, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
@@ -31,7 +32,7 @@ export interface RecipeCommentsSectionProps {
  * The composer's text is its own (`useCommentDraft`): typing re-renders this
  * block, not the detail screen.
  */
-export const RecipeCommentsSection = ({
+const RecipeCommentsSectionComponent = ({
   commentState,
   userId,
   submitError,
@@ -42,6 +43,7 @@ export const RecipeCommentsSection = ({
   onDeleteComment,
   commentHighlight,
 }: RecipeCommentsSectionProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const composer = useCommentDraft(onAddComment);
 
@@ -50,7 +52,7 @@ export const RecipeCommentsSection = ({
       {/* A zero stays hidden, as it was before the count moved out of the
           title: "Yorumlar 0" beside the empty-state copy says it twice. */}
       <SectionHeader
-        title={t().comments.title}
+        title={t.comments.title}
         count={commentState?.total === ValueConstants.zero ? undefined : commentState?.total}
       />
 
@@ -58,7 +60,7 @@ export const RecipeCommentsSection = ({
         <ActivityIndicator size="small" color={colors.primary} style={styles.commentsLoader} />
       ) : !commentState || commentState.items.length === ValueConstants.zero ? (
         <ThemedText variant="caption" muted style={styles.commentsEmpty}>
-          {t().comments.empty}
+          {t.comments.empty}
         </ThemedText>
       ) : (
         <View style={styles.commentsList}>
@@ -97,7 +99,7 @@ export const RecipeCommentsSection = ({
           ]}
         >
           <ThemedText variant="caption" muted>
-            {commentState.isLoadingMore ? t().common.loading : t().comments.loadMore}
+            {commentState.isLoadingMore ? t.common.loading : t.comments.loadMore}
           </ThemedText>
         </Pressable>
       ) : null}
@@ -106,7 +108,7 @@ export const RecipeCommentsSection = ({
         <AutoGrowTextInput
           value={composer.draft}
           onChangeText={composer.onChangeDraft}
-          placeholder={t().comments.placeholder}
+          placeholder={t.comments.placeholder}
           placeholderTextColor={colors.textMuted}
           style={[
             styles.commentInput,
@@ -120,7 +122,7 @@ export const RecipeCommentsSection = ({
           onPress={composer.onSubmit}
           disabled={commentState?.isSubmitting === true || composer.isEmpty}
           accessibilityRole="button"
-          accessibilityLabel={t().comments.send}
+          accessibilityLabel={t.comments.send}
           style={({ pressed }) => [
             styles.commentSendBtn,
             {
@@ -144,6 +146,9 @@ export const RecipeCommentsSection = ({
     </>
   );
 };
+
+/** Memoised: the recipe page re-renders on a like, a save or a step tick, and this section's props do not change with them. */
+export const RecipeCommentsSection = memo(RecipeCommentsSectionComponent);
 
 const styles = StyleSheet.create({
   commentsLoader: {

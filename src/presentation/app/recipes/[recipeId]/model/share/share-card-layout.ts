@@ -31,8 +31,9 @@ export const ShareCardLayout = {
   nameTiers: [
     { maxChars: 20, size: 36, lineHeight: 38, tracking: -0.9, lines: 3 },
     { maxChars: 34, size: 31, lineHeight: 33, tracking: -0.7, lines: 3 },
-    { maxChars: Number.POSITIVE_INFINITY, size: 26, lineHeight: 29, tracking: -0.4, lines: 4 },
   ],
+  /** Any name longer than every tier above. */
+  longNameTier: { maxChars: Number.POSITIVE_INFINITY, size: 26, lineHeight: 29, tracking: -0.4, lines: 4 },
   meta: { size: 11, lineHeight: 14, tracking: 1.4, marginTop: 12 },
   rule: { marginTop: 18, height: 1, alpha: '24' },
   label: { size: 10, lineHeight: 12, tracking: 1.6, marginTop: 14 },

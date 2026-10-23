@@ -17,7 +17,7 @@ import {
   lineHeights,
   lineHeightFor,
 } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface ThemeGridProps {
@@ -39,6 +39,7 @@ export const ThemeGrid = ({
   selectedThemeId,
   onSelect,
 }: ThemeGridProps): React.JSX.Element => {
+  const t = useTranslations();
   const { scheme, colors } = useTheme();
 
   return (
@@ -51,7 +52,7 @@ export const ThemeGrid = ({
         const def = getThemeDefinition(id);
         const variant = scheme === ThemeVariant.Dark ? def.dark : def.light;
         const isActive = id === selectedThemeId;
-        const label = t().settings.themeNames[id];
+        const label = t.settings.themeNames[id];
 
         return (
           <Pressable

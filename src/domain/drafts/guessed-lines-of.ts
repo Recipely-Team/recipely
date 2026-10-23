@@ -22,8 +22,8 @@ export const guessedLinesOf = (snapshot: DraftRecipeSnapshot): ReadonlySet<strin
   if (reading === undefined) return new Set();
   const ingredients = snapshot.ingredients ?? [];
   const steps = snapshot.instructions ?? [];
-  const everyLine =
+  const isEveryLine =
     reading.guessedIngredients.length >= ingredients.length && reading.guessedSteps.length >= steps.length;
-  if (reading.suggested && everyLine) return new Set();
+  if (reading.suggested && isEveryLine) return new Set();
   return new Set([...linesAt(ingredients, reading.guessedIngredients), ...linesAt(steps, reading.guessedSteps)]);
 };

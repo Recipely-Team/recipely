@@ -27,7 +27,7 @@ export const LayoutContext = createContext<LayoutContextValue>(DEFAULT_VALUE);
 export interface LayoutProviderProps {
   children: ReactNode;
   /** The fold-posture port, from the composition root; omitted, `fold` stays `null`. */
-  postureSource?: WindowPostureInterface;
+  postureSource?: WindowPostureInterface | undefined;
 }
 
 const resolveBreakpoint = (width: number): BreakpointType => {
@@ -45,14 +45,14 @@ const resolveBreakpoint = (width: number): BreakpointType => {
  */
 export const LayoutProvider = ({ children, postureSource }: LayoutProviderProps): React.JSX.Element => {
   const { width, height } = useWindowDimensions();
-  const hydrated = useIsHydrated();
+  const isHydrated = useIsHydrated();
   const fold = useWindowPosture(postureSource);
 
   // Static export renders the mobile layout; adopt real dimensions only after hydration.
-  const gated = isWeb() && !hydrated;
+  const isGated = isWeb() && !isHydrated;
 
   const value = useMemo<LayoutContextValue>(() => {
-    if (gated) return DEFAULT_VALUE;
+    if (isGated) return DEFAULT_VALUE;
     const breakpoint = resolveBreakpoint(width);
     const orientation: OrientationType = width >= height ? OrientationType.Landscape : OrientationType.Portrait;
     // isExpanded is width only (iPad gets grids, Split View falls back); isWebShell is browser chrome.
@@ -61,7 +61,7 @@ export const LayoutProvider = ({ children, postureSource }: LayoutProviderProps)
     const isCompact = breakpoint === BreakpointType.Mobile;
     const aspectRatio = height === ValueConstants.zero ? ValueConstants.one : width / height;
     return { width, height, aspectRatio, orientation, breakpoint, isWebShell, isExpanded, isCompact, fold };
-  }, [gated, width, height, fold]);
+  }, [isGated, width, height, fold]);
 
   return <LayoutContext.Provider value={value}>{children}</LayoutContext.Provider>;
 };

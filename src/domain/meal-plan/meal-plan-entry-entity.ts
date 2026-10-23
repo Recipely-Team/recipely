@@ -88,8 +88,8 @@ export class MealPlanEntryEntity extends BaseEntity<MealPlanEntryEntityProps> {
     return new MealPlanEntryEntity({ ...this.props, servings });
   }
 
-  withEaten(eaten: boolean): MealPlanEntryEntity {
-    return new MealPlanEntryEntity({ ...this.props, eaten, foodLogEntryId: eaten ? this.props.foodLogEntryId : null });
+  withEaten(isEaten: boolean): MealPlanEntryEntity {
+    return new MealPlanEntryEntity({ ...this.props, eaten: isEaten, foodLogEntryId: isEaten ? this.props.foodLogEntryId : null });
   }
 
   /** The same meal planned afresh — what an undo sends back. */

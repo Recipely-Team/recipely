@@ -1,7 +1,7 @@
+import type { TranslationsType } from '@presentation/i18n';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { type Href, usePathname, useRouter } from 'expo-router';
 import { ValueConstants } from '@core/constants';
-import { StoreStatus } from '@application/store/store-status';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
@@ -14,10 +14,11 @@ import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/u
 import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import type { ShoppingSource } from '@presentation/app/recipes/[recipeId]/model/shopping/shopping-source';
 import type { UseAddToShoppingListResult } from '@presentation/app/recipes/[recipeId]/model/shopping/use-add-to-shopping-list-result';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
+import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-user-id';
 
-const summary = (result: ShoppingAddResult): string =>
-  t().shopping.addedSummary.replace('{added}', String(result.added)).replace('{merged}', String(result.merged));
+const summary = (t: TranslationsType, result: ShoppingAddResult): string =>
+  t.shopping.addedSummary.replace('{added}', String(result.added)).replace('{merged}', String(result.merged));
 
 /**
  * "Add to shopping list" on a recipe (the detail page and cook mode's
@@ -33,10 +34,11 @@ const summary = (result: ShoppingAddResult): string =>
  * - **The assistant's `addToShoppingList`** does the same, registered on focus.
  */
 export const useAddToShoppingList = (source: ShoppingSource): UseAddToShoppingListResult => {
+  const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
-  const { authStore, shoppingListStore } = useStores();
-  const userId = authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.id : null));
+  const { shoppingListStore } = useStores();
+  const userId = useSignedInUserId();
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const [isAdding, setAdding] = useState(false);
   const { recipeId, recipeName, lines } = source;
@@ -55,9 +57,9 @@ export const useAddToShoppingList = (source: ShoppingSource): UseAddToShoppingLi
       showErrorToast(result.failure);
       return null;
     }
-    showSuccessToast(summary(result.value), { label: t().shopping.view, onRetry: () => router.push(RoutePaths.shoppingList) });
+    showSuccessToast(summary(t, result.value), { label: t.shopping.view, onRetry: () => router.push(RoutePaths.shoppingList) });
     return result.value;
-  }, [lines, recipeId, recipeName, router, shoppingListStore]);
+  }, [lines, recipeId, recipeName, router, shoppingListStore, t]);
 
   useAssistantAction(
     AssistantAction.AddToShoppingList,
@@ -80,7 +82,7 @@ export const useAddToShoppingList = (source: ShoppingSource): UseAddToShoppingLi
     isAdding,
     add: () => {
       if (isAdding) return;
-      requestGate(() => void send(), t().shopping.signInToAdd);
+      requestGate(() => void send(), t.shopping.signInToAdd);
     },
     promptVisible,
     promptMessage,

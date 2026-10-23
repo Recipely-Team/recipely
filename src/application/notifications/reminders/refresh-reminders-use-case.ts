@@ -6,6 +6,7 @@ import type { ReminderNotification } from '@domain/notifications/reminders/remin
 import { RemindersChoice } from '@domain/notifications/reminders/reminders-choice';
 import { reminderSchedule } from '@domain/notifications/reminders/reminder-schedule';
 import { readRemindersChoice } from '@application/notifications/reminders/read-reminders-choice';
+import type { CrashReporterInterface } from '@domain/diagnostics/crash-reporter-interface';
 
 /**
  * **Restarts the come-back series** from now; run on every launch and every return to the foreground.
@@ -18,25 +19,29 @@ import { readRemindersChoice } from '@application/notifications/reminders/read-r
  * - **One at a time:** a launch, a return to the foreground, a language change and a Settings toggle
  *   can all ask at once; each run reads the pending series before replacing it, so overlapping runs
  *   would both schedule six. Runs are chained, and the last one wins.
- * - **Never fails:** every step is best-effort; a reminder that cannot be scheduled is not sent.
+ * - **Never fails, never hides:** every step is best-effort and a reminder that cannot be scheduled
+ *   is not sent, but the error goes to the crash reporter instead of disappearing.
  */
 export class RefreshRemindersUseCase {
   constructor(
     private readonly notifications: NotificationServiceInterface,
     private readonly prefs: PreferenceStoreInterface,
+    private readonly crashes: CrashReporterInterface | null = null,
   ) {}
 
   private running: Promise<void> = Promise.resolve();
 
   execute(copies: readonly ReminderCopy[], nowMs: number): Promise<void> {
-    const next = this.running.then(() => this.replace(copies, nowMs)).catch(() => undefined);
+    const next = this.running
+      .then(() => this.replace(copies, nowMs))
+      .catch((error: unknown) => this.crashes?.record(error, 'RefreshRemindersUseCase'));
     this.running = next;
     return next;
   }
 
   private async replace(copies: readonly ReminderCopy[], nowMs: number): Promise<void> {
-    const optedIn = (await readRemindersChoice(this.prefs)) === RemindersChoice.On;
-    if (!optedIn || copies.length === ValueConstants.zero || !(await this.notifications.hasPermission())) {
+    const hasOptedIn = (await readRemindersChoice(this.prefs)) === RemindersChoice.On;
+    if (!hasOptedIn || copies.length === ValueConstants.zero || !(await this.notifications.hasPermission())) {
       await this.notifications.replaceReminders([]);
       return;
     }

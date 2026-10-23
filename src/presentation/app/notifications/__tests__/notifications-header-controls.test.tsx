@@ -6,7 +6,7 @@ import { NotificationFilter } from '@presentation/app/notifications/model/notifi
 import { t } from '@presentation/i18n';
 
 const pressables = (root: ReactTestInstance, label: string): ReactTestInstance[] =>
-  root.findAll((node) => node.props.accessibilityLabel === label && typeof node.props.onPress === 'function');
+  root.findAll((node) => node.props['accessibilityLabel'] === label && typeof node.props['onPress'] === 'function');
 
 describe('NotificationsHeader', () => {
   it('offers Mark all read only while something is unread, and runs it', () => {
@@ -14,7 +14,7 @@ describe('NotificationsHeader', () => {
     const label = t().notifications.markRead;
 
     const unread = renderComponent(<NotificationsHeader unreadCount={3} onBack={jest.fn()} onMarkAllRead={onMarkAllRead} />);
-    act(() => (pressables(unread.root, label)[0].props.onPress as () => void)());
+    act(() => (pressables(unread.root, label)[0]!.props['onPress'] as () => void)());
     const allRead = renderComponent(<NotificationsHeader unreadCount={0} onBack={jest.fn()} onMarkAllRead={onMarkAllRead} />);
 
     expect(onMarkAllRead).toHaveBeenCalledTimes(1);
@@ -31,7 +31,7 @@ describe('NotificationFilterPills', () => {
     const unread = pressables(root, `${copy.unread} (2)`);
     expect(pressables(root, `${copy.all} (7)`)).toHaveLength(1);
     expect(unread).toHaveLength(1);
-    act(() => (unread[0].props.onPress as () => void)());
+    act(() => (unread[0]!.props['onPress'] as () => void)());
 
     expect(onChange).toHaveBeenCalledWith(NotificationFilter.Unread);
   });

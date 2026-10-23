@@ -1,6 +1,4 @@
-import type { RefObject } from 'react';
-import type { ScrollView } from 'react-native';
-import { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
+import { type StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import type { Failure } from '@presentation/base/types';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
@@ -41,9 +39,8 @@ export interface UseRecipeDetailResult {
   commentState: RecipeCommentsState | undefined;
   submitError: string | null;
   onFocusCommentInput: () => void;
-  scrollViewRef: RefObject<ScrollView | null>;
 
-  checkedIngredients: boolean[];
+  checkedIngredients: readonly boolean[];
   completedSteps: readonly boolean[];
   onToggleIngredient: (index: number) => void;
   onToggleStep: (index: number) => void;

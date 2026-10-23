@@ -4,7 +4,7 @@ import * as Clipboard from 'expo-clipboard';
 import { CharConstants } from '@core/constants';
 import { creatorWebUrl } from '@infrastructure/constants/api/api-hosts';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * Shares a creator's page through the system sheet.
@@ -15,15 +15,18 @@ import { t } from '@presentation/i18n';
  *   on the clipboard with a "Copied" toast instead of the button doing nothing.
  */
 export const useShareCreator = (): ((address: string, name: string) => void) =>
-  useCallback((address: string, name: string) => {
+  {
+  const t = useTranslations();
+  return useCallback((address: string, name: string) => {
     const url = creatorWebUrl(encodeURIComponent(address));
-    const message = [t().creators.shareText.replace('{name}', name), url].join(CharConstants.space);
+    const message = [t.creators.shareText.replace('{name}', name), url].join(CharConstants.space);
     void Share.share({ message, url, title: name }).catch(async () => {
       try {
         await Clipboard.setStringAsync(url);
-        showSuccessToast(t().recipes.shareCopied);
+        showSuccessToast(t.recipes.shareCopied);
       } catch {
         // Neither a share sheet nor a clipboard: nothing left to offer.
       }
     });
-  }, []);
+  }, [t]);
+};

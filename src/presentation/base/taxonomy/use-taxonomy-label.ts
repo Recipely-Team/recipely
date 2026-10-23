@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
+import { useStore } from 'zustand';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { t } from '@presentation/i18n';
-import { useLocale } from '@presentation/i18n/use-locale';
+import { useTranslations } from '@presentation/i18n';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
 import { CUISINE_EMOJI } from '@presentation/base/taxonomy/cuisine-emoji';
 import { CATEGORY_EMOJI } from '@presentation/base/taxonomy/category-emoji';
@@ -29,19 +29,17 @@ const firstNonEmpty = (...values: (string | undefined)[]): string | undefined =>
  * `Accept-Language`-localized names, so they win when present.
  */
 export const useTaxonomyLabel = (): UseTaxonomyLabelResult => {
+  const t = useTranslations();
   const { taxonomyStore } = useStores();
-  const cuisines = taxonomyStore((s) => s.cuisines);
-  const categories = taxonomyStore((s) => s.categories);
-  // Locale is a memo dependency: t() fallbacks are not reactive.
-  const locale = useLocale();
+  const cuisines = useStore(taxonomyStore, (s) => s.cuisines);
+  const categories = useStore(taxonomyStore, (s) => s.categories);
 
   const cuisineMap = useMemo(() => toMap(cuisines), [cuisines]);
   const categoryMap = useMemo(() => toMap(categories), [categories]);
 
   return useMemo(() => {
-    const tr = t();
-    const cuisineNames = tr.cuisineNames as Record<string, string | undefined>;
-    const categoryNames = tr.categoryNames as Record<string, string | undefined>;
+    const cuisineNames = t.cuisineNames as Record<string, string | undefined>;
+    const categoryNames = t.categoryNames as Record<string, string | undefined>;
     const cuisineEmoji = CUISINE_EMOJI as Record<string, string | undefined>;
     const categoryEmoji = CATEGORY_EMOJI as Record<string, string | undefined>;
 
@@ -62,6 +60,5 @@ export const useTaxonomyLabel = (): UseTaxonomyLabelResult => {
     };
 
     return { cuisineLabel, categoryLabel };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cuisineMap, categoryMap, locale]);
+  }, [cuisineMap, categoryMap, t]);
 };

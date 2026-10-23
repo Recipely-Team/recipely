@@ -6,7 +6,7 @@ import type { LikeRepositoryInterface } from '@domain/likes/like-repository-inte
 export class SetRecipeLikeUseCase {
   constructor(private readonly likes: LikeRepositoryInterface) {}
 
-  execute(recipeId: string, like: boolean): Promise<Result<void, Failure>> {
-    return like ? this.likes.like(recipeId) : this.likes.unlike(recipeId);
+  execute(recipeId: string, shouldLike: boolean): Promise<Result<void, Failure>> {
+    return shouldLike ? this.likes.like(recipeId) : this.likes.unlike(recipeId);
   }
 }

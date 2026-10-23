@@ -1,7 +1,8 @@
 import { numberedLines } from '@presentation/base/hooks/assistant/args/describing/numbered-lines';
+import { CharConstants } from '@core/constants';
 
 /** One item per line, so the model reads a list as a list rather than a sentence. */
-const LINE_BREAK = '\n';
+const LINE_BREAK = CharConstants.newline;
 const INGREDIENTS = 'ingredients';
 const STEPS = 'steps';
 

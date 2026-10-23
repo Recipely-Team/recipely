@@ -6,7 +6,7 @@ import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { borderWidths, controlSizes, fontSizes, radii, spacing } from '@presentation/base/theme';
 import type { UseShoppingItemEditorResult } from '@presentation/app/shopping-list/model/use-shopping-item-editor-result';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface ShoppingItemEditSheetProps {
   editor: UseShoppingItemEditorResult;
@@ -18,8 +18,9 @@ export interface ShoppingItemEditSheetProps {
  * sheet open with the reason under the fields.
  */
 export const ShoppingItemEditSheet = ({ editor }: ShoppingItemEditSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().shopping;
+  const copy = t.shopping;
   const { fields, onChange } = editor;
   const field = (label: string, value: string, onText: (text: string) => void, keyboardType: KeyboardTypeOptions = 'default'): React.JSX.Element => (
     <View style={styles.field}>

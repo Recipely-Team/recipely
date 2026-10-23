@@ -1,8 +1,10 @@
-import type { Failure } from '@core/failure';
-import type { StoreStatus } from '@application/store/store-status';
+import type { DeleteRecipeIdle } from '@application/recipes/delete/states/delete-recipe-idle';
+import type { DeletingRecipe } from '@application/recipes/delete/states/deleting-recipe';
+import type { RecipeDeleted } from '@application/recipes/delete/states/recipe-deleted';
+import type { DeleteRecipeError } from '@application/recipes/delete/states/delete-recipe-error';
 
 export type DeleteRecipeState =
-  | { status: typeof StoreStatus.Idle }
-  | { status: typeof StoreStatus.Deleting }
-  | { status: typeof StoreStatus.Success }
-  | { status: typeof StoreStatus.Error; failure: Failure };
+  | DeleteRecipeIdle
+  | DeletingRecipe
+  | RecipeDeleted
+  | DeleteRecipeError;

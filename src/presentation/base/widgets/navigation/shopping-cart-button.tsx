@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { StyleSheet, View } from 'react-native';
 import { type Href, useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
@@ -10,7 +11,7 @@ import { TabAppBarButton } from '@presentation/base/widgets/navigation/tab-app-b
 import { CountBadge } from '@presentation/base/widgets/text/count-badge';
 import { CountBadgeTone } from '@presentation/base/widgets/text/count-badge-tone';
 import { spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -27,21 +28,22 @@ import { ValueConstants } from '@core/constants';
  * - **A guest gets a reason**, not a login wall ({@link useGuestRouteGate}).
  */
 export const ShoppingCartButton = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const gate = useGuestRouteGate();
   const { authStore, shoppingListStore } = useStores();
-  const signedIn = authStore((s) => s.state.status === StoreStatus.Authenticated);
-  const toBuy = shoppingListStore((s) => s.toBuy) ?? ValueConstants.zero;
+  const isSignedIn = useStore(authStore, (s) => s.state.status === StoreStatus.Authenticated);
+  const toBuy = useStore(shoppingListStore, (s) => s.toBuy) ?? ValueConstants.zero;
 
   useEffect(() => {
-    if (signedIn) void shoppingListStore.getState().loadToBuy();
-  }, [shoppingListStore, signedIn]);
+    if (isSignedIn) void shoppingListStore.getState().loadToBuy();
+  }, [shoppingListStore, isSignedIn]);
 
   return (
     <View>
       <TabAppBarButton
         icon="cart-outline"
-        accessibilityLabel={toBuy > ValueConstants.zero ? t().shopping.cartA11y.replace('{n}', String(toBuy)) : t().shopping.title}
+        accessibilityLabel={toBuy > ValueConstants.zero ? t.shopping.cartA11y.replace('{n}', String(toBuy)) : t.shopping.title}
         onPress={() => gate.open(RoutePaths.shoppingList, (path) => router.push(path as Href))}
       />
       <CountBadge count={toBuy} tone={CountBadgeTone.ToDo} style={styles.badge} />

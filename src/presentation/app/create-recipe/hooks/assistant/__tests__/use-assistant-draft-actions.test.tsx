@@ -1,0 +1,430 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
+import { act } from 'react-test-renderer';
+import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
+import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
+import { Difficulty } from '@domain/recipes/difficulty';
+import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+import type { RecipeDraft } from '@domain/drafts/recipe-draft';
+import { renderComponent } from '@presentation/base/test-support/render-component';
+import { StoresProvider } from '@presentation/bootstrap/stores-context';
+import type { ApplicationStores } from '@application/di/application-stores';
+import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/assistant/use-assistant-draft-actions';
+
+const CUISINES = [{ key: 'italian', name: 'İtalyan', emoji: '🇮🇹' }];
+const CATEGORIES = [{ key: 'soup', name: 'Çorba', emoji: '🍲' }];
+
+const emptyRecipe = (): EditableRecipe => ({
+  name: 'Taslak',
+  cuisine: null,
+  category: '',
+  difficulty: Difficulty.Easy,
+  prepTimeMinutes: 0,
+  cookTimeMinutes: 0,
+  servings: 2,
+  ingredients: ['2 yumurta'],
+  instructions: ['Fırını ısıt'],
+  media: [],
+});
+
+/** The one draft the prompt phase offers to continue. */
+const RESUMABLE: RecipeDraft = {
+  id: 'draft-1',
+  prompt: 'mercimek',
+  snapshot: { name: 'Mercimek çorbası' },
+  chatHistory: [],
+  updatedAt: new Date(0),
+} as unknown as RecipeDraft;
+
+function harness(
+  loaded = true,
+  phase: { isDraftVisible: boolean; resumable: RecipeDraft | null } = { isDraftVisible: true, resumable: null },
+  isExitPending = false,
+) {
+  const registry = new AssistantActionRegistry();
+  const taxonomyStore = (mockStoreReading(() => ({ cuisines: loaded ? CUISINES : [], categories: loaded ? CATEGORIES : [] }))) as unknown as ApplicationStores['taxonomyStore'];
+
+  const spies = {
+    onUpdateField: jest.fn(),
+    onAppendIngredient: jest.fn(),
+    onRemoveIngredient: jest.fn(),
+    onAppendStep: jest.fn(),
+    onRemoveStep: jest.fn(),
+    onOpenPhotos: jest.fn(),
+    onSubmitRefine: jest.fn(),
+    onRegenerate: jest.fn(),
+    onRequestPublish: jest.fn(),
+    onResumeDraft: jest.fn(),
+    onGenerateAnother: jest.fn(() => true),
+  };
+
+  const Probe = (): null => {
+    useAssistantDraftActions({
+      isDraftVisible: phase.isDraftVisible,
+      isPromptVisible: !phase.isDraftVisible,
+      isExitPending,
+      saveProblem: null,
+      resumableDraft: phase.resumable,
+      recipe: emptyRecipe(),
+      ...spies,
+    });
+    return null;
+  };
+
+  renderComponent(
+    <StoresProvider value={{ assistantActionRegistry: registry, taxonomyStore } as unknown as ApplicationStores}>
+      <Probe />
+    </StoresProvider>,
+  );
+
+  return { registry, spies };
+}
+
+describe('useAssistantDraftActions', () => {
+  // Two calls arrive in ONE model turn and run as microtasks, before React has
+  // re-rendered. Appending a blank row and then writing into it made the second
+  // call read the same pre-render length, so both wrote to the same index: the
+  // first ingredient disappeared and a blank row took its place.
+  it('adds each ingredient in one call, so two in a breath both land', async () => {
+    const { registry, spies } = harness();
+
+    await act(async () => {
+      await registry.run(AssistantAction.AddIngredient, '2 yumurta');
+      await registry.run(AssistantAction.AddIngredient, '200 g un');
+    });
+
+    expect(spies.onAppendIngredient.mock.calls).toEqual([['2 yumurta'], ['200 g un']]);
+  });
+
+  it('adds each step in one call too', async () => {
+    const { registry, spies } = harness();
+
+    await act(async () => {
+      await registry.run(AssistantAction.AddStep, 'Yoğur');
+      await registry.run(AssistantAction.AddStep, 'Pişir');
+    });
+
+    expect(spies.onAppendStep.mock.calls).toEqual([['Yoğur'], ['Pişir']]);
+  });
+
+  describe('setDraftField', () => {
+    // The draft holds a `Difficulty` enum. One cast covering four fields let
+    // the lower-case word straight in: the chip rendered nothing selected and
+    // publish sent the backend a value it rejects.
+    it('resolves a difficulty to its enum value', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.SetDraftField, 'difficulty=easy');
+      });
+
+      expect(spies.onUpdateField).toHaveBeenCalledWith('difficulty', Difficulty.Easy);
+    });
+
+    // A second model is a second dialect: the Groq fallback wrote a screen's
+    // label where its key belonged, and a field name is the same kind of word.
+    it('accepts a field named with capitals and spaces', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.SetDraftField, 'Difficulty=easy');
+        await registry.run(AssistantAction.SetDraftField, 'Prep Time Minutes=25');
+      });
+
+      expect(spies.onUpdateField).toHaveBeenNthCalledWith(1, 'difficulty', Difficulty.Easy);
+      expect(spies.onUpdateField).toHaveBeenNthCalledWith(2, 'prepTimeMinutes', 25);
+    });
+
+    // On a Turkish device `'medium'.toLocaleUpperCase()` is `MEDİUM`, which
+    // never equals `MEDIUM` — every difficulty the assistant set would have
+    // failed on exactly the devices this app is built for.
+    it('matches a difficulty regardless of the device locale', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.SetDraftField, 'difficulty=MEDIUM');
+        await registry.run(AssistantAction.SetDraftField, 'difficulty=medium');
+      });
+
+      expect(spies.onUpdateField).toHaveBeenNthCalledWith(1, 'difficulty', Difficulty.Medium);
+      expect(spies.onUpdateField).toHaveBeenNthCalledWith(2, 'difficulty', Difficulty.Medium);
+    });
+
+    it('refuses a difficulty that is not one', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.SetDraftField, 'difficulty=trivial')).resolves.toMatchObject({
+          ok: false,
+          error: 'unknown_difficulty',
+        });
+      });
+
+      expect(spies.onUpdateField).not.toHaveBeenCalled();
+    });
+
+    // `cuisine` is a backend KEY, not the label the model saw. Writing the
+    // label made the chip fall back to its placeholder and publish send a
+    // value the backend rejects.
+    it('turns a cuisine name into the key the draft holds', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.SetDraftField, 'cuisine=İtalyan');
+      });
+
+      expect(spies.onUpdateField).toHaveBeenCalledWith('cuisine', 'italian');
+    });
+
+    it('accepts the key itself as well', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.SetDraftField, 'category=soup');
+      });
+
+      expect(spies.onUpdateField).toHaveBeenCalledWith('category', 'soup');
+    });
+
+    // An empty catalogue means the app has not loaded it, not that Italian
+    // stopped being a cuisine.
+    it('says the list is not loaded rather than calling the cuisine unknown', async () => {
+      const { registry, spies } = harness(false);
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.SetDraftField, 'cuisine=İtalyan')).resolves.toMatchObject({
+          ok: false,
+          error: 'taxonomy_not_loaded',
+        });
+      });
+
+      expect(spies.onUpdateField).not.toHaveBeenCalled();
+    });
+
+    it('sets the name, which really is free text', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.SetDraftField, 'name=Yoğurtlu Tavuk');
+      });
+
+      expect(spies.onUpdateField).toHaveBeenCalledWith('name', 'Yoğurtlu Tavuk');
+    });
+
+    it('refuses a field the draft does not have', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.SetDraftField, 'colour=blue')).resolves.toMatchObject({
+          ok: false,
+          error: 'unknown_field',
+        });
+      });
+
+      expect(spies.onUpdateField).not.toHaveBeenCalled();
+    });
+  });
+
+  // Publishing is not undoable and voice mishears; the picker names a photo
+  // that goes out under the user's name.
+  it('asks before publishing and before attaching a photo', async () => {
+    const { registry, spies } = harness();
+
+    await act(async () => {
+      await expect(registry.run(AssistantAction.PublishDraft)).resolves.toMatchObject({ awaiting: true });
+      await expect(registry.run(AssistantAction.AttachPhoto)).resolves.toMatchObject({ awaiting: true });
+    });
+
+    expect(spies.onRequestPublish).toHaveBeenCalled();
+    expect(spies.onOpenPhotos).toHaveBeenCalled();
+  });
+
+  // "Taslağıma devam et", said to the screen showing the resume card, reached
+  // nothing: `openDraft` was registered by My Recipes and by no one else, so
+  // the one screen that offers a draft to continue could not continue it.
+  /**
+   * "Porsiyonu 8 yap" set the number and left the ingredient list where it was:
+   * a draft reading "8 kişilik" over quantities for four, reported as done.
+   * Servings is not a label like the others — every quantity is a function of
+   * it — so the only correct answer is the AI refine that re-scales the list.
+   */
+  describe('changing the draft rather than contradicting it', () => {
+    it('sends a servings change to the refine instead of writing the number', async () => {
+      const { registry, spies } = harness();
+
+      const result = await act(async () =>
+        registry.run(AssistantAction.SetDraftField, 'servings=8'),
+      );
+
+      expect(spies.onUpdateField).not.toHaveBeenCalled();
+      expect(result).toMatchObject({ ok: false, error: 'servings_needs_refine' });
+    });
+
+    // The times really are labels: nothing in the recipe is computed from them,
+    // so writing one outright leaves the draft consistent.
+    it('still writes the times, which stand alone', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => registry.run(AssistantAction.SetDraftField, 'cookTimeMinutes=45'));
+
+      expect(spies.onUpdateField).toHaveBeenCalledWith('cookTimeMinutes', 45);
+    });
+
+    // Reported as "şöyle yap diyorum, gidip yeniden tarif oluşturuyor": the
+    // always-mounted handler pushes a second create screen and leaves the draft
+    // the user is looking at behind. So the screen asks first — and `awaiting`
+    // is what makes the model say the question out loud instead of announcing
+    // a recipe that is waiting on an answer.
+    it('asks about the open draft, at the moment the new recipe is asked for', async () => {
+      const { registry, spies } = harness();
+
+      await expect(registry.run(AssistantAction.GenerateRecipe, 'mercimek çorbası')).resolves.toMatchObject({
+        ok: true,
+        awaiting: true,
+      });
+      expect(spies.onGenerateAnother).toHaveBeenCalledWith('mercimek çorbası');
+    });
+
+    // It used to answer `draft_open_would_be_lost` and stop there: a refusal
+    // dressed as a question, with nothing registered to hear the answer. In
+    // production that became a dozen turns of being told a draft would be lost
+    // while the screen showed none, and no recipe was ever made.
+    it('starts it without asking when there is nothing to keep', async () => {
+      const { registry, spies } = harness();
+      spies.onGenerateAnother.mockReturnValue(false);
+
+      await expect(registry.run(AssistantAction.GenerateRecipe, 'mercimek çorbası')).resolves.toEqual(
+        expect.objectContaining({ ok: true }),
+      );
+      await expect(registry.run(AssistantAction.GenerateRecipe, 'mercimek çorbası')).resolves.not.toMatchObject({
+        awaiting: true,
+      });
+    });
+
+    it('leaves generating alone once the editor is not the screen', async () => {
+      const { registry } = harness(true, { isDraftVisible: false, resumable: null });
+
+      // Nothing here answers it, so it falls through to the handler that opens
+      // a new create screen — which is right from the prompt phase.
+      await expect(registry.run(AssistantAction.GenerateRecipe, 'mercimek çorbası')).resolves.toMatchObject({
+        error: 'unavailable_here',
+      });
+    });
+  });
+
+  /**
+   * Said in the editor with the draft on screen, "kaydet" answered
+   * `unavailable_here` — nothing here registered the word — and the model,
+   * left to explain that, told the user the save button was "probably further
+   * down the page". There is no such button: the screen publishes.
+   */
+  describe('saving the draft the user is looking at', () => {
+    it('asks to publish when the user says save', async () => {
+      const { registry, spies } = harness();
+
+      const result = await act(async () => registry.run(AssistantAction.Save));
+
+      expect(spies.onRequestPublish).toHaveBeenCalled();
+      expect(result).toMatchObject({ ok: true, awaiting: true });
+    });
+
+    // The exit sheet's own `save` means "keep this draft and leave", and it
+    // registers first — so without the gate the editor's would sit on top of it
+    // and publish a recipe in answer to a question about leaving.
+    it('stands down while the exit sheet is asking', async () => {
+      const { registry, spies } = harness(true, { isDraftVisible: true, resumable: null }, true);
+
+      await act(async () => registry.run(AssistantAction.Save));
+
+      expect(spies.onRequestPublish).not.toHaveBeenCalled();
+    });
+  });
+
+  /**
+   * "Taslağı oku" was answered with "you are on the list screen" and then "I
+   * can read it once it is saved". The read actions were registered by the
+   * recipe detail and by nothing else, so a draft — which has its ingredients
+   * and its steps the moment it is generated — could not be read at all.
+   */
+  describe('reading the draft', () => {
+    it('reads the ingredients out without publishing anything first', async () => {
+      const { registry } = harness();
+
+      await expect(registry.run(AssistantAction.ReadIngredients)).resolves.toMatchObject({
+        ok: true,
+        summary: '2 yumurta',
+      });
+    });
+
+    it('reads a step out', async () => {
+      const { registry } = harness();
+
+      await expect(registry.run(AssistantAction.ReadStep)).resolves.toMatchObject({
+        ok: true,
+        title: 'Fırını ısıt',
+      });
+    });
+
+    it('offers the whole draft to readScreen', () => {
+      const { registry } = harness();
+
+      expect(registry.screenReading).toContain('1) 2 yumurta');
+      expect(registry.screenReading).toContain('1) Fırını ısıt');
+    });
+  });
+
+  describe('the resume card', () => {
+    it('continues the draft on offer', async () => {
+      const { registry, spies } = harness(true, { isDraftVisible: false, resumable: RESUMABLE });
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.OpenDraft)).resolves.toMatchObject({ ok: true });
+      });
+
+      expect(spies.onResumeDraft).toHaveBeenCalled();
+    });
+
+    it('matches it by the words the user said', async () => {
+      const { registry, spies } = harness(true, { isDraftVisible: false, resumable: RESUMABLE });
+
+      await act(async () => {
+        await registry.run(AssistantAction.OpenDraft, 'mercimek');
+      });
+
+      expect(spies.onResumeDraft).toHaveBeenCalled();
+    });
+
+    // A different draft belongs to the drafts list, not to this card — the
+    // handler declines instead of opening the wrong recipe.
+    it('declines a draft that is not the one on offer', async () => {
+      const { registry, spies } = harness(true, { isDraftVisible: false, resumable: RESUMABLE });
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.OpenDraft, 'karnıyarık')).resolves.toMatchObject({
+          ok: false,
+        });
+      });
+
+      expect(spies.onResumeDraft).not.toHaveBeenCalled();
+    });
+
+    it('is not offered in the editor, where there is no card', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.OpenDraft)).resolves.toMatchObject({ ok: false });
+      });
+
+      expect(spies.onResumeDraft).not.toHaveBeenCalled();
+    });
+
+    // The screen line is how the model learns there is anything to continue.
+    it('names the resumable draft on the screen line', async () => {
+      const { registry } = harness(true, { isDraftVisible: false, resumable: RESUMABLE });
+
+      await act(async () => {
+        const result = await registry.run(AssistantAction.OpenDraft);
+        expect(result.ctx).toContain('resumable=Mercimek çorbası');
+      });
+    });
+  });
+});

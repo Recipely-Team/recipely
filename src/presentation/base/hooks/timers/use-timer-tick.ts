@@ -17,9 +17,9 @@ const frozenNowMs = (): number => ValueConstants.zero;
  * returned value is meaningless when `running` is false — read it only on the
  * branch that is actually counting down.
  */
-export const useTimerTick = (running: boolean): number =>
+export const useTimerTick = (isRunning: boolean): number =>
   useSyncExternalStore(
-    running ? subscribeToTick : noopSubscribe,
-    running ? getTickNowMs : frozenNowMs,
+    isRunning ? subscribeToTick : noopSubscribe,
+    isRunning ? getTickNowMs : frozenNowMs,
     frozenNowMs,
   );

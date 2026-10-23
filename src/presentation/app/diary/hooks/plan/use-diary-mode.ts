@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import { useStore } from 'zustand';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { DiaryMode, type DiaryModeType } from '@presentation/app/diary/model/plan/diary-mode';
@@ -19,7 +20,7 @@ export const useDiaryMode = (): DiaryModeModel => {
   const router = useRouter();
   const params = useLocalSearchParams<{ mode?: string }>();
   const { mealPlanStore } = useStores();
-  const canPlan = mealPlanStore((s) => s.enabled === true);
+  const canPlan = useStore(mealPlanStore, (s) => s.enabled === true);
 
   useEffect(() => {
     void mealPlanStore.getState().checkEnabled();

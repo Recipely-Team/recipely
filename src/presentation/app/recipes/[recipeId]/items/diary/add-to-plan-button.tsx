@@ -7,7 +7,7 @@ import { AddToPlanSheet } from '@presentation/base/widgets/meal-plan/add-to-plan
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { useAddToPlan } from '@presentation/app/recipes/[recipeId]/hooks/use-add-to-plan';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AddToPlanButtonProps {
   recipe: RecipeEntity;
@@ -22,6 +22,7 @@ export interface AddToPlanButtonProps {
  * recipe somewhere" action. Carries its own sheet and sign-in prompt.
  */
 export const AddToPlanButton = ({ recipe, inCard }: AddToPlanButtonProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const plan = useAddToPlan(recipe);
   if (!plan.enabled) return null;
@@ -38,7 +39,7 @@ export const AddToPlanButton = ({ recipe, inCard }: AddToPlanButtonProps): React
       >
         <Ionicons name="calendar-number-outline" size={iconSizes.lg} color={colors.text} />
         <SizedText size={inCard ? fontSizes.medium : fontSizes.body} weight={fontWeights.bold}>
-          {t().mealPlan.addToPlan}
+          {t.mealPlan.addToPlan}
         </SizedText>
       </Pressable>
       <AddToPlanSheet request={plan.request} onClose={plan.close} onView={plan.openPlan} />

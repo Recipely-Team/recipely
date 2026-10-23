@@ -36,13 +36,13 @@ interface UseFeedRowsArgs {
  *   time a page arrives.
  */
 export const useFeedRows = ({ recipes, isReloading, gridColumns }: UseFeedRowsArgs) => {
-  const adsReady = useAdsReady();
+  const isAdsReady = useAdsReady();
   const { width } = useLayout();
-  const interleaveAds = adsReady && gridColumns === ValueConstants.one;
+  const shouldInterleaveAds = isAdsReady && gridColumns === ValueConstants.one;
 
   const rows = useMemo(
-    () => buildFeedRows(isReloading ? [] : recipes, interleaveAds),
-    [recipes, interleaveAds, isReloading],
+    () => buildFeedRows(isReloading ? [] : recipes, shouldInterleaveAds),
+    [recipes, shouldInterleaveAds, isReloading],
   );
 
   const keyExtractor = useCallback(

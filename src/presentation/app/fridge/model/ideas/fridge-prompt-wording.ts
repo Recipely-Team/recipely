@@ -1,9 +1,9 @@
+import type { TranslationsType } from '@presentation/i18n';
 import type { FridgePromptWording } from '@domain/fridge/ideas/fridge-prompt-wording';
-import { t } from '@presentation/i18n';
 
 /** The prompt's words in the user's language, for the domain's `fridgeIdeaPrompt`. */
-export const fridgePromptWording = (): FridgePromptWording => {
-  const copy = t().fridge;
+export const fridgePromptWording = (t: TranslationsType): FridgePromptWording => {
+  const copy = t.fridge;
   return {
     dish: (title, summary) => copy.promptDish.replace('{title}', title).replace('{summary}', summary),
     have: (list) => copy.promptHave.replace('{list}', list),

@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { controlSizes, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface PhotoRemoveButtonProps {
   disabled: boolean;
@@ -14,18 +14,19 @@ export interface PhotoRemoveButtonProps {
 
 /** The owner's Remove on the photo in view. It only asks; the screen confirms before anything goes. */
 export const PhotoRemoveButton = ({ disabled, bottom, onPress }: PhotoRemoveButtonProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={t().photoViewer.removeA11y}
+      accessibilityLabel={t.photoViewer.removeA11y}
       disabled={disabled}
       onPress={onPress}
       style={[styles.button, { bottom, backgroundColor: colors.overlay }]}
     >
       <Ionicons name="trash" size={iconSizes.md} color={colors.onOverlay} />
-      <ThemedText style={[styles.label, { color: colors.onOverlay }]}>{t().photoViewer.remove}</ThemedText>
+      <ThemedText style={[styles.label, { color: colors.onOverlay }]}>{t.photoViewer.remove}</ThemedText>
     </Pressable>
   );
 };

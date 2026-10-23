@@ -1,5 +1,5 @@
 import '@presentation/bootstrap/crypto-polyfill';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { StoreStatus } from '@application/store/store-status';
 import { type ReactNode, useEffect } from 'react';
 import { timerStore } from '@application/timers/timer-store';
@@ -49,6 +49,7 @@ const initializeStores = (): ApplicationStores => {
 const stores = initializeStores();
 
 export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element => {
+  const t = useTranslations();
   // Start hydration early but do not gate rendering on it: requests await it, the static export must still render.
   useEffect(() => {
     // Never rejects (falls back to the device seed). Presentation cannot import infrastructure, so the root hands it the sink.
@@ -67,11 +68,11 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
       recordCrash(err, 'AppBootstrap.authStore.hydrate');
     });
     void getNotificationService().init({
-      dismissAction: t().timer.notificationDismiss,
-      channelName: t().timer.notificationChannel,
-      timerDoneBody: t().timer.notificationBody,
-      warningChannelName: t().timer.warningChannel,
-      reminderChannelName: t().reminders.channel,
+      dismissAction: t.timer.notificationDismiss,
+      channelName: t.timer.notificationChannel,
+      timerDoneBody: t.timer.notificationBody,
+      warningChannelName: t.timer.warningChannel,
+      reminderChannelName: t.reminders.channel,
     });
     timerStore.getState().hydrate().catch((err: unknown) => {
       if (__DEV__) console.error('[AppBootstrap] timer hydrate failed:', err);
@@ -79,19 +80,19 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
     });
     void timersBarStore.getState().hydrate().catch(() => undefined);
     void onboardingStore.getState().hydrate();
-  }, []);
+  }, [t]);
 
   // Register the push token once signed in (Android FCM, web Firebase JS; iOS pending).
   useEffect(() => {
-    let registered = false;
+    let wasRegistered = false;
     const register = (): void => {
       if (stores.authStore.getState().state.status !== StoreStatus.Authenticated) return;
-      registered = true;
+      wasRegistered = true;
       void registerPushToken((token, platform) => stores.registerDeviceToken.execute(token, platform));
     };
     // Exposed so a screen that promises a notification can retry after permission is granted.
     const maybeRegister = (): void => {
-      if (registered) return;
+      if (wasRegistered) return;
       register();
     };
     setPushRegistrationHandler(register);

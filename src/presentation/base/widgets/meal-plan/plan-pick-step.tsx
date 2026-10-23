@@ -1,3 +1,4 @@
+import type { TranslationsType } from '@presentation/i18n';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
 import { FoodSearchGroup } from '@domain/diary/foods/search/food-search-group';
@@ -11,15 +12,15 @@ import { PickMessage } from '@presentation/base/widgets/diary/add-food/pick/pick
 import { PlanPickRow } from '@presentation/base/widgets/meal-plan/plan-pick-row';
 import { failureContent } from '@presentation/base/errors/failure-lookups';
 import { diarySizes, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface PlanPickStepProps {
   onChoose: (hit: RecipeFoodHit) => void;
 }
 
-const emptyCopy = (tab: RecipeHitGroupType, query: string): string => {
-  const strings = t().mealPlan;
+const emptyCopy = (t: TranslationsType, tab: RecipeHitGroupType, query: string): string => {
+  const strings = t.mealPlan;
   if (tab === FoodSearchGroup.Saved) return strings.emptySaved;
   if (tab === FoodSearchGroup.Mine) return strings.emptyMine;
   return strings.emptySearch.replace('{q}', query.trim());
@@ -31,8 +32,9 @@ const emptyCopy = (tab: RecipeHitGroupType, query: string): string => {
  * pages on scroll, so the sheet lets it scroll itself.
  */
 export const PlanPickStep = ({ onChoose }: PlanPickStepProps): React.JSX.Element => {
+  const t = useTranslations();
   const picker = usePlanRecipePicker();
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const tabs = [
     { key: FoodSearchGroup.Saved, label: strings.tabSaved },
     { key: FoodSearchGroup.Mine, label: strings.tabMine },
@@ -43,9 +45,9 @@ export const PlanPickStep = ({ onChoose }: PlanPickStepProps): React.JSX.Element
   const body = (): React.JSX.Element => {
     if (recipes.status === StoreStatus.Idle || recipes.status === StoreStatus.Loading) return <PickSkeleton />;
     if (recipes.status === StoreStatus.Error) {
-      return <PickMessage title={failureContent(recipes.failure).title} hint={null} action={{ label: strings.tryAgain, icon: 'refresh', onPress: picker.retry }} />;
+      return <PickMessage title={failureContent(t, recipes.failure).title} hint={null} action={{ label: strings.tryAgain, icon: 'refresh', onPress: picker.retry }} />;
     }
-    if (recipes.items.length === ValueConstants.zero) return <PickMessage title={emptyCopy(picker.tab, picker.query)} hint={null} action={null} />;
+    if (recipes.items.length === ValueConstants.zero) return <PickMessage title={emptyCopy(t, picker.tab, picker.query)} hint={null} action={null} />;
     return (
       <FlatList
         // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).

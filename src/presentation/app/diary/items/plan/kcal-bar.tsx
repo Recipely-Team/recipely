@@ -11,7 +11,7 @@ export interface KcalBarProps {
   /** The bar's width inside its parent; full width by default. */
   width?: DimensionValue;
   /** Track and fill colours for a filled (selected) background. */
-  inverse?: { track: string; fill: string };
+  inverse?: { track: string; fill: string } | undefined;
 }
 
 const FULL = 100;
@@ -25,8 +25,8 @@ export const KcalBar = ({ planned, goal, height, width = '100%', inverse }: Kcal
   const colors = useTheme().colors;
   const tones = useDiaryTones();
   const ratio = goal > ValueConstants.zero ? Math.min(ValueConstants.one, planned / goal) : ValueConstants.zero;
-  const over = goal > ValueConstants.zero && planned > goal;
-  const fill = inverse?.fill ?? (over ? tones.over.solid : colors.primary);
+  const isOver = goal > ValueConstants.zero && planned > goal;
+  const fill = inverse?.fill ?? (isOver ? tones.over.solid : colors.primary);
   return (
     <View
       style={[styles.track, { height, width, backgroundColor: inverse?.track ?? colors.skeleton }]}

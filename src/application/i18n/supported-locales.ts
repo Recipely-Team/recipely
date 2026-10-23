@@ -37,7 +37,7 @@ export const DEFAULT_LOCALE = LocaleConstants.en;
  */
 export const toSupportedLocale = (locale: string | null | undefined): string => {
   const languageCode =
-    (locale ?? CharConstants.empty).trim().toLowerCase().split('-')[ValueConstants.zero] ??
+    (locale ?? CharConstants.empty).trim().toLowerCase().split(CharConstants.dash)[ValueConstants.zero] ??
     CharConstants.empty;
   return SUPPORTED_LOCALES.includes(languageCode) ? languageCode : DEFAULT_LOCALE;
 };

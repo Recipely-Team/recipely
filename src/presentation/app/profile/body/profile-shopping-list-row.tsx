@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -8,7 +9,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { RoutePaths } from '@presentation/base/constants';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * Profile's way into the shopping list — on every platform, the web shell
@@ -16,11 +17,12 @@ import { t } from '@presentation/i18n';
  * "Empty") once the count is known, the generic line before that.
  */
 export const ProfileShoppingListRow = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const router = useRouter();
-  const copy = t().shopping;
+  const copy = t.shopping;
   const { shoppingListStore } = useStores();
-  const toBuy = shoppingListStore((s) => s.toBuy);
+  const toBuy = useStore(shoppingListStore, (s) => s.toBuy);
   useEffect(() => {
     void shoppingListStore.getState().loadToBuy();
   }, [shoppingListStore]);

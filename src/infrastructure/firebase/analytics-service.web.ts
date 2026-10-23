@@ -24,7 +24,7 @@ const SCREEN_PARAM = 'firebase_screen';
 const SCREEN_CLASS_PARAM = 'firebase_screen_class';
 
 let instance: Analytics | null = null;
-let collecting = false;
+let isCollecting = false;
 
 /**
  * The web Analytics handle, or `null` when there is nothing to log to.
@@ -43,27 +43,27 @@ let collecting = false;
  *   says no should not be asked again on every navigation.
  */
 const resolveAnalytics = async (): Promise<Analytics | null> => {
-  if (!collecting) return null;
+  if (!isCollecting) return null;
   if (instance !== null) return instance;
   const app = getFirebaseApp();
   if (app === null) return null;
   try {
     if (!(await isSupported())) {
-      collecting = false;
+      isCollecting = false;
       return null;
     }
     instance = getAnalytics(app);
     return instance;
   } catch {
-    collecting = false;
+    isCollecting = false;
     return null;
   }
 };
 
 export const analyticsService: AnalyticsServiceInterface = {
-  async setEnabled(enabled: boolean): Promise<void> {
-    collecting = enabled;
-    if (!enabled) {
+  async setEnabled(isEnabled: boolean): Promise<void> {
+    isCollecting = isEnabled;
+    if (!isEnabled) {
       if (instance !== null) setAnalyticsCollectionEnabled(instance, false);
       return;
     }

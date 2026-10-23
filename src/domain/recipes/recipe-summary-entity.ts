@@ -120,7 +120,7 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
     return this.props.origin === RecipeOrigin.Curated;
   }
   /** What the provenance seal carries; empty when a person wrote the recipe. */
-  get provenanceMarks(): readonly ProvenanceMarkType[] {
+  provenanceMarks(): readonly ProvenanceMarkType[] {
     return toProvenanceMarks(this.props.origin, this.props.sourcePlatform, this.props.aiWritten);
   }
 }

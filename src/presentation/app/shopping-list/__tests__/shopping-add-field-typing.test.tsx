@@ -36,11 +36,11 @@ describe('ShoppingListScreen — typing in the add field', () => {
     repo.list.mockResolvedValue(ok({ items, total: items.length, page: 1, pageSize: 20, hasMore: false }));
     const { root } = renderComponent(<ShoppingListScreen />, { shoppingListStore: shoppingStoreOf(repo) } as unknown as Partial<ApplicationStores>);
     await act(async () => undefined);
-    const field = root.find((node) => node.props.accessibilityLabel === t().shopping.addPlaceholder && typeof node.props.onChangeText === 'function');
+    const field = root.find((node) => node.props['accessibilityLabel'] === t().shopping.addPlaceholder && typeof node.props['onChangeText'] === 'function');
     mockRowRenders.mockClear();
 
-    act(() => (field.props.onChangeText as (text: string) => void)('2 kg'));
-    act(() => (field.props.onChangeText as (text: string) => void)('2 kg potatoes'));
+    act(() => (field.props['onChangeText'] as (text: string) => void)('2 kg'));
+    act(() => (field.props['onChangeText'] as (text: string) => void)('2 kg potatoes'));
 
     expect(mockRowRenders).not.toHaveBeenCalled();
   });

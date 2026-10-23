@@ -1,10 +1,11 @@
-import type { Failure } from '@core/failure';
-import type { StoreStatus } from '@application/store/store-status';
-import type { ViewedUserProfile } from '@domain/user-profile/viewed-user-profile';
+import type { CreatorProfileIdle } from '@application/creators/profile/states/creator-profile-idle';
+import type { CreatorProfileLoading } from '@application/creators/profile/states/creator-profile-loading';
+import type { CreatorProfileLoaded } from '@application/creators/profile/states/creator-profile-loaded';
+import type { CreatorProfileError } from '@application/creators/profile/states/creator-profile-error';
 
 /** The creator page's header: the profile as this viewer sees it. */
 export type CreatorProfileState =
-  | { status: typeof StoreStatus.Idle }
-  | { status: typeof StoreStatus.Loading }
-  | { status: typeof StoreStatus.Loaded; viewed: ViewedUserProfile }
-  | { status: typeof StoreStatus.Error; failure: Failure };
+  | CreatorProfileIdle
+  | CreatorProfileLoading
+  | CreatorProfileLoaded
+  | CreatorProfileError;

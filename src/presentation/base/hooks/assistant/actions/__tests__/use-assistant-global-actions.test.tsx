@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { renderComponent } from '@presentation/base/test-support/render-component';
@@ -42,8 +43,7 @@ function harness(recipeListStore: unknown = fakeRecipeList()) {
   const registry = new AssistantActionRegistry();
   const stores = {
     assistantActionRegistry: registry,
-    assistantSessionStore: (select: (state: unknown) => unknown) =>
-      select({ stopVoice: jest.fn() }),
+    assistantSessionStore: mockStoreReading(() => ({ stopVoice: jest.fn() })),
     recipeListStore,
   } as unknown as ApplicationStores;
 

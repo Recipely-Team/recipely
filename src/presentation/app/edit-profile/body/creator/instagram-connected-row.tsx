@@ -15,7 +15,7 @@ import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/us
 import { CreatorRowAction } from '@presentation/app/edit-profile/items/creator-row-action';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface InstagramConnectedRowProps {
   connection: InstagramConnection;
@@ -33,11 +33,12 @@ export interface InstagramConnectedRowProps {
  * notice with Reconnect.
  */
 export const InstagramConnectedRow = (props: InstagramConnectedRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const { connection } = props;
   const colors = useTheme().colors;
   const success = useSeveritySurfaces()[SeverityType.Success];
   const locale = useLocale();
-  const copy = t().instagram;
+  const copy = t.instagram;
   const expiry = connection.tokenExpiresAt?.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' }) ?? CharConstants.emDash;
   return (
     <View role="status" accessibilityLiveRegion="polite" style={styles.row}>

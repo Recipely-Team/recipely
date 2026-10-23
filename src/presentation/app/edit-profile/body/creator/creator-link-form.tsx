@@ -11,7 +11,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { CreatorPlatformMark } from '@presentation/base/widgets/creators/creator-platform-mark';
 import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
 import { creatorPlatformName } from '@presentation/base/widgets/creators/creator-platform-name';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { CreatorRowAction } from '@presentation/app/edit-profile/items/creator-row-action';
 
@@ -36,19 +36,20 @@ export interface CreatorLinkFormProps {
  * - **Submit waits for the platform's minimum length** (`CreatorHandle.meetsMinimum`).
  */
 export const CreatorLinkForm = (props: CreatorLinkFormProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const danger = useSeveritySurfaces().danger;
-  const [focused, setFocused] = useState(false);
-  const copy = t().creators.account;
+  const [isFocused, setFocused] = useState(false);
+  const copy = t.creators.account;
   const { Max } = CreatorHandleRules.Length[props.platform];
-  const fieldBorder = props.error !== null ? danger.icon : focused ? colors.inputBorderFocused : colors.inputBorder;
+  const fieldBorder = props.error !== null ? danger.icon : isFocused ? colors.inputBorderFocused : colors.inputBorder;
 
   return (
     <View style={styles.form}>
       <View style={styles.title}>
         <CreatorPlatformMark platform={props.platform} size={creatorMarkGeometry.form} />
         <SizedText size={fontSizes.body} weight={fontWeights.bold} accessibilityRole="header">
-          {copy.linkAccount.replace('{platform}', creatorPlatformName(props.platform))}
+          {copy.linkAccount.replace('{platform}', creatorPlatformName(t, props.platform))}
         </SizedText>
       </View>
       <View style={styles.field}>

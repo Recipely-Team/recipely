@@ -9,6 +9,8 @@
  */
 
 import { act } from 'react-test-renderer';
+import { create } from 'zustand';
+import type { ApplicationStores } from '@application/di/application-stores';
 import type { ReactTestInstance } from 'react-test-renderer';
 import { AssistantFab } from '@presentation/base/widgets/assistant/views/assistant-fab';
 import { AssistantMiniBar } from '@presentation/base/widgets/assistant/views/assistant-mini-bar';
@@ -52,8 +54,11 @@ jest.mock('@presentation/base/hooks/assistant/use-assistant-session', () => ({
 // environment. Unmounting is the test's job, not a sign the loops leak.
 const mounted: { unmount: () => void }[] = [];
 
+/** The wave and orb read the level from the session store, so every render gets one. */
+const levelStore = create(() => ({ level: 0.8 }));
+
 const render = (element: Parameters<typeof renderComponent>[0]) => {
-  const result = renderComponent(element);
+  const result = renderComponent(element, { assistantSessionStore: levelStore } as unknown as Partial<ApplicationStores>);
   mounted.push(result.renderer);
   return result;
 };
@@ -67,15 +72,15 @@ afterEach(() => {
 /** Presses the control a user would find by its accessibility label. */
 const press = (root: ReactTestInstance, label: string): void => {
   const target = root.findAll(
-    (node) => node.props.accessibilityLabel === label && typeof node.props.onPress === 'function',
+    (node) => node.props['accessibilityLabel'] === label && typeof node.props['onPress'] === 'function',
   )[0];
   if (target === undefined) throw new Error(`no pressable labelled "${label}"`);
-  const onPress = target.props.onPress as () => void;
+  const onPress = target.props['onPress'] as () => void;
   act(() => onPress());
 };
 
 const texts = (root: ReactTestInstance): string[] =>
-  root.findAll((node) => typeof node.props.children === 'string').map((node) => String(node.props.children));
+  root.findAll((node) => typeof node.props['children'] === 'string').map((node) => String(node.props['children']));
 
 describe('assistant views', () => {
   describe('launcher', () => {
@@ -93,7 +98,7 @@ describe('assistant views', () => {
     const miniBar = (isMuted: boolean) => {
       const handlers = { onExpand: jest.fn(), onToggleMute: jest.fn(), onEnd: jest.fn() };
       const { root } = render(
-        <AssistantMiniBar status={AssistantStatus.Listening} level={0.5} isMuted={isMuted} {...handlers} />,
+        <AssistantMiniBar status={AssistantStatus.Listening} isMuted={isMuted} {...handlers} />,
       );
       return { root, handlers };
     };
@@ -141,9 +146,9 @@ describe('assistant views', () => {
   describe('waveform', () => {
     const opacities = (root: ReactTestInstance): number[] =>
       root
-        .findAll((node) => Array.isArray(node.props.style))
+        .findAll((node) => Array.isArray(node.props['style']))
         .map((node) => {
-          const style = node.props.style as { opacity?: number }[];
+          const style = node.props['style'] as { opacity?: number }[];
           return Number(style[style.length - 1]?.opacity);
         })
         .filter((value) => !Number.isNaN(value));
@@ -153,9 +158,9 @@ describe('assistant views', () => {
     // reads as a live microphone. Asserting the trees merely differ passed for
     // any styling change at all.
     it('drops every bar to the resting opacity when it is not active', () => {
-      const active = render(<AssistantWave level={0.8} active color="#000000" bars={6} height={20} />);
+      const active = render(<AssistantWave active color="#000000" bars={6} height={20} />);
       const resting = render(
-        <AssistantWave level={0.8} active={false} color="#000000" bars={6} height={20} />,
+        <AssistantWave active={false} color="#000000" bars={6} height={20} />,
       );
 
       const atRest = opacities(resting.root);

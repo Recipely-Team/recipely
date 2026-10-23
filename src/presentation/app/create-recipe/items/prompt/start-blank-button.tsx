@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface StartBlankButtonProps {
@@ -11,6 +11,7 @@ export interface StartBlankButtonProps {
 
 /** The prompt phase's way out of AI altogether: an "or" rule, then an empty form. */
 export const StartBlankButton = ({ onPress }: StartBlankButtonProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -18,7 +19,7 @@ export const StartBlankButton = ({ onPress }: StartBlankButtonProps): React.JSX.
       <View style={styles.dividerRow}>
         <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
         <ThemedText variant="caption" style={{ color: colors.textMuted }}>
-          {t().createRecipe.or}
+          {t.createRecipe.or}
         </ThemedText>
         <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
       </View>
@@ -27,10 +28,10 @@ export const StartBlankButton = ({ onPress }: StartBlankButtonProps): React.JSX.
         onPress={onPress}
         style={[styles.blankBtn, { borderColor: colors.border }]}
         accessibilityRole="button"
-        accessibilityLabel={t().createRecipe.startBlank}
+        accessibilityLabel={t.createRecipe.startBlank}
       >
         <ThemedText variant="body" style={[styles.blankLabel, { color: colors.text }]}>
-          {t().createRecipe.startBlank}
+          {t.createRecipe.startBlank}
         </ThemedText>
       </Pressable>
     </>

@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { spacing, fontSizes, controlSizes, iconSizes, fontWeights, maxFontScales } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
 import type { TabItem } from '@presentation/base/widgets/navigation/tab-item';
 import { ValueConstants } from '@core/constants';
@@ -32,6 +32,7 @@ export interface TabBarProps {
  *   break the words themselves ("My Re / cipes").
  */
 export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
@@ -39,11 +40,11 @@ export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | n
   if (isWebShell) return null;
 
   const tabs: TabItem<TabBarKey>[] = [
-    { key: 'recipes', label: t().navigation.recipes, icon: { family: TabIconFamily.Ionicons, name: 'restaurant-outline' } },
-    { key: 'myRecipes', label: t().navigation.myRecipes, icon: { family: TabIconFamily.Ionicons, name: 'bookmark-outline' } },
-    { key: 'chefs', label: t().navigation.chefs, icon: { family: TabIconFamily.Material, name: 'chef-hat' } },
-    { key: 'diary', label: t().navigation.diary, icon: { family: TabIconFamily.Ionicons, name: 'calendar-outline' } },
-    { key: 'profile', label: t().navigation.profile, icon: { family: TabIconFamily.Ionicons, name: 'person-outline' } },
+    { key: 'recipes', label: t.navigation.recipes, icon: { family: TabIconFamily.Ionicons, name: 'restaurant-outline' } },
+    { key: 'myRecipes', label: t.navigation.myRecipes, icon: { family: TabIconFamily.Ionicons, name: 'bookmark-outline' } },
+    { key: 'chefs', label: t.navigation.chefs, icon: { family: TabIconFamily.Material, name: 'chef-hat' } },
+    { key: 'diary', label: t.navigation.diary, icon: { family: TabIconFamily.Ionicons, name: 'calendar-outline' } },
+    { key: 'profile', label: t.navigation.profile, icon: { family: TabIconFamily.Ionicons, name: 'person-outline' } },
   ];
 
   return (

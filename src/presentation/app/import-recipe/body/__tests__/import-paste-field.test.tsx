@@ -31,7 +31,7 @@ const render = (recognised: ImportLink | null) =>
   ).root;
 
 const glyphs = (recognised: ImportLink | null): unknown[] =>
-  render(recognised).findAllByType(ProvenanceGlyph).map((n) => n.props.mark);
+  render(recognised).findAllByType(ProvenanceGlyph).map((n) => n.props['mark']);
 
 const labels = (recognised: ImportLink | null): string[] =>
   render(recognised)

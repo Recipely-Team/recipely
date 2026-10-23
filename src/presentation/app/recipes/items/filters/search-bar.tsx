@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, iconSizes, controlSizes, BrandColors } from '@presentation/base/theme';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface SearchBarProps {
   value: string;
@@ -13,6 +13,7 @@ export interface SearchBarProps {
 
 /** Rounded search input with a leading icon and a clear button that appears when text is present. */
 export const SearchBar = ({ value, onChangeText, placeholder }: SearchBarProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -30,7 +31,7 @@ export const SearchBar = ({ value, onChangeText, placeholder }: SearchBarProps):
       {value.length > ValueConstants.zero ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t().common.clear}
+          accessibilityLabel={t.common.clear}
           onPress={() => onChangeText(CharConstants.empty)}
           hitSlop={spacing.sm}
         >

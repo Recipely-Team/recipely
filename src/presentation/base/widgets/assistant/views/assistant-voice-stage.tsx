@@ -19,11 +19,10 @@ import {
   spacing,
 } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AssistantVoiceStageProps {
   status: AssistantStatusType;
-  level: number;
   isMuted: boolean;
   onStart: () => void;
   onStop: () => void;
@@ -49,22 +48,21 @@ export interface AssistantVoiceStageProps {
  */
 export const AssistantVoiceStage = ({
   status,
-  level,
   isMuted,
   onStart,
   onStop,
   onToggleMute,
   onSwitchToText,
 }: AssistantVoiceStageProps): React.JSX.Element => {
+  const t = useTranslations();
   const { colors } = useTheme();
-  const live = assistantIsLive(status);
+  const isLive = assistantIsLive(status);
   const isSounding = assistantIsSounding(status, isMuted);
 
   return (
     <View style={styles.stage}>
       <View style={styles.waveRow}>
         <AssistantWave
-          level={level}
           active={isSounding}
           color={colors.primary}
           bars={assistantMetrics.wavePanelBars}
@@ -78,21 +76,21 @@ export const AssistantVoiceStage = ({
         <Pressable
           onPress={onSwitchToText}
           accessibilityRole="button"
-          accessibilityLabel={t().assistant.keyboard}
+          accessibilityLabel={t.assistant.keyboard}
           style={[styles.pill, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
         >
           <Ionicons name="chatbubble-ellipses-outline" size={iconSizes.sm} color={colors.text} />
           <ThemedText variant="caption" style={styles.pillLabel}>
-            {t().assistant.keyboard}
+            {t.assistant.keyboard}
           </ThemedText>
         </Pressable>
 
-        {live ? (
+        {isLive ? (
           <>
             <Pressable
               onPress={onToggleMute}
               accessibilityRole="button"
-              accessibilityLabel={isMuted ? t().assistant.unmute : t().assistant.mute}
+              accessibilityLabel={isMuted ? t.assistant.unmute : t.assistant.mute}
               style={[
                 styles.pill,
                 {
@@ -110,23 +108,23 @@ export const AssistantVoiceStage = ({
                 variant="caption"
                 style={[styles.pillLabel, isMuted ? { color: colors.primaryText } : undefined]}
               >
-                {isMuted ? t().assistant.unmute : t().assistant.mute}
+                {isMuted ? t.assistant.unmute : t.assistant.mute}
               </ThemedText>
             </Pressable>
 
             <Pressable
               onPress={onStop}
               accessibilityRole="button"
-              accessibilityLabel={t().assistant.end}
+              accessibilityLabel={t.assistant.end}
               style={[styles.pill, { backgroundColor: colors.danger, borderColor: colors.danger }]}
             >
               <ThemedText variant="caption" style={[styles.pillLabel, { color: colors.onOverlay }]}>
-                {t().assistant.end}
+                {t.assistant.end}
               </ThemedText>
             </Pressable>
           </>
         ) : (
-          <Pressable onPress={onStart} accessibilityRole="button" accessibilityLabel={t().assistant.start}>
+          <Pressable onPress={onStart} accessibilityRole="button" accessibilityLabel={t.assistant.start}>
             <LinearGradient
               colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
               start={assistantGradient.start}
@@ -135,7 +133,7 @@ export const AssistantVoiceStage = ({
             >
               <Ionicons name="sparkles" size={iconSizes.lg} color={colors.onOverlay} />
               <ThemedText variant="body" style={[styles.startLabel, { color: colors.onOverlay }]}>
-                {t().assistant.start}
+                {t.assistant.start}
               </ThemedText>
             </LinearGradient>
           </Pressable>

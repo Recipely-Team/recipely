@@ -28,7 +28,7 @@ import {
 } from '@presentation/app/recipes/body/web-hero-section';
 import { aspectRatios } from '@presentation/base/theme';
 import { StoreStatus } from '@application/store/store-status';
-import type { TrendingRecipesStoreState } from '@application/recipes/trending/trending-recipes-store-state';
+import type { TrendingRecipesStore } from '@application/recipes/trending/trending-recipes-store-contract';
 import type { TrendingRecipesState } from '@application/recipes/trending/trending-recipes-state';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
@@ -81,7 +81,7 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
 
 const makeStores = (state: TrendingRecipesState): ApplicationStores =>
   ({
-    trendingRecipesStore: create<TrendingRecipesStoreState>(() => ({
+    trendingRecipesStore: create<TrendingRecipesStore>(() => ({
       state,
       load: jest.fn(async () => undefined),
     })),
@@ -106,7 +106,6 @@ const renderBand = (state: TrendingRecipesState): ReactTestInstance => {
         <WebHeroSection
           onOpenRecipe={jest.fn()}
           onOpenCreate={jest.fn()}
-          isSaved={() => false}
           onToggleSave={jest.fn()}
         />
       </StoresProvider>
@@ -118,7 +117,7 @@ const renderBand = (state: TrendingRecipesState): ReactTestInstance => {
 /** The flattened style of the single node carrying `testID`. */
 const styleOf = (root: ReactTestInstance, testID: string): Record<string, unknown> =>
   StyleSheet.flatten(
-    root.find((node: ReactTestInstance) => node.props.testID === testID).props.style,
+    root.find((node: ReactTestInstance) => node.props['testID'] === testID).props['style'],
   ) as unknown as Record<string, unknown>;
 
 const instancesIn = (children: (ReactTestInstance | string)[]): ReactTestInstance[] =>
@@ -131,11 +130,11 @@ const instancesIn = (children: (ReactTestInstance | string)[]): ReactTestInstanc
  * renders, one level down.
  */
 const slotWidths = (root: ReactTestInstance): unknown[] => {
-  const row = root.find((node: ReactTestInstance) => node.props.testID === WEB_HERO_ROW_TEST_ID);
+  const row = root.find((node: ReactTestInstance) => node.props['testID'] === WEB_HERO_ROW_TEST_ID);
   const host = instancesIn(row.children)[ValueConstants.zero];
-  return instancesIn(host.children).map((slot: ReactTestInstance) => {
-    const style = StyleSheet.flatten(slot.props.style) as unknown as Record<string, unknown>;
-    return { flexGrow: style.flexGrow, flexBasis: style.flexBasis, maxWidth: style.maxWidth };
+  return instancesIn(host!.children).map((slot: ReactTestInstance) => {
+    const style = StyleSheet.flatten(slot.props['style']) as unknown as Record<string, unknown>;
+    return { flexGrow: style['flexGrow'], flexBasis: style['flexBasis'], maxWidth: style['maxWidth'] };
   });
 };
 
@@ -148,15 +147,15 @@ describe('WebHeroSection — the band states no height of its own', () => {
   it('leaves no strip of dead space under the cards at the three-column width', () => {
     const row = styleOf(renderBand(LOADED), WEB_HERO_ROW_TEST_ID);
 
-    expect(row.minHeight).toBeUndefined();
-    expect(row.height).toBeUndefined();
+    expect(row['minHeight']).toBeUndefined();
+    expect(row['height']).toBeUndefined();
   });
 
   it('sizes the loading placeholder by the same ratio', () => {
     const root = renderBand({ status: StoreStatus.Loading });
 
-    expect(styleOf(root, WEB_HERO_ROW_TEST_ID).minHeight).toBeUndefined();
-    expect(styleOf(root, WEB_HERO_SKELETON_FEATURED_TEST_ID).aspectRatio).toBe(
+    expect(styleOf(root, WEB_HERO_ROW_TEST_ID)['minHeight']).toBeUndefined();
+    expect(styleOf(root, WEB_HERO_SKELETON_FEATURED_TEST_ID)['aspectRatio']).toBe(
       aspectRatios.heroWide,
     );
   });

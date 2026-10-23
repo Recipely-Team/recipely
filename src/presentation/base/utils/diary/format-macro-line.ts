@@ -1,5 +1,5 @@
+import type { TranslationsType } from '@presentation/i18n';
 import type { Nutrients } from '@domain/diary/nutrition/nutrients';
-import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 
@@ -8,9 +8,9 @@ import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-n
  * row then drops the line rather than printing zeros it was never told
  * (design spec → Food Diary §3, "calories only").
  */
-export const formatMacroLine = (nutrients: Nutrients, locale: string): string | null => {
+export const formatMacroLine = (t: TranslationsType, nutrients: Nutrients, locale: string): string | null => {
   if (!nutrients.hasMacros) return null;
-  const strings = t().diary;
+  const strings = t.diary;
   const parts: [string, number | null][] = [
     [strings.macroProteinShort, nutrients.protein],
     [strings.macroCarbsShort, nutrients.carbs],

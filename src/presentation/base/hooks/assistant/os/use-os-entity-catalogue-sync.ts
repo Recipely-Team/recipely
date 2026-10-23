@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useStore } from 'zustand';
 import { ValueConstants } from '@core/constants';
 import { StoreStatus } from '@application/store/store-status';
 import type { OsRecipeHandle } from '@domain/assistant/os/os-recipe-handle';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { loadedItems } from '@application/store/paging/loaded-items';
 
 const CATALOGUE_LIMIT = 24;
 
@@ -24,10 +26,12 @@ const CATALOGUE_LIMIT = 24;
  *   hold the phone read the previous one's recipe titles out of Spotlight.
  */
 export const useOsEntityCatalogueSync = (): void => {
-  const { osAssistant, savedRecipesStore, createdRecipesStore, authStore } = useStores();
-  const savedRecipes = savedRecipesStore((state) => state.savedRecipes);
-  const createdRecipes = createdRecipesStore((state) => state.recipes);
-  const isSignedIn = authStore((state) => state.state.status === StoreStatus.Authenticated);
+  const { osAssistant, savedRecipesStore, myRecipesStore, authStore } = useStores();
+  const saved = useStore(savedRecipesStore, (state) => state.saved);
+  const mine = useStore(myRecipesStore, (state) => state.mine);
+  const savedRecipes = useMemo(() => loadedItems(saved), [saved]);
+  const createdRecipes = useMemo(() => loadedItems(mine), [mine]);
+  const isSignedIn = useStore(authStore, (state) => state.state.status === StoreStatus.Authenticated);
 
   useEffect(() => {
     if (!osAssistant.isAvailable) return;

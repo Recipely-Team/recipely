@@ -12,6 +12,10 @@ export const ApiRoutes = {
     social: '/auth/social',
     forgotPassword: '/auth/forgot-password',
     resetPassword: '/auth/reset-password',
+    /** Trades the refresh token (body on native, cookie on web) for a new session. */
+    refresh: '/auth/refresh',
+    /** Revokes the refresh token's sign-in. */
+    logout: '/auth/logout',
   },
   me: {
     root: '/me',
@@ -67,7 +71,6 @@ export const ApiRoutes = {
     cuisines: '/recipes/cuisines',
     categories: '/recipes/categories',
     generate: '/recipes/generate',
-    import: '/recipes/import',
     /** Queues a background import and returns a job id, instead of waiting ~2 min. */
     importJobs: '/recipes/import/jobs',
     importJob: (id: string): string => `/recipes/import/jobs/${encodeURIComponent(id)}`,

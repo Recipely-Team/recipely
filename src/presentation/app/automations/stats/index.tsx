@@ -23,7 +23,7 @@ import { FollowersCard } from '@presentation/app/automations/stats/body/follower
 import { StatsFootnote } from '@presentation/app/automations/stats/body/stats-footnote';
 import { StatsMetrics } from '@presentation/app/automations/stats/model/stats-metrics';
 import { fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 const RANGES: readonly StatsRangeType[] = [StatsRange.Week, StatsRange.Month, StatsRange.Quarter];
 
@@ -33,13 +33,14 @@ const RANGES: readonly StatsRangeType[] = [StatsRange.Week, StatsRange.Month, St
  * the daily chart, the follower trend and every automated post.
  */
 export const CreatorStatsScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const scrollEndPadding = useScrollEndPadding();
   const colors = useTheme().colors;
   const vm = useCreatorStats();
   const scrollable = useAssistantScrollable(vm.view === StatsViewKind.Stats);
-  const copy = t().creatorStats;
-  const ranged = vm.view === StatsViewKind.Stats || vm.view === StatsViewKind.NoSends || vm.view === StatsViewKind.Loading;
-  const range = ranged ? (
+  const copy = t.creatorStats;
+  const isRanged = vm.view === StatsViewKind.Stats || vm.view === StatsViewKind.NoSends || vm.view === StatsViewKind.Loading;
+  const range = isRanged ? (
     <SegmentedTabs
       options={RANGES.map((days) => ({ key: String(days), label: days === StatsRange.Week ? copy.range7 : days === StatsRange.Month ? copy.range30 : copy.range90 }))}
       value={String(vm.range)}
@@ -56,14 +57,14 @@ export const CreatorStatsScreen = (): React.JSX.Element => {
           <ErrorState icon={failureIcon(vm.failure)} severity={failureSeverity(vm.failure)} title={copy.errorBody} primaryLabel={copy.tryAgain} onPrimary={vm.onRetry} />
         );
       case StatsViewKind.Unavailable:
-        return <ErrorState icon="logo-instagram" severity={SeverityType.Neutral} title={t().errors.instagramNotConfigured.title} body={t().errors.instagramNotConfigured.body} />;
+        return <ErrorState icon="logo-instagram" severity={SeverityType.Neutral} title={t.errors.instagramNotConfigured.title} body={t.errors.instagramNotConfigured.body} />;
       case StatsViewKind.Locked:
         return (
           <View style={styles.locked}>
             <SizedText accessibilityRole="header" size={fontSizes.subtitle} weight={fontWeights.heavy}>
               {copy.locked}
             </SizedText>
-            <InstagramConnectBlock phase={vm.phase} onConnect={vm.connect} label={t().instagram.connect} showBody={false} />
+            <InstagramConnectBlock phase={vm.phase} onConnect={vm.connect} label={t.instagram.connect} showBody={false} />
           </View>
         );
       case StatsViewKind.Loading:

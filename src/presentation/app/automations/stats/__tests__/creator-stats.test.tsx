@@ -85,8 +85,8 @@ describe('Creator stats', () => {
     const text = JSON.stringify(tree.renderer.toJSON());
     expect(text).toContain('Comments matched'.toUpperCase());
     expect(text).toContain('Instagram followers');
-    const row = tree.root.findAll((n) => n.props.accessibilityRole === 'button' && typeof n.props.accessibilityLabel === 'string' && n.props.accessibilityLabel.startsWith('tarif'))[0];
-    await act(async () => (row?.props.onPress as () => void)());
+    const row = tree.root.findAll((n) => n.props['accessibilityRole'] === 'button' && typeof n.props['accessibilityLabel'] === 'string' && n.props['accessibilityLabel'].startsWith('tarif'))[0];
+    await act(async () => (row?.props['onPress'] as () => void)());
     expect(mockRouter.push).toHaveBeenCalledWith('/automations/activity?ruleId=rule-1');
   });
 });

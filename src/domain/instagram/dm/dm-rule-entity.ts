@@ -65,7 +65,7 @@ export class DmRuleEntity extends BaseEntity<DmRuleEntityProps> {
     return this.props.sentCount;
   }
 
-  withEnabled(enabled: boolean): DmRuleEntity {
-    return new DmRuleEntity({ ...this.props, enabled });
+  withEnabled(isEnabled: boolean): DmRuleEntity {
+    return new DmRuleEntity({ ...this.props, enabled: isEnabled });
   }
 }

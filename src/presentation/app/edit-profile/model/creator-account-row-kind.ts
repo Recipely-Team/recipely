@@ -7,5 +7,3 @@ export const CreatorAccountRowKind = {
   Add: 'add',
   Form: 'form',
 } as const;
-
-export type CreatorAccountRowKindType = (typeof CreatorAccountRowKind)[keyof typeof CreatorAccountRowKind];

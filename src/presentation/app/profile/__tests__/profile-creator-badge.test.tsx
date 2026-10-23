@@ -52,7 +52,7 @@ describe('ProfileIdentity — creator badge', () => {
   it('shows one phone-sized badge when one platform is approved', () => {
     const { root } = renderIdentity(claimsOf(claimOf('tiktok', CreatorStatus.Approved), claimOf('instagram', CreatorStatus.Pending)));
 
-    expect(root.findByType(CreatorBadge).props.size).toBe(creatorMarkGeometry.badgeProfile);
+    expect(root.findByType(CreatorBadge).props['size']).toBe(creatorMarkGeometry.badgeProfile);
   });
 
   it('still shows one badge when both platforms are approved', () => {

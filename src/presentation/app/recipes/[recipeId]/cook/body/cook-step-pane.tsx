@@ -6,7 +6,7 @@ import { useHorizontalSwipe } from '@presentation/base/hooks/interaction/use-hor
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { borderWidths, controlSizes, fontWeights, iconSizes, lineHeightFor, lineHeights, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { CookStepTimer } from '@presentation/app/recipes/[recipeId]/cook/items/cook-step-timer';
 import { useRunningStepTimers } from '@presentation/app/recipes/[recipeId]/cook/hooks/use-running-step-timers';
@@ -35,6 +35,7 @@ export interface CookStepPaneProps {
  * when a long step outgrows the screen at a large font scale.
  */
 export const CookStepPane = (props: CookStepPaneProps): React.JSX.Element => {
+  const t = useTranslations();
   const { recipeId, recipeName, steps, index, isDone, onToggleDone, minutes, onSwipe } = props;
   const colors = useTheme().colors;
   const { isExpanded } = useLayout();
@@ -43,13 +44,13 @@ export const CookStepPane = (props: CookStepPaneProps): React.JSX.Element => {
   const otherTimers = useRunningStepTimers(recipeId, steps, index);
   const step = steps[index] ?? CharConstants.empty;
   const labelOf = (at: number): string =>
-    t()
+    t
       .cookMode.stepOf.replace(CookCopyToken.step, String(at + ValueConstants.one))
       .replace(CookCopyToken.total, String(steps.length));
   const stepLabel = labelOf(index);
 
   return (
-    <View style={styles.pane} accessibilityHint={t().cookMode.swipeHint} {...swipe}>
+    <View style={styles.pane} accessibilityHint={t.cookMode.swipeHint} {...swipe}>
       <View style={styles.header}>
         <ThemedText variant="label" accessibilityRole="header" style={[styles.stepLabel, { color: colors.primary }]}>
           {stepLabel}
@@ -57,7 +58,7 @@ export const CookStepPane = (props: CookStepPaneProps): React.JSX.Element => {
         <Pressable
           accessibilityRole="checkbox"
           accessibilityState={{ checked: isDone }}
-          accessibilityLabel={isDone ? t().cookMode.markUndone : t().cookMode.markDone}
+          accessibilityLabel={isDone ? t.cookMode.markUndone : t.cookMode.markDone}
           onPress={onToggleDone}
           style={({ pressed }) => [
             styles.done,
@@ -69,7 +70,7 @@ export const CookStepPane = (props: CookStepPaneProps): React.JSX.Element => {
         >
           <Ionicons name="checkmark" size={iconSizes.md} color={isDone ? colors.onSuccess : colors.text} />
           <ThemedText variant="caption" style={[styles.doneLabel, { color: isDone ? colors.onSuccess : colors.text }]}>
-            {t().cookMode.stepDone}
+            {t.cookMode.stepDone}
           </ThemedText>
         </Pressable>
       </View>

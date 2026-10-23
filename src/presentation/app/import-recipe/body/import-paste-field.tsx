@@ -19,7 +19,7 @@ import {
 } from '@presentation/base/theme';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { recognisedLinkLabel } from '@presentation/app/import-recipe/model/recognised-link-label';
 
@@ -55,8 +55,9 @@ export const ImportPasteField = ({
   recognised,
   hasFailure,
 }: ImportPasteFieldProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().importRecipe;
+  const copy = t.importRecipe;
   const inputLineHeight = useTextLineHeight(fontSizes.body);
   const danger = useSeveritySurfaces().danger;
   const [isFocused, setIsFocused] = useState(false);

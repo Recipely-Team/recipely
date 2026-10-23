@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { type Href, useRouter } from 'expo-router';
+import { useStore } from 'zustand';
+import { useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -16,7 +17,7 @@ import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { showWarningToast } from '@presentation/base/feedback/show-toast';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { ensurePushRegistration } from '@application/notifications/ensure-push-registration';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ImportTrail } from '@presentation/base/errors/import-trail';
 
 /** How often the screen asks the backend where the job has got to. */
@@ -86,10 +87,11 @@ interface UseImportRecipeResult {
  *   child already has a parent") — the Android "Open draft" crash of v1.7.0.
  */
 export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeResult => {
+  const t = useTranslations();
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
   const { importJobStore } = useStores();
-  const state = importJobStore((s) => s.state);
+  const state = useStore(importJobStore, (s) => s.state);
   const [ticks, setTicks] = useState(ValueConstants.zero);
   // The link this screen is working on: the shared one, or the pasted one.
   const [pastedUrl, setPastedUrl] = useState<string | null>(null);
@@ -105,7 +107,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
   );
 
   const start = useCallback((): void => {
-    if (activeUrl === null || activeUrl === undefined) return;
+    if (activeUrl === null) return;
     startWith(activeUrl);
   }, [activeUrl, startWith]);
 
@@ -156,14 +158,14 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
   const onNotifyMe = useCallback((): void => {
     void getNotificationService()
       .requestPermissions()
-      .then((granted) => {
+      .then((isGranted) => {
         // Re-register push now that permission exists.
-        if (granted) ensurePushRegistration();
-        else showWarningToast(t().importRecipe.notifyBlocked);
+        if (isGranted) ensurePushRegistration();
+        else showWarningToast(t.importRecipe.notifyBlocked);
       })
-      .catch(() => showWarningToast(t().importRecipe.notifyBlocked))
+      .catch(() => showWarningToast(t.importRecipe.notifyBlocked))
       .finally(onClose);
-  }, [onClose]);
+  }, [onClose, t]);
 
   const onOpenDraft = useCallback((): void => {
     FailureReporter.trail(ImportTrail.openDraftTapped);
@@ -184,12 +186,12 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     }
 
     FailureReporter.trail(ImportTrail.navigatingToEditor);
-    router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } } as Href);
+    router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } });
   }, [job, router]);
 
   // No URL means the paste screen (always on web).
   const isAwaitingLink =
-    (activeUrl === null || activeUrl === undefined) && state.status === StoreStatus.Idle;
+    activeUrl === null && state.status === StoreStatus.Idle;
 
   const jobStatus = job?.status ?? null;
   const queuePosition = job?.queuePosition ?? null;
@@ -198,7 +200,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     job !== null && job.status === ImportJobStatus.Failed
       ? new UnknownFailure(DiagnosticMessage.recipeImport.jobFailed, undefined, job.errorKey ?? undefined)
       : null;
-  const link = activeUrl === null || activeUrl === undefined ? null : ImportLink.create(activeUrl);
+  const link = activeUrl === null ? null : ImportLink.create(activeUrl);
   const platform = link !== null && link.ok ? link.value.platform : SourcePlatform.Instagram;
   const host = link !== null && link.ok ? link.value.host : CharConstants.empty;
   const stageCount = importStageKeysFor(platform).length;

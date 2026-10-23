@@ -11,7 +11,7 @@ export interface SpecRowProps {
   label: string;
   last?: boolean;
   /** Backend validation message for this field, if any — tints the row and adds an inline warning. */
-  error?: string;
+  error?: string | undefined;
   children: React.ReactNode;
 }
 

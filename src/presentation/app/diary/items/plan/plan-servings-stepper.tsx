@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { formatPlanServings } from '@presentation/base/utils/meal-plan/format-plan-servings';
 import { borderWidths, fontWeights, iconSizes, mealPlanSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface PlanServingsStepperProps {
@@ -20,9 +20,10 @@ export interface PlanServingsStepperProps {
  * each button reaches 44 pt through `hitSlop`.
  */
 export const PlanServingsStepper = ({ servings, onStep, compact = false }: PlanServingsStepperProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const height = compact ? mealPlanSizes.stepperWeb : mealPlanSizes.stepper;
   const button = (icon: 'remove' | 'add', direction: number, label: string): React.JSX.Element => (
     <Pressable
@@ -44,7 +45,7 @@ export const PlanServingsStepper = ({ servings, onStep, compact = false }: PlanS
         numberOfLines={ValueConstants.one}
         style={[styles.value, compact ? styles.valueFill : null]}
       >
-        {formatPlanServings(servings, locale)}
+        {formatPlanServings(t, servings, locale)}
       </SizedText>
       {button('add', ValueConstants.one, strings.increaseServings)}
     </View>

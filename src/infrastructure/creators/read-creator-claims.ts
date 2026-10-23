@@ -1,3 +1,4 @@
+import { isList } from '@core/guards/type-guards';
 import { CreatorClaims } from '@domain/creators/creator-claims';
 import type { CreatorClaimDto } from '@infrastructure/creators/dtos/creator-claim-dto';
 import { readCreatorClaim } from '@infrastructure/creators/read-creator-claim';
@@ -8,7 +9,7 @@ import { readCreatorClaim } from '@infrastructure/creators/read-creator-claim';
  * than failing the sign-in — the creator section must never cost the session.
  */
 export const readCreatorClaims = (dtos: readonly CreatorClaimDto[] | null | undefined): CreatorClaims => {
-  if (!Array.isArray(dtos)) return CreatorClaims.empty();
+  if (!isList(dtos)) return CreatorClaims.empty();
   let claims = CreatorClaims.empty();
   for (const dto of dtos) {
     const claim = readCreatorClaim(dto);

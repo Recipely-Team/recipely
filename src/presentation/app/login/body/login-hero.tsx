@@ -3,7 +3,7 @@ import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, layoutSizes, opacities, brandMarkSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface LoginHeroProps {
@@ -12,16 +12,17 @@ export interface LoginHeroProps {
 
 /** Brand mark + title/subtitle shown atop the login screen's gradient. */
 export const LoginHero = ({ isLandscapeShell }: LoginHeroProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <View style={[styles.gradientContent, isLandscapeShell ? styles.heroLandscape : null]}>
       <RecipelyLogo size={isLandscapeShell ? brandMarkSizes.heroLandscape : brandMarkSizes.hero} monochrome mono={colors.onOverlay} />
       <ThemedText variant="headline" style={[styles.appName, { color: colors.onOverlay }]}>
-        {t().login.title}
+        {t.login.title}
       </ThemedText>
       <ThemedText variant="body" style={[styles.gradientSubtitle, { color: colors.onOverlay }]}>
-        {t().login.subtitle}
+        {t.login.subtitle}
       </ThemedText>
     </View>
   );

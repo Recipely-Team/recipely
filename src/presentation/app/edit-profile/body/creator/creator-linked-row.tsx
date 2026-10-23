@@ -9,7 +9,7 @@ import { CreatorPlatformMark } from '@presentation/base/widgets/creators/creator
 import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
 import { creatorPlatformName } from '@presentation/base/widgets/creators/creator-platform-name';
 import { creatorProfileUrl } from '@presentation/base/widgets/creators/creator-profile-url';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CreatorStatusPill } from '@presentation/app/edit-profile/items/creator-status-pill';
 import { CreatorRowAction } from '@presentation/app/edit-profile/items/creator-row-action';
 
@@ -31,14 +31,15 @@ export interface CreatorLinkedRowProps {
  *   withdrawal on this platform.
  */
 export const CreatorLinkedRow = ({ claim, isBusy, onRemove, onTryAgain }: CreatorLinkedRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().creators.account;
+  const copy = t.creators.account;
   const { tag, status } = claim;
-  const approved = status === CreatorStatus.Approved;
+  const isApproved = status === CreatorStatus.Approved;
   const body =
     status === CreatorStatus.Pending
       ? copy.pendingBody
-      : approved
+      : isApproved
         ? copy.approvedBody
         : copy.rejectedBody.replace('{handle}', tag.displayHandle);
 
@@ -48,10 +49,10 @@ export const CreatorLinkedRow = ({ claim, isBusy, onRemove, onTryAgain }: Creato
         <CreatorPlatformMark platform={tag.platform} size={creatorMarkGeometry.row} />
         <View style={styles.names}>
           <SizedText size={fontSizes.body} weight={fontWeights.bold}>
-            {creatorPlatformName(tag.platform)}
+            {creatorPlatformName(t, tag.platform)}
           </SizedText>
           <SizedText size={fontSizes.caption} color={colors.textSubtle} numberOfLines={ValueConstants.one}>
-            {approved ? (
+            {isApproved ? (
               <Text
                 accessibilityRole="link"
                 onPress={() =>
@@ -77,7 +78,7 @@ export const CreatorLinkedRow = ({ claim, isBusy, onRemove, onTryAgain }: Creato
         <CreatorRowAction label={copy.resubmit} primary loading={false} disabled={isBusy} onPress={onTryAgain} />
       ) : (
         <CreatorRowAction
-          label={approved ? copy.remove : copy.withdraw}
+          label={isApproved ? copy.remove : copy.withdraw}
           primary={false}
           loading={false}
           disabled={isBusy}

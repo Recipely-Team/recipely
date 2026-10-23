@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, controlSizes, diarySizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface DiaryWebTitleProps {
@@ -12,8 +12,9 @@ export interface DiaryWebTitleProps {
 
 /** The web page heading: "Diary" and a ghost "Daily goals" button. The site header carries the bell. */
 export const DiaryWebTitle = ({ onOpenGoals }: DiaryWebTitleProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().diary;
+  const strings = t.diary;
   return (
     <View style={styles.row}>
       <SizedText accessibilityRole="header" size={diarySizes.pageTitleWeb} weight={fontWeights.heavy} style={styles.title}>

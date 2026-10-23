@@ -2,10 +2,13 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
-import type { UpdateProfileInput } from '@domain/auth/update-profile-input';
-import type { CreatorTag } from '@domain/creators/creator-tag';
-import type { CreatorPlatformType } from '@domain/creators/creator-platform';
 
+/**
+ * Signing in and keeping the session: credentials, registration, password reset,
+ * and the stored session's lifecycle. What the signed-in user changes about their
+ * account lives in `AccountRepositoryInterface`; creator tags in
+ * `CreatorClaimRepositoryInterface`.
+ */
 export interface AuthRepositoryInterface {
   signIn(email: string, password: string): Promise<Result<AuthSessionEntity, Failure>>;
   /**
@@ -36,40 +39,4 @@ export interface AuthRepositoryInterface {
    * NOT create a new session — the user must sign in after resetting.
    */
   resetPassword(token: string, newPassword: string): Promise<Result<void, Failure>>;
-  /**
-   * Uploads a new avatar image for the signed-in user and returns the updated,
-   * persisted session (its `user.photoUrl` reflects the new image). The image is
-   * a local file URI from the device gallery/camera.
-   */
-  uploadAvatar(
-    fileUri: string,
-    fileName: string,
-    mimeType: string,
-  ): Promise<Result<AuthSessionEntity, Failure>>;
-  /**
-   * Updates the signed-in user's editable profile fields (display name, bio)
-   * and returns the refreshed, persisted session.
-   */
-  updateProfile(input: UpdateProfileInput): Promise<Result<AuthSessionEntity, Failure>>;
-  /**
-   * Permanently deletes the signed-in user's account and all of its data on the
-   * server, then clears the local session on success. On failure the local
-   * session is left intact so the user stays signed in and can retry.
-   */
-  deleteAccount(): Promise<Result<void, Failure>>;
-  /**
-   * Claims `tag` as the signed-in user's account on its platform
-   * (`PUT /me/creator`) and returns the persisted session whose user holds the
-   * new claim for that platform — `pending`, or still `approved` when the tag
-   * is unchanged. The other platform's claim is untouched.
-   */
-  requestCreatorTag(tag: CreatorTag): Promise<Result<AuthSessionEntity, Failure>>;
-  /** Clears `platform`'s claim (`DELETE /me/creator/:platform`) and returns the persisted session without it. */
-  removeCreatorTag(platform: CreatorPlatformType): Promise<Result<AuthSessionEntity, Failure>>;
-  /**
-   * Re-reads every claim from `GET /me`, so an admin's approval or rejection
-   * reaches the app without signing in again. A response without the field
-   * leaves the stored claims as they are.
-   */
-  refreshCreatorClaim(): Promise<Result<AuthSessionEntity, Failure>>;
 }

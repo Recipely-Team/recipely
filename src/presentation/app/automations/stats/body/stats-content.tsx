@@ -18,19 +18,19 @@ export interface StatsContentProps {
  * side from 720 wide (stacked below), then the posts — a table when wide.
  */
 export const StatsContent = ({ stats, contentWidth, onOpenPost }: StatsContentProps): React.JSX.Element => {
-  const wide = contentWidth >= StatsMetrics.wideMinWidth;
+  const isWide = contentWidth >= StatsMetrics.wideMinWidth;
   return (
     <View style={styles.stack}>
-      <FunnelStrip stats={stats} inRow={contentWidth >= StatsMetrics.funnelRowMinWidth} wide={wide} />
-      <View style={wide ? styles.pair : styles.stack}>
-        <View style={wide ? styles.chart : undefined}>
-          <DailyChart days={stats.daily} wide={wide} />
+      <FunnelStrip stats={stats} inRow={contentWidth >= StatsMetrics.funnelRowMinWidth} wide={isWide} />
+      <View style={isWide ? styles.pair : styles.stack}>
+        <View style={isWide ? styles.chart : undefined}>
+          <DailyChart days={stats.daily} wide={isWide} />
         </View>
-        <View style={wide ? styles.followers : undefined}>
-          <FollowersCard stats={stats} wide={wide} />
+        <View style={isWide ? styles.followers : undefined}>
+          <FollowersCard stats={stats} wide={isWide} />
         </View>
       </View>
-      <PostsSection posts={stats.posts} wide={wide} onOpen={onOpenPost} />
+      <PostsSection posts={stats.posts} wide={isWide} onOpen={onOpenPost} />
     </View>
   );
 };

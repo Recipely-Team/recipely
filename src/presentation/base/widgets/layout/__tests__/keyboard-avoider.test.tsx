@@ -33,7 +33,7 @@ describe('KeyboardAvoider', () => {
 
     const avoidingView = root.findByType(KeyboardAvoidingView);
 
-    expect(avoidingView.props.behavior).toBe('padding');
+    expect(avoidingView.props['behavior']).toBe('padding');
   });
 
   it('passes style and keyboardVerticalOffset through to KeyboardAvoidingView', () => {
@@ -47,7 +47,7 @@ describe('KeyboardAvoider', () => {
 
     const avoidingView = root.findByType(KeyboardAvoidingView);
 
-    expect(avoidingView.props.style).toBe(style);
-    expect(avoidingView.props.keyboardVerticalOffset).toBe(64);
+    expect(avoidingView.props['style']).toBe(style);
+    expect(avoidingView.props['keyboardVerticalOffset']).toBe(64);
   });
 });

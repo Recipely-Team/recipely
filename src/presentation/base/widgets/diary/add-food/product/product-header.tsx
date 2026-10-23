@@ -1,5 +1,6 @@
+import { useToday } from '@presentation/base/hooks/lifecycle/use-today';
 import { StyleSheet, View } from 'react-native';
-import { CalendarDate } from '@domain/diary/calendar/calendar-date';
+import { type CalendarDate } from '@domain/diary/calendar/calendar-date';
 import type { LoggableProduct } from '@domain/diary/foods/loggable-product';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { FoodThumb } from '@presentation/base/widgets/diary/food-thumb';
@@ -9,7 +10,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { formatPerHundred } from '@presentation/base/utils/diary/units/format-per-hundred';
 import { formatDayMonth } from '@presentation/base/utils/diary/format-day-month';
 import { controlSizes, diarySizes, fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface ProductHeaderProps {
   product: LoggableProduct;
@@ -21,19 +22,21 @@ export interface ProductHeaderProps {
 
 /** The product step's header: back, tile, name, the brand line of a pack, and "38 kcal / 100 ml · 30 September · Today". */
 export const ProductHeader = ({ product, date, canGoBack, onBack }: ProductHeaderProps): React.JSX.Element => {
+  const t = useTranslations();
+  const today = useToday();
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   const brandLine = [product.brand, product.packSize].filter((part) => part !== null).join(CharConstants.middotSpaced);
   const meta = [
-    product.baseUnit === null ? null : formatPerHundred(product.per100, product.baseUnit, locale),
+    product.baseUnit === null ? null : formatPerHundred(t, product.per100, product.baseUnit, locale),
     formatDayMonth(date, locale),
-    date.equals(CalendarDate.today()) ? strings.today : null,
+    date.equals(today) ? strings.today : null,
   ]
     .filter((part) => part !== null)
     .join(CharConstants.middotSpaced);
   return (
     <View style={styles.header}>
-      {canGoBack ? <RoundIconButton icon="chevron-back" accessibilityLabel={t().common.back} onPress={onBack} size={controlSizes.iconBtn} /> : null}
+      {canGoBack ? <RoundIconButton icon="chevron-back" accessibilityLabel={t.common.back} onPress={onBack} size={controlSizes.iconBtn} /> : null}
       <FoodThumb imageUrl={product.imageUrl} icon={productThumbIcon(product.kind, product.isBranded)} size={diarySizes.foodThumbLarge} />
       <View style={styles.text}>
         <SizedText size={fontSizes.heading} weight={fontWeights.bold} numberOfLines={ValueConstants.two}>

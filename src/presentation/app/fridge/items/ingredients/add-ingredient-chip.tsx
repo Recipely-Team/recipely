@@ -4,7 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, fontSizes, fontWeights, fridgeSizes, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { FridgeLimits } from '@domain/fridge/fridge-limits';
 import { CharConstants } from '@core/constants';
 import { isBlank } from '@core/guards/type-guards';
@@ -24,9 +24,10 @@ const ESCAPE_KEY = 'Escape';
  * an empty submit) closes it.
  */
 export const AddIngredientChip = ({ startOpen, dense, onAdd }: AddIngredientChipProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().fridge;
-  const [open, setOpen] = useState(startOpen);
+  const copy = t.fridge;
+  const [isOpen, setOpen] = useState(startOpen);
   const [text, setText] = useState(CharConstants.empty);
   const minHeight = dense ? fridgeSizes.chipExpanded : fridgeSizes.chip;
 
@@ -43,7 +44,7 @@ export const AddIngredientChip = ({ startOpen, dense, onAdd }: AddIngredientChip
     if (event.nativeEvent.key === ESCAPE_KEY) close();
   };
 
-  if (!open) {
+  if (!isOpen) {
     return (
       <Pressable
         onPress={() => setOpen(true)}

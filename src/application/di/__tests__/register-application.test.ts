@@ -20,10 +20,9 @@ const containerOfInertPorts = (): Container =>
  * Stores with a `clear` / `reset` that deliberately survive sign-out: what they hold does not
  * depend on who is signed in. Every other such store must be wiped by `clearSessionCaches`.
  */
-const PUBLIC_STORES: readonly string[] = [
-  // `reset` returns the feedback form to idle; it holds no account data.
-  'feedbackStore',
-];
+// Stores with a `clear`/`reset` that hold no account data and must survive sign-out.
+// (feedbackStore left this list when it stopped keeping a shared error to reset.)
+const PUBLIC_STORES: readonly string[] = [];
 
 interface ResettableState {
   clear?: unknown;

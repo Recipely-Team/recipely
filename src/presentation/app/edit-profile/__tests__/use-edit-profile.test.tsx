@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { act } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
@@ -40,14 +41,13 @@ jest.mock('@presentation/base/feedback/show-toast', () => ({
 const INITIAL_NAME = 'Ali';
 
 function harness(updateProfile: jest.Mock) {
-  const authStore = ((selector: (state: unknown) => unknown) =>
-    selector({
+  const authStore = (mockStoreReading(() => ({
       state: {
         status: StoreStatus.Authenticated,
         session: { user: { displayName: INITIAL_NAME, bio: 'eski', photoUrl: null } },
       },
       updateProfile,
-    })) as unknown as ApplicationStores['authStore'];
+    }))) as unknown as ApplicationStores['authStore'];
 
   const captured: { vm: UseEditProfileResult | null } = { vm: null };
   const Probe = (): null => {

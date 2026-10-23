@@ -4,7 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, durations, fontSizes, fontWeights, fridgeSizes, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { FridgeChip } from '@presentation/app/fridge/model/flow/fridge-chip';
 import { CharConstants, ValueConstants } from '@core/constants';
 
@@ -17,7 +17,7 @@ export interface IngredientChipProps {
 
 /** Names longer than this are cut with an ellipsis on the chip; the full name is still spoken. */
 const NAME_MAX = 24;
-const ELLIPSIS = '…';
+const ELLIPSIS = CharConstants.ellipsis;
 
 const shown = (name: string): string => (name.length > NAME_MAX ? name.slice(ValueConstants.zero, NAME_MAX - ValueConstants.one) + ELLIPSIS : name);
 
@@ -27,13 +27,14 @@ const shown = (name: string): string => (name.length > NAME_MAX ? name.slice(Val
  * "not sure" to a screen reader. Neighbours slide into the gap it leaves.
  */
 export const IngredientChip = ({ chip, dense, onRemove }: IngredientChipProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const reduceMotion = useReducedMotion();
-  const copy = t().fridge;
+  const shouldReduceMotion = useReducedMotion();
+  const copy = t.fridge;
   const label = chip.sure ? copy.removeIngredient.replace('{name}', chip.name) : `${copy.notSure.replace('{name}', chip.name)}, ${copy.removeIngredient.replace('{name}', chip.name)}`;
 
   return (
-    <Animated.View layout={reduceMotion ? undefined : LinearTransition.duration(durations.controlReveal)}>
+    <Animated.View {...(shouldReduceMotion ? {} : { layout: LinearTransition.duration(durations.controlReveal) })}>
       <Pressable
         onPress={() => onRemove(chip)}
         accessibilityRole="button"

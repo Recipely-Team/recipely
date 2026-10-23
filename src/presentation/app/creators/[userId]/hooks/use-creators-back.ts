@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { type Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { RoutePaths } from '@presentation/base/constants';
 
 /**
@@ -14,6 +14,6 @@ export const useCreatorsBack = (): (() => void) => {
       router.back();
       return;
     }
-    router.replace(RoutePaths.creators as Href);
+    router.replace(RoutePaths.creators);
   }, [router]);
 };

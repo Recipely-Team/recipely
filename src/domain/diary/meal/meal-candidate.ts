@@ -71,7 +71,7 @@ export class MealCandidate {
   }
 
   /** Nutrients of the current `grams`. */
-  get nutrients(): Nutrients {
+  nutrients(): Nutrients {
     return this.props.portion.scale(this.props.grams / this.props.portionGrams);
   }
 
@@ -82,7 +82,7 @@ export class MealCandidate {
   }
 
   entryFor(date: CalendarDate, meal: MealSlotType): NewFoodLogEntry {
-    const base = { date, meal, name: this.props.label, nutrients: this.nutrients, recipeId: null };
+    const base = { date, meal, name: this.props.label, nutrients: this.nutrients(), recipeId: null };
     if (!this.isCatalogueFood) return { ...base, servings: ValueConstants.one, product: null };
     return {
       ...base,

@@ -30,6 +30,6 @@ export const statCellWidths = (
   const columns = cardWidth / Math.max(fontScale, ValueConstants.one) <= statGrid.narrowMaxWidth ? Math.min(statGrid.narrowColumns, count) : count;
   // Rounded down: tiles that sum to a hair over the row wrap one tile early.
   const cell = Math.floor(((inner - (columns - ValueConstants.one) * frame.gap) / columns) * CENTI) / CENTI;
-  const spansLast = columns < count && count % columns !== ValueConstants.zero;
-  return Array.from({ length: count }, (_, i) => (spansLast && i === count - ValueConstants.one ? inner : cell));
+  const doesSpanLast = columns < count && count % columns !== ValueConstants.zero;
+  return Array.from({ length: count }, (_, i) => (doesSpanLast && i === count - ValueConstants.one ? inner : cell));
 };

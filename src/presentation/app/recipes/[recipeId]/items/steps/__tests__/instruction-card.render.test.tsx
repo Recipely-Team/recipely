@@ -25,14 +25,14 @@ const renderCard = (step: string, completed = false): ReactTestInstance =>
   ).root;
 
 const stepTextNodes = (root: ReactTestInstance): ReactTestInstance[] =>
-  root.findAllByType('Text').filter((node) => typeof node.props.children === 'string');
+  root.findAllByType('Text').filter((node) => typeof node.props['children'] === 'string');
 
 describe('InstructionCard step text', () => {
   it('renders a step containing a duration as one plain string, in full', () => {
     const root = renderCard(STEP_WITH_DURATION);
 
     expect(textContent(root)).toContain(STEP_WITH_DURATION);
-    expect(stepTextNodes(root).map((node) => node.props.children)).toContain(STEP_WITH_DURATION);
+    expect(stepTextNodes(root).map((node) => node.props['children'])).toContain(STEP_WITH_DURATION);
   });
 
   it('renders a step without a duration in full', () => {
@@ -45,7 +45,7 @@ describe('InstructionCard step text', () => {
     const root = renderCard(STEP_WITH_DURATION, true);
 
     expect(textContent(root)).toContain(STEP_WITH_DURATION);
-    expect(stepTextNodes(root).map((node) => node.props.children)).toContain(STEP_WITH_DURATION);
+    expect(stepTextNodes(root).map((node) => node.props['children'])).toContain(STEP_WITH_DURATION);
   });
 
   it('adds no countdown chip beside a step that already states its duration', () => {

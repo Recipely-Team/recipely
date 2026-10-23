@@ -11,7 +11,7 @@ import {
   controlSizes,
   opacities,
 } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface ConfirmSheetProps {
@@ -28,7 +28,7 @@ export interface ConfirmSheetProps {
   /** Disables the actions and swaps the confirm label for a loading string while a request is in flight. */
   loading?: boolean;
   /** Inline error surfaced inside the still-open sheet after a failed confirm. */
-  error?: string;
+  error?: string | undefined;
 }
 
 /**
@@ -49,10 +49,11 @@ export const ConfirmSheet = ({
   loading = false,
   error,
 }: ConfirmSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const confirmBackground = destructive ? colors.dangerLight : colors.primary;
   const confirmLabelColor = destructive ? colors.danger : colors.primaryText;
-  const dismissLabel = cancelLabel ?? t().common.cancel;
+  const dismissLabel = cancelLabel ?? t.common.cancel;
 
   return (
     <BottomSheet visible={visible} title={title} onClose={onClose}>
@@ -96,7 +97,7 @@ export const ConfirmSheet = ({
           ]}
         >
           <ThemedText variant="body" style={[styles.buttonLabel, { color: confirmLabelColor }]}>
-            {loading ? t().common.loading : confirmLabel}
+            {loading ? t.common.loading : confirmLabel}
           </ThemedText>
         </Pressable>
       </View>

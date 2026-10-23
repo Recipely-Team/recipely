@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { act } from 'react-test-renderer';
 import { byRole, renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { NotificationsBellButton } from '@presentation/base/widgets/navigation/notifications-bell-button';
@@ -12,12 +13,8 @@ jest.mock('expo-router', () => ({
 }));
 jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: jest.fn(() => ({
-    notificationsStore: jest.fn((selector: (state: { unreadCount: number }) => unknown) =>
-      selector({ unreadCount: mockUnread }),
-    ),
-    authStore: jest.fn((selector: (state: { state: { status: string } }) => unknown) =>
-      selector({ state: { status: mockGuest ? 'unauthenticated' : 'authenticated' } }),
-    ),
+    notificationsStore: mockStoreReading(() => ({ unreadCount: mockUnread })),
+    authStore: mockStoreReading(() => ({ state: { status: mockGuest ? 'unauthenticated' : 'authenticated' } })),
   })),
 }));
 jest.mock('@expo/vector-icons/Ionicons', () => {
@@ -38,7 +35,7 @@ describe('NotificationsBellButton', () => {
     mockGuest = true;
     const { root } = renderComponent(<NotificationsBellButton />);
 
-    act(() => (byRole(root, 'button').props.onPress as () => void)());
+    act(() => (byRole(root, 'button').props['onPress'] as () => void)());
 
     expect(mockPush).not.toHaveBeenCalled();
     expect(textContent(root)).toContain(t().signInPrompt.notifications);
@@ -47,7 +44,7 @@ describe('NotificationsBellButton', () => {
   it('opens the notifications page', () => {
     const { root } = renderComponent(<NotificationsBellButton />);
 
-    act(() => (byRole(root, 'button').props.onPress as () => void)());
+    act(() => (byRole(root, 'button').props['onPress'] as () => void)());
 
     expect(mockPush).toHaveBeenCalledWith('/notifications');
   });
@@ -56,7 +53,7 @@ describe('NotificationsBellButton', () => {
     const { root } = renderComponent(<NotificationsBellButton />);
 
     expect(textContent(root)).toContain('icon:notifications-outline');
-    expect(byRole(root, 'button').props.accessibilityLabel).toBe(t().notifications.title);
+    expect(byRole(root, 'button').props['accessibilityLabel']).toBe(t().notifications.title);
   });
 
   it('shows the filled bell, the badge and the count in the label when unread', () => {
@@ -66,7 +63,7 @@ describe('NotificationsBellButton', () => {
     const texts = textContent(root);
     expect(texts).toContain('icon:notifications');
     expect(texts).toContain('4');
-    expect(byRole(root, 'button').props.accessibilityLabel).toBe(`${t().notifications.title}, 4`);
+    expect(byRole(root, 'button').props['accessibilityLabel']).toBe(`${t().notifications.title}, 4`);
   });
 
   it('caps the badge at "9+" while the label keeps the true count', () => {
@@ -76,6 +73,6 @@ describe('NotificationsBellButton', () => {
     const texts = textContent(root);
     expect(texts).toContain('9+');
     expect(texts).not.toContain('15');
-    expect(byRole(root, 'button').props.accessibilityLabel).toBe(`${t().notifications.title}, 15`);
+    expect(byRole(root, 'button').props['accessibilityLabel']).toBe(`${t().notifications.title}, 15`);
   });
 });

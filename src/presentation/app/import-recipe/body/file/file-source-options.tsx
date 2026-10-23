@@ -3,7 +3,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { PickSource } from '@presentation/base/utils/pick-source';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { FileOptionRow } from '@presentation/app/import-recipe/items/file-option-row';
 
 export interface FileSourceOptionsProps {
@@ -15,8 +15,9 @@ export interface FileSourceOptionsProps {
  * device's files — the three rows the design draws.
  */
 export const FileSourceOptions = ({ onPick }: FileSourceOptionsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().fileImport;
+  const copy = t.fileImport;
 
   return (
     <View style={styles.list}>

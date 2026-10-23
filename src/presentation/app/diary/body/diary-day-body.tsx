@@ -11,7 +11,7 @@ import { MealCard } from '@presentation/app/diary/body/meal-card';
 import { WelcomeCard } from '@presentation/app/diary/body/welcome-card';
 import { DaySkeleton } from '@presentation/app/diary/body/day-skeleton';
 import type { DiaryDayViewType } from '@presentation/app/diary/model/diary-day-view';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface DiaryDayBodyProps {
@@ -33,18 +33,19 @@ export interface DiaryDayBodyProps {
  * the four meals.
  */
 export const DiaryDayBody = ({ view, isFirstDay, wide, mealColumns, onAdd, onEdit, onOpenGoals, onWater, onRetry }: DiaryDayBodyProps): React.JSX.Element => {
+  const t = useTranslations();
   switch (view.status) {
     case StoreStatus.Loading:
       return <DaySkeleton />;
     case StoreStatus.Error: {
-      const content = failureContent(view.failure);
+      const content = failureContent(t, view.failure);
       return (
         <ErrorState
           severity={failureSeverity(view.failure)}
           icon={failureIcon(view.failure)}
           title={content.title}
           body={content.body}
-          primaryLabel={t().common.retry}
+          primaryLabel={t.common.retry}
           onPrimary={onRetry}
         />
       );
@@ -58,7 +59,7 @@ export const DiaryDayBody = ({ view, isFirstDay, wide, mealColumns, onAdd, onEdi
           <SummaryCard day={day} wide={wide} />
           <WaterCard day={day} onChange={onWater} />
           <View style={styles.meals}>
-            {day.mealGroups.map((group) => (
+            {day.mealGroups().map((group) => (
               <View key={group.meal} style={cellStyle}>
                 <MealCard group={group} onAdd={onAdd} onEdit={onEdit} />
               </View>

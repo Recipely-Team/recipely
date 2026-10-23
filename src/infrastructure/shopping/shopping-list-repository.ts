@@ -1,3 +1,5 @@
+import type { FirstPageCache } from '@infrastructure/network/paging/first-page-cache';
+import { FIRST_PAGE } from '@domain/common/first-page';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
@@ -30,10 +32,15 @@ import { toShoppingItemChangesRequest } from '@infrastructure/shopping/to-shoppi
  * the wire; `toPage` derives it), which skips an unreadable line.
  */
 export class ShoppingListRepository implements ShoppingListRepositoryInterface {
-  constructor(private readonly http: AxiosHttpClient) {}
+  constructor(
+    private readonly http: AxiosHttpClient,
+    private readonly firstPageCache?: FirstPageCache<ShoppingItemDto>,
+  ) {}
 
   async list(page: number, pageSize: number): Promise<Result<Page<ShoppingItemEntity>, Failure>> {
-    const result = await this.http.get<PageDto<ShoppingItemDto>>(ApiRoutes.shopping.list, { params: toPageQuery({ page, pageSize }) });
+    const fetched = await this.http.get<PageDto<ShoppingItemDto>>(ApiRoutes.shopping.list, { params: toPageQuery({ page, pageSize }) });
+    // Offline in a shop: open on the list as it was last seen.
+    const result = (await this.firstPageCache?.readThrough(String(pageSize), page === FIRST_PAGE, fetched)) ?? fetched;
     return result.ok ? ok(toPage(result.value, toShoppingItem)) : result;
   }
 

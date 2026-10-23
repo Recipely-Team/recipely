@@ -1,9 +1,9 @@
-import { create } from 'zustand';
-import type { BoundStore } from '@application/store/bound-store';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
 import { RequestEpoch } from '@application/store/request-epoch';
 import { StatsRange, type StatsRangeType } from '@domain/instagram/stats/stats-range';
-import type { CreatorStatsStoreState } from '@application/instagram/stats/creator-stats-store-state';
+import type { CreatorStatsStore } from '@application/instagram/stats/creator-stats-store-contract';
 import type { GetCreatorStatsUseCase } from '@application/instagram/stats/get-creator-stats-use-case';
 
 interface CreatorStatsStoreDeps {
@@ -19,7 +19,7 @@ interface CreatorStatsStoreDeps {
  * - **A failed refresh keeps a loaded range**; only a first load shows the error.
  * - **User-scoped**: cleared on sign-out.
  */
-export const configureCreatorStatsStore = (deps: CreatorStatsStoreDeps): BoundStore<CreatorStatsStoreState> => {
+export const configureCreatorStatsStore = (deps: CreatorStatsStoreDeps): StoreApi<CreatorStatsStore> => {
   const epochs = new Map<StatsRangeType, RequestEpoch>();
   const epochOf = (days: StatsRangeType): RequestEpoch => {
     const found = epochs.get(days);
@@ -29,8 +29,8 @@ export const configureCreatorStatsStore = (deps: CreatorStatsStoreDeps): BoundSt
     return made;
   };
 
-  return create<CreatorStatsStoreState>((set, get) => {
-    const put = (days: StatsRangeType, state: CreatorStatsStoreState['byRange'][StatsRangeType]): void =>
+  return createStore<CreatorStatsStore>((set, get) => {
+    const put = (days: StatsRangeType, state: CreatorStatsStore['byRange'][StatsRangeType]): void =>
       set({ byRange: { ...get().byRange, [days]: state } });
 
     const load = async (days: StatsRangeType): Promise<void> => {

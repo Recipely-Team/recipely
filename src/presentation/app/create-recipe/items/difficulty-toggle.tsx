@@ -21,7 +21,7 @@ export const DifficultyToggle = ({
   return (
     <View style={[styles.root, { borderColor: colors.border, backgroundColor: colors.background }]}>
       {DIFFICULTY_VALUES.map((option, index) => {
-        const active = value === option;
+        const isActive = value === option;
         return (
           <Pressable
             key={option}
@@ -33,14 +33,14 @@ export const DifficultyToggle = ({
               {
                 borderLeftWidth: index > ValueConstants.zero ? ValueConstants.one : ValueConstants.zero,
                 borderLeftColor: colors.border,
-                backgroundColor: active ? colors.primary : BrandColors.transparent,
+                backgroundColor: isActive ? colors.primary : BrandColors.transparent,
               },
             ]}
           >
             <ThemedText
               style={[
                 styles.label,
-                { color: active ? colors.primaryText : colors.textMuted },
+                { color: isActive ? colors.primaryText : colors.textMuted },
               ]}
             >
               {label(option)}

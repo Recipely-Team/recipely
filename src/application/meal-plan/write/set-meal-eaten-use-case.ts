@@ -14,10 +14,10 @@ import type { MealPlanRepositoryInterface } from '@domain/meal-plan/meal-plan-re
 export class SetMealEatenUseCase {
   constructor(private readonly repo: MealPlanRepositoryInterface) {}
 
-  execute(entry: MealPlanEntryEntity, eaten: boolean, today: CalendarDate): Promise<Result<MealPlanEntryEntity, Failure>> {
-    if (eaten && !entry.canMarkEaten(today)) {
+  execute(entry: MealPlanEntryEntity, isEaten: boolean, today: CalendarDate): Promise<Result<MealPlanEntryEntity, Failure>> {
+    if (isEaten && !entry.canMarkEaten(today)) {
       return Promise.resolve(fail(new ValidationFailure(DiagnosticMessage.mealPlan.notYetEaten, 'date', ErrorMessageKey.mealPlanEntryInvalid)));
     }
-    return this.repo.setEaten(entry.id, eaten);
+    return this.repo.setEaten(entry.id, isEaten);
   }
 }

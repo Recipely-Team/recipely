@@ -37,7 +37,7 @@ const readOne = (text: string): { value: number; length: number } | null => {
     const match = text.match(re);
     if (match === null) continue;
     const value = read(match);
-    return Number.isFinite(value) && value > ValueConstants.zero ? { value, length: match[ValueConstants.zero].length } : null;
+    return Number.isFinite(value) && value > ValueConstants.zero ? { value, length: match[ValueConstants.zero]?.length ?? ValueConstants.zero } : null;
   }
   return null;
 };
@@ -45,10 +45,10 @@ const readOne = (text: string): { value: number; length: number } | null => {
 export const parseAmount = (text: string): { amount: number; upTo: number | null; length: number } | null => {
   const first = readOne(text);
   if (first === null) return null;
-  const dash = text.slice(first.length).match(RANGE_DASH);
-  const second = dash === null ? null : readOne(text.slice(first.length + dash[ValueConstants.zero].length));
-  if (dash === null || second === null || second.value <= first.value) {
+  const dash = text.slice(first.length).match(RANGE_DASH)?.[ValueConstants.zero];
+  const second = dash === undefined ? null : readOne(text.slice(first.length + dash.length));
+  if (dash === undefined || second === null || second.value <= first.value) {
     return { amount: first.value, upTo: null, length: first.length };
   }
-  return { amount: first.value, upTo: second.value, length: first.length + dash[ValueConstants.zero].length + second.length };
+  return { amount: first.value, upTo: second.value, length: first.length + dash.length + second.length };
 };

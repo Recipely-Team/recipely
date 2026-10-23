@@ -3,7 +3,7 @@ import { failureContent, failureSeverity } from '@presentation/base/errors/failu
 import { mealFailureContent } from '@presentation/base/widgets/diary/add-food/meal/state/meal-failure-content';
 import { mealFailureActionFor } from '@presentation/base/widgets/diary/add-food/meal/state/meal-failure-action-for';
 import { MealFailureAction } from '@presentation/base/widgets/diary/add-food/meal/state/meal-failure-action';
-import { setLocale } from '@presentation/i18n';
+import { setLocale, t } from '@presentation/i18n';
 import { LocaleConstants } from '@application/i18n/locale-constants';
 import { en } from '@presentation/i18n/locales/en';
 import { tr } from '@presentation/i18n/locales/tr';
@@ -26,16 +26,16 @@ describe('meal-parse failure copy', () => {
 
   it.each(CASES)('%p reads as its own copy in English and Turkish, with the right action', (failure, contentKey, action) => {
     setLocale(LocaleConstants.en);
-    expect(mealFailureContent(failure)).toEqual({ title: en.errors[contentKey].title, body: en.errors[contentKey].body });
+    expect(mealFailureContent(t(), failure)).toEqual({ title: en.errors[contentKey].title, body: en.errors[contentKey].body });
     setLocale(LocaleConstants.tr);
-    expect(mealFailureContent(failure)).toEqual({ title: tr.errors[contentKey].title, body: tr.errors[contentKey].body });
+    expect(mealFailureContent(t(), failure)).toEqual({ title: tr.errors[contentKey].title, body: tr.errors[contentKey].body });
     expect(mealFailureActionFor(failure)).toBe(action);
   });
 
   it('reads a server without an AI provider as "unavailable" in the meal panel only, offering nothing to retry', () => {
     const failure = new ServerFailure('x', 503, ErrorMessageKey.aiProviderNotConfigured);
-    expect(mealFailureContent(failure).title).toBe(en.errors.mealParseUnavailable.title);
-    expect(failureContent(failure).title).not.toBe(en.errors.mealParseUnavailable.title);
+    expect(mealFailureContent(t(), failure).title).toBe(en.errors.mealParseUnavailable.title);
+    expect(failureContent(t(), failure).title).not.toBe(en.errors.mealParseUnavailable.title);
     expect(mealFailureActionFor(failure)).toBe(MealFailureAction.None);
   });
 

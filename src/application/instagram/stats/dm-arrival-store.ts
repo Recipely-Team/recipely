@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import type { BoundStore } from '@application/store/bound-store';
-import type { DmArrivalStoreState } from '@application/instagram/stats/dm-arrival-store-state';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand/vanilla';
+import type { DmArrivalStore } from '@application/instagram/stats/dm-arrival-store-contract';
 import type { RecordDmOpenUseCase } from '@application/instagram/stats/record-dm-open-use-case';
 import type { RecordDmSaveUseCase } from '@application/instagram/stats/record-dm-save-use-case';
 
@@ -21,11 +21,11 @@ interface DmArrivalStoreDeps {
  * - **Each report is sent at most once** per attempt, and fire-and-forget: a
  *   lost report costs the creator one count, never the viewer an error.
  */
-export const configureDmArrivalStore = (deps: DmArrivalStoreDeps): BoundStore<DmArrivalStoreState> => {
+export const configureDmArrivalStore = (deps: DmArrivalStoreDeps): StoreApi<DmArrivalStore> => {
   const opened = new Set<string>();
   const saved = new Set<string>();
 
-  return create<DmArrivalStoreState>((set, get) => ({
+  return createStore<DmArrivalStore>((set, get) => ({
     arrivals: {},
     arrive: (recipeId, sendId) => {
       set({ arrivals: { ...get().arrivals, [recipeId]: sendId } });

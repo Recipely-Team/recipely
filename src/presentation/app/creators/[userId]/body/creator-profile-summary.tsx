@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { fontSizes, fontWeights, spacing } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CreatorProfileHero } from '@presentation/app/creators/[userId]/body/creator-profile-hero';
 import { CreatorProfileStats } from '@presentation/app/creators/[userId]/body/creator-profile-stats';
 import { FollowButton } from '@presentation/app/creators/[userId]/items/follow-button';
@@ -27,11 +27,12 @@ export interface CreatorProfileSummaryProps {
  *   a `{name}` template so each language places the name itself.
  */
 export const CreatorProfileSummary = ({ viewed, vm }: CreatorProfileSummaryProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { isExpanded } = useLayout();
   const { profile } = viewed;
-  const followLabel = viewed.isFollowedByMe ? t().creators.following : t().creators.follow;
-  const followA11yLabel = (viewed.isFollowedByMe ? t().creators.followingName : t().creators.followName).replace(
+  const followLabel = viewed.isFollowedByMe ? t.creators.following : t.creators.follow;
+  const followA11yLabel = (viewed.isFollowedByMe ? t.creators.followingName : t.creators.followName).replace(
     '{name}',
     profile.displayName,
   );
@@ -60,10 +61,10 @@ export const CreatorProfileSummary = ({ viewed, vm }: CreatorProfileSummaryProps
       </View>
       <View style={styles.heading}>
         <SizedText size={isExpanded ? fontSizes.display : fontSizes.subtitle} weight={fontWeights.heavy} accessibilityRole="header">
-          {t().creators.recipesTitle}
+          {t.creators.recipesTitle}
         </SizedText>
         <SizedText size={fontSizes.medium} color={colors.textSubtle}>
-          {t().creators.recipeCount.replace('{n}', vm.formatCount(profile.recipeCount))}
+          {t.creators.recipeCount.replace('{n}', vm.formatCount(profile.recipeCount))}
         </SizedText>
       </View>
     </View>

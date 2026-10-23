@@ -1,6 +1,6 @@
 import { nutrientsOf } from '@domain/diary/__fixtures__/nutrients-of';
 import { LocaleConstants } from '@application/i18n/locale-constants';
-import { setLocale } from '@presentation/i18n';
+import { setLocale, t } from '@presentation/i18n';
 import { parseDecimalInput } from '@presentation/base/utils/diary/parse-decimal-input';
 import { formatMacroLine } from '@presentation/base/utils/diary/format-macro-line';
 import { formatServings } from '@presentation/base/utils/diary/format-servings';
@@ -26,26 +26,26 @@ describe('diary formatting', () => {
 
   it('drops the macro line for a calories-only food and skips unknown macros', () => {
     setLocale(LocaleConstants.en);
-    expect(formatMacroLine(nutrientsOf({ calories: 300 }), 'en')).toBeNull();
-    expect(formatMacroLine(nutrientsOf({ calories: 300, protein: 20.4, fat: 10 }), 'en')).toBe('P 20 g · F 10 g');
+    expect(formatMacroLine(t(), nutrientsOf({ calories: 300 }), 'en')).toBeNull();
+    expect(formatMacroLine(t(), nutrientsOf({ calories: 300, protein: 20.4, fat: 10 }), 'en')).toBe('P 20 g · F 10 g');
   });
 
   it('says one serving in the singular', () => {
     setLocale(LocaleConstants.en);
-    expect(formatServings(1, 'en')).toBe('1 serving');
-    expect(formatServings(1.5, 'en')).toBe('1.5 servings');
+    expect(formatServings(t(), 1, 'en')).toBe('1 serving');
+    expect(formatServings(t(), 1.5, 'en')).toBe('1.5 servings');
   });
 
   it('reads a product amount in its unit, pluralised in English and not in Turkish', () => {
-    expect(formatFoodPortion({ key: 'glass', amount: 200 }, 2, 'ml', 'en')).toBe('2 glasses');
-    expect(formatFoodPortion({ key: 'portion', amount: 300 }, 1, 'g', 'en')).toBe('1 portion');
-    expect(formatFoodPortion({ key: 'ml', amount: 1 }, 250, 'ml', 'en')).toBe('250 ml');
+    expect(formatFoodPortion(t(), { key: 'glass', amount: 200 }, 2, 'ml', 'en')).toBe('2 glasses');
+    expect(formatFoodPortion(t(), { key: 'portion', amount: 300 }, 1, 'g', 'en')).toBe('1 portion');
+    expect(formatFoodPortion(t(), { key: 'ml', amount: 1 }, 250, 'ml', 'en')).toBe('250 ml');
     setLocale(LocaleConstants.tr);
-    expect(formatFoodPortion({ key: 'glass', amount: 200 }, 1.5, 'ml', 'tr')).toBe('1,5 bardak');
+    expect(formatFoodPortion(t(), { key: 'glass', amount: 200 }, 1.5, 'ml', 'tr')).toBe('1,5 bardak');
   });
 
   it('shows a unit key the app has no word for as its amount in the base unit, never failing', () => {
-    expect(formatFoodPortion({ key: 'ladle', amount: 150 }, 2, 'ml', 'en')).toBe('300 ml');
-    expect(formatFoodPortion({ key: 'ladle', amount: 150 }, 2, null, 'en')).toBe('2 ladle');
+    expect(formatFoodPortion(t(), { key: 'ladle', amount: 150 }, 2, 'ml', 'en')).toBe('300 ml');
+    expect(formatFoodPortion(t(), { key: 'ladle', amount: 150 }, 2, null, 'en')).toBe('2 ladle');
   });
 });

@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { PlanActionRow } from '@presentation/app/diary/items/plan/plan-action-row';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface WeekMenuSheetProps {
   visible: boolean;
@@ -19,7 +19,8 @@ export interface WeekMenuSheetProps {
  * the codebase has no popover widget, and rule 23 keeps menus in the sheet.
  */
 export const WeekMenuSheet = ({ visible, canClear, onClose, onCopyLastWeek, onClearWeek }: WeekMenuSheetProps): React.JSX.Element => {
-  const strings = t().mealPlan;
+  const t = useTranslations();
+  const strings = t.mealPlan;
   const run = (action: () => void) => (): void => {
     onClose();
     action();

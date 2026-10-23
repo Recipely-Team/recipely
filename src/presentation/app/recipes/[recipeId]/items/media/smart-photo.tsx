@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { Image, type ImageLoadEventData } from 'expo-image';
 import { RecipePlaceholder } from '@presentation/base/widgets/media/recipe-placeholder';
@@ -6,7 +6,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { durations, opacities } from '@presentation/base/theme';
 import { isPortraitPhoto } from '@presentation/app/recipes/[recipeId]/model/photos/is-portrait-photo';
 import { photoViewerSizes } from '@presentation/app/recipes/[recipeId]/model/photos/photo-viewer-sizes';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { toContentPosition } from '@presentation/base/widgets/media/to-content-position';
 import type { FocalPoint } from '@domain/recipes/media/focal-point';
@@ -18,7 +18,7 @@ export interface SmartPhotoProps {
   url: string;
   accessibilityLabel: string;
   /** Where the dish sits in the photo; a cropped frame centres on it. */
-  focus?: FocalPoint;
+  focus?: FocalPoint | undefined;
 }
 
 /**
@@ -38,17 +38,16 @@ export interface SmartPhotoProps {
  *   reached yet has no focus and stays centred — the spec's own fallback. A
  *   portrait photo is shown whole, so its position does not matter.
  */
-export const SmartPhoto = ({ url, accessibilityLabel, focus }: SmartPhotoProps): React.JSX.Element => {
+const SmartPhotoComponent = ({ url, accessibilityLabel, focus }: SmartPhotoProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const [frameRatio, setFrameRatio] = useState<number | null>(null);
-  const [photoRatio, setPhotoRatio] = useState<number | null>(null);
-  const [failed, setFailed] = useState(false);
-  const portrait = isPortraitPhoto(photoRatio, frameRatio);
-
-  useEffect(() => {
-    setFailed(false);
-    setPhotoRatio(null);
-  }, [url]);
+  // What the decoder said, tagged with the url it said it about: a new url starts unknown.
+  const [decoded, setDecoded] = useState<{ url: string; ratio: number | null; failed: boolean } | null>(null);
+  const current = decoded?.url === url ? decoded : null;
+  const photoRatio = current?.ratio ?? null;
+  const hasFailed = current?.failed ?? false;
+  const isPortrait = isPortraitPhoto(photoRatio, frameRatio);
 
   const onLayout = (event: LayoutChangeEvent): void => {
     const { width, height } = event.nativeEvent.layout;
@@ -57,16 +56,16 @@ export const SmartPhoto = ({ url, accessibilityLabel, focus }: SmartPhotoProps):
 
   const onLoad = (event: ImageLoadEventData): void => {
     const { width, height } = event.source;
-    if (height > ValueConstants.zero) setPhotoRatio(width / height);
+    if (height > ValueConstants.zero) setDecoded({ url, ratio: width / height, failed: false });
   };
 
   return (
     <View style={[styles.frame, { backgroundColor: colors.skeleton }]} onLayout={onLayout}>
-      {failed ? (
-        <RecipePlaceholder label={t().recipes.noPhoto} />
+      {hasFailed ? (
+        <RecipePlaceholder label={t.recipes.noPhoto} />
       ) : (
         <>
-          {portrait ? (
+          {isPortrait ? (
             <Image
               source={{ uri: url }}
               contentFit="cover"
@@ -80,14 +79,14 @@ export const SmartPhoto = ({ url, accessibilityLabel, focus }: SmartPhotoProps):
           ) : null}
           <Image
             source={{ uri: url }}
-            contentFit={portrait ? 'contain' : 'cover'}
-            contentPosition={portrait ? CENTRED : toContentPosition(focus)}
+            contentFit={isPortrait ? 'contain' : 'cover'}
+            contentPosition={isPortrait ? CENTRED : toContentPosition(focus)}
             cachePolicy="memory-disk"
             recyclingKey={url}
             transition={durations.imageFade}
             accessibilityLabel={accessibilityLabel}
             onLoad={onLoad}
-            onError={() => setFailed(true)}
+            onError={() => setDecoded({ url, ratio: null, failed: true })}
             style={StyleSheet.absoluteFill}
           />
         </>
@@ -115,3 +114,6 @@ const styles = StyleSheet.create({
     opacity: opacities.onMediaFaint,
   },
 });
+
+/** Memoized: rendered once per list item, it re-renders only when its own props change. */
+export const SmartPhoto = memo(SmartPhotoComponent);

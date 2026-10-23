@@ -10,6 +10,7 @@
  * markup.
  */
 
+import { t } from '@presentation/i18n';
 import { act } from 'react-test-renderer';
 import {
   renderComponent,
@@ -32,7 +33,7 @@ jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
   return Icon;
 });
 
-const labels = sortKeyLabels();
+const labels = sortKeyLabels(t());
 
 const renderMenu = (
   current: SortKey = 'popular',
@@ -48,21 +49,21 @@ const renderMenu = (
 const trigger = (root: RenderResult['root']): RenderResult['root'] =>
   root.find(
     (node) =>
-      node.props.accessibilityRole === 'button' &&
-      typeof node.props.onPress === 'function',
+      node.props['accessibilityRole'] === 'button' &&
+      typeof node.props['onPress'] === 'function',
   );
 
 /** Fires the menuitem whose accessibility label matches the given option label. */
 const pressOption = (root: RenderResult['root'], label: string): void => {
   const item = root.find(
     (node) =>
-      node.props.accessibilityRole === 'menuitem' && node.props.accessibilityLabel === label,
+      node.props['accessibilityRole'] === 'menuitem' && node.props['accessibilityLabel'] === label,
   );
-  act(() => (item.props.onPress as () => void)());
+  act(() => (item.props['onPress'] as () => void)());
 };
 
 const press = (node: RenderResult['root']): void => {
-  act(() => (node.props.onPress as () => void)());
+  act(() => (node.props['onPress'] as () => void)());
 };
 
 describe('WebSortMenu', () => {

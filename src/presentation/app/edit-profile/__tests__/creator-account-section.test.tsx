@@ -13,7 +13,7 @@ import { CreatorClaim } from '@domain/creators/creator-claim';
 import { CreatorClaims } from '@domain/creators/creator-claims';
 import { CreatorStatus } from '@domain/creators/creator-status';
 import { CreatorTag } from '@domain/creators/creator-tag';
-import type { AuthStoreState } from '@application/auth/auth-store-state';
+import type { AuthStore } from '@application/auth/auth-store-contract';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { authStoreOf } from '@presentation/base/test-support/auth-store-of';
 import { instagramStoreOf } from '@presentation/base/test-support/instagram-store-of';
@@ -49,28 +49,28 @@ const userWith = (...specs: ClaimSpec[]): UserEntity => {
   return user.value;
 };
 
-const renderSection = (specs: ClaimSpec[], overrides: Partial<AuthStoreState> = {}, instagram = instagramStoreOf()) => {
+const renderSection = (specs: ClaimSpec[], overrides: Partial<AuthStore> = {}, instagram = instagramStoreOf()) => {
   const authStore = authStoreOf(userWith(...specs), overrides);
   const rendered = renderComponent(<CreatorAccountSection />, { authStore, instagramStore: instagram.store });
   return { ...rendered, actions: authStore.getState(), instagram };
 };
 
 const button = (root: ReactTestInstance, label: string): ReactTestInstance =>
-  root.find((node) => node.props.accessibilityRole === 'button' && node.props.accessibilityLabel === label && typeof node.props.onPress === 'function');
+  root.find((node) => node.props['accessibilityRole'] === 'button' && node.props['accessibilityLabel'] === label && typeof node.props['onPress'] === 'function');
 
 const buttons = (root: ReactTestInstance, label: string): ReactTestInstance[] =>
-  root.findAll((node) => node.props.accessibilityRole === 'button' && node.props.accessibilityLabel === label && typeof node.props.onPress === 'function');
+  root.findAll((node) => node.props['accessibilityRole'] === 'button' && node.props['accessibilityLabel'] === label && typeof node.props['onPress'] === 'function');
 
 const press = async (node: ReactTestInstance): Promise<void> => {
   await act(async () => {
-    (node.props.onPress as () => void)();
+    (node.props['onPress'] as () => void)();
     await Promise.resolve();
     await Promise.resolve();
   });
 };
 
 const type = (root: ReactTestInstance, value: string): void => {
-  act(() => (root.findByType(TextInput).props.onChangeText as (text: string) => void)(value));
+  act(() => (root.findByType(TextInput).props['onChangeText'] as (text: string) => void)(value));
 };
 
 const linkLabel = (platform: string): string => t().creators.account.linkAccount.replace('{platform}', platform);
@@ -135,7 +135,7 @@ describe('CreatorAccountSection', () => {
       await press(button(root, linkLabel('Instagram')));
       type(root, 'aysemutfakta');
 
-      const send = button(root, copy().submit).props.onPress as () => void;
+      const send = button(root, copy().submit).props['onPress'] as () => void;
       await act(async () => {
         send();
         send();
@@ -162,9 +162,9 @@ describe('CreatorAccountSection', () => {
 
       await press(button(root, linkLabel('TikTok')));
       type(root, 'a');
-      expect(button(root, copy().submit).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+      expect(button(root, copy().submit).props['accessibilityState']).toEqual(expect.objectContaining({ disabled: true }));
       type(root, 'ab');
-      expect(button(root, copy().submit).props.accessibilityState).toEqual(expect.objectContaining({ disabled: false }));
+      expect(button(root, copy().submit).props['accessibilityState']).toEqual(expect.objectContaining({ disabled: false }));
     });
 
     it('drops a typed @ and spaces from the handle field', async () => {
@@ -172,7 +172,7 @@ describe('CreatorAccountSection', () => {
 
       await press(button(root, linkLabel('Instagram')));
       type(root, '@ayse mutfakta');
-      expect(root.findByType(TextInput).props.value).toBe('aysemutfakta');
+      expect(root.findByType(TextInput).props['value']).toBe('aysemutfakta');
     });
   });
 
@@ -193,8 +193,8 @@ describe('CreatorAccountSection', () => {
     ]);
 
     expect(textContent(root)).toEqual(expect.arrayContaining([copy().approved, copy().approvedBody, copy().pending]));
-    expect(root.findAll((n) => n.props.role === 'status').length).toBeGreaterThanOrEqual(2);
-    expect(root.findAll((n) => n.props.accessibilityRole === 'link').length).toBeGreaterThan(0);
+    expect(root.findAll((n) => n.props['role'] === 'status').length).toBeGreaterThanOrEqual(2);
+    expect(root.findAll((n) => n.props['accessibilityRole'] === 'link').length).toBeGreaterThan(0);
     expect(buttons(root, linkLabel('Instagram'))).toHaveLength(0);
     await press(button(root, copy().remove));
 
@@ -209,7 +209,7 @@ describe('CreatorAccountSection', () => {
     );
     await press(button(root, copy().resubmit));
 
-    expect(root.findByType(TextInput).props.value).toBe('aysemutfakta');
+    expect(root.findByType(TextInput).props['value']).toBe('aysemutfakta');
   });
 
   describe('Instagram login offered', () => {
@@ -219,7 +219,7 @@ describe('CreatorAccountSection', () => {
       const { root } = renderSection([], {}, instagramStoreOf(connectionOf({ connected: false, status: null })));
       await act(async () => undefined);
       expect(textContent(root)).toEqual(expect.arrayContaining([ig().connect, ig().manual]));
-      const manual = root.find((n) => n.props.accessibilityRole === 'button' && typeof n.props.onPress === 'function' && textContent(n).includes(ig().manual));
+      const manual = root.find((n) => n.props['accessibilityRole'] === 'button' && typeof n.props['onPress'] === 'function' && textContent(n).includes(ig().manual));
       await press(manual);
       expect(root.findAllByType(TextInput)).toHaveLength(1);
     });
@@ -241,7 +241,7 @@ describe('CreatorAccountSection', () => {
       expect(textContent(root)).toEqual(expect.arrayContaining(['@mertmutfakta', ig().viaInstagram, ig().automations]));
       await press(button(root, ig().disconnect));
       expect(instagram.repo.disconnect).not.toHaveBeenCalled();
-      const onConfirm: unknown = root.findByType(ConfirmSheet).props.onConfirm;
+      const onConfirm: unknown = root.findByType(ConfirmSheet).props['onConfirm'];
       if (typeof onConfirm !== 'function') throw new Error('no confirmation');
       await act(async () => onConfirm());
       expect(instagram.repo.disconnect).toHaveBeenCalled();

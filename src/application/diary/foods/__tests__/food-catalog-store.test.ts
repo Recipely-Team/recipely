@@ -22,7 +22,7 @@ const setup = () => {
 };
 
 const detailOf = (row = productOf()): FoodDetail => {
-  const detail = row.asDetail;
+  const detail = row.asDetail();
   if (detail === null) throw new Error('no detail');
   return detail;
 };

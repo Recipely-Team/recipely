@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { aspectRatios, controlSizes, fridgeSizes, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface PhotoTileProps {
@@ -18,18 +18,19 @@ export interface PhotoTileProps {
  * in a 36 hit area at the top-right corner.
  */
 export const PhotoTile = ({ uri, position, onRemove }: PhotoTileProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <View
       accessible
-      accessibilityLabel={t().fridge.photoA11y.replace('{n}', String(position))}
+      accessibilityLabel={t.fridge.photoA11y.replace('{n}', String(position))}
       style={[styles.tile, { backgroundColor: colors.skeleton, borderColor: colors.cardBorder }]}
     >
       <RecipeImage accessibilityLabel={null} uri={uri} style={styles.image} placeholderCompact />
       <Pressable
         onPress={onRemove}
         accessibilityRole="button"
-        accessibilityLabel={t().fridge.removePhoto.replace('{n}', String(position))}
+        accessibilityLabel={t.fridge.removePhoto.replace('{n}', String(position))}
         style={styles.hit}
       >
         <View style={[styles.disc, { backgroundColor: colors.overlay }]}>

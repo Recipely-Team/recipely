@@ -36,7 +36,7 @@ describe('FoodDiaryRepository.parseMeal', () => {
     const r = await new FoodDiaryRepository(http).parseMeal({ kind: MealParseInputKind.Text, text: ' menemen ', locale: 'tr' });
     expect(uploads).toHaveLength(0);
     expect(requests[0]).toMatchObject({ method: 'POST', url: '/diary/meal-parse', data: { text: 'menemen', locale: 'tr' }, timeout: AI_REQUEST_TIMEOUT_MS });
-    expect(r.ok && [r.value.items[0]?.label, r.value.items[0]?.nutrients.calories, r.value.note]).toEqual(['menemen', 220, 'some_estimated']);
+    expect(r.ok && [r.value.items[0]?.label, r.value.items[0]?.nutrients().calories, r.value.note]).toEqual(['menemen', 220, 'some_estimated']);
   });
 
   it('leaves the locale out of the JSON body when it is unknown', async () => {

@@ -9,7 +9,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
 import { isBlank } from '@core/guards/type-guards';
 
 export interface AvatarImageProps {
-  uri?: string;
+  uri?: string | undefined;
   /** Empty for nobody in particular — a signed-out visitor — which draws the person mark. */
   name: string;
   size: number;
@@ -20,7 +20,7 @@ const PERSON_ICON_RATIO = 0.55;
 
 const initialsFor = (name: string): string => {
   const trimmed = name.trim();
-  if (trimmed.length === ValueConstants.zero) return '?';
+  if (trimmed.length === ValueConstants.zero) return CharConstants.questionMark;
   const parts = trimmed.split(/\s+/);
   const first = parts[ValueConstants.zero]?.[ValueConstants.zero] ?? CharConstants.empty;
   const second = parts.length > ValueConstants.one ? (parts[parts.length - ValueConstants.one]?.[ValueConstants.zero] ?? CharConstants.empty) : CharConstants.empty;

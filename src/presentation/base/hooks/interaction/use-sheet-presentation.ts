@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, useWindowDimensions, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import { ValueConstants } from '@core/constants';
 
@@ -46,20 +46,22 @@ interface SheetPresentation {
  *   JS-driven one is an error at runtime, not a type error.
  */
 export const useSheetPresentation = (
-  visible: boolean,
+  isVisible: boolean,
   isExpanded: boolean,
   dragOffset: Animated.Value,
 ): SheetPresentation => {
   const { height: windowHeight } = useWindowDimensions();
-  const [isMounted, setIsMounted] = useState(visible);
+  const [isMounted, setIsMounted] = useState(isVisible);
   const [panelHeight, setPanelHeight] = useState<number | null>(null);
-  const scrim = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const [scrim] = useState(() => new Animated.Value(ValueConstants.zero));
   /** 0 while resting, 1 while off-screen. */
-  const away = useRef(new Animated.Value(ValueConstants.one)).current;
+  const [away] = useState(() => new Animated.Value(ValueConstants.one));
+
+  // Opening mounts the sheet in the same render, so it is there for the enter animation.
+  if (isVisible && !isMounted) setIsMounted(true);
 
   useEffect(() => {
-    if (visible) {
-      setIsMounted(true);
+    if (isVisible) {
       Animated.timing(scrim, {
         toValue: ValueConstants.one,
         duration: SCRIM_ENTER_MS,
@@ -89,7 +91,7 @@ export const useSheetPresentation = (
       if (finished) setIsMounted(false);
     });
     return () => exit.stop();
-  }, [visible, scrim, away, panelHeight]);
+  }, [isVisible, scrim, away, panelHeight]);
 
   // The dialog fades; the sheet travels its height plus the live drag offset.
   const panelMotion = isExpanded

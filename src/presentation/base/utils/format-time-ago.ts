@@ -1,4 +1,4 @@
-import { t } from '@presentation/i18n';
+import type { TranslationsType } from '@presentation/i18n';
 import { TimeConstants, ValueConstants } from '@core/constants';
 
 /**
@@ -6,8 +6,8 @@ import { TimeConstants, ValueConstants } from '@core/constants';
  * locale (e.g. "just now", "5m ago", "2h ago", "3d ago"). Future dates and
  * clock skew are clamped to zero so they never render a negative duration.
  */
-export const formatTimeAgo = (date: Date): string => {
-  const r = t().relativeTime;
+export const formatTimeAgo = (t: TranslationsType, date: Date): string => {
+  const r = t.relativeTime;
   const seconds = Math.max(ValueConstants.zero, Math.floor((Date.now() - date.getTime()) / TimeConstants.millisecondsPerSecond));
   if (seconds < TimeConstants.secondsPerMinute) return r.justNow;
   const minutes = Math.floor(seconds / TimeConstants.secondsPerMinute);

@@ -19,7 +19,7 @@ import {
 } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AssistantSheetProps {
   height: number;
@@ -66,12 +66,13 @@ export const AssistantSheet = ({
   onSend,
   onCollapse,
 }: AssistantSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const { colors } = useTheme();
   const [draft, setDraft] = useState(CharConstants.empty);
-  const ready = draft.trim() !== CharConstants.empty;
+  const isReady = draft.trim() !== CharConstants.empty;
 
   const submit = (): void => {
-    if (!ready) return;
+    if (!isReady) return;
     onSend(draft.trim());
     setDraft(CharConstants.empty);
   };
@@ -87,7 +88,7 @@ export const AssistantSheet = ({
       <Pressable
         onPress={onCollapse}
         accessibilityRole="button"
-        accessibilityLabel={t().assistant.voice}
+        accessibilityLabel={t.assistant.voice}
         style={styles.grabberRow}
       >
         <View style={[styles.grabber, { backgroundColor: colors.cardBorder }]} />
@@ -117,7 +118,7 @@ export const AssistantSheet = ({
         <AutoGrowTextInput
           value={draft}
           onChangeText={setDraft}
-          placeholder={t().assistant.placeholder}
+          placeholder={t.assistant.placeholder}
           // "Ask by typing" means type now: the keyboard comes up with the sheet.
           autoFocus
           minHeight={controlSizes.searchBar}
@@ -126,21 +127,21 @@ export const AssistantSheet = ({
         <Pressable
           onPress={submit}
           accessibilityRole="button"
-          accessibilityLabel={t().assistant.send}
-          disabled={!ready}
+          accessibilityLabel={t.assistant.send}
+          disabled={!isReady}
           style={[
             styles.send,
             {
-              backgroundColor: ready ? colors.primary : colors.surface,
-              borderColor: ready ? colors.primary : colors.cardBorder,
-              opacity: ready ? opacities.full : opacities.disabledFaint,
+              backgroundColor: isReady ? colors.primary : colors.surface,
+              borderColor: isReady ? colors.primary : colors.cardBorder,
+              opacity: isReady ? opacities.full : opacities.disabledFaint,
             },
           ]}
         >
           <Ionicons
             name="arrow-up"
             size={iconSizes.lg}
-            color={ready ? colors.primaryText : colors.textMuted}
+            color={isReady ? colors.primaryText : colors.textMuted}
           />
         </Pressable>
       </View>

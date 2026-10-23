@@ -1,4 +1,5 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -23,7 +24,7 @@ import { KeywordsStep } from '@presentation/app/automations/edit/body/keywords-s
 import { RecipeStep } from '@presentation/app/automations/edit/body/recipe-step';
 import { MessageStep } from '@presentation/app/automations/edit/body/message-step';
 import { spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * The automation editor (spec §3): Post → Keywords → Recipe → Message, a
@@ -31,15 +32,16 @@ import { t } from '@presentation/i18n';
  * step, Save on the last.
  */
 export const AutomationEditScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { isExpanded } = useLayout();
   const vm = useRuleEditor();
   const scrollable = useAssistantScrollable();
   const { instagramStore } = useStores();
-  const handle = instagramStore((s) => (s.connection.status === StoreStatus.Loaded ? s.connection.connection.displayHandle : CharConstants.empty));
-  const copy = t().instagram;
+  const handle = useStore(instagramStore, (s) => (s.connection.status === StoreStatus.Loaded ? s.connection.connection.displayHandle : CharConstants.empty));
+  const copy = t.instagram;
   const title = vm.isEdit ? copy.editAutomation : copy.newAutomation;
-  const subtitle = copy.stepOf.replace('{n}', String(vm.step + ValueConstants.one)).replace('{s}', editorStepLabels()[vm.step] ?? CharConstants.empty);
+  const subtitle = copy.stepOf.replace('{n}', String(vm.step + ValueConstants.one)).replace('{s}', editorStepLabels(t)[vm.step] ?? CharConstants.empty);
 
   const step = (): React.JSX.Element => {
     switch (vm.step) {
@@ -81,7 +83,7 @@ export const AutomationEditScreen = (): React.JSX.Element => {
 
   const body = (): React.JSX.Element => {
     if (vm.loadFailure !== null) {
-      const content = failureContent(vm.loadFailure);
+      const content = failureContent(t, vm.loadFailure);
       return (
         <ErrorState icon={failureIcon(vm.loadFailure)} severity={failureSeverity(vm.loadFailure)} title={content.title} body={content.body} primaryLabel={copy.tryAgain} onPrimary={vm.retryLoad} />
       );

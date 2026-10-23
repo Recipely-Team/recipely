@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
 import { upperCase } from '@presentation/i18n/upper-case';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ArtCard } from '@presentation/app/onboarding/items/art-card';
 import { ArtChip } from '@presentation/app/onboarding/items/art-chip';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
@@ -24,8 +24,9 @@ const ART_WIDTH = 270;
 
 /** Slide 3, "Plan your week": a week filled from saved recipes, and the one shopping list it makes. */
 export const HeroPlan = ({ active = true }: HeroProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const a = t().onboarding.art;
+  const a = t.onboarding.art;
   const rows = [
     [a.day1, a.meal1],
     [a.day2, a.meal2],
@@ -49,18 +50,18 @@ export const HeroPlan = ({ active = true }: HeroProps): React.JSX.Element => {
       <ArtCard active={active} delay={LIST_DELAY_MS} style={styles.list}>
         <SizedText size={fontSizes.caption} weight={fontWeights.bold}>{a.list}</SizedText>
         {[a.item1, a.item2, a.item3].map((item, i) => {
-          const done = i === ValueConstants.zero;
+          const isDone = i === ValueConstants.zero;
           return (
             <View key={item} style={styles.item}>
-              <OnboardingReveal active={active} delay={done ? CHECK_DELAY_MS : LIST_DELAY_MS}>
-                <View style={[styles.box, done ? { backgroundColor: colors.success, borderColor: colors.success } : { borderColor: colors.border }]}>
-                  {done ? <Ionicons name="checkmark" size={iconSizes.xs} color={colors.primaryText} /> : null}
+              <OnboardingReveal active={active} delay={isDone ? CHECK_DELAY_MS : LIST_DELAY_MS}>
+                <View style={[styles.box, isDone ? { backgroundColor: colors.success, borderColor: colors.success } : { borderColor: colors.border }]}>
+                  {isDone ? <Ionicons name="checkmark" size={iconSizes.xs} color={colors.primaryText} /> : null}
                 </View>
               </OnboardingReveal>
               <SizedText
                 size={fontSizes.caption}
-                color={done ? colors.textMuted : colors.text}
-                style={done ? styles.struck : undefined}
+                color={isDone ? colors.textMuted : colors.text}
+                style={isDone ? styles.struck : undefined}
               >
                 {item}
               </SizedText>

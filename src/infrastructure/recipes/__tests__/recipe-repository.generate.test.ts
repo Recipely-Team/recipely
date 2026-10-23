@@ -83,17 +83,17 @@ describe('RecipeRepository.generateRecipe', () => {
     await repo.generateRecipe('spicy pasta');
 
     expect(calls).toHaveLength(1);
-    expect(calls[0].method).toBe('POST');
-    expect(calls[0].url).toBe('/recipes/generate');
-    expect(calls[0].data).toEqual({ prompt: 'spicy pasta' });
+    expect(calls[0]!.method).toBe('POST');
+    expect(calls[0]!.url).toBe('/recipes/generate');
+    expect(calls[0]!.data).toEqual({ prompt: 'spicy pasta' });
     // The synchronous Gemini call routinely exceeds the default 10s JSON
     // timeout, so a per-request override is required or the client would abort
     // a request the backend then completes.
-    expect(calls[0].timeout).toBe(AI_REQUEST_TIMEOUT_MS);
+    expect(calls[0]!.timeout).toBe(AI_REQUEST_TIMEOUT_MS);
     // Locale is carried by the Accept-Language header (set by AxiosHttpClient),
     // never by the request body — guard against accidental regression.
-    expect(JSON.stringify(calls[0].data)).not.toContain('tr');
-    expect(JSON.stringify(calls[0].data)).not.toContain('locale');
+    expect(JSON.stringify(calls[0]!.data)).not.toContain('tr');
+    expect(JSON.stringify(calls[0]!.data)).not.toContain('locale');
   });
 
   it('propagates AxiosHttpClient failure unchanged', async () => {

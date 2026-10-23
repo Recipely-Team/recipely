@@ -10,7 +10,7 @@ import { RuleThumb } from '@presentation/app/automations/shared/items/rule-thumb
 import { KeywordChips } from '@presentation/app/automations/shared/items/keyword-chips';
 import { StatsMetrics } from '@presentation/app/automations/stats/model/stats-metrics';
 import { fontSizes, fontWeights, iconSizes, letterSpacings, opacities, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface PostRowProps {
   post: StatsPost;
@@ -21,12 +21,13 @@ export interface PostRowProps {
 
 /** One automated post (spec "Per-post"): its cover, keywords and how its DMs did; opens its Activity. */
 export const PostRow = ({ post, wide, onPress }: PostRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const copy = t().creatorStats;
+  const copy = t.creatorStats;
   const rate = post.sent > ValueConstants.zero ? `${funnelRate(post.opened, post.sent)}%` : CharConstants.emDash;
   const n = (value: number): string => formatWholeNumber(value, locale);
-  const label = `${post.keywords.join(', ')} · ${copy.rowMeta.replace('{s}', n(post.sent)).replace('{o}', n(post.opened)).replace('{v}', n(post.saved))} · ${copy.colRate} ${rate}`;
+  const label = `${post.keywords.join(CharConstants.commaSpace)} · ${copy.rowMeta.replace('{s}', n(post.sent)).replace('{o}', n(post.opened)).replace('{v}', n(post.saved))} · ${copy.colRate} ${rate}`;
 
   return (
     <Pressable

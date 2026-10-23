@@ -3,5 +3,3 @@ export const DmMessageToken = {
   Name: '{name}',
   Link: '{link}',
 } as const;
-
-export type DmMessageTokenType = (typeof DmMessageToken)[keyof typeof DmMessageToken];

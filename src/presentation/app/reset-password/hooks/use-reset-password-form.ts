@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react';
+import { useStore } from 'zustand';
 import { Password } from '@domain/auth/password';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants } from '@core/constants';
 import { FailureCode } from '@core/failure';
 
@@ -17,21 +18,22 @@ import { FailureCode } from '@core/failure';
  *   backend) reads as one message: the link no longer works.
  */
 export function useResetPasswordForm(token: string) {
+  const t = useTranslations();
   const { authStore } = useStores();
-  const resetPassword = authStore((s) => s.resetPassword);
+  const resetPassword = useStore(authStore, (s) => s.resetPassword);
   const [newPassword, setNewPassword] = useState(CharConstants.empty);
   const [confirmPassword, setConfirmPassword] = useState(CharConstants.empty);
-  const [loading, setLoading] = useState(false);
-  const [succeeded, setSucceeded] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+  const [hasSucceeded, setSucceeded] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const submit = useCallback(async (): Promise<void> => {
     if (!Password.create(newPassword).ok) {
-      setError(t().resetPassword.tooShort);
+      setError(t.resetPassword.tooShort);
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError(t().resetPassword.mismatch);
+      setError(t.resetPassword.mismatch);
       return;
     }
     setError(undefined);
@@ -43,12 +45,12 @@ export function useResetPasswordForm(token: string) {
       return;
     }
     setError(
-      authFormMessage(failure, {
-        [FailureCode.NotFound]: t().resetPassword.invalidOrExpired,
-        [FailureCode.Validation]: t().resetPassword.invalidOrExpired,
+      authFormMessage(t, failure, {
+        [FailureCode.NotFound]: t.resetPassword.invalidOrExpired,
+        [FailureCode.Validation]: t.resetPassword.invalidOrExpired,
       }),
     );
-  }, [newPassword, confirmPassword, resetPassword, token]);
+  }, [newPassword, confirmPassword, resetPassword, token, t]);
 
-  return { newPassword, setNewPassword, confirmPassword, setConfirmPassword, loading, succeeded, error, setError, submit };
+  return { newPassword, setNewPassword, confirmPassword, setConfirmPassword, loading: isLoading, succeeded: hasSucceeded, error, setError, submit };
 }

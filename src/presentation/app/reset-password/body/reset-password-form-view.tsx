@@ -6,7 +6,7 @@ import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, fontWeights } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 interface ResetPasswordFormViewProps {
@@ -32,13 +32,14 @@ export const ResetPasswordFormView = ({
   onSubmit,
   onBack,
 }: ResetPasswordFormViewProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <>
       <AuthTextField
         iconName="lock-closed-outline"
         autofill={AuthAutofill.NewPassword}
-        placeholder={t().resetPassword.newPasswordPlaceholder}
+        placeholder={t.resetPassword.newPasswordPlaceholder}
         value={newPassword}
         onChangeText={onChangeNew}
         password
@@ -51,7 +52,7 @@ export const ResetPasswordFormView = ({
         ref={confirmRef}
         iconName="lock-closed-outline"
         autofill={AuthAutofill.NewPassword}
-        placeholder={t().resetPassword.confirmPlaceholder}
+        placeholder={t.resetPassword.confirmPlaceholder}
         value={confirmPassword}
         onChangeText={onChangeConfirm}
         password
@@ -68,7 +69,7 @@ export const ResetPasswordFormView = ({
 
       <View style={styles.buttonRow}>
         <PrimaryButton
-          label={loading ? t().resetPassword.submitting : t().resetPassword.submit}
+          label={loading ? t.resetPassword.submitting : t.resetPassword.submit}
           onPress={onSubmit}
           loading={loading}
           disabled={newPassword.length === ValueConstants.zero || confirmPassword.length === ValueConstants.zero || loading}
@@ -79,10 +80,10 @@ export const ResetPasswordFormView = ({
         onPress={onBack}
         style={styles.textLink}
         accessibilityRole="button"
-        accessibilityLabel={t().resetPassword.backToLogin}
+        accessibilityLabel={t.resetPassword.backToLogin}
       >
         <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: fontWeights.semibold }}>
-          {t().resetPassword.backToLogin}
+          {t.resetPassword.backToLogin}
         </ThemedText>
       </Pressable>
     </>

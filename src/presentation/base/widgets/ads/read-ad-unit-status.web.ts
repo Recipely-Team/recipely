@@ -22,6 +22,6 @@ const AD_UNIT_SELECTOR = 'ins.adsbygoogle';
 export const readAdUnitStatus = (host: HTMLElement): AdUnitStatus | null => {
   const unit = host.querySelector(AD_UNIT_SELECTOR);
   if (!(unit instanceof HTMLElement)) return null;
-  const status = unit.dataset.adStatus;
+  const status = unit.dataset['adStatus'];
   return status === AdUnitStatus.Filled || status === AdUnitStatus.Unfilled ? status : null;
 };

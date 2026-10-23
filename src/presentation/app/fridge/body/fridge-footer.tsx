@@ -8,7 +8,7 @@ import type { FridgeFlowState } from '@presentation/app/fridge/model/flow/fridge
 import { borderWidths, controlSizes, spacing } from '@presentation/base/theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface FridgeFooterProps {
@@ -26,19 +26,20 @@ export interface FridgeFooterProps {
  * The ideas step and the full-screen states carry their own actions.
  */
 export const FridgeFooter = ({ state, onFindIngredients, onCancel, onShowIdeas }: FridgeFooterProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isExpanded } = useLayout();
-  const strings = t().fridge;
+  const strings = t.fridge;
   const { view } = state;
 
   let action: React.JSX.Element | null = null;
   if (view.step === FridgeStep.Capture) {
-    const failed = view.failure !== null;
+    const hasFailed = view.failure !== null;
     action = (
       <GradientCta
-        label={failed ? strings.tryAgain : strings.findIngredients}
-        icon={failed ? 'refresh' : 'scan-outline'}
+        label={hasFailed ? strings.tryAgain : strings.findIngredients}
+        icon={hasFailed ? 'refresh' : 'scan-outline'}
         onPress={onFindIngredients}
         disabled={state.photos.length === ValueConstants.zero}
       />
@@ -46,8 +47,8 @@ export const FridgeFooter = ({ state, onFindIngredients, onCancel, onShowIdeas }
   } else if (view.step === FridgeStep.Analysing) {
     action = <GhostButton label={strings.cancel} onPress={onCancel} />;
   } else if (view.step === FridgeStep.Ingredients) {
-    const empty = state.chips.length === ValueConstants.zero;
-    action = <GradientCta label={empty ? strings.addAtLeastOne : strings.showIdeas} icon="sparkles" onPress={onShowIdeas} disabled={empty} />;
+    const isEmpty = state.chips.length === ValueConstants.zero;
+    action = <GradientCta label={isEmpty ? strings.addAtLeastOne : strings.showIdeas} icon="sparkles" onPress={onShowIdeas} disabled={isEmpty} />;
   }
   if (action === null) return null;
 

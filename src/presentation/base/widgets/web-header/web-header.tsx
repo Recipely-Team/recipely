@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { StyleSheet, View } from 'react-native';
-import { StoreStatus } from '@application/store/store-status';
 import { type Href, useRouter, usePathname } from 'expo-router';
 import { useGuestRouteGate } from '@presentation/base/hooks/auth/use-guest-route-gate';
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
@@ -9,7 +9,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useWebShellState } from '@presentation/base/web-shell/use-web-shell-state';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { spacing, zIndices } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { WebHeaderLogo } from '@presentation/base/widgets/web-header/web-header-logo';
 import { WebHeaderTabs } from '@presentation/base/widgets/web-header/web-header-tabs';
 import { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
@@ -19,6 +19,7 @@ import { WebHeaderSearch } from '@presentation/base/widgets/web-header/web-heade
 import { WebHeaderActions } from '@presentation/base/widgets/web-header/web-header-actions';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { useSignedInUser } from '@presentation/base/hooks/auth/use-signed-in-user';
 
 const HEADER_HEIGHT = 68;
 
@@ -50,32 +51,32 @@ const isProfileRoute = (pathname: string): boolean =>
  *   ({@link useGuestRouteGate}).
  */
 export const WebHeader = (): React.JSX.Element => {
+  const t = useTranslations();
   useLocale(); // re-render the persistent header when the language changes
   const router = useRouter();
   const gate = useGuestRouteGate();
   const pathname = usePathname();
   const colors = useTheme().colors;
-  const { authStore, notificationsStore, shoppingListStore } = useStores();
-  const toBuy = shoppingListStore((s) => s.toBuy) ?? ValueConstants.zero;
-  const authState = authStore((s) => s.state);
-  const unreadCount = notificationsStore((s) => s.unreadCount);
-  const signedIn = authState.status === StoreStatus.Authenticated;
+  const { notificationsStore, shoppingListStore } = useStores();
+  const toBuy = useStore(shoppingListStore, (s) => s.toBuy) ?? ValueConstants.zero;
+  const user = useSignedInUser();
+  const unreadCount = useStore(notificationsStore, (s) => s.unreadCount);
+  const isSignedIn = user !== null;
   useEffect(() => {
-    if (signedIn) void shoppingListStore.getState().loadToBuy();
-  }, [shoppingListStore, signedIn]);
+    if (isSignedIn) void shoppingListStore.getState().loadToBuy();
+  }, [shoppingListStore, isSignedIn]);
   const { searchQuery, setSearchQuery } = useWebShellState();
 
   const activeTab = resolveActiveTab(pathname);
   const isProfileActive = isProfileRoute(pathname);
 
   const tabs: TabItem<WebHeaderTabKey>[] = [
-    { key: 'recipes', label: t().recipes.title, icon: { family: TabIconFamily.Ionicons, name: 'restaurant-outline' } },
-    { key: 'myRecipes', label: t().myRecipes.title, icon: { family: TabIconFamily.Ionicons, name: 'bookmark-outline' } },
-    { key: 'chefs', label: t().navigation.chefs, icon: { family: TabIconFamily.Material, name: 'chef-hat' } },
-    { key: 'diary', label: t().navigation.diary, icon: { family: TabIconFamily.Ionicons, name: 'calendar-outline' } },
+    { key: 'recipes', label: t.recipes.title, icon: { family: TabIconFamily.Ionicons, name: 'restaurant-outline' } },
+    { key: 'myRecipes', label: t.myRecipes.title, icon: { family: TabIconFamily.Ionicons, name: 'bookmark-outline' } },
+    { key: 'chefs', label: t.navigation.chefs, icon: { family: TabIconFamily.Material, name: 'chef-hat' } },
+    { key: 'diary', label: t.navigation.diary, icon: { family: TabIconFamily.Ionicons, name: 'calendar-outline' } },
   ];
 
-  const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
   // Empty for guests, so the avatar shows the person mark.
   const displayName = user?.displayName ?? CharConstants.empty;
   const avatarUri = user?.photoUrl ?? undefined;
@@ -96,11 +97,11 @@ export const WebHeader = (): React.JSX.Element => {
   const goDiscover = (): void => router.push(RoutePaths.onboarding);
 
   // Discover is guest-only and on the Recipes tab.
-  const isAuthenticated = authState.status === StoreStatus.Authenticated;
-  const showDiscover = activeTab === WebHeaderTabKey.Recipes && !isAuthenticated;
+  const isAuthenticated = isSignedIn;
+  const shouldShowDiscover = activeTab === WebHeaderTabKey.Recipes && !isAuthenticated;
 
   // Search only on the Recipes listing, which reads it.
-  const showSearch = activeTab === WebHeaderTabKey.Recipes;
+  const shouldShowSearch = activeTab === WebHeaderTabKey.Recipes;
 
   return (
     <View
@@ -120,34 +121,34 @@ export const WebHeader = (): React.JSX.Element => {
         </View>
 
         <View style={styles.searchWrap}>
-          {showSearch ? (
+          {shouldShowSearch ? (
             <WebHeaderSearch
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder={t().recipes.searchPlaceholder}
-              ariaLabel={t().recipes.searchPlaceholder}
-              ariaClear={t().common.clear}
+              placeholder={t.recipes.searchPlaceholder}
+              ariaLabel={t.recipes.searchPlaceholder}
+              ariaClear={t.common.clear}
             />
           ) : null}
         </View>
 
         <WebHeaderActions
-          createLabel={t().myRecipes.createNew}
-          notificationsLabel={t().notifications.title}
-          cartLabel={toBuy > ValueConstants.zero ? t().shopping.cartA11y.replace('{n}', String(toBuy)) : t().shopping.title}
+          createLabel={t.myRecipes.createNew}
+          notificationsLabel={t.notifications.title}
+          cartLabel={toBuy > ValueConstants.zero ? t.shopping.cartA11y.replace('{n}', String(toBuy)) : t.shopping.title}
           toBuy={toBuy}
           isCartActive={pathname === RoutePaths.shoppingList}
           onOpenCart={goCart}
-          profileLabel={t().navigation.profile}
+          profileLabel={t.navigation.profile}
           unreadCount={unreadCount}
           isProfileActive={isProfileActive}
           avatarName={displayName}
           avatarUri={avatarUri}
-          discoverLabel={showDiscover ? t().onboarding.discover : undefined}
+          discoverLabel={shouldShowDiscover ? t.onboarding.discover : undefined}
           onCreate={goCreate}
           onOpenNotifications={goNotifs}
           onOpenProfile={goProfile}
-          onDiscover={showDiscover ? goDiscover : undefined}
+          onDiscover={shouldShowDiscover ? goDiscover : undefined}
         />
       </View>
       <SignInPromptSheet {...gate.prompt} />

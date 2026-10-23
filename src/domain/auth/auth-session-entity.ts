@@ -4,7 +4,7 @@ import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
-import { UserEntity } from '@domain/auth/user-entity';
+import { type UserEntity } from '@domain/auth/user-entity';
 import { isBlank } from '@core/guards/type-guards';
 
 
@@ -45,6 +45,11 @@ export class AuthSessionEntity extends BaseEntity<AuthSessionEntityProps> {
 
   get user(): UserEntity {
     return this.props.user;
+  }
+
+  /** The same session for an updated user; tokens and expiry carry over. */
+  withUser(user: UserEntity): Result<AuthSessionEntity, ValidationFailure> {
+    return AuthSessionEntity.create({ ...this.props, user });
   }
 
   /**

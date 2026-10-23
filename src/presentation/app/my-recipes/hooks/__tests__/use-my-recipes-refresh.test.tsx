@@ -7,7 +7,7 @@
  *    the favourites response directly — and every case asserts the other tabs'
  *    loaders stay untouched. The saved load itself lives in the store (it owns
  *    the status the skeleton reads), so the hook's job there is to call it and
- *    surface a failure it finds in `listState`.
+ *    surface a failure it finds in the list state.
  *
  * 2. The PR #161 invariant: `isRefreshing` tracks ONLY a user-initiated pull.
  *    It is bound straight to `RefreshControl.refreshing`, and setting that
@@ -26,7 +26,7 @@
 
 import { useState } from 'react';
 import { act } from 'react-test-renderer';
-import { create } from 'zustand';
+import { create, useStore } from 'zustand';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { ApplicationStores } from '@application/di/application-stores';
@@ -34,15 +34,12 @@ import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-r
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import type { RecipeListState } from '@application/recipes/list/recipe-list-state';
-import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
-import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
-import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
+import type { MyRecipesStore } from '@application/recipes/my-recipes/my-recipes-store-contract';
+import type { DraftsStore } from '@application/drafts/drafts-store-contract';
 import { NetworkFailure } from '@core/failure';
-import { ok, fail } from '@core/result/result-helpers';
-import type { Result } from '@core/result/result';
-import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { Failure } from '@core/failure';
 
 jest.mock('@presentation/base/feedback/show-toast', () => ({
@@ -71,17 +68,15 @@ const makeDeferred = <T,>(): Deferred<T> => {
 /** Every loader the hook can reach, so each test can assert on the road not taken. */
 interface Loaders {
   loadRecipes: jest.Mock<Promise<void>, []>;
-  loadSaved: jest.Mock<Promise<Result<readonly RecipeSummaryEntity[], Failure>>, []>;
-  loadMyRecipes: jest.Mock<Promise<void>, []>;
+  loadSaved: jest.Mock<Promise<Failure | null>, []>;
+  loadMine: jest.Mock<Promise<Failure | null>, []>;
   loadDrafts: jest.Mock<Promise<Failure | null>, []>;
 }
 
 const makeLoaders = (): Loaders => ({
   loadRecipes: jest.fn<Promise<void>, []>().mockResolvedValue(undefined),
-  loadSaved: jest
-    .fn<Promise<Result<readonly RecipeSummaryEntity[], Failure>>, []>()
-    .mockResolvedValue(ok([])),
-  loadMyRecipes: jest.fn<Promise<void>, []>().mockResolvedValue(undefined),
+  loadSaved: jest.fn<Promise<Failure | null>, []>().mockResolvedValue(null),
+  loadMine: jest.fn<Promise<Failure | null>, []>().mockResolvedValue(null),
   loadDrafts: jest.fn<Promise<Failure | null>, []>().mockResolvedValue(null),
 });
 
@@ -94,7 +89,7 @@ const IDLE_STATE: RecipeListState = { status: 'idle' };
  * seam under test.
  */
 const makeStores = (loaders: Loaders) => {
-  const recipeListStore = create<RecipeListStoreState>(() => ({
+  const recipeListStore = create<RecipeListStore>(() => ({
     state: IDLE_STATE,
     load: loaders.loadRecipes,
     loadMore: jest.fn(),
@@ -102,27 +97,27 @@ const makeStores = (loaders: Loaders) => {
     remove: jest.fn(),
   }));
 
-  const savedRecipesStore = create<SavedRecipesStoreState>(() => ({
+  const savedRecipesStore = create<SavedRecipesStore>(() => ({
     savedIds: new Set<string>(),
-    listState: { status: 'idle' },
+    saved: { status: 'idle' },
     setSaved: jest.fn(),
     loadSaved: loaders.loadSaved,
-  }) as unknown as SavedRecipesStoreState);
+  }) as unknown as SavedRecipesStore);
 
-  const createdRecipesStore = create<CreatedRecipesStoreState>(() => ({
-    recipes: [],
-    loadMyRecipes: loaders.loadMyRecipes,
-  }) as unknown as CreatedRecipesStoreState);
+  const myRecipesStore = create<MyRecipesStore>(() => ({
+    mine: { status: 'idle' },
+    loadMine: loaders.loadMine,
+  }) as unknown as MyRecipesStore);
 
-  const draftsStore = create<DraftsStoreState>(() => ({
+  const draftsStore = create<DraftsStore>(() => ({
     drafts: { status: 'idle' },
     loadDrafts: loaders.loadDrafts,
-  }) as unknown as DraftsStoreState);
+  }) as unknown as DraftsStore);
 
   const stores = {
     recipeListStore,
     savedRecipesStore,
-    createdRecipesStore,
+    myRecipesStore,
     draftsStore,
   } as unknown as ApplicationStores;
 
@@ -131,10 +126,10 @@ const makeStores = (loaders: Loaders) => {
 
 /**
  * Drives a saved load to a failure. The store hands its own outcome back — a
- * shared `listState` could not say how THIS load ended once two overlap.
+ * shared list state could not say how THIS load ended once two overlap.
  */
 const failLoadSaved = (loaders: Loaders, failure: Failure): void => {
-  loaders.loadSaved.mockResolvedValueOnce(fail(failure));
+  loaders.loadSaved.mockResolvedValueOnce(failure);
 };
 
 /** One render of the hook: the spinner flag next to what the store reports. */
@@ -169,7 +164,7 @@ describe('useMyRecipesRefresh', () => {
   const mount = (tab: TabType) => {
     const loaders = makeLoaders();
     const { stores, recipeListStore, savedRecipesStore } = makeStores(loaders);
-    useStoreState = () => recipeListStore((s) => s.state);
+    useStoreState = () => useStore(recipeListStore, (s) => s.state);
 
     renderComponent(
       <StoresProvider value={stores}>
@@ -210,7 +205,7 @@ describe('useMyRecipesRefresh', () => {
       // discover feed's page is not part of this refresh at all.
       expect(loaders.loadSaved).toHaveBeenCalledTimes(1);
       expect(loaders.loadRecipes).not.toHaveBeenCalled();
-      expect(loaders.loadMyRecipes).not.toHaveBeenCalled();
+      expect(loaders.loadMine).not.toHaveBeenCalled();
       expect(loaders.loadDrafts).not.toHaveBeenCalled();
     });
 
@@ -222,7 +217,7 @@ describe('useMyRecipesRefresh', () => {
         await Promise.resolve();
       });
 
-      expect(loaders.loadMyRecipes).toHaveBeenCalledTimes(1);
+      expect(loaders.loadMine).toHaveBeenCalledTimes(1);
       expect(loaders.loadRecipes).not.toHaveBeenCalled();
       expect(loaders.loadSaved).not.toHaveBeenCalled();
       expect(loaders.loadDrafts).not.toHaveBeenCalled();
@@ -239,7 +234,7 @@ describe('useMyRecipesRefresh', () => {
       expect(loaders.loadDrafts).toHaveBeenCalledTimes(1);
       expect(loaders.loadRecipes).not.toHaveBeenCalled();
       expect(loaders.loadSaved).not.toHaveBeenCalled();
-      expect(loaders.loadMyRecipes).not.toHaveBeenCalled();
+      expect(loaders.loadMine).not.toHaveBeenCalled();
     });
 
     it('dispatches to the tab that is active at pull time, not the one it mounted on', async () => {
@@ -270,8 +265,8 @@ describe('useMyRecipesRefresh', () => {
 
     it('is true while a pull is in flight and false once it settles', async () => {
       const { loaders } = mount('created');
-      const load = makeDeferred<void>();
-      loaders.loadMyRecipes.mockReturnValueOnce(load.promise);
+      const load = makeDeferred<Failure | null>();
+      loaders.loadMine.mockReturnValueOnce(load.promise);
 
       act(() => {
         vm.onRefresh();
@@ -280,7 +275,7 @@ describe('useMyRecipesRefresh', () => {
       expect(vm.isRefreshing).toBe(true);
 
       await act(async () => {
-        load.resolve();
+        load.resolve(null);
         await load.promise;
       });
 
@@ -317,7 +312,7 @@ describe('useMyRecipesRefresh', () => {
       // A tab switch must not refetch either — only a pull loads.
       expect(loaders.loadRecipes).not.toHaveBeenCalled();
       expect(loaders.loadSaved).not.toHaveBeenCalled();
-      expect(loaders.loadMyRecipes).not.toHaveBeenCalled();
+      expect(loaders.loadMine).not.toHaveBeenCalled();
       expect(loaders.loadDrafts).not.toHaveBeenCalled();
 
       // Non-vacuity: the same probe DOES report true for a real pull, so the

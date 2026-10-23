@@ -17,18 +17,18 @@ describe('SplashOverlay', () => {
   });
 
   const rootOf = (root: ReturnType<typeof renderComponent>['root']) =>
-    root.findAll((n) => n.props.pointerEvents !== undefined)[0];
+    root.findAll((n) => n.props['pointerEvents'] !== undefined)[0];
 
   it('lets touches through as soon as it starts to fade', () => {
     jest.spyOn(Animated, 'timing').mockReturnValue({ start: jest.fn(), stop: jest.fn(), reset: jest.fn() } as never);
     const { root } = renderComponent(<SplashOverlay />);
-    expect(rootOf(root)?.props.pointerEvents).toBe('auto');
+    expect(rootOf(root)?.props['pointerEvents']).toBe('auto');
 
     act(() => {
       jest.advanceTimersByTime(1400);
     });
 
-    expect(rootOf(root)?.props.pointerEvents).toBe('none');
+    expect(rootOf(root)?.props['pointerEvents']).toBe('none');
   });
 
   it('goes away even when the fade never reports back', () => {

@@ -1,4 +1,4 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 /**
  * Regression tests for `useRecipeDetail`'s comment-submit error copy.
  *
@@ -37,12 +37,12 @@ import { Difficulty } from '@domain/recipes/difficulty';
 import { configureCommentsStore } from '@application/comments/comments-store';
 import { defaultRecipeCommentsState } from '@application/comments/list/default-recipe-comments-state';
 import type { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
-import type { CommentsStoreState } from '@application/comments/comments-store-state';
+import type { CommentsStore } from '@application/comments/comments-store-contract';
 import type { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
 import type { DeleteCommentUseCase } from '@application/comments/delete/delete-comment-use-case';
 import type { SetCommentLikeUseCase } from '@application/comments/like/set-comment-like-use-case';
-import type { AuthStoreState } from '@application/auth/auth-store-state';
-import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
+import type { AuthStore } from '@application/auth/auth-store-contract';
+import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store-contract';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
@@ -55,6 +55,8 @@ import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]
 import { t } from '@presentation/i18n';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 import { configureStepProgressStore } from '@application/recipes/cooking/step-progress-store';
+
+const scrollViewRef = { current: null };
 
 const RECIPE_ID = 'recipe-3';
 const USER_ID = 'user-1';
@@ -148,7 +150,7 @@ const buildSession = (userId: string): AuthSessionEntity => {
  */
 const makeRealCommentsStore = (
   execute: jest.Mock<Promise<Result<CommentEntity, Failure>>, [{ recipeId: string; body: string }]>,
-): BoundStore<CommentsStoreState> =>
+): StoreApi<CommentsStore> =>
   configureCommentsStore({
     addComment: { execute } as unknown as AddCommentUseCase,
     listComments: { execute: jest.fn().mockResolvedValue(fail(new NetworkFailure('not stubbed'))) } as unknown as ListCommentsUseCase,
@@ -200,15 +202,15 @@ const buildRecipe = (cover = 'https://cdn.example.com/baklava.webp'): RecipeEnti
 
 interface StoreOverrides {
   /** Replaces the default `loading` detail state with a loaded recipe. */
-  detailState?: RecipeDetailStoreState['byId'][string];
+  detailState?: RecipeDetailStore['byId'][string];
   /** Mounts signed-out, so the guest gate is the thing under test. */
   signedOut?: boolean;
   /** Seeds the likes-store overlay; empty by default (nothing synced yet). */
   likesByRecipe?: Record<string, { likeCount: number; likedByMe: boolean; isLoading: boolean }>;
 }
 
-const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: StoreOverrides = {}): ApplicationStores => {
-  const recipeDetailStore = create<RecipeDetailStoreState>(() => ({
+const makeStores = (commentsStore: StoreApi<CommentsStore>, overrides: StoreOverrides = {}): ApplicationStores => {
+  const recipeDetailStore = create<RecipeDetailStore>(() => ({
     byId: { [RECIPE_ID]: overrides.detailState ?? { status: 'loading' } },
     load: jest.fn(),
     replace: jest.fn(),
@@ -220,7 +222,7 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
     isPhotoBusy: false,
   }));
 
-  const authStore = create<AuthStoreState>(
+  const authStore = create<AuthStore>(
     () =>
       ({
         // The vocabulary, not the words. The `as unknown` cast below erases
@@ -231,12 +233,12 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
         state: overrides.signedOut === true
           ? { status: StoreStatus.Unauthenticated }
           : { status: StoreStatus.Authenticated, session: buildSession(USER_ID) },
-      }) as unknown as AuthStoreState,
+      }) as unknown as AuthStore,
   );
 
   const savedRecipesStore = create(() => ({ savedIds: new Set<string>() }));
   const favoritesStore = create(() => ({ isLoading: false, pending: new Set<string>(), error: null }));
-  const createdRecipesStore = create(() => ({
+  const recipeAuthoringStore = create(() => ({
     findById: () => undefined,
     deleteState: { status: 'idle' as const },
     loadMyRecipes: jest.fn(),
@@ -251,7 +253,7 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
   return {
     recipeDetailStore,
     savedRecipesStore,
-    createdRecipesStore,
+    recipeAuthoringStore,
     authStore,
     favoritesStore,
     commentsStore,
@@ -263,13 +265,13 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
 
 /** Renders a probe that captures the live hook output on every render. */
 const driveHook = (
-  commentsStore: BoundStore<CommentsStoreState>,
+  commentsStore: StoreApi<CommentsStore>,
   overrides: StoreOverrides = {},
 ): { latest: () => UseRecipeDetailResult } => {
   let latest: UseRecipeDetailResult | null = null;
 
   const Probe = (): null => {
-    latest = useRecipeDetail();
+    latest = useRecipeDetail(scrollViewRef);
     return null;
   };
 
@@ -348,7 +350,7 @@ describe('useRecipeDetail — submitError after a failed comment post', () => {
     // The defensive branch: the real store always sets a failure alongside
     // `false`, so this shape only exists to keep submitError non-empty if that
     // contract ever breaks. A stub store is the only way to produce it.
-    const commentsStore = create<CommentsStoreState>(() => ({
+    const commentsStore = create<CommentsStore>(() => ({
       byRecipe: { [RECIPE_ID]: { ...defaultRecipeCommentsState(), error: null } },
       load: jest.fn(),
       loadMore: jest.fn(),
@@ -356,7 +358,7 @@ describe('useRecipeDetail — submitError after a failed comment post', () => {
       deleteComment: jest.fn(),
       toggleLike: jest.fn(),
       clear: jest.fn(),
-    })) as unknown as BoundStore<CommentsStoreState>;
+    })) as unknown as StoreApi<CommentsStore>;
 
     const { latest } = driveHook(commentsStore);
 
@@ -518,8 +520,8 @@ describe('useRecipeDetail — the hero photos', () => {
  * delete waits for yes.
  */
 describe('useRecipeDetail — deleting a comment', () => {
-  const stubStore = (deleteComment: jest.Mock): BoundStore<CommentsStoreState> =>
-    create<CommentsStoreState>(() => ({
+  const stubStore = (deleteComment: jest.Mock): StoreApi<CommentsStore> =>
+    create<CommentsStore>(() => ({
       byRecipe: { [RECIPE_ID]: defaultRecipeCommentsState() },
       load: jest.fn(),
       loadMore: jest.fn(),
@@ -527,7 +529,7 @@ describe('useRecipeDetail — deleting a comment', () => {
       deleteComment,
       toggleLike: jest.fn(),
       clear: jest.fn(),
-    })) as unknown as BoundStore<CommentsStoreState>;
+    })) as unknown as StoreApi<CommentsStore>;
 
   it('a tap on the bin asks first and deletes nothing yet', () => {
     const deleteComment = jest.fn().mockResolvedValue(true);

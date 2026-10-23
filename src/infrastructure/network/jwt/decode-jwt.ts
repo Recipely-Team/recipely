@@ -8,9 +8,9 @@ import { Base64Url, JwtFormat } from '@infrastructure/network/jwt/jwt-format';
 import { CharConstants, RadixConstants, ValueConstants } from '@core/constants';
 
 /** Pad character for a single-digit hex byte. */
-const HEX_PAD = '0';
+const HEX_PAD = CharConstants.zeroDigit;
 /** `decodeURIComponent` reads each byte as a %XX escape. */
-const PERCENT = '%';
+const PERCENT = CharConstants.percent;
 
 // WHY: avoid pulling in a dep (jwt-decode) just to split and base64-parse the payload.
 // We never verify signature on-device — the backend does that on every authed request.

@@ -13,16 +13,16 @@ const RESIZE_EVENT = 'resize';
 
 const isRect = (value: unknown): value is DisplayRect =>
   isObject(value) &&
-  typeof value.x === 'number' &&
-  typeof value.y === 'number' &&
-  typeof value.width === 'number' &&
-  typeof value.height === 'number';
+  typeof value['x'] === 'number' &&
+  typeof value['y'] === 'number' &&
+  typeof value['width'] === 'number' &&
+  typeof value['height'] === 'number';
 
 const readSegments = (): DisplayRect[] | null => {
   if (typeof window === 'undefined' || !(VIEWPORT_KEY in window)) return null;
   const viewport: unknown = window[VIEWPORT_KEY];
-  if (!isObject(viewport) || !Array.isArray(viewport.segments)) return null;
-  const segments: unknown[] = viewport.segments;
+  if (!isObject(viewport) || !Array.isArray(viewport['segments'])) return null;
+  const segments: unknown[] = viewport['segments'];
   return segments.every(isRect) ? segments : null;
 };
 
@@ -34,7 +34,7 @@ const readDevicePosture = (): EventTarget | null => {
 
 const readIsFolded = (): boolean => {
   const posture = readDevicePosture();
-  return isObject(posture) && posture.type === FOLDED_POSTURE;
+  return isObject(posture) && posture['type'] === FOLDED_POSTURE;
 };
 
 /**

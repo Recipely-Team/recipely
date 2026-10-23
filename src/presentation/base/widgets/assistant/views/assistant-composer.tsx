@@ -16,7 +16,7 @@ import {
   spacing,
 } from '@presentation/base/theme';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { isBlank } from '@core/guards/type-guards';
 
 export interface AssistantComposerProps {
@@ -37,12 +37,13 @@ export interface AssistantComposerProps {
  *   and the reach is the feature.
  */
 export const AssistantComposer = ({ onSend, onSwitchToVoice }: AssistantComposerProps): React.JSX.Element => {
+  const t = useTranslations();
   const { colors } = useTheme();
   const [draft, setDraft] = useState(CharConstants.empty);
-  const ready = !isBlank(draft);
+  const isReady = !isBlank(draft);
 
   const submit = (): void => {
-    if (!ready) return;
+    if (!isReady) return;
     onSend(draft.trim());
     setDraft(CharConstants.empty);
   };
@@ -50,7 +51,7 @@ export const AssistantComposer = ({ onSend, onSwitchToVoice }: AssistantComposer
   return (
     <View style={styles.composer}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.suggestions}>
-        {t().assistant.suggestions.map((suggestion) => (
+        {t.assistant.suggestions.map((suggestion) => (
           <Pressable
             key={suggestion}
             onPress={() => onSend(suggestion)}
@@ -65,7 +66,7 @@ export const AssistantComposer = ({ onSend, onSwitchToVoice }: AssistantComposer
       </ScrollView>
 
       <View style={styles.row}>
-        <Pressable onPress={onSwitchToVoice} accessibilityRole="button" accessibilityLabel={t().assistant.voice}>
+        <Pressable onPress={onSwitchToVoice} accessibilityRole="button" accessibilityLabel={t.assistant.voice}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={assistantGradient.start}
@@ -79,7 +80,7 @@ export const AssistantComposer = ({ onSend, onSwitchToVoice }: AssistantComposer
         <AutoGrowTextInput
           value={draft}
           onChangeText={setDraft}
-          placeholder={t().assistant.placeholder}
+          placeholder={t.assistant.placeholder}
           minHeight={controlSizes.searchBar}
           style={styles.input}
         />
@@ -87,22 +88,22 @@ export const AssistantComposer = ({ onSend, onSwitchToVoice }: AssistantComposer
         <Pressable
           onPress={submit}
           accessibilityRole="button"
-          accessibilityLabel={t().assistant.send}
-          disabled={!ready}
+          accessibilityLabel={t.assistant.send}
+          disabled={!isReady}
           style={[
             styles.round,
             {
-              backgroundColor: ready ? colors.primary : colors.surface,
-              borderColor: ready ? colors.primary : colors.cardBorder,
+              backgroundColor: isReady ? colors.primary : colors.surface,
+              borderColor: isReady ? colors.primary : colors.cardBorder,
               borderWidth: borderWidths.hairline,
-              opacity: ready ? opacities.full : opacities.disabledFaint,
+              opacity: isReady ? opacities.full : opacities.disabledFaint,
             },
           ]}
         >
           <Ionicons
             name="arrow-up"
             size={iconSizes.lg}
-            color={ready ? colors.primaryText : colors.textMuted}
+            color={isReady ? colors.primaryText : colors.textMuted}
           />
         </Pressable>
       </View>

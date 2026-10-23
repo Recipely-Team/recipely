@@ -22,13 +22,13 @@ import { CreatorProfileScreen } from '@presentation/app/creators/[userId]';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { create } from 'zustand';
-import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
 import type { ApplicationStores } from '@application/di/application-stores';
 
 /** The saved set the web cards' bookmarks read; empty, since these tests are about following. */
 const savedStores = (): Partial<ApplicationStores> =>
   ({
-    savedRecipesStore: create<Pick<SavedRecipesStoreState, 'savedIds'>>(() => ({ savedIds: new Set<string>() })),
+    savedRecipesStore: create<Pick<SavedRecipesStore, 'savedIds'>>(() => ({ savedIds: new Set<string>() })),
     favoritesStore: create(() => ({ isLoading: false, pending: new Set<string>(), error: null })),
   }) as unknown as Partial<ApplicationStores>;
 
@@ -70,15 +70,15 @@ const renderScreen = async (viewer: UserEntity | null, standing: { followerCount
 const followButton = (root: ReactTestInstance): ReactTestInstance =>
   root.find(
     (node) =>
-      node.props.accessibilityRole === 'togglebutton' &&
-      typeof node.props.accessibilityLabel === 'string' &&
-      [t().creators.followName, t().creators.followingName].some((label) => label.replace('{name}', 'Creator u-1') === node.props.accessibilityLabel) &&
-      typeof node.props.onPress === 'function',
+      node.props['accessibilityRole'] === 'togglebutton' &&
+      typeof node.props['accessibilityLabel'] === 'string' &&
+      [t().creators.followName, t().creators.followingName].some((label) => label.replace('{name}', 'Creator u-1') === node.props['accessibilityLabel']) &&
+      typeof node.props['onPress'] === 'function',
   );
 
 const press = async (node: ReactTestInstance): Promise<void> => {
   await act(async () => {
-    (node.props.onPress as () => void)();
+    (node.props['onPress'] as () => void)();
     await Promise.resolve();
     await Promise.resolve();
   });
@@ -106,9 +106,9 @@ describe('CreatorProfileScreen — follow', () => {
   it('names the creator in the follow button\'s label, in both states', async () => {
     const { root } = await renderScreen(userOf('viewer'), { followerCount: 12, isFollowedByMe: false });
 
-    expect(followButton(root).props.accessibilityLabel).toBe(t().creators.followName.replace('{name}', 'Creator u-1'));
+    expect(followButton(root).props['accessibilityLabel']).toBe(t().creators.followName.replace('{name}', 'Creator u-1'));
     await press(followButton(root));
-    expect(followButton(root).props.accessibilityLabel).toBe(t().creators.followingName.replace('{name}', 'Creator u-1'));
+    expect(followButton(root).props['accessibilityLabel']).toBe(t().creators.followingName.replace('{name}', 'Creator u-1'));
   });
 
   it('unfollows a creator the viewer already follows', async () => {
@@ -127,9 +127,9 @@ describe('CreatorProfileScreen — follow', () => {
 
     expect(repo.followCalls).toEqual([]);
     const prompt = root.findByType(SignInPromptSheet);
-    expect(prompt.props.visible).toBe(true);
-    expect(prompt.props.message).toBe(t().creators.signInToFollow);
-    await act(async () => (prompt.props.onSignIn as () => void)());
+    expect(prompt.props['visible']).toBe(true);
+    expect(prompt.props['message']).toBe(t().creators.signInToFollow);
+    await act(async () => (prompt.props['onSignIn'] as () => void)());
     expect(mockPush).toHaveBeenCalledWith('/login?redirect=%2Fcreators%2Fu-1');
   });
 

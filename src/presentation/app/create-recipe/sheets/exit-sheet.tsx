@@ -1,3 +1,4 @@
+import type { TranslationsType } from '@presentation/i18n';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -5,7 +6,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, avatarSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface ExitSheetProps {
@@ -21,19 +22,19 @@ export interface ExitSheetProps {
 }
 
 /** The sheet's words, by what is being left: a draft, or edits to a saved recipe. */
-const copyFor = (editing: boolean) =>
-  editing
+const copyFor = (t: TranslationsType, isEditing: boolean) =>
+  isEditing
     ? {
-        title: t().createRecipe.editExitTitle,
-        body: t().createRecipe.editExitBody,
-        save: t().createRecipe.save,
-        discard: t().createRecipe.editExitDiscard,
+        title: t.createRecipe.editExitTitle,
+        body: t.createRecipe.editExitBody,
+        save: t.createRecipe.save,
+        discard: t.createRecipe.editExitDiscard,
       }
     : {
-        title: t().createRecipe.exitTitle,
-        body: t().createRecipe.exitBody,
-        save: t().createRecipe.exitSave,
-        discard: t().createRecipe.exitDiscard,
+        title: t.createRecipe.exitTitle,
+        body: t.createRecipe.exitBody,
+        save: t.createRecipe.exitSave,
+        discard: t.createRecipe.exitDiscard,
       };
 
 /**
@@ -57,8 +58,9 @@ export const ExitSheet = ({
   onKeepEditing,
   editing = false,
 }: ExitSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = copyFor(editing);
+  const copy = copyFor(t, editing);
 
   return (
     <BottomSheet
@@ -100,10 +102,10 @@ export const ExitSheet = ({
             onPress={onKeepEditing}
             style={styles.textBtn}
             accessibilityRole="button"
-            accessibilityLabel={t().createRecipe.keepEditing}
+            accessibilityLabel={t.createRecipe.keepEditing}
           >
             <ThemedText variant="caption" style={[styles.keepLabel, { color: colors.textMuted }]}>
-              {t().createRecipe.keepEditing}
+              {t.createRecipe.keepEditing}
             </ThemedText>
           </Pressable>
         </View>

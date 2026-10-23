@@ -44,29 +44,29 @@ describe('ThemeGrid — label sizing (TR wrap regression)', () => {
     const { root } = renderComponent(<ThemeGrid selectedThemeId="pearl-white" onSelect={jest.fn()} />);
 
     const labelNode = root.findAllByType('Text').find((n) => {
-      const style = flattenStyle(n.props.style);
-      return typeof style.minHeight === 'number';
+      const style = flattenStyle(n.props['style']);
+      return typeof style['minHeight'] === 'number';
     });
 
     expect(labelNode).toBeDefined();
-    const style = flattenStyle(labelNode?.props.style);
-    const lineHeight = style.lineHeight as number;
-    const minHeight = style.minHeight as number;
+    const style = flattenStyle(labelNode?.props['style']);
+    const lineHeight = style['lineHeight'] as number;
+    const minHeight = style['minHeight'] as number;
 
     // minHeight must fit (at least) two lines, and must not be pinned to an
     // exact `height` that would clip a wrapped second line.
     expect(minHeight).toBeGreaterThanOrEqual(lineHeight * 2);
-    expect(style.height).toBeUndefined();
+    expect(style['height']).toBeUndefined();
   });
 
   it('allows two lines via numberOfLines so long translated names wrap instead of getting clipped to one line', () => {
     const { root } = renderComponent(<ThemeGrid selectedThemeId="pearl-white" onSelect={jest.fn()} />);
 
     const labelNode = root.findAllByType('Text').find((n) => {
-      const style = flattenStyle(n.props.style);
-      return typeof style.minHeight === 'number';
+      const style = flattenStyle(n.props['style']);
+      return typeof style['minHeight'] === 'number';
     });
 
-    expect(labelNode?.props.numberOfLines).toBe(2);
+    expect(labelNode?.props['numberOfLines']).toBe(2);
   });
 });

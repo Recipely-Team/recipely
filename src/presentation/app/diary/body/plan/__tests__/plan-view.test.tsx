@@ -90,7 +90,7 @@ const props = (view: PlanViewProps['view'], over: Partial<PlanViewProps> = {}): 
 });
 
 const texts = (root: ReturnType<typeof renderComponent>['root']): string[] =>
-  root.findAllByType(Text).map((node) => [node.props.children].flat().filter((part) => typeof part === 'string').join(''));
+  root.findAllByType(Text).map((node) => [node.props['children']].flat().filter((part) => typeof part === 'string').join(''));
 
 describe('PlanView', () => {
   const strings = t().mealPlan;
@@ -105,7 +105,7 @@ describe('PlanView', () => {
   it('offers a retry when the week failed to load', () => {
     const onRetry = jest.fn();
     const { root } = renderComponent(<PlanView {...props({ kind: PlanViewKind.Error, failure: new NetworkFailure('offline') }, { onRetry })} />, stores());
-    act(() => (root.find((node) => node.props.label === strings.tryAgain).props as { onPress: () => void }).onPress());
+    act(() => (root.find((node) => node.props['label'] === strings.tryAgain).props as { onPress: () => void }).onPress());
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
@@ -121,8 +121,8 @@ describe('PlanView', () => {
     await (s.mealPlanStore as ApplicationStores['mealPlanStore']).getState().load(monday);
     const { root } = renderComponent(<PlanView {...props({ kind: PlanViewKind.Week, week })} />, s);
     expect(texts(root)).toContain('Mercimek çorbası');
-    expect(root.findAll((node) => node.props.label === strings.shopCta).length).toBeGreaterThan(0);
-    const more = root.findAll((node) => node.props.accessibilityLabel === strings.increaseServings)[0];
+    expect(root.findAll((node) => node.props['label'] === strings.shopCta).length).toBeGreaterThan(0);
+    const more = root.findAll((node) => node.props['accessibilityLabel'] === strings.increaseServings)[0];
     await act(async () => (more?.props as { onPress: () => void }).onPress());
     expect(repo.update).toHaveBeenCalledTimes(1);
   });
@@ -145,17 +145,17 @@ describe('PlanView', () => {
     const plan = strings.planWeek;
     const { root } = renderComponent(<PlanView {...props({ kind: PlanViewKind.Week, week: MealPlanWeek.of(monday, []) })} />, stores());
 
-    act(() => (root.findAll((node) => node.props.accessibilityLabel === plan.title && typeof node.props.onPress === 'function')[0]?.props as { onPress: () => void }).onPress());
-    await act(async () => (root.find((node) => node.props.label === plan.show).props as { onPress: () => void }).onPress());
+    act(() => (root.findAll((node) => node.props['accessibilityLabel'] === plan.title && typeof node.props['onPress'] === 'function')[0]?.props as { onPress: () => void }).onPress());
+    await act(async () => (root.find((node) => node.props['label'] === plan.show).props as { onPress: () => void }).onPress());
     expect(repo.suggestWeek).toHaveBeenCalledWith(monday, ['dinner'], expect.any(Number));
     expect(repo.add).not.toHaveBeenCalled();
     expect(texts(root)).toContain('Menemen');
     expect(texts(root)).toContain(plan.none);
 
-    act(() => (root.findAll((node) => node.props.accessibilityLabel === plan.swapA11y.replace('{name}', 'Kısır'))[0]?.props as { onPress: () => void }).onPress());
+    act(() => (root.findAll((node) => node.props['accessibilityLabel'] === plan.swapA11y.replace('{name}', 'Kısır'))[0]?.props as { onPress: () => void }).onPress());
     expect(texts(root)).toContain('Kısır');
 
-    await act(async () => (root.find((node) => node.props.label === plan.add.replace('{n}', '1')).props as { onPress: () => void }).onPress());
+    await act(async () => (root.find((node) => node.props['label'] === plan.add.replace('{n}', '1')).props as { onPress: () => void }).onPress());
     expect(repo.add).toHaveBeenCalledTimes(1);
     expect((repo.add as jest.Mock).mock.calls[0][0]).toMatchObject({ meal: 'dinner', recipeId: 'r-alt' });
   });

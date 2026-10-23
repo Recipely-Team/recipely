@@ -4,7 +4,7 @@ import { ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, fontSizes, fontWeights, letterSpacings, radii, spacing } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 
 export interface CreatorProfileStatsProps {
@@ -21,11 +21,12 @@ export interface CreatorProfileStatsProps {
  * spec → Creators §6.5). Each column is read as one phrase ("12,4 B Takipçi").
  */
 export const CreatorProfileStats = ({ recipeCount, followerCount, likeCount, formatCount }: CreatorProfileStatsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const cells = [
-    { key: 'recipes', value: formatCount(recipeCount), label: t().creators.statRecipes },
-    { key: 'followers', value: formatCount(followerCount), label: t().creators.statFollowers },
-    { key: 'likes', value: formatCount(likeCount), label: t().creators.statLikes },
+    { key: 'recipes', value: formatCount(recipeCount), label: t.creators.statRecipes },
+    { key: 'followers', value: formatCount(followerCount), label: t.creators.statFollowers },
+    { key: 'likes', value: formatCount(likeCount), label: t.creators.statLikes },
   ];
 
   return (

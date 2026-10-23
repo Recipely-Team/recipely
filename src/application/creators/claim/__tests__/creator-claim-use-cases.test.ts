@@ -38,8 +38,8 @@ describe('RequestCreatorTagUseCase', () => {
 
     expect(r.ok).toBe(true);
     expect(repo.requested).toHaveLength(1);
-    expect(repo.requested[0].platform).toBe('instagram');
-    expect(repo.requested[0].handle).toBe('chef.ada');
+    expect(repo.requested[0]!.platform).toBe('instagram');
+    expect(repo.requested[0]!.handle).toBe('chef.ada');
   });
 
   it('fails a bad handle with the backend key, without calling the repository', async () => {

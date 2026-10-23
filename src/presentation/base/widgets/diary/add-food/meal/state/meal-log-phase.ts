@@ -5,5 +5,3 @@ export const MealLogPhase = {
   Failed: 'failed',
   Review: 'review',
 } as const;
-
-export type MealLogPhaseType = (typeof MealLogPhase)[keyof typeof MealLogPhase];

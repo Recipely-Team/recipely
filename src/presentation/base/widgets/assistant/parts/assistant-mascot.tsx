@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
@@ -45,12 +45,12 @@ export const AssistantMascot = ({
   status,
   isAnimated = true,
 }: AssistantMascotProps): React.JSX.Element => {
-  const speaking = status === AssistantStatus.Speaking;
-  const listening = status === AssistantStatus.Listening;
+  const isSpeaking = status === AssistantStatus.Speaking;
+  const isListening = status === AssistantStatus.Listening;
   const isStill = useReduceMotion() || !isAnimated;
 
-  const blink = useRef(new Animated.Value(mascotGeometry.eyes.r)).current;
-  const bob = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const [blink] = useState(() => new Animated.Value(mascotGeometry.eyes.r));
+  const [bob] = useState(() => new Animated.Value(ValueConstants.zero));
 
   useEffect(() => {
     if (isStill) return;
@@ -74,7 +74,7 @@ export const AssistantMascot = ({
   }, [blink, isStill]);
 
   useEffect(() => {
-    if (isStill || !listening) {
+    if (isStill || !isListening) {
       bob.setValue(ValueConstants.zero);
       return;
     }
@@ -96,7 +96,7 @@ export const AssistantMascot = ({
     );
     loop.start();
     return () => loop.stop();
-  }, [bob, listening, isStill]);
+  }, [bob, isListening, isStill]);
 
   const translateY = bob.interpolate({
     inputRange: [ValueConstants.zero, ValueConstants.one],
@@ -147,7 +147,7 @@ export const AssistantMascot = ({
           fill={mascotGeometry.eye}
         />
 
-        {speaking ? (
+        {isSpeaking ? (
           <Ellipse {...mascotGeometry.mouth} fill={mascotGeometry.mouthFill} />
         ) : (
           <Path

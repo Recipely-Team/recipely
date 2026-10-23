@@ -9,7 +9,7 @@ import { openInstagramLogin } from '@presentation/base/utils/instagram/open-inst
 import { instagramReturnUrl } from '@presentation/base/utils/instagram/instagram-return-url';
 import { InstagramLoginInFlight } from '@presentation/base/utils/instagram/instagram-login-in-flight';
 import { InstagramConnectPhase, type InstagramConnectPhaseType } from '@presentation/base/widgets/instagram/instagram-connect-phase';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /** What the Connect button needs. */
 interface InstagramConnect {
@@ -32,6 +32,7 @@ interface InstagramConnect {
  *   second tap in the same frame still sees Idle.
  */
 export const useInstagramConnect = (): InstagramConnect => {
+  const t = useTranslations();
   const { instagramStore } = useStores();
   const finalize = useInstagramFinalize();
   const [phase, setPhase] = useState<InstagramConnectPhaseType>(InstagramConnectPhase.Idle);
@@ -57,7 +58,7 @@ export const useInstagramConnect = (): InstagramConnect => {
           await finalize(outcome.code);
           return InstagramConnectPhase.Idle;
         case InstagramReturnKind.Failed:
-          showWarningToast(t().instagram.loginFailed);
+          showWarningToast(t.instagram.loginFailed);
           return InstagramConnectPhase.Idle;
         case InstagramReturnKind.Denied:
         case InstagramReturnKind.Cancelled:
@@ -68,7 +69,7 @@ export const useInstagramConnect = (): InstagramConnect => {
       busy.current = false;
       setPhase(next);
     });
-  }, [finalize, instagramStore]);
+  }, [finalize, instagramStore, t]);
 
   return { phase, connect };
 };

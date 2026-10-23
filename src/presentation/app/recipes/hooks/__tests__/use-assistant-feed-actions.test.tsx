@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import { act } from 'react-test-renderer';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
@@ -22,11 +23,10 @@ function harness(filters: UiFilters = EMPTY, loaded = true) {
   // The feed filters on backend KEYS; the model says the name it saw. A stub
   // that returned the words back would have hidden the very defect this
   // resolution exists for.
-  const taxonomyStore = ((selector: (state: unknown) => unknown) =>
-    selector({
+  const taxonomyStore = (mockStoreReading(() => ({
       cuisines: loaded ? CUISINES : [],
       categories: loaded ? CATEGORIES : [],
-    })) as unknown as ApplicationStores['taxonomyStore'];
+    }))) as unknown as ApplicationStores['taxonomyStore'];
   const spies = {
     onToggleCuisineQuick: jest.fn(),
     onToggleCategory: jest.fn(),

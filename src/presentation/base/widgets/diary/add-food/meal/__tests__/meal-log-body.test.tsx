@@ -39,9 +39,9 @@ const logOf = (state: MealLogState, over: Partial<MealLog> = {}): MealLog => ({
 const render = (log: MealLog) => renderComponent(<MealLogBody log={log} meal={MealSlot.Lunch} isSubmitting={false} />).root;
 
 const pressText = (root: ReactTestInstance, label: string): void => {
-  const target = root.findAll((node) => typeof node.props.onPress === 'function' && textContent(node).includes(label)).at(-1);
+  const target = root.findAll((node) => typeof node.props['onPress'] === 'function' && textContent(node).includes(label)).at(-1);
   if (target === undefined) throw new Error(`no pressable with "${label}"`);
-  act(() => (target.props.onPress as () => void)());
+  act(() => (target.props['onPress'] as () => void)());
 };
 
 describe('MealLogBody', () => {
@@ -80,9 +80,9 @@ describe('MealLogBody', () => {
     const log = logOf({ phase: MealLogPhase.Review, rows: [{ key: 'k1', candidate, included: true, gramsText: '100' }], note: null });
     const root = render(log);
 
-    const checkbox = root.find((node) => node.props.accessibilityRole === 'checkbox' && typeof node.props.onPress === 'function');
-    act(() => (checkbox.props.onPress as () => void)());
-    act(() => (root.findByType(PrimaryButton).props.onPress as () => void)());
+    const checkbox = root.find((node) => node.props['accessibilityRole'] === 'checkbox' && typeof node.props['onPress'] === 'function');
+    act(() => (checkbox.props['onPress'] as () => void)());
+    act(() => (root.findByType(PrimaryButton).props['onPress'] as () => void)());
 
     expect(textContent(root)).toContain('Boiled egg');
     expect(log.toggle).toHaveBeenCalledWith('k1');
@@ -95,6 +95,6 @@ describe('MealLogBody', () => {
       { selectedCount: 0, selectedCalories: 0 },
     );
 
-    expect(render(log).findByType(PrimaryButton).props.disabled).toBe(true);
+    expect(render(log).findByType(PrimaryButton).props['disabled']).toBe(true);
   });
 });

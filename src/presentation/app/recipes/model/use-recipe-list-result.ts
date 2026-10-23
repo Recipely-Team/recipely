@@ -2,7 +2,7 @@ import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assi
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { type SharedValue, type useAnimatedScrollHandler } from 'react-native-reanimated';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
-import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
+import { type SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import type { RecipeListState } from '@application/recipes/list/recipe-list-state';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { Difficulty } from '@domain/recipes/difficulty';
@@ -103,7 +103,6 @@ export interface UseRecipeListResult {
   searchedQuery: string;
   /** Opens the AI recipe screen already generating `query`; asks a guest to sign in first. */
   onCreateWithAi: (query: string) => void;
-  isSaved: (id: string) => boolean;
   onToggleSave: (id: string) => void;
   onChangeSort: (key: SortKey) => void;
 

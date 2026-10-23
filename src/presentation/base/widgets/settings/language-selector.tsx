@@ -7,7 +7,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { LANGUAGE_NAMES } from '@presentation/base/widgets/settings/language-names';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface LanguageSelectorProps {
   value: string;
@@ -24,8 +24,9 @@ export interface LanguageSelectorProps {
  * name, so the setting reads correctly whatever the app is currently in.
  */
 export const LanguageSelector = ({ value, onChange }: LanguageSelectorProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const [open, setOpen] = useState(false);
+  const [isOpen, setOpen] = useState(false);
 
   const select = (locale: string): void => {
     onChange(locale);
@@ -38,7 +39,7 @@ export const LanguageSelector = ({ value, onChange }: LanguageSelectorProps): Re
         onPress={() => setOpen(true)}
         style={[styles.trigger, { backgroundColor: colors.inputBackground }]}
         accessibilityRole="button"
-        accessibilityLabel={t().settings.language}
+        accessibilityLabel={t.settings.language}
       >
         <ThemedText variant="caption" style={styles.triggerLabel}>
           {LANGUAGE_NAMES[value] ?? value}
@@ -46,36 +47,36 @@ export const LanguageSelector = ({ value, onChange }: LanguageSelectorProps): Re
         <Ionicons name="chevron-down" size={iconSizes.sm} color={colors.textMuted} />
       </Pressable>
 
-      <BottomSheet visible={open} title={t().settings.language} onClose={() => setOpen(false)}>
+      <BottomSheet visible={isOpen} title={t.settings.language} onClose={() => setOpen(false)}>
         <ScrollView contentContainerStyle={styles.list}>
           {ALL_LOCALE_LIST.map((locale) => {
-            const active = locale === value;
+            const isActive = locale === value;
             // Translated but unverified: shown, not selectable.
-            const preview = isPreviewLocale(locale);
+            const isPreview = isPreviewLocale(locale);
             return (
               <Pressable
                 key={locale}
                 onPress={() => select(locale)}
-                disabled={preview}
+                disabled={isPreview}
                 style={[
                   styles.row,
-                  active ? { backgroundColor: colors.chipBackground } : null,
-                  preview ? styles.previewRow : null,
+                  isActive ? { backgroundColor: colors.chipBackground } : null,
+                  isPreview ? styles.previewRow : null,
                 ]}
                 accessibilityRole="button"
-                accessibilityState={{ selected: active, disabled: preview }}
+                accessibilityState={{ selected: isActive, disabled: isPreview }}
                 accessibilityLabel={LANGUAGE_NAMES[locale] ?? locale}
               >
-                <ThemedText variant="body" style={active ? styles.activeLabel : undefined}>
+                <ThemedText variant="body" style={isActive ? styles.activeLabel : undefined}>
                   {LANGUAGE_NAMES[locale] ?? locale}
                 </ThemedText>
-                {preview ? (
+                {isPreview ? (
                   <View style={[styles.badge, { backgroundColor: colors.chipBackground }]}>
                     <ThemedText variant="caption" style={[styles.badgeLabel, { color: colors.chipText }]}>
-                      {t().settings.languageComingSoon}
+                      {t.settings.languageComingSoon}
                     </ThemedText>
                   </View>
-                ) : active ? (
+                ) : isActive ? (
                   <Ionicons name="checkmark" size={iconSizes.lg} color={colors.primary} />
                 ) : null}
               </Pressable>

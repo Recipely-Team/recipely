@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, decorSizes, layoutSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import { ValueConstants } from '@core/constants';
 
@@ -18,6 +18,7 @@ export interface RefineTranscriptProps {
 
 /** Expanded assistant transcript for the refine dock: header + chat bubbles. */
 export const RefineTranscript = ({ chatHistory, refining, onClose }: RefineTranscriptProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const scrollRef = useRef<ScrollView>(null);
 
@@ -34,10 +35,10 @@ export const RefineTranscript = ({ chatHistory, refining, onClose }: RefineTrans
         </LinearGradient>
         <View style={styles.transcriptHeaderText}>
           <ThemedText style={[styles.assistantName, { color: colors.text }]}>
-            {t().createRecipe.assistant}
+            {t.createRecipe.assistant}
           </ThemedText>
           <ThemedText variant="caption" style={{ color: colors.textMuted }}>
-            {t().createRecipe.refineHint}
+            {t.createRecipe.refineHint}
           </ThemedText>
         </View>
         <Pressable
@@ -45,7 +46,7 @@ export const RefineTranscript = ({ chatHistory, refining, onClose }: RefineTrans
           hitSlop={spacing.sm}
           style={styles.collapseBtn}
           accessibilityRole="button"
-          accessibilityLabel={t().createRecipe.closeAssistant}
+          accessibilityLabel={t.createRecipe.closeAssistant}
         >
           <Ionicons name="close" size={iconSizes.md} color={colors.textMuted} />
         </Pressable>
@@ -80,7 +81,7 @@ export const RefineTranscript = ({ chatHistory, refining, onClose }: RefineTrans
         {refining ? (
           <View style={[styles.bubble, { alignSelf: 'flex-start', backgroundColor: colors.chipBackground }]}>
             <ThemedText style={[styles.bubbleText, styles.thinking, { color: colors.textMuted }]}>
-              {t().createRecipe.refining}
+              {t.createRecipe.refining}
             </ThemedText>
           </View>
         ) : null}

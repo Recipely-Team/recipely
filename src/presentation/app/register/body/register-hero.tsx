@@ -3,7 +3,7 @@ import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, iconSizes, mediaSizes, layoutSizes, opacities, decorSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface RegisterHeroProps {
@@ -15,16 +15,17 @@ export interface RegisterHeroProps {
  * bottom padding reserves the card's overlap so the subtitle is never under it.
  */
 export const RegisterHero = ({ isLandscapeShell }: RegisterHeroProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <View style={[styles.gradientContent, isLandscapeShell ? styles.heroLandscape : null]}>
       <RecipelyLogo size={isLandscapeShell ? mediaSizes.heroLogo : iconSizes.giant} monochrome mono={colors.onOverlay} />
       <ThemedText variant="headline" style={[styles.title, { color: colors.onOverlay }]}>
-        {t().register.title}
+        {t.register.title}
       </ThemedText>
       <ThemedText variant="body" style={[styles.subtitle, { color: colors.onOverlay }]}>
-        {t().register.subtitle}
+        {t.register.subtitle}
       </ThemedText>
     </View>
   );

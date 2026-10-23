@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 interface Recorded {
   published: { token: string | null; locale: string }[];
   mints: number;
@@ -32,8 +33,7 @@ jest.mock('@presentation/bootstrap/use-stores', () => ({
         return mockState.mintResult;
       },
     },
-    authStore: (select: (s: unknown) => unknown) =>
-      select({ state: { status: mockState.signedIn ? 'authenticated' : 'unauthenticated' } }),
+    authStore: mockStoreReading(() => ({ state: { status: mockState.signedIn ? 'authenticated' : 'unauthenticated' } })),
   }),
 }));
 

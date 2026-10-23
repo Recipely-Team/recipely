@@ -17,6 +17,12 @@ import { uploadMultipart } from '@infrastructure/network/upload/upload-multipart
 import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
 import { isSuccessStatus } from '@infrastructure/network/http/http-status';
 import { HttpMethod } from '@infrastructure/network/http/http-method';
+import { CharConstants } from '@core/constants';
+import { isString } from '@core/guards/type-guards';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
+
+/** Credential endpoints: a 401 there is a wrong password or a dead refresh token, never a reason to refresh. */
+const CREDENTIAL_ROUTES: ReadonlySet<string> = new Set(Object.values(ApiRoutes.auth));
 
 /**
  * The per-request knobs a caller may set — not the verb, url or body, which
@@ -43,6 +49,12 @@ interface RequestConfig {
  * the JWT bearer token and `Accept-Language` header on every request, encrypts
  * JSON request bodies and decrypts AES-GCM response envelopes, and maps
  * non-2xx responses and network errors to the domain `Failure` hierarchy.
+ *
+ * @remarks
+ * - **A 401 renews the session before it ends it.** Outside the credential
+ *   routes, a 401 runs `refreshSession` and sends the request once more;
+ *   `onUnauthorized` (sign-out) fires only when the renewal fails or the
+ *   retried request is refused again.
  */
 export class AxiosHttpClient {
   private readonly instance: AxiosInstance;
@@ -59,6 +71,8 @@ export class AxiosHttpClient {
         // Content-Type per request (multipart sets its own boundary).
       },
       validateStatus: () => true,
+      // Web: lets the API set and read its HttpOnly refresh cookie.
+      withCredentials: options.cookieSession === true,
     });
 
     this.instance.interceptors.request.use(buildRequestInterceptor(options, this.aesKey));
@@ -100,7 +114,11 @@ export class AxiosHttpClient {
     return this.request<T>({ ...config, method: HttpMethod.Delete, url });
   }
 
-  async request<T>(config: AxiosRequestConfig): Promise<Result<T, Failure>> {
+  request<T>(config: AxiosRequestConfig): Promise<Result<T, Failure>> {
+    return this.withSessionRefresh(config.url, () => this.send<T>(config));
+  }
+
+  private async send<T>(config: AxiosRequestConfig): Promise<Result<T, Failure>> {
     try {
       const response = await this.instance.request<unknown>(config);
       if (isSuccessStatus(response.status)) {
@@ -111,23 +129,44 @@ export class AxiosHttpClient {
         // Backwards compat / non-/api/v1 responses (eg /health) come through unchanged.
         return ok(dataEnvelope as T);
       }
-      return this.failWithUnauthorizedHook(failureFromResponse(response.status, response.data));
+      // Typed as always present; a response built outside axios (an adapter, a test) can lack it.
+      const sentConfig = response.config as typeof response.config | undefined;
+      return this.failed(config, sentConfig?.headers, failureFromResponse(response.status, response.data));
     } catch (error: unknown) {
-      return this.failWithUnauthorizedHook(mapAxiosError(error));
+      const sent = (error as { config?: { headers?: unknown } } | null)?.config?.headers;
+      return this.failed(config, sent, mapAxiosError(error));
     }
   }
 
+  /** Notes the failure with the request id it was sent under, then returns it. */
+  private failed<T>(config: AxiosRequestConfig, sentHeaders: unknown, failure: Failure): Result<T, Failure> {
+    const requestId = (sentHeaders as Record<string, unknown> | undefined)?.[HttpHeader.requestId];
+    this.options.onRequestFailed?.(
+      `${String(config.method ?? CharConstants.empty).toUpperCase()} ${config.url ?? CharConstants.empty} → ${failure.code}${isString(requestId) ? ` (request ${requestId})` : CharConstants.empty}`,
+    );
+    return fail(failure);
+  }
+
   /**
-   * Wraps a mapped failure in `fail()` and fires the `onUnauthorized` hook when
-   * the failure is an `UnauthorizedFailure`. Detecting via the mapped failure
-   * (rather than the raw status) covers both the `validateStatus` path and the
-   * thrown-AxiosError path uniformly. The returned value is unchanged.
+   * Sends, and on an `UnauthorizedFailure` renews the session and sends once
+   * more. Detecting via the mapped failure (rather than the raw status) covers
+   * the `validateStatus` path, the thrown-AxiosError path and the uploader alike.
    */
-  private failWithUnauthorizedHook<T>(failure: Failure): Result<T, Failure> {
-    if (failure instanceof UnauthorizedFailure) {
+  private async withSessionRefresh<T>(
+    url: string | undefined,
+    send: () => Promise<Result<T, Failure>>,
+  ): Promise<Result<T, Failure>> {
+    const first = await send();
+    if (first.ok || !(first.failure instanceof UnauthorizedFailure)) return first;
+    const refresh = this.options.refreshSession;
+    const renewed = refresh !== undefined && !CREDENTIAL_ROUTES.has(url ?? CharConstants.empty) ? await refresh() : undefined;
+    // A renewal that never reached the API is not a refusal: keep the session and report why.
+    if (renewed !== undefined && !renewed.ok && !(renewed.failure instanceof UnauthorizedFailure)) return fail(renewed.failure);
+    const answer = renewed?.ok === true ? await send() : first;
+    if (!answer.ok && answer.failure instanceof UnauthorizedFailure) {
       this.options.onUnauthorized?.();
     }
-    return fail(failure);
+    return answer;
   }
 
   /** `timeoutMs` overrides the multipart default for an upload the server answers slowly. */
@@ -137,6 +176,8 @@ export class AxiosHttpClient {
     onProgress?: (event: UploadProgressEvent) => void,
     timeoutMs?: number,
   ): Promise<Result<T, Failure>> {
-    return uploadMultipart<T>(this.options, this.aesKey, url, formData, onProgress, timeoutMs);
+    // The uploader reports nothing itself; the 401 decision is made here, as for every other request.
+    const { onUnauthorized: _hook, ...quiet } = this.options;
+    return this.withSessionRefresh(url, () => uploadMultipart<T>(quiet, this.aesKey, url, formData, onProgress, timeoutMs));
   }
 }

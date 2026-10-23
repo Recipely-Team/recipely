@@ -1,4 +1,5 @@
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
+import { useStore } from 'zustand';
 import { useCallback, useRef, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
@@ -15,7 +16,7 @@ import { FailureCode } from '@core/failure';
 import { SocialAuthSection } from '@presentation/app/login/body/social-auth-section';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, fontWeights, controlSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
@@ -33,15 +34,16 @@ const LOGIN_SOCIAL_CONTEXT = 'Login.socialSignIn';
 const LOGIN_SUBMIT_TRAIL = 'login: submitted';
 
 export const LoginForm = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
-  const isLoading = authStore((s) => s.state.status === StoreStatus.Loading);
-  const signIn = authStore((s) => s.signIn);
-  const signInWithGoogle = authStore((s) => s.signInWithGoogle);
-  const signInWithApple = authStore((s) => s.signInWithApple);
+  const isLoading = useStore(authStore, (s) => s.state.status === StoreStatus.Loading);
+  const signIn = useStore(authStore, (s) => s.signIn);
+  const signInWithGoogle = useStore(authStore, (s) => s.signInWithGoogle);
+  const signInWithApple = useStore(authStore, (s) => s.signInWithApple);
 
   const [email, setEmail] = useState(CharConstants.empty);
   const [password, setPassword] = useState(CharConstants.empty);
@@ -57,13 +59,13 @@ export const LoginForm = (): React.JSX.Element => {
       const failure = await signInWith();
       if (failure?.code === FailureCode.Network) FailureReporter.reportDiagnostic(failure, LOGIN_SOCIAL_CONTEXT);
       if (failure && failure.code !== FailureCode.Cancelled) {
-        setErrorMessage(authFormMessage(failure, {}));
+        setErrorMessage(authFormMessage(t, failure, {}));
       }
     },
-    [],
+    [t],
   );
 
-  const fieldsEmpty = isBlank(email) || isBlank(password);
+  const areFieldsEmpty = isBlank(email) || isBlank(password);
 
   const handleSignIn = useCallback(async () => {
     if (isBlank(email) || isBlank(password)) {
@@ -76,20 +78,20 @@ export const LoginForm = (): React.JSX.Element => {
     if (failure?.code === FailureCode.Network) FailureReporter.reportDiagnostic(failure, LOGIN_EMAIL_CONTEXT);
     if (failure) {
       setErrorMessage(
-        authFormMessage(failure, {
-          unauthorized: t().login.invalidCredentials,
-          validation: t().login.invalidCredentials,
+        authFormMessage(t, failure, {
+          unauthorized: t.login.invalidCredentials,
+          validation: t.login.invalidCredentials,
         }),
       );
     }
-  }, [signIn, email, password]);
+  }, [signIn, email, password, t]);
 
   return (
     <>
       <AuthTextField
         iconName="mail-outline"
         autofill={AuthAutofill.Email}
-        placeholder={t().login.emailPlaceholder}
+        placeholder={t.login.emailPlaceholder}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -101,7 +103,7 @@ export const LoginForm = (): React.JSX.Element => {
         ref={passwordRef}
         iconName="lock-closed-outline"
         autofill={AuthAutofill.Password}
-        placeholder={t().login.passwordPlaceholder}
+        placeholder={t.login.passwordPlaceholder}
         value={password}
         onChangeText={setPassword}
         password
@@ -120,19 +122,19 @@ export const LoginForm = (): React.JSX.Element => {
         onPress={() => router.push(RoutePaths.forgotPassword)}
         style={styles.forgotRow}
         accessibilityRole="button"
-        accessibilityLabel={t().login.forgotPassword}
+        accessibilityLabel={t.login.forgotPassword}
       >
         <ThemedText variant="caption" style={[styles.forgotLabel, { color: colors.primary }]}>
-          {t().login.forgot}
+          {t.login.forgot}
         </ThemedText>
       </Pressable>
 
       <View style={styles.submitRow}>
         <PrimaryButton
-          label={t().login.signIn}
+          label={t.login.signIn}
           onPress={() => { void handleSignIn(); }}
           loading={isLoading}
-          disabled={fieldsEmpty}
+          disabled={areFieldsEmpty}
         />
       </View>
 

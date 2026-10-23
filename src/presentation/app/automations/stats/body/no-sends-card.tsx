@@ -6,7 +6,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, lineHeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface NoSendsCardProps {
   days: StatsRangeType;
@@ -18,8 +18,9 @@ export interface NoSendsCardProps {
 
 /** No DMs in the range (spec state 3): say so, offer a longer range and the automations. */
 export const NoSendsCard = ({ days, nextRange, onRange, onViewAutomations }: NoSendsCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().creatorStats;
+  const copy = t.creatorStats;
   return (
     <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
       <View style={[styles.disc, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>

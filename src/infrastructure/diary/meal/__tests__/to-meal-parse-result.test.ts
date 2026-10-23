@@ -17,7 +17,7 @@ describe('toMealParseResult', () => {
     const r = toMealParseResult({ items: [item(), item({ label: 'salça', match: { kind: 'none' }, estimated: true })], note: 'some_estimated' });
     if (!r.ok) throw new Error(r.failure.message);
     const [bread, paste] = r.value.items;
-    expect([bread?.nutrients.calories, bread?.nutrients.protein, bread?.grams, bread?.isCatalogueFood]).toEqual([130, 4.5, 50, true]);
+    expect([bread?.nutrients().calories, bread?.nutrients().protein, bread?.grams, bread?.isCatalogueFood]).toEqual([130, 4.5, 50, true]);
     expect(bread?.match).toEqual({ kind: MealMatchKind.Food, id: 'v9', name: 'Bread' });
     expect([paste?.estimated, paste?.isCatalogueFood, paste?.match.id]).toEqual([true, false, null]);
     expect(r.value.note).toBe('some_estimated');

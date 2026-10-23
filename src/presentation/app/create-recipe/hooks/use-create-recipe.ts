@@ -1,11 +1,11 @@
-import { useRef } from 'react';
+import { useState } from 'react';
 import { isString } from '@core/guards/type-guards';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Crypto from 'expo-crypto';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useEditableRecipe } from '@presentation/app/create-recipe/hooks/use-editable-recipe';
-import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-recipe-generation';
+import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/session/use-recipe-generation';
 import { useRecipeSave } from '@presentation/app/create-recipe/hooks/use-recipe-save';
 import type { UseCreateRecipeResult } from '@presentation/app/create-recipe/model/use-create-recipe-result';
 
@@ -24,7 +24,7 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
   const editRecipeId = isString(params.editRecipeId) ? params.editRecipeId : undefined;
 
   // Stable UUID for a new draft; resumed drafts keep their own id.
-  const newDraftId = useRef(Crypto.randomUUID()).current;
+  const [newDraftId] = useState(() => Crypto.randomUUID());
   const activeDraftId = draftId ?? newDraftId;
 
   const editable = useEditableRecipe();
@@ -75,7 +75,6 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     onUpdateField: editable.onUpdateField,
     onChangeIngredient: editable.onChangeIngredient,
     onRemoveIngredient: editable.onRemoveIngredient,
-    onAddIngredient: editable.onAddIngredient,
     onAppendIngredient: editable.onAppendIngredient,
     onAddIngredientAt: editable.onAddIngredientAt,
     onMoveIngredient: editable.onMoveIngredient,

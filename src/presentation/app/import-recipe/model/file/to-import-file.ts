@@ -11,7 +11,7 @@ const TYPE_BY_EXTENSION: Record<string, string> = {
   heif: ImportFileMimeType.Heif,
   pdf: ImportFileMimeType.Pdf,
 };
-const EXTENSION_SEPARATOR = '.';
+const EXTENSION_SEPARATOR = CharConstants.dot;
 
 /**
  * A browser `File` — picked or dropped — as a page the import can carry.

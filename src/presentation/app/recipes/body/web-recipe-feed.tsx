@@ -12,7 +12,7 @@ import { feedGutter } from '@presentation/app/recipes/model/feed-content-width';
 import { WebRecipeGrid } from '@presentation/app/recipes/body/web-recipe-grid';
 import { WebBannerAd } from '@presentation/base/widgets/ads/web-banner-ad';
 import { webFeedSlotId } from '@infrastructure/constants/ads';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 
 export interface WebRecipeFeedProps {
@@ -30,12 +30,13 @@ export interface WebRecipeFeedProps {
  * made a 300-line component whose top half a mobile reader had to skip past.
  */
 export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => {
+  const t = useTranslations();
   const { width } = useLayout();
-  const [allCuisinesOpen, setAllCuisinesOpen] = useState(false);
-  const recipesLoaded =
+  const [isAllCuisinesOpen, setAllCuisinesOpen] = useState(false);
+  const isRecipesLoaded =
     vm.state.status === StoreStatus.Loaded && !vm.isReloadingResults && vm.recipes.length > ValueConstants.zero;
   // The rail's label is the first thing to go when the row runs out of width.
-  const showRailTitle = width >= BREAKPOINTS.desktop;
+  const shouldShowRailTitle = width >= BREAKPOINTS.desktop;
 
   return (
   <>
@@ -50,14 +51,13 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
         <WebHeroSection
           onOpenRecipe={vm.onOpenRecipe}
           onOpenCreate={vm.onOpenCreate}
-          isSaved={vm.isSaved}
           onToggleSave={vm.onToggleSave}
         />
         <WebCuisineRail
           selectedCuisines={vm.filters.cuisines}
           onToggle={vm.onToggleCuisineQuick}
           onOpenAll={() => setAllCuisinesOpen(true)}
-          showTitle={showRailTitle}
+          showTitle={shouldShowRailTitle}
         />
         {/* Between the rail and the grid, which is the only place on this page
             with finished content both above and below it. Not above the hero
@@ -71,8 +71,8 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
             against a page with nothing on it yet — which is the shape of the
             violation this placement exists to avoid, and on a failed load the
             unit was thrown away unread when the error state replaced the feed. */}
-        {recipesLoaded ? (
-          <WebBannerAd slotId={webFeedSlotId()} accessibilityLabel={t().createRecipe.adLabel} />
+        {isRecipesLoaded ? (
+          <WebBannerAd slotId={webFeedSlotId()} accessibilityLabel={t.createRecipe.adLabel} />
         ) : null}
       </>
     )}
@@ -94,12 +94,11 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
       gridColumns={vm.gridColumns}
       gridCellMaxWidth={vm.gridCellMaxWidth}
       onOpenRecipe={vm.onOpenRecipe}
-      isSaved={vm.isSaved}
       onToggleSave={vm.onToggleSave}
     />
   </ScrollView>
   <AllCuisinesSheet
-    visible={allCuisinesOpen}
+    visible={isAllCuisinesOpen}
     selectedCuisines={vm.filters.cuisines}
     onToggle={vm.onToggleCuisineQuick}
     onClear={vm.onResetFilters}

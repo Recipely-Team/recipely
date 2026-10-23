@@ -38,7 +38,7 @@ describe('CreatorClaims', () => {
     expect(claimsOf(claimOf('instagram', CreatorStatus.Pending), claimOf('tiktok', CreatorStatus.Rejected)).isCreator).toBe(false);
     const mixed = claimsOf(claimOf('instagram', CreatorStatus.Pending), claimOf('tiktok', CreatorStatus.Approved));
     expect(mixed.isCreator).toBe(true);
-    expect(mixed.approvedTags.map((tag) => tag.platform)).toEqual(['tiktok']);
+    expect(mixed.approvedTags().map((tag) => tag.platform)).toEqual(['tiktok']);
   });
 
   it('with replaces a platform\'s claim and without clears it, leaving the other platform', () => {

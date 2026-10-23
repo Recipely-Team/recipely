@@ -11,7 +11,7 @@ import { PickRowType } from '@presentation/base/widgets/diary/add-food/list/pick
 export const pagedRows = <T>(list: PagedList<T>, listKey: string, toRow: (item: T) => PickRowEntryType): PickRowEntryType[] => {
   if (list.status !== StoreStatus.Loaded) return [];
   const rows = list.items.map(toRow);
-  const failed = list.moreFailure !== null;
-  if (!list.isLoadingMore && !failed) return rows;
-  return [...rows, { type: PickRowType.More, key: [PickRowType.More, listKey].join(CharConstants.colon), listKey, failed }];
+  const hasFailed = list.moreFailure !== null;
+  if (!list.isLoadingMore && !hasFailed) return rows;
+  return [...rows, { type: PickRowType.More, key: [PickRowType.More, listKey].join(CharConstants.colon), listKey, failed: hasFailed }];
 };

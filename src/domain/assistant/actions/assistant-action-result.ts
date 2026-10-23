@@ -20,7 +20,7 @@
 export interface AssistantActionResultType {
   readonly ok: boolean;
   /** Present when the action produced something nameable, e.g. a recipe. Shown on the transcript chip. */
-  readonly title?: string;
+  readonly title?: string | undefined;
   /**
    * What happened, as a sentence for the model only — never shown. The model
    * says it back in the user's language; on `title` the English reached the chip.

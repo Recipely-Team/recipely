@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -11,7 +12,7 @@ import { EditorStep, type EditorStepType } from '@presentation/app/automations/e
 import { EDITOR_STEPS } from '@presentation/app/automations/edit/model/editor-steps';
 import type { UseRuleEditorResult } from '@presentation/app/automations/edit/model/use-rule-editor-result';
 import { useAutomationsGuard } from '@presentation/app/automations/shared/hooks/use-automations-guard';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * The rule editor (spec §3): four steps, each gated by what the domain would
@@ -26,12 +27,13 @@ import { t } from '@presentation/i18n';
  * - **Forward only through valid steps**; back is always free.
  */
 export const useRuleEditor = (): UseRuleEditorResult => {
+  const t = useTranslations();
   const router = useRouter();
   const params = useLocalSearchParams<{ ruleId?: string }>();
   const ruleId = params.ruleId === undefined || params.ruleId.length === ValueConstants.zero ? null : params.ruleId;
   const { automationsStore } = useStores();
-  const opened = automationsStore((s) => s.opened);
-  const copy = t().instagram;
+  const opened = useStore(automationsStore, (s) => s.opened);
+  const copy = t.instagram;
 
   const [step, setStep] = useState<EditorStepType>(ruleId === null ? EditorStep.Post : EditorStep.Keywords);
   const [mediaId, setMediaId] = useState<string | null>(null);
@@ -40,11 +42,11 @@ export const useRuleEditor = (): UseRuleEditorResult => {
   const [keywordError, setKeywordError] = useState<string | null>(null);
   const [recipe, setRecipeState] = useState<{ id: string; name: string; image: string | null } | null>(null);
   const [dmText, setDmText] = useState(copy.defaultMessage);
-  const [replyOn, setReplyOn] = useState(false);
+  const [isReplyOn, setReplyOn] = useState(false);
   const [replyText, setReplyText] = useState(copy.defaultReply);
   const [isSaving, setSaving] = useState(false);
   const [isDeleteOpen, setDeleteOpen] = useState(false);
-  const [seeded, setSeeded] = useState(false);
+  const [wasSeeded, setSeeded] = useState(false);
 
   useAutomationsGuard(false);
 
@@ -54,7 +56,7 @@ export const useRuleEditor = (): UseRuleEditorResult => {
   const loadFailure = ruleId !== null && opened.status === StoreStatus.Error && opened.id === ruleId ? opened.failure : null;
 
   const existing = ruleId !== null && opened.status === StoreStatus.Loaded && opened.rule.id === ruleId ? opened.rule : null;
-  if (existing !== null && !seeded) {
+  if (existing !== null && !wasSeeded) {
     setSeeded(true);
     setMediaId(existing.mediaId);
     setKeywords(DmKeywords.of(existing.keywords));
@@ -64,7 +66,7 @@ export const useRuleEditor = (): UseRuleEditorResult => {
     setReplyText(existing.publicReplyText ?? copy.defaultReply);
   }
 
-  const publicReply = replyOn ? replyText : null;
+  const publicReply = isReplyOn ? replyText : null;
   const stepValid = [mediaId !== null, keywords.isValid, recipe !== null, DmRuleDraft.isDmTextValid(dmText) && DmRuleDraft.isPublicReplyValid(publicReply)];
   const canReach = (target: EditorStepType): boolean => EDITOR_STEPS.slice(ValueConstants.zero, target).every((s) => stepValid[s]);
   const toList = (): void => (router.canGoBack() ? router.back() : router.replace(RoutePaths.automations));
@@ -78,7 +80,7 @@ export const useRuleEditor = (): UseRuleEditorResult => {
   };
 
   return {
-    isLoading: ruleId !== null && !seeded && loadFailure === null,
+    isLoading: ruleId !== null && !wasSeeded && loadFailure === null,
     loadFailure,
     retryLoad: () => {
       if (ruleId !== null) void automationsStore.getState().openRule(ruleId);
@@ -94,7 +96,7 @@ export const useRuleEditor = (): UseRuleEditorResult => {
     recipeName: recipe?.name ?? null,
     recipeImage: recipe?.image ?? null,
     dmText,
-    replyOn,
+    replyOn: isReplyOn,
     replyText,
     isSaving,
     isDeleteOpen,

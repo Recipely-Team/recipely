@@ -54,7 +54,7 @@ describe('CountBadge', () => {
     const { root } = render(4);
 
     expect(
-      root.findAll((node: ReactTestInstance) => node.props.maxFontSizeMultiplier === maxFontScales.badge),
+      root.findAll((node: ReactTestInstance) => node.props['maxFontSizeMultiplier'] === maxFontScales.badge),
     ).not.toHaveLength(0);
   });
 });

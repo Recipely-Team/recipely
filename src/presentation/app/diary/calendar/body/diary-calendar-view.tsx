@@ -1,8 +1,10 @@
+import { useToday } from '@presentation/base/hooks/lifecycle/use-today';
 import { useState } from 'react';
+import { useStore } from 'zustand';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { CalendarDate } from '@domain/diary/calendar/calendar-date';
+import { type CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { CalendarMonth } from '@domain/diary/calendar/calendar-month';
 import { ValueConstants } from '@core/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -17,23 +19,24 @@ import { StatusLegend } from '@presentation/app/diary/shared/items/status-legend
 import { useDiaryMonth } from '@presentation/app/diary/shared/hooks/use-diary-month';
 import { RoutePaths } from '@presentation/base/constants';
 import { useAssistantCalendarActions } from '@presentation/app/diary/calendar/hooks/use-assistant-calendar-actions';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * The phone's month page (design spec → Food Diary §5): stats, the month card
  * and the legend. Tapping a day selects it and returns to the Day view.
  */
 export const DiaryCalendarView = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { diaryStore } = useStores();
-  const selected = diaryStore((s) => s.selectedDate);
+  const selected = useStore(diaryStore, (s) => s.selectedDate);
   const [month, setMonth] = useState(() => CalendarMonth.of(selected));
   const diaryMonth = useDiaryMonth(month);
   const scrollable = useAssistantScrollable();
-  const today = CalendarDate.today();
-  const strings = t().diary;
+  const today = useToday();
+  const strings = t.diary;
   useAssistantCalendarActions({ month, diaryMonth, selected, today, showMonth: setMonth });
 
   // Opened cold (a link, a reload on the web) there is nothing to go back to; the Day view is where this page lives.
@@ -50,7 +53,7 @@ export const DiaryCalendarView = (): React.JSX.Element => {
   return (
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <RoundIconButton icon="chevron-back" accessibilityLabel={t().common.back} onPress={leave} size={controlSizes.floatingBtn} />
+        <RoundIconButton icon="chevron-back" accessibilityLabel={t.common.back} onPress={leave} size={controlSizes.floatingBtn} />
         <ThemedText variant="title" accessibilityRole="header">
           {strings.calendarTitle}
         </ThemedText>

@@ -37,11 +37,11 @@ export class MealPlanWeek {
     return new MealPlanWeek(start, entries.filter((entry) => !entry.date.isBefore(start) && !entry.date.isAfter(end)).sort(byPlanOrder));
   }
 
-  get end(): CalendarDate {
+  end(): CalendarDate {
     return this.start.addDays(LAST_DAY_OFFSET);
   }
 
-  get days(): CalendarDate[] {
+  days(): CalendarDate[] {
     return this.start.weekDays();
   }
 
@@ -85,7 +85,7 @@ export class MealPlanWeek {
   }
 
   contains(date: CalendarDate): boolean {
-    return !date.isBefore(this.start) && !date.isAfter(this.end);
+    return !date.isBefore(this.start) && !date.isAfter(this.end());
   }
 
   find(id: string): MealPlanEntryEntity | undefined {

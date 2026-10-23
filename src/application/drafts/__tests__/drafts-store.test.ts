@@ -11,7 +11,7 @@ import type { RecipeDraft } from "@domain/drafts/recipe-draft";
 import type { UpsertDraftInput } from "@domain/drafts/upsert-draft-input";
 import type { Page } from '@domain/common/page';
 import { loadedItems } from '@application/store/paging/loaded-items';
-import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
+import type { DraftsStore } from '@application/drafts/drafts-store-contract';
 
 const makeDraft = (id: string): RecipeDraft => ({
   id,
@@ -31,7 +31,7 @@ const makePage = (items: RecipeDraft[]): Page<RecipeDraft> => ({
   hasMore: false,
 });
 
-const ids = (s: DraftsStoreState): string[] => loadedItems(s.drafts).map((d) => d.id);
+const ids = (s: DraftsStore): string[] => loadedItems(s.drafts).map((d) => d.id);
 
 interface StubConfig {
   listResult?: Result<Page<RecipeDraft>, Failure>;

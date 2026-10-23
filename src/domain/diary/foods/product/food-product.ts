@@ -73,7 +73,7 @@ export class FoodProduct {
   }
 
   /** This row as a one-variant detail — for a row with neither a food id nor a barcode to look up. */
-  get asDetail(): FoodDetail | null {
+  asDetail(): FoodDetail | null {
     const detail = FoodDetail.create({
       source: this.props.source,
       foodId: this.props.foodId,
@@ -98,7 +98,7 @@ export class FoodProduct {
   }
 
   /** This row as it stands, loggable without the detail request (the assistant logs from it). */
-  get loggable(): LoggableProduct {
+  loggable(): LoggableProduct {
     return LoggableProduct.of({
       name: this.displayName,
       imageUrl: this.props.imageUrl,

@@ -14,7 +14,7 @@ export interface SelectTileProps {
   placeholder: string;
   onPress: () => void;
   /** Backend validation message for this field, if any — renders a red border + inline warning. */
-  error?: string;
+  error?: string | undefined;
 }
 
 /**

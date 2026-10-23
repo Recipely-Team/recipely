@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useOpenCookMode } from '@presentation/app/recipes/[recipeId]/hooks/use-open-cook-mode';
 import { spacing, radii, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 
@@ -37,6 +37,7 @@ export const RecipeFloatingActions = ({
   onToggleLike,
   onToggleSave,
 }: RecipeFloatingActionsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const openCookMode = useOpenCookMode(recipeId);
 
@@ -45,7 +46,7 @@ export const RecipeFloatingActions = ({
       {canCook ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t().cookMode.start}
+          accessibilityLabel={t.cookMode.start}
           onPress={openCookMode}
           style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
         >
@@ -54,7 +55,7 @@ export const RecipeFloatingActions = ({
       ) : null}
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={t().recipes.share}
+        accessibilityLabel={t.recipes.share}
         onPress={onShare}
         style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
       >
@@ -62,7 +63,7 @@ export const RecipeFloatingActions = ({
       </Pressable>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={t().recipes.copyToDrafts}
+        accessibilityLabel={t.recipes.copyToDrafts}
         onPress={onCopyToDraft}
         style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
       >
@@ -71,7 +72,7 @@ export const RecipeFloatingActions = ({
       <Pressable
         onPress={onToggleLike}
         accessibilityRole="button"
-        accessibilityLabel={liked ? t().recipes.unlike : t().recipes.like}
+        accessibilityLabel={liked ? t.recipes.unlike : t.recipes.like}
         accessibilityState={{ selected: liked }}
         style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
       >
@@ -84,7 +85,7 @@ export const RecipeFloatingActions = ({
       <Pressable
         onPress={onToggleSave}
         accessibilityRole="button"
-        accessibilityLabel={isSaved ? t().recipes.saved : t().recipes.save}
+        accessibilityLabel={isSaved ? t.recipes.saved : t.recipes.save}
         accessibilityState={{ selected: isSaved, disabled: saveDisabled }}
         disabled={saveDisabled}
         style={[styles.floatingBtn, { opacity: saveDisabled ? opacities.disabled : opacities.full, backgroundColor: colors.overlayLight }]}

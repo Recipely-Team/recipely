@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
@@ -10,7 +11,7 @@ import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { computeRemaining, formatCountdown, SECOND_MS } from '@presentation/app/verify-code/model/countdown';
 import { CharConstants, RegexConstants, ValueConstants } from '@core/constants';
 
@@ -34,56 +35,59 @@ export interface VerifyCodeCardProps {
  *   the "Use a different email" link.
  */
 export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const goBack = useGoBackOrHome(RoutePaths.login);
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
-  const isLoading = authStore((s) => s.state.status === StoreStatus.Loading);
-  const verifyRegistration = authStore((s) => s.verifyRegistration);
-  const resendRegistrationCode = authStore((s) => s.resendRegistrationCode);
+  const isLoading = useStore(authStore, (s) => s.state.status === StoreStatus.Loading);
+  const verifyRegistration = useStore(authStore, (s) => s.verifyRegistration);
+  const resendRegistrationCode = useStore(authStore, (s) => s.resendRegistrationCode);
 
   const [code, setCode] = useState(CharConstants.empty);
-  const [focused, setFocused] = useState(false);
+  const [isFocused, setFocused] = useState(false);
   const [localError, setLocalError] = useState<string | undefined>(undefined);
-  const [resending, setResending] = useState(false);
-  const [resent, setResent] = useState(false);
+  const [isResending, setResending] = useState(false);
+  const [wasResent, setResent] = useState(false);
   // Absolute expiry, so the countdown survives re-renders and backgrounding.
   const [expiresAt, setExpiresAt] = useState(initialExpiresAt);
-  const [remaining, setRemaining] = useState(() => computeRemaining(initialExpiresAt));
+  // Tagged with the expiry it counts toward: a resent code restarts the count in the same render.
+  const [countdown, setCountdown] = useState(() => ({ expiresAt, remaining: computeRemaining(expiresAt) }));
+  if (countdown.expiresAt !== expiresAt) setCountdown({ expiresAt, remaining: computeRemaining(expiresAt) });
+  const { remaining } = countdown;
 
   useEffect(() => {
-    setRemaining(computeRemaining(expiresAt));
     if (expiresAt.length === ValueConstants.zero) return;
-    const id = setInterval(() => setRemaining(computeRemaining(expiresAt)), SECOND_MS);
+    const id = setInterval(() => setCountdown({ expiresAt, remaining: computeRemaining(expiresAt) }), SECOND_MS);
     return () => clearInterval(id);
   }, [expiresAt]);
 
-  const codeValid = code.length === CODE_LENGTH && RegexConstants.digitsOnly.test(code);
+  const isCodeValid = code.length === CODE_LENGTH && RegexConstants.digitsOnly.test(code);
   const errorMessage = localError;
 
   const handleVerify = useCallback(async () => {
-    if (!codeValid) {
-      setLocalError(t().verify.errorCode);
+    if (!isCodeValid) {
+      setLocalError(t.verify.errorCode);
       return;
     }
     setLocalError(undefined);
     const failure = await verifyRegistration(email, code);
     if (failure) {
       setLocalError(
-        authFormMessage(failure, {
-          unauthorized: t().verify.invalidCode,
-          validation: t().verify.invalidCode,
-          not_found: t().verify.invalidCode,
+        authFormMessage(t, failure, {
+          unauthorized: t.verify.invalidCode,
+          validation: t.verify.invalidCode,
+          not_found: t.verify.invalidCode,
         }),
       );
     }
-  }, [codeValid, verifyRegistration, email, code]);
+  }, [isCodeValid, verifyRegistration, email, code, t]);
 
   // Resend is locked until the current code expires.
-  const canResend = remaining <= ValueConstants.zero && !resending;
+  const canResend = remaining <= ValueConstants.zero && !isResending;
 
   const handleResend = useCallback(async () => {
-    if (remaining > ValueConstants.zero || resending) return;
+    if (remaining > ValueConstants.zero || isResending) return;
     setResending(true);
     setResent(false);
     setLocalError(undefined);
@@ -93,9 +97,9 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
       setResent(true);
       setExpiresAt(result.value.expiresAt);
     } else {
-      setLocalError(authFormMessage(result.failure, {}));
+      setLocalError(authFormMessage(t, result.failure, {}));
     }
-  }, [remaining, resending, resendRegistrationCode, email]);
+  }, [remaining, isResending, resendRegistrationCode, email, t]);
 
   return (
     <>
@@ -105,10 +109,10 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
           {
             backgroundColor: colors.inputBackground,
             color: colors.text,
-            borderColor: focused ? colors.inputBorderFocused : colors.inputBorder,
+            borderColor: isFocused ? colors.inputBorderFocused : colors.inputBorder,
           },
         ]}
-        placeholder={t().verify.codePlaceholder}
+        placeholder={t.verify.codePlaceholder}
         placeholderTextColor={colors.textMuted}
         value={code}
         onChangeText={(v) => setCode(v.replace(/\D/g, CharConstants.empty).slice(ValueConstants.zero, CODE_LENGTH))}
@@ -120,7 +124,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         onSubmitEditing={() => { void handleVerify(); }}
-        accessibilityLabel={t().verify.codePlaceholder}
+        accessibilityLabel={t.verify.codePlaceholder}
       />
 
       {errorMessage !== undefined ? (
@@ -129,64 +133,64 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
         </View>
       ) : null}
 
-      {resent ? (
+      {wasResent ? (
         <ThemedText variant="caption" style={[styles.notice, { color: colors.success }]}>
-          {t().verify.resent}
+          {t.verify.resent}
         </ThemedText>
       ) : null}
 
       <View style={styles.buttonRow}>
         <PrimaryButton
-          label={isLoading ? t().verify.verifying : t().verify.verify}
+          label={isLoading ? t.verify.verifying : t.verify.verify}
           onPress={() => { void handleVerify(); }}
           loading={isLoading}
-          disabled={!codeValid || isLoading}
+          disabled={!isCodeValid || isLoading}
         />
       </View>
 
       <View style={styles.expiryRow}>
         {remaining > ValueConstants.zero ? (
           <ThemedText variant="caption" muted>
-            {t().verify.expiresIn} {formatCountdown(remaining)}
+            {t.verify.expiresIn} {formatCountdown(remaining)}
           </ThemedText>
         ) : (
           <ThemedText variant="caption" style={{ color: colors.danger }}>
-            {t().verify.expired}
+            {t.verify.expired}
           </ThemedText>
         )}
       </View>
 
       <View style={styles.resendRow}>
         <ThemedText variant="caption" muted>
-          {t().verify.noCode}
+          {t.verify.noCode}
         </ThemedText>
         <Pressable
           onPress={() => { void handleResend(); }}
           disabled={!canResend}
           accessibilityRole="button"
-          accessibilityLabel={t().verify.resend}
+          accessibilityLabel={t.verify.resend}
         >
           <ThemedText
             variant="caption"
             style={{ color: canResend ? colors.primary : colors.textMuted, fontWeight: fontWeights.semibold }}
           >
-            {t().verify.resend}
+            {t.verify.resend}
           </ThemedText>
         </Pressable>
       </View>
 
       <ThemedText variant="caption" muted style={styles.notice}>
-        {t().verify.checkSpam}
+        {t.verify.checkSpam}
       </ThemedText>
 
       <Pressable
         onPress={goBack}
         style={styles.textLink}
         accessibilityRole="button"
-        accessibilityLabel={t().verify.changeEmail}
+        accessibilityLabel={t.verify.changeEmail}
       >
         <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: fontWeights.semibold }}>
-          {t().verify.changeEmail}
+          {t.verify.changeEmail}
         </ThemedText>
       </Pressable>
     </>

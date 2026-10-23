@@ -1,5 +1,6 @@
 import type { Container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
+import type { CrashReporterInterface } from '@domain/diagnostics/crash-reporter-interface';
 import type { ApplicationStores } from '@application/di/application-stores';
 import type { NotificationRepositoryInterface } from '@domain/notifications/notification-repository-interface';
 import type { UserProfileRepositoryInterface } from '@domain/user-profile/user-profile-repository-interface';
@@ -61,7 +62,11 @@ export const registerMisc = (
   const feedbackStore = configureFeedbackStore({ submitFeedbackUseCase: new SubmitFeedbackUseCase(feedbackRepo) });
   const notificationService = getNotificationService();
   const preferences = getPreferenceStore();
-  const refreshReminders = new RefreshRemindersUseCase(notificationService, preferences);
+  const refreshReminders = new RefreshRemindersUseCase(
+    notificationService,
+    preferences,
+    container.has(TOKENS.CrashReporter) ? container.resolve<CrashReporterInterface>(TOKENS.CrashReporter) : null,
+  );
   return {
     notificationsStore,
     refreshReminders,

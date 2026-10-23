@@ -1,7 +1,7 @@
 import { configureLikesStore } from '@application/likes/likes-store';
 import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
-import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
-import type { BoundStore } from '@application/store/bound-store';
+import type { LikedRecipesStore } from '@application/recipes/liked/liked-recipes-store-contract';
+import type { StoreApi } from 'zustand/vanilla';
 import { ok } from '@core/result/result-helpers';
 
 /**
@@ -17,7 +17,7 @@ const build = (calls: string[]) => {
   };
   return configureLikesStore({
     setRecipeLike: setRecipeLike as unknown as SetRecipeLikeUseCase,
-    likedRecipesStore: likedRecipesStore as unknown as BoundStore<LikedRecipesStoreState>,
+    likedRecipesStore: likedRecipesStore as unknown as StoreApi<LikedRecipesStore>,
   });
 };
 
@@ -31,8 +31,8 @@ describe('setLiked, against the real store', () => {
 
     expect(result.ok).toBe(true);
     expect(calls).toContain('like:r1');
-    expect(store.getState().byRecipe.r1?.likedByMe).toBe(true);
-    expect(store.getState().byRecipe.r1?.likeCount).toBe(5);
+    expect(store.getState().byRecipe['r1']?.likedByMe).toBe(true);
+    expect(store.getState().byRecipe['r1']?.likeCount).toBe(5);
   });
 
   it('unlikes one the feed seeded as liked, and drops it from the Liked grid', async () => {
@@ -45,8 +45,8 @@ describe('setLiked, against the real store', () => {
     expect(result.ok).toBe(true);
     expect(calls).toContain('unlike:r1');
     expect(calls).toContain('removeLocal:r1');
-    expect(store.getState().byRecipe.r1?.likedByMe).toBe(false);
-    expect(store.getState().byRecipe.r1?.likeCount).toBe(0);
+    expect(store.getState().byRecipe['r1']?.likedByMe).toBe(false);
+    expect(store.getState().byRecipe['r1']?.likeCount).toBe(0);
   });
 
   // The reported shape: the assistant says done and the heart does not move.
@@ -78,7 +78,7 @@ describe('toggle after sign-out', () => {
     let answer: (value: ReturnType<typeof ok>) => void = () => undefined;
     const store = configureLikesStore({
       setRecipeLike: { execute: () => new Promise((resolve) => { answer = resolve; }) } as unknown as SetRecipeLikeUseCase,
-      likedRecipesStore: { getState: () => ({ removeLocal: () => undefined }) } as unknown as BoundStore<LikedRecipesStoreState>,
+      likedRecipesStore: { getState: () => ({ removeLocal: () => undefined }) } as unknown as StoreApi<LikedRecipesStore>,
     });
     store.getState().seed('r1', 4, false);
     const toggling = store.getState().toggle('r1');
@@ -86,6 +86,6 @@ describe('toggle after sign-out', () => {
     answer(ok(undefined));
     await toggling;
 
-    expect(store.getState().byRecipe.r1).toBeUndefined();
+    expect(store.getState().byRecipe['r1']).toBeUndefined();
   });
 });

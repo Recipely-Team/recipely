@@ -52,15 +52,15 @@ export const SkeletonLoader = ({
 
   useEffect(() => {
     if (isWeb()) return;
-    translateX.value = withRepeat(
+    translateX.set(withRepeat(
       withTiming(SHIMMER_SWEEP_WIDTH, { duration: durations.shimmer }),
       ValueConstants.minusOne,
       false,
-    );
+    ));
   }, [translateX]);
 
   const shimmerStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
+    transform: [{ translateX: translateX.get() }],
   }));
 
   if (isWeb()) {

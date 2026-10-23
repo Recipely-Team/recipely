@@ -10,8 +10,8 @@ import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-ht
 import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 
 interface RequestCall {
-  method?: string;
-  url?: string;
+  method?: string | undefined;
+  url?: string | undefined;
   data?: unknown;
 }
 

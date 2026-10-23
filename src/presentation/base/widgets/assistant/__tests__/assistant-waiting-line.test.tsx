@@ -18,8 +18,8 @@ describe('AssistantWaitingLine', () => {
       <AssistantWaitingLine status={status} isMuted={isMuted} />,
     );
     const found = root
-      .findAll((node) => typeof node.props.children === 'string')
-      .map((node) => String(node.props.children));
+      .findAll((node) => typeof node.props['children'] === 'string')
+      .map((node) => String(node.props['children']));
     renderer.unmount();
     return found;
   };

@@ -1,4 +1,4 @@
-import { contrastRatio } from '@presentation/base/theme';
+import { contrastRatio } from '@presentation/base/theme/colors/contrast/contrast';
 import { ALL_THEMES, getThemeColors } from '@presentation/base/theme/colors/palette/themes';
 import { errorSurfaces } from '@presentation/base/theme/colors/surfaces/error-surfaces';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';

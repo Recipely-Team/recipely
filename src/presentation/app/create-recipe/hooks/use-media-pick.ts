@@ -6,7 +6,7 @@ import { ValueConstants } from '@core/constants';
 import { askPickSource } from '@presentation/base/utils/ask-pick-source';
 import { PickSource } from '@presentation/base/utils/pick-source';
 import { shrinkForUpload } from '@presentation/base/utils/shrink-for-upload';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { photoPickLimits } from '@presentation/app/create-recipe/model/photos/photo-pick-limits';
 import { PhotoPickFeedback } from '@presentation/base/feedback/photo-pick-feedback';
 
@@ -20,6 +20,43 @@ const LIBRARY_OPTIONS: ImagePicker.ImagePickerOptions = {
   mediaTypes: 'images',
 };
 const CAMERA_OPTIONS: ImagePicker.ImagePickerOptions = { mediaTypes: 'images' };
+
+/** Asks camera or library, then shrinks and hands over the photos; a throw is reported as a failed pick. */
+const pickPhotos = async (
+  title: string,
+  onAdd: (items: MediaItem[]) => void,
+  onSkip: ((skipped: number) => void) | undefined,
+): Promise<void> => {
+  try {
+    const source = await askPickSource(title);
+    if (source === null) return;
+
+    const isCamera = source === PickSource.Camera;
+    const permission = isCamera
+      ? await ImagePicker.requestCameraPermissionsAsync()
+      : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      PhotoPickFeedback.permissionDenied();
+      return;
+    }
+
+    const result = isCamera
+      ? await ImagePicker.launchCameraAsync(CAMERA_OPTIONS)
+      : await ImagePicker.launchImageLibraryAsync(LIBRARY_OPTIONS);
+    if (result.canceled) return;
+
+    const accepted = result.assets.filter(withinLimit);
+    onSkip?.(result.assets.length - accepted.length);
+    const shrunk = await Promise.all(
+      accepted.map((a) => shrinkForUpload({ uri: a.uri, width: a.width, height: a.height })),
+    );
+    if (shrunk.length > ValueConstants.zero) {
+      onAdd(shrunk.map((url) => ({ type: MediaType.Image, url })));
+    }
+  } catch {
+    PhotoPickFeedback.failed();
+  }
+};
 
 /**
  * The editor's "add photos" action: camera or library, then shrunk, then handed
@@ -46,41 +83,14 @@ export const useMediaPick = (
   onAdd: (items: MediaItem[]) => void,
   onSkip?: (skipped: number) => void,
 ): (() => Promise<void>) => {
+  const t = useTranslations();
   const busy = useRef(false);
 
   return useCallback(async (): Promise<void> => {
     if (busy.current) return;
     busy.current = true;
-    try {
-      const source = await askPickSource(t().mediaPicker.add);
-      if (source === null) return;
-
-      const isCamera = source === PickSource.Camera;
-      const permission = isCamera
-        ? await ImagePicker.requestCameraPermissionsAsync()
-        : await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        PhotoPickFeedback.permissionDenied();
-        return;
-      }
-
-      const result = isCamera
-        ? await ImagePicker.launchCameraAsync(CAMERA_OPTIONS)
-        : await ImagePicker.launchImageLibraryAsync(LIBRARY_OPTIONS);
-      if (result.canceled) return;
-
-      const accepted = result.assets.filter(withinLimit);
-      onSkip?.(result.assets.length - accepted.length);
-      const shrunk = await Promise.all(
-        accepted.map((a) => shrinkForUpload({ uri: a.uri, width: a.width, height: a.height })),
-      );
-      if (shrunk.length > ValueConstants.zero) {
-        onAdd(shrunk.map((url) => ({ type: MediaType.Image, url })));
-      }
-    } catch {
-      PhotoPickFeedback.failed();
-    } finally {
+    await pickPhotos(t.mediaPicker.add, onAdd, onSkip).finally(() => {
       busy.current = false;
-    }
-  }, [onAdd, onSkip]);
+    });
+  }, [onAdd, onSkip, t]);
 };

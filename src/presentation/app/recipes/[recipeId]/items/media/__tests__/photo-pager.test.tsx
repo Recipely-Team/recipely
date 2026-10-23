@@ -30,10 +30,10 @@ const mount = (initial: number, onSwipe: jest.Mock) => {
   const rendered = renderComponent(<Host />);
   const list = () => rendered.renderer.root.findByType(FlatList);
   const scrollTo = (page: number): void => {
-    act(() => (list().props.onScroll as (e: NativeSyntheticEvent<NativeScrollEvent>) => void)(scrollEvent(page)));
+    act(() => (list().props['onScroll'] as (e: NativeSyntheticEvent<NativeScrollEvent>) => void)(scrollEvent(page)));
   };
   const beginDrag = (): void => {
-    act(() => (list().props.onScrollBeginDrag as () => void)());
+    act(() => (list().props['onScrollBeginDrag'] as () => void)());
   };
   const jumpTo = (next: number): void => {
     act(() => setCurrent(next));
@@ -86,7 +86,7 @@ describe('PhotoPager — what it reports', () => {
 
   it('keys each photo on its id, not its position', () => {
     const pager = mount(0, jest.fn());
-    const keyOf = pager.list().props.keyExtractor as (item: MediaItem, index: number) => string;
+    const keyOf = pager.list().props['keyExtractor'] as (item: MediaItem, index: number) => string;
 
     expect(keyOf(FIVE[1] as MediaItem, 1)).toBe('m2');
     expect(keyOf({ type: 'image', url: 'https://x.test/cover.jpg' }, 0)).toBe('https://x.test/cover.jpg');

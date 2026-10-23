@@ -31,7 +31,7 @@ jest.mock('react-native', () => ({
   // scope. A mock without it makes the suite fail to load, not fail a test.
   Platform: {
     OS: 'ios',
-    select: (specifics: Record<string, unknown>) => specifics.ios ?? specifics.default,
+    select: (specifics: Record<string, unknown>) => specifics['ios'] ?? specifics['default'],
   },
   AppState: {
     get currentState() {

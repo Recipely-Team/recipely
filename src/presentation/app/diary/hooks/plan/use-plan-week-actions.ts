@@ -5,7 +5,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { toastStore } from '@presentation/base/feedback/toast-store';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 interface PlanWeekActions {
   copyLastWeek: () => void;
@@ -18,6 +18,7 @@ interface PlanWeekActions {
  * that plans its meals again. Meals already logged stay in the diary either way.
  */
 export const usePlanWeekActions = (weekStart: CalendarDate): PlanWeekActions => {
+  const t = useTranslations();
   const { mealPlanStore } = useStores();
 
   const copyLastWeek = useCallback(async () => {
@@ -27,12 +28,12 @@ export const usePlanWeekActions = (weekStart: CalendarDate): PlanWeekActions => 
       return;
     }
     const { copied } = result.value;
-    const strings = t().mealPlan;
+    const strings = t.mealPlan;
     toastStore.getState().show({
       severity: SeverityType.Neutral,
       message: copied > ValueConstants.zero ? strings.copied.replace('{n}', String(copied)) : strings.nothingToCopy,
     });
-  }, [mealPlanStore, weekStart]);
+  }, [mealPlanStore, weekStart, t]);
 
   const clearWeek = useCallback(async () => {
     const result = await mealPlanStore.getState().clearWeek(weekStart);
@@ -43,15 +44,15 @@ export const usePlanWeekActions = (weekStart: CalendarDate): PlanWeekActions => 
     const held = result.value;
     toastStore.getState().show({
       severity: SeverityType.Neutral,
-      message: t().mealPlan.weekCleared,
+      message: t.mealPlan.weekCleared,
       ...(held.length === ValueConstants.zero
         ? {}
         : {
-            actionLabel: t().mealPlan.undo,
+            actionLabel: t.mealPlan.undo,
             onAction: () => void mealPlanStore.getState().restore(held).then((restored) => (restored.ok ? undefined : showErrorToast(restored.failure))),
           }),
     });
-  }, [mealPlanStore, weekStart]);
+  }, [mealPlanStore, weekStart, t]);
 
   return { copyLastWeek: () => void copyLastWeek(), clearWeek: () => void clearWeek() };
 };

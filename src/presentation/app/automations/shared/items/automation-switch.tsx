@@ -1,5 +1,5 @@
 import { SettingsSwitch } from '@presentation/base/widgets/settings/settings-switch';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AutomationSwitchProps {
   value: boolean;
@@ -8,11 +8,14 @@ export interface AutomationSwitchProps {
 }
 
 /** A rule's on/off switch (spec: primary track when on); announced as "Automation on". */
-export const AutomationSwitch = ({ value, disabled, onChange }: AutomationSwitchProps): React.JSX.Element => (
+export const AutomationSwitch = ({ value, disabled, onChange }: AutomationSwitchProps): React.JSX.Element => {
+  const t = useTranslations();
+  return (
   <SettingsSwitch
     value={value}
     disabled={disabled}
-    accessibilityLabel={t().instagram.automationOn}
+    accessibilityLabel={t.instagram.automationOn}
     onChange={onChange}
   />
 );
+};

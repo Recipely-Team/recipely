@@ -7,7 +7,7 @@ import type { ShoppingListRepositoryInterface } from '@domain/shopping/shopping-
 export class SetShoppingItemCheckedUseCase {
   constructor(private readonly repo: ShoppingListRepositoryInterface) {}
 
-  execute(id: string, checked: boolean): Promise<Result<ShoppingItemEntity, Failure>> {
-    return this.repo.update(id, { checked });
+  execute(id: string, isChecked: boolean): Promise<Result<ShoppingItemEntity, Failure>> {
+    return this.repo.update(id, { checked: isChecked });
   }
 }

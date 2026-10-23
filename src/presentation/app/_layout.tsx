@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useStore } from 'zustand';
 import { Stack, ThemeProvider, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
@@ -39,7 +40,7 @@ import { RoutePaths } from '@presentation/base/constants';
  * over the dismissed one's.
  */
 const AlarmOverlay = (): React.JSX.Element | null => {
-  const alarm = alarmStore((s) => s.alarms[ValueConstants.zero]);
+  const alarm = useStore(alarmStore, (s) => s.alarms[ValueConstants.zero]);
   if (alarm === undefined) return null;
   return (
     // zIndex must exceed ActiveTimersBar (100) so the alarm sits on top.
@@ -80,8 +81,8 @@ const useShouldRenderWebHeader = (): boolean => {
 };
 
 const WebShellChrome = (): React.JSX.Element | null => {
-  const show = useShouldRenderWebHeader();
-  if (!show) return null;
+  const shouldShow = useShouldRenderWebHeader();
+  if (!shouldShow) return null;
   return <WebHeader />;
 };
 
@@ -92,16 +93,42 @@ const WebShellChrome = (): React.JSX.Element | null => {
  */
 const TAB_SCREEN_OPTIONS = { headerShown: false, animation: 'none' } as const;
 
-const RootStack = (): React.JSX.Element => {
-  const { scheme, colors } = useTheme();
+/**
+ * The app-wide effects that listen to navigation: the auth guard, share
+ * imports, notification taps, the window background.
+ *
+ * @remarks
+ * - **A sibling that renders nothing, on purpose.** `useAuthGuard` reads
+ *   `usePathname()` and `useGlobalSearchParams()`, so it re-renders on every
+ *   navigation and every URL parameter change anywhere in the app. Called from
+ *   `RootStack`, each of those re-rendered the Stack with a fresh
+ *   `screenOptions`, and with it every screen the Stack keeps mounted. Here a
+ *   re-render costs nothing, because there is nothing under it.
+ */
+const RootEffects = (): null => {
+  const { colors } = useTheme();
   useAuthGuard();
   useInstagramShareImport();
   usePushNotificationTap();
   useWindowBackground(colors.background);
+  return null;
+};
+
+const RootStack = (): React.JSX.Element => {
+  const { scheme, colors } = useTheme();
 
   const reactNavTheme = useMemo(() => navigationTheme(scheme, colors), [scheme, colors]);
-  const headerBg = colors.background;
-  const headerTint = colors.text;
+  // Stable unless the theme changes: a new object here re-derives every screen's options.
+  const screenOptions = useMemo(
+    () => ({
+      headerStyle: { backgroundColor: colors.background },
+      headerTintColor: colors.text,
+      headerShadowVisible: false,
+      // contentStyle paints the scene before a screen's first frame.
+      contentStyle: { backgroundColor: colors.background },
+    }),
+    [colors.background, colors.text],
+  );
 
   return (
     <ThemeProvider value={reactNavTheme}>
@@ -119,15 +146,7 @@ const RootStack = (): React.JSX.Element => {
           names itself wins. */}
       <PageTitle />
       <WebShellChrome />
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: headerBg },
-          headerTintColor: headerTint,
-          headerShadowVisible: false,
-          // contentStyle paints the scene before a screen's first frame.
-          contentStyle: { backgroundColor: colors.background },
-        }}
-      >
+      <Stack screenOptions={screenOptions}>
         {/* Folder pages register on the parent navigator under their full
             relative name (`<segment>/index`) — a bare `<segment>` here would
             not match any route, so its options (headerShown:false) would be
@@ -192,6 +211,7 @@ export const RootLayout = (): React.JSX.Element => {
         <LayoutProvider postureSource={resolveWindowPosture()}>
           <WebShellStateProvider>
             <AppBootstrap>
+              <RootEffects />
               <RootStack />
             </AppBootstrap>
           </WebShellStateProvider>

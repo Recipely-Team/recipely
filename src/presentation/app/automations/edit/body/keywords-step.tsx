@@ -9,7 +9,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { RemovableKeyword } from '@presentation/app/automations/edit/items/removable-keyword';
 import { borderWidths, controlSizes, fontSizes, fontWeights, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 
 export interface KeywordsStepProps {
@@ -23,7 +23,7 @@ export interface KeywordsStepProps {
   onRemove: (word: string) => void;
 }
 
-const SEPARATOR = ',';
+const SEPARATOR = CharConstants.comma;
 
 /**
  * Step 2 (spec §3): the trigger words — typed (Enter or a comma adds),
@@ -31,10 +31,11 @@ const SEPARATOR = ',';
  * match, folding case the way the server does.
  */
 export const KeywordsStep = ({ keywords, input, error, onInput, onAdd, onRemove, scrollable }: KeywordsStepProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const surfaces = useSeveritySurfaces();
   const locale = useLocale();
-  const copy = t().instagram;
+  const copy = t.instagram;
   const [comment, setComment] = useState(CharConstants.empty);
   const match = comment.trim().length === ValueConstants.zero ? undefined : keywords.matchIn(comment, locale);
   const look = match === null ? surfaces[SeverityType.Neutral] : surfaces[SeverityType.Success];

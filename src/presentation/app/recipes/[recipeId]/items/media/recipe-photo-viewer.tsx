@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Dimensions, StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { PhotoPager } from '@presentation/app/recipes/[recipeId]/items/media/photo-pager';
 import { PhotoArrows } from '@presentation/app/recipes/[recipeId]/items/media/photo-arrows';
@@ -48,7 +48,7 @@ export interface RecipePhotoViewerProps {
  * - **The frame takes focus only with something to step through**, and ← / →
  *   then move one photo.
  */
-export const RecipePhotoViewer = ({
+const RecipePhotoViewerComponent = ({
   media,
   variant,
   owner,
@@ -57,18 +57,18 @@ export const RecipePhotoViewer = ({
   const colors = useTheme().colors;
   const viewport = useWindowDimensions();
   const [width, setWidth] = useState(() => Dimensions.get('window').width);
-  const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
+  const [isHovered, setHovered] = useState(false);
+  const [isFocused, setFocused] = useState(false);
   const total = media.length;
   const { current, goTo } = usePhotoViewer(total);
   const step = useCallback((delta: number): void => goTo(current + delta), [goTo, current]);
-  usePhotoArrowKeys(focused && total > ValueConstants.one, step);
+  usePhotoArrowKeys(isFocused && total > ValueConstants.one, step);
 
-  const framed = variant === PhotoViewerVariant.Framed;
-  const wide = width >= photoViewerSizes.wideFrame;
+  const isFramed = variant === PhotoViewerVariant.Framed;
+  const isWide = width >= photoViewerSizes.wideFrame;
   const height = heroFrameHeight(width, variant, viewport.height);
   // The framed border is inside the measured box; a page that ignored it would overhang by a hairline.
-  const inset = framed ? borderWidths.hairline * ValueConstants.two : ValueConstants.zero;
+  const inset = isFramed ? borderWidths.hairline * ValueConstants.two : ValueConstants.zero;
   const bottom = spacing.md + contentOverlap;
   const activeItem = media[current];
   const hoverProps = isWeb()
@@ -91,8 +91,8 @@ export const RecipePhotoViewer = ({
         style={[
           styles.frame,
           { height, backgroundColor: colors.skeleton },
-          framed ? [styles.framed, { borderColor: colors.cardBorder }] : null,
-          focused ? [styles.focusRing, { outlineColor: colors.primary }] : null,
+          isFramed ? [styles.framed, { borderColor: colors.cardBorder }] : null,
+          isFocused ? [styles.focusRing, { outlineColor: colors.primary }] : null,
         ]}
       >
         {total === ValueConstants.zero ? (
@@ -105,9 +105,9 @@ export const RecipePhotoViewer = ({
         ) : (
           <PhotoPager media={media} width={width - inset} height={height - inset} current={current} onSwipe={goTo} />
         )}
-        {framed ? null : <HeroTopScrim />}
-        {total > ValueConstants.one && (framed || wide) ? (
-          <PhotoArrows current={current} total={total} revealed={!isWeb() || hovered || focused} onStep={step} />
+        {isFramed ? null : <HeroTopScrim />}
+        {total > ValueConstants.one && (isFramed || isWide) ? (
+          <PhotoArrows current={current} total={total} revealed={!isWeb() || isHovered || isFocused} onStep={step} />
         ) : null}
         {total > ValueConstants.one ? <PhotoCounterChip current={current} total={total} bottom={bottom} /> : null}
         {owner !== undefined && activeItem !== undefined ? (
@@ -119,7 +119,7 @@ export const RecipePhotoViewer = ({
         <PhotoThumbStrip
           media={media}
           current={current}
-          thumbWidth={wide ? photoViewerSizes.thumbWidthWide : photoViewerSizes.thumbWidth}
+          thumbWidth={isWide ? photoViewerSizes.thumbWidthWide : photoViewerSizes.thumbWidth}
           variant={variant}
           onSelect={goTo}
           {...(owner !== undefined ? { owner } : {})}
@@ -128,6 +128,9 @@ export const RecipePhotoViewer = ({
     </View>
   );
 };
+
+/** Memoised: the recipe page re-renders on a like, a save or a step tick, and this section's props do not change with them. */
+export const RecipePhotoViewer = memo(RecipePhotoViewerComponent);
 
 const styles = StyleSheet.create({
   frame: {

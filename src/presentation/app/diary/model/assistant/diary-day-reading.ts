@@ -10,17 +10,18 @@ const round = (value: number): number => Math.round(value);
 const grams = (value: number | null): string => (value === null ? 'unknown' : String(round(value)));
 
 const dayLines = (day: DiaryDay): string[] => {
-  const { totals, goals } = day;
+  const { goals } = day;
+  const totals = day.totals();
   return [
     `kcal eaten=${round(totals.calories)} goal=${goals.calories} remaining=${round(day.remainingCalories)} status=${day.calorieStatus}`,
     `protein ${grams(totals.protein)}/${goals.protein} g; carbs ${grams(totals.carbs)}/${goals.carbs} g; fat ${grams(totals.fat)}/${goals.fat} g; fiber ${grams(totals.fiber)}/${goals.fiber} g`,
     `water ${day.waterGlasses}/${goals.waterGlasses} glasses`,
-    ...day.mealGroups.map((group) =>
+    ...day.mealGroups().map((group) =>
       group.entries.length === ValueConstants.zero
         ? `${group.meal} 0 kcal: none`
         : `${group.meal} ${round(group.totals.calories)} kcal: ${group.entries
             .map((entry, i) => `${i + ValueConstants.one}) ${entry.name}, ${entry.servings} serving(s), ${round(entry.nutrients.calories)} kcal`)
-            .join(', ')}`,
+            .join(CharConstants.commaSpace)}`,
     ),
     `goals: ${goals.calories} kcal, protein ${goals.protein} g, carbs ${goals.carbs} g, fat ${goals.fat} g, fiber ${goals.fiber} g, water ${goals.waterGlasses} glasses`,
   ];

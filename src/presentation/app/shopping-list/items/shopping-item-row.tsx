@@ -8,7 +8,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { TickBox } from '@presentation/base/widgets/inputs/tick-box';
 import { RoundIconButton } from '@presentation/base/widgets/buttons/round-icon-button';
 import { borderWidths, controlSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ShoppingCopyToken } from '@presentation/app/shopping-list/model/shopping-copy-token';
 
 export interface ShoppingItemRowProps {
@@ -25,11 +25,12 @@ export interface ShoppingItemRowProps {
  * Memoised: it re-renders only when its line or a handler changes.
  */
 const ShoppingItemRowComponent = ({ item, onToggle, onEdit, onRemove }: ShoppingItemRowProps): React.JSX.Element => {
+  const t = useTranslations();
   // Memoised: subscribe to the language so a switch still re-renders the row's copy.
   useLocale();
   const colors = useTheme().colors;
-  const copy = t().shopping;
-  const amount = shoppingAmountText(item.quantity, item.unit, t().recipes.portions.decimalMark);
+  const copy = t.shopping;
+  const amount = shoppingAmountText(item.quantity, item.unit, t.recipes.portions.decimalMark);
   const muted = item.checked ? colors.textMuted : colors.text;
   return (
     <View style={[styles.row, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>

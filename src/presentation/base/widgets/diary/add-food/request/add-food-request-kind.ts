@@ -7,5 +7,3 @@ export const AddFoodRequestKind = {
   /** A logged entry was tapped: the detail step in edit mode, with Remove. */
   Edit: 'edit',
 } as const;
-
-export type AddFoodRequestKindType = (typeof AddFoodRequestKind)[keyof typeof AddFoodRequestKind];

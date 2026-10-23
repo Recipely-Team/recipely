@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import { useStore } from 'zustand';
 import { type Href, useRouter } from 'expo-router';
 import { useGuestRouteGate } from '@presentation/base/hooks/auth/use-guest-route-gate';
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
@@ -7,7 +8,7 @@ import { RoutePaths } from '@presentation/base/constants';
 import { TabAppBarButton } from '@presentation/base/widgets/navigation/tab-app-bar-button';
 import { CountBadge } from '@presentation/base/widgets/text/count-badge';
 import { spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -21,16 +22,17 @@ import { ValueConstants } from '@core/constants';
  *   notifications are for ({@link useGuestRouteGate}).
  */
 export const NotificationsBellButton = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const gate = useGuestRouteGate();
   const { notificationsStore } = useStores();
-  const unreadCount = notificationsStore((s) => s.unreadCount);
+  const unreadCount = useStore(notificationsStore, (s) => s.unreadCount);
   const hasUnread = unreadCount > ValueConstants.zero;
   return (
     <View>
       <TabAppBarButton
         icon={hasUnread ? 'notifications' : 'notifications-outline'}
-        accessibilityLabel={hasUnread ? `${t().notifications.title}, ${unreadCount}` : t().notifications.title}
+        accessibilityLabel={hasUnread ? `${t.notifications.title}, ${unreadCount}` : t.notifications.title}
         onPress={() => gate.open(RoutePaths.notifications, (path) => router.push(path as Href))}
       />
       <CountBadge count={unreadCount} style={styles.badge} />

@@ -9,20 +9,18 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
  */
 export interface FavoritesRepositoryInterface {
   /**
-   * Add a recipe to the user's favorites.
-   * @param userId The ID of the user
+   * Add a recipe to the signed-in user's favorites (the session says whose).
    * @param recipeId The ID of the recipe to favorite
    * @returns Result indicating success or failure
    */
-  addFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>>;
+  addFavorite(recipeId: string): Promise<Result<void, Failure>>;
 
   /**
-   * Remove a recipe from the user's favorites.
-   * @param userId The ID of the user
+   * Remove a recipe from the signed-in user's favorites.
    * @param recipeId The ID of the recipe to unfavorite
    * @returns Result indicating success or failure
    */
-  removeFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>>;
+  removeFavorite(recipeId: string): Promise<Result<void, Failure>>;
 
   /**
    * The current user's saved recipes, in favourite order.

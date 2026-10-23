@@ -10,7 +10,7 @@ import { useEditProfile } from '@presentation/app/edit-profile/hooks/use-edit-pr
 import { useSectionScroll } from '@presentation/app/edit-profile/hooks/use-section-scroll';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { EditProfileHeader } from '@presentation/app/edit-profile/body/edit-profile-header';
 import { EditProfileAvatar } from '@presentation/app/edit-profile/body/edit-profile-avatar';
 import { EditProfileForm } from '@presentation/app/edit-profile/body/edit-profile-form';
@@ -19,6 +19,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
 export const EditProfileScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const vm = useEditProfile();
@@ -77,10 +78,10 @@ export const EditProfileScreen = (): React.JSX.Element => {
 
       <ConfirmSheet
         visible={vm.discardVisible}
-        title={t().editProfile.discardTitle}
-        message={t().editProfile.discardBody}
-        confirmLabel={t().createRecipe.editExitDiscard}
-        cancelLabel={t().createRecipe.keepEditing}
+        title={t.editProfile.discardTitle}
+        message={t.editProfile.discardBody}
+        confirmLabel={t.createRecipe.editExitDiscard}
+        cancelLabel={t.createRecipe.keepEditing}
         destructive
         onConfirm={vm.onConfirmDiscard}
         onClose={vm.onKeepEditing}
@@ -89,9 +90,9 @@ export const EditProfileScreen = (): React.JSX.Element => {
       <FeedbackDialog
         severity={SeverityType.Danger}
         visible={vm.errorDialog !== null}
-        title={t().errors.genericTitle}
+        title={t.errors.genericTitle}
         message={vm.errorDialog ?? CharConstants.empty}
-        primaryLabel={t().common.ok}
+        primaryLabel={t.common.ok}
         onPrimary={vm.onCloseErrorDialog}
         onClose={vm.onCloseErrorDialog}
       />

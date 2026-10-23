@@ -36,7 +36,7 @@ describe('AlarmScreen', () => {
     );
 
     for (const label of [t().alarm.title, RECIPE_NAME, t().alarm.dismiss]) {
-      const style = StyleSheet.flatten(textNode(root, label).props.style) as {
+      const style = StyleSheet.flatten(textNode(root, label).props['style']) as {
         fontSize: number;
         lineHeight: number;
       };
@@ -58,8 +58,8 @@ describe('AlarmScreen', () => {
     expect(
       root.findAll(
         (node) =>
-          node.props.accessibilityRole === 'button' &&
-          node.props.accessibilityLabel === t().alarm.dismiss,
+          node.props['accessibilityRole'] === 'button' &&
+          node.props['accessibilityLabel'] === t().alarm.dismiss,
       ),
     ).not.toHaveLength(0);
 

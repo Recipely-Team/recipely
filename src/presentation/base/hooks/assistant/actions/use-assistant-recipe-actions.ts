@@ -1,4 +1,5 @@
 import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
+import { useStore } from 'zustand';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { useCallback } from 'react';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -14,6 +15,7 @@ import { listReading } from '@presentation/base/hooks/assistant/args/describing/
 import { Answer, SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
 import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-user-id';
 
 /** What the recipe screen lends the assistant, named where it is consumed. */
 interface AssistantRecipeActionsDeps {
@@ -105,42 +107,40 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     onToggleIngredient,
     onToggleStep,
   } = deps;
-  const { authStore, favoritesStore, savedRecipesStore, likesStore } = useStores();
-  const authState = authStore((s) => s.state);
-  const userId =
-    authState.status === StoreStatus.Authenticated ? authState.session.user.id : null;
-  const addFavorite = favoritesStore((s) => s.addFavorite);
-  const removeFavorite = favoritesStore((s) => s.removeFavorite);
-  const setLikedInStore = likesStore((s) => s.setLiked);
-  const savedIds = savedRecipesStore((s) => s.savedIds);
-  const savedListState = savedRecipesStore((s) => s.listState);
-  const likeState = likesStore((s) => s.byRecipe[recipeId]);
+  const { favoritesStore, savedRecipesStore, likesStore } = useStores();
+  const userId = useSignedInUserId();
+  const addFavorite = useStore(favoritesStore, (s) => s.addFavorite);
+  const removeFavorite = useStore(favoritesStore, (s) => s.removeFavorite);
+  const setLikedInStore = useStore(likesStore, (s) => s.setLiked);
+  const isSaved = useStore(savedRecipesStore, (s) => s.savedIds.has(recipeId));
+  const savedListState = useStore(savedRecipesStore, (s) => s.saved);
+  const likeState = useStore(likesStore, (s) => s.byRecipe[recipeId]);
 
   const setSaved = useCallback(
-    async (wanted: boolean): Promise<AssistantActionResultType> => {
+    async (isWanted: boolean): Promise<AssistantActionResultType> => {
       if (userId === null) return { ok: false, error: AssistantActionError.SignedOut };
-      if (savedIds.has(recipeId) === wanted) {
+      if (isSaved === isWanted) {
         // An unloaded saved set reads every recipe as not saved; only unsave needs it loaded.
-        if (!wanted && savedListState.status !== StoreStatus.Loaded) {
+        if (!isWanted && savedListState.status !== StoreStatus.Loaded) {
           return { ok: false, error: AssistantActionError.NotReady };
         }
         return { ok: true, title: recipeName };
       }
 
-      if (wanted) await addFavorite(userId, recipeId);
-      else await removeFavorite(userId, recipeId);
-      return { ok: true, title: recipeName };
+      // The assistant must not announce a save that failed.
+      const failure = isWanted ? await addFavorite(recipeId) : await removeFavorite(recipeId);
+      return failure === null ? { ok: true, title: recipeName } : { ok: false, error: AssistantActionError.Failed };
     },
-    [userId, savedIds, savedListState, recipeId, recipeName, addFavorite, removeFavorite],
+    [userId, isSaved, savedListState, recipeId, recipeName, addFavorite, removeFavorite],
   );
 
   const setLiked = useCallback(
-    async (wanted: boolean): Promise<AssistantActionResultType> => {
+    async (isWanted: boolean): Promise<AssistantActionResultType> => {
       if (userId === null) return { ok: false, error: AssistantActionError.SignedOut };
       // The store, not the render state, knows whether the recipe is liked.
       if (likeState === undefined) return { ok: false, error: AssistantActionError.NotReady };
 
-      const result = await setLikedInStore(recipeId, wanted);
+      const result = await setLikedInStore(recipeId, isWanted);
       return result.ok ? { ok: true, title: recipeName } : { ok: false, error: AssistantActionError.Failed };
     },
     [userId, likeState, recipeId, recipeName, setLikedInStore],
@@ -149,7 +149,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   useAssistantScreenContent(() =>
     [
       `recipe=${recipeName}`,
-      `saved=${savedIds.has(recipeId) ? Answer.yes : Answer.no}`,
+      `saved=${isSaved ? Answer.yes : Answer.no}`,
       `liked=${likeState?.likedByMe === true ? Answer.yes : Answer.no}`,
       `mine=${isOwner ? Answer.yes : Answer.no}`,
       `steps=${instructions.length}`,
@@ -174,10 +174,10 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
       if (savedListState.status !== StoreStatus.Loaded) {
         return { ok: false, error: AssistantActionError.NotReady };
       }
-      if (!savedIds.has(recipeId)) return { ok: true, title: recipeName };
+      if (!isSaved) return { ok: true, title: recipeName };
       onRequestUnsave();
       return { ok: true, awaiting: true, title: recipeName };
-    }, [savedIds, savedListState, recipeId, recipeName, onRequestUnsave]),
+    }, [isSaved, savedListState, recipeName, onRequestUnsave]),
   );
   useAssistantAction(AssistantAction.Like, useCallback(() => setLiked(true), [setLiked]));
   useAssistantAction(AssistantAction.Unlike, useCallback(() => setLiked(false), [setLiked]));
@@ -197,54 +197,45 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
 
   useAssistantAction(
     AssistantAction.AddComment,
-    useCallback(
-      async (arg?: string): Promise<AssistantActionResultType> => {
-        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: AssistantActionError.Empty };
-        // The text goes with the call; the field would still hold the previous render's value.
-        onPostComment(arg);
-        return { ok: true, title: recipeName };
-      },
-      [onPostComment, recipeName],
-    ),
+    async (arg?: string): Promise<AssistantActionResultType> => {
+      if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: AssistantActionError.Empty };
+      // The text goes with the call; the field would still hold the previous render's value.
+      onPostComment(arg);
+      return { ok: true, title: recipeName };
+    },
   );
 
   // Name or 1-based position ("the yoghurt" / "the second one").
   useAssistantAction(
     AssistantAction.ToggleIngredient,
-    useCallback(
-      async (arg?: string): Promise<AssistantActionResultType> => {
-        const index = rowAt(ingredients, arg);
-        if (index === null) return { ok: false, error: AssistantActionError.NotFound };
-        onToggleIngredient(index);
-        return {
-          ok: true,
-          n: {
-            ing: ingredients.length,
-            checked: checkedIngredients.filter(Boolean).length + (checkedIngredients[index] === true ? ValueConstants.minusOne : ValueConstants.one),
-          },
-        };
-      },
-      [ingredients, onToggleIngredient, checkedIngredients],
-    ),
+    async (arg?: string): Promise<AssistantActionResultType> => {
+      const index = rowAt(ingredients, arg);
+      if (index === null) return { ok: false, error: AssistantActionError.NotFound };
+      onToggleIngredient(index);
+      return {
+        ok: true,
+        n: {
+          ing: ingredients.length,
+          checked: checkedIngredients.filter(Boolean).length + (checkedIngredients[index] === true ? ValueConstants.minusOne : ValueConstants.one),
+        },
+      };
+    },
   );
 
   useAssistantAction(
     AssistantAction.ToggleStep,
-    useCallback(
-      async (arg?: string): Promise<AssistantActionResultType> => {
-        const index = rowAt(instructions, arg);
-        if (index === null) return { ok: false, error: AssistantActionError.NotFound };
-        onToggleStep(index);
-        return {
-          ok: true,
-          n: {
-            step: instructions.length,
-            done: completedSteps.filter(Boolean).length + (completedSteps[index] === true ? ValueConstants.minusOne : ValueConstants.one),
-          },
-        };
-      },
-      [instructions, onToggleStep, completedSteps],
-    ),
+    async (arg?: string): Promise<AssistantActionResultType> => {
+      const index = rowAt(instructions, arg);
+      if (index === null) return { ok: false, error: AssistantActionError.NotFound };
+      onToggleStep(index);
+      return {
+        ok: true,
+        n: {
+          step: instructions.length,
+          done: completedSteps.filter(Boolean).length + (completedSteps[index] === true ? ValueConstants.minusOne : ValueConstants.one),
+        },
+      };
+    },
   );
 
   useAssistantAction(

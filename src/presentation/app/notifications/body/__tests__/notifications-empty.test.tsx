@@ -4,7 +4,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { NotificationsEmpty } from '@presentation/app/notifications/body/notifications-empty';
 import { t } from '@presentation/i18n';
 
-const texts = (root: ReturnType<typeof renderComponent>['root']): string[] => root.findAllByType(Text).map((node) => String(node.props.children));
+const texts = (root: ReturnType<typeof renderComponent>['root']): string[] => root.findAllByType(Text).map((node) => String(node.props['children']));
 
 describe('NotificationsEmpty', () => {
   // --- regression: with the Unread filter on and nothing unread, the inbox said "No notifications yet".
@@ -12,7 +12,7 @@ describe('NotificationsEmpty', () => {
     const onShowAll = jest.fn();
     const { root } = renderComponent(<NotificationsEmpty caughtUp onShowAll={onShowAll} />);
     expect(texts(root)).toContain(t().notifications.caughtUp);
-    const showAll = root.find((node) => node.props.accessibilityRole === 'button' && typeof node.props.onPress === 'function');
+    const showAll = root.find((node) => node.props['accessibilityRole'] === 'button' && typeof node.props['onPress'] === 'function');
     act(() => (showAll.props as { onPress: () => void }).onPress());
     expect(onShowAll).toHaveBeenCalledTimes(1);
   });

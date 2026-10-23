@@ -1,6 +1,6 @@
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { MediaPicker } from '@presentation/app/create-recipe/items/photos/media-picker';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 
 export interface PhotosSheetProps {
@@ -26,13 +26,16 @@ export const PhotosSheet = ({
   onRemove,
   onSetCover,
   onClose,
-}: PhotosSheetProps): React.JSX.Element => (
+}: PhotosSheetProps): React.JSX.Element => {
+  const t = useTranslations();
+  return (
   <BottomSheet
     visible={visible}
-    title={t().createRecipe.photosTitle}
+    title={t.createRecipe.photosTitle}
     onClose={onClose}
-    rightAction={{ label: t().createRecipe.donePhotos, onPress: onClose }}
+    rightAction={{ label: t.createRecipe.donePhotos, onPress: onClose }}
   >
     <MediaPicker media={media} onAdd={onAdd} onRemove={onRemove} onSetCover={onSetCover} />
   </BottomSheet>
 );
+};

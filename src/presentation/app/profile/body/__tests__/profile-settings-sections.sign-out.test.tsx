@@ -11,7 +11,7 @@ import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { ProfileSettingsSections } from '@presentation/app/profile/body/profile-settings-sections';
-import type { AuthStoreState } from '@application/auth/auth-store-state';
+import type { AuthStore } from '@application/auth/auth-store-contract';
 import { t } from '@presentation/i18n';
 
 const mockReplace = jest.fn();
@@ -31,7 +31,7 @@ const signOut = jest.fn<Promise<null>, []>(() => Promise.resolve(null));
 
 const makeStores = (): ApplicationStores =>
   ({
-    authStore: create<Partial<AuthStoreState>>(() => ({
+    authStore: create<Partial<AuthStore>>(() => ({
       state: { status: 'unauthenticated' },
       signOut,
       deleteAccount: jest.fn<Promise<null>, []>(() => Promise.resolve(null)),
@@ -44,9 +44,9 @@ const makeStores = (): ApplicationStores =>
 const pressableLabelled = (root: ReactTestInstance, label: string): ReactTestInstance | undefined =>
   root.findAll(
     (node) =>
-      node.props.accessibilityRole === 'button' &&
-      typeof node.props.onPress === 'function' &&
-      (node.props.accessibilityLabel === label ||
+      node.props['accessibilityRole'] === 'button' &&
+      typeof node.props['onPress'] === 'function' &&
+      (node.props['accessibilityLabel'] === label ||
         textContent(node).includes(label)),
   )[0];
 
@@ -83,7 +83,7 @@ describe('ProfileSettingsSections — sign out', () => {
     const root = render();
 
     act(() => {
-      (pressableLabelled(root, t().settings.signOut)?.props.onPress as () => void)();
+      (pressableLabelled(root, t().settings.signOut)?.props['onPress'] as () => void)();
     });
 
     expect(signOut).not.toHaveBeenCalled();
@@ -94,18 +94,18 @@ describe('ProfileSettingsSections — sign out', () => {
     const root = render();
 
     act(() => {
-      (pressableLabelled(root, t().settings.signOut)?.props.onPress as () => void)();
+      (pressableLabelled(root, t().settings.signOut)?.props['onPress'] as () => void)();
     });
     // The sheet's confirm carries the same label as the row that opened it, so
     // take the last one — the one inside the sheet.
     const confirms = root.findAll(
       (node) =>
-        node.props.accessibilityRole === 'button' &&
-        typeof node.props.onPress === 'function' &&
+        node.props['accessibilityRole'] === 'button' &&
+        typeof node.props['onPress'] === 'function' &&
         textContent(node).includes(t().settings.signOut),
     );
     await act(async () => {
-      (confirms[confirms.length - 1]?.props.onPress as () => void)();
+      (confirms[confirms.length - 1]?.props['onPress'] as () => void)();
       await Promise.resolve();
     });
 

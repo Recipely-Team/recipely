@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assistant-mascot';
 import { AssistantStatus } from '@application/assistant/session/assistant-status';
@@ -27,13 +28,13 @@ export interface AssistantBubbleProps {
  *   the conversation: a turn is laid straight over whatever the screen is
  *   showing, and over a photograph an unlifted bubble is unreadable.
  */
-export const AssistantBubble = ({ speaker, text }: AssistantBubbleProps): React.JSX.Element => {
+const AssistantBubbleComponent = ({ speaker, text }: AssistantBubbleProps): React.JSX.Element => {
   const { colors } = useTheme();
-  const mine = speaker === ChatRole.User;
+  const isMine = speaker === ChatRole.User;
 
   return (
-    <View style={[styles.row, mine ? styles.rowMine : styles.rowTheirs]}>
-      {!mine ? (
+    <View style={[styles.row, isMine ? styles.rowMine : styles.rowTheirs]}>
+      {!isMine ? (
         <View style={[styles.avatar, shadows.sm, { backgroundColor: colors.primary }]}>
           <AssistantMascot size={assistantMetrics.bubbleMascot} status={AssistantStatus.Idle} isAnimated={false} />
         </View>
@@ -43,7 +44,7 @@ export const AssistantBubble = ({ speaker, text }: AssistantBubbleProps): React.
         style={[
           styles.bubble,
           shadows.md,
-          mine
+          isMine
             ? { backgroundColor: colors.primary, borderBottomRightRadius: radii.xs }
             : {
                 backgroundColor: colors.surface,
@@ -53,7 +54,7 @@ export const AssistantBubble = ({ speaker, text }: AssistantBubbleProps): React.
               },
         ]}
       >
-        <ThemedText variant="body" style={mine ? { color: colors.primaryText } : undefined}>
+        <ThemedText variant="body" style={isMine ? { color: colors.primaryText } : undefined}>
           {text}
         </ThemedText>
       </View>
@@ -80,3 +81,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
 });
+
+/** Memoized: rendered once per list item, it re-renders only when its own props change. */
+export const AssistantBubble = memo(AssistantBubbleComponent);

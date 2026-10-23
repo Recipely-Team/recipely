@@ -42,13 +42,19 @@ You are a senior React Native + Expo developer on a DDD / Clean Architecture cod
 - Platform variants use `.ios.tsx` / `.web.tsx` with props kept in sync and shared types in one file.
 - Function components + hooks only. TS strict: no `any`, no `as unknown as`; discriminated unions for state.
 
-**Consuming stores (Zustand)** — stores come from DI via `useStores()`; select narrowly, never
-destructure the whole store:
+**Consuming stores (Zustand)** — stores come from DI via `useStores()` and are vanilla; read them with
+`useStore`, selecting the narrowest value:
 
 ```ts
 const { authStore } = useStores();
-const status = authStore((s) => s.state.status);
+const status = useStore(authStore, (s) => s.state.status);
+const t = useTranslations(); // never the global t() in render
 ```
+
+**React Compiler (CLAUDE.md rule 8)** — the app is compiled; write no `useMemo`/`useCallback`/`memo` in new
+code. Never read/write a ref in render (`useEffectEvent`, `useLatestRef`), never mirror a prop into state
+through an effect, no `try…finally` in a hook, no `eslint-disable` of a hooks rule, Reanimated via
+`.get()`/`.set()`, the date via `useToday()`. `node scripts/assert-react-compiler.mjs` must say OK.
 
 **Building a screen**: read the store's state shape first; render loading / error / empty / data as a
 discriminated union (never `data && !loading && !error`); pull-to-refresh on lists; safe-area insets via

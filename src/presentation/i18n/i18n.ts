@@ -27,14 +27,23 @@ const translations: Record<string, TranslationsType> = {
 };
 
 /**
+ * The catalogue for the language right now, read outside rendering.
+ *
+ * @remarks
+ * - **Not for rendering.** A component or hook reads `useTranslations()`: the
+ *   language is state, and a value read from a global during render is one the
+ *   React Compiler caches past a language switch. This is for code that runs
+ *   later — a toast raised from a handler, a notification scheduled for an alarm.
+ *
  * Presentation-side view of the app's language. The state itself lives in the
  * application-layer `LocaleService` — the single source of truth it shares with
  * the `Accept-Language` header — so what the user reads and what the backend is
  * asked for can never drift apart.
  */
-export const t = (): TranslationsType => {
-  return translations[getLocaleService().getLocale()] ?? en;
-};
+export const t = (): TranslationsType => translationsFor(getLocaleService().getLocale());
+
+/** The catalogue for `locale`, English for one the app does not ship. */
+export const translationsFor = (locale: string): TranslationsType => translations[locale] ?? en;
 
 /**
  * Restores the persisted language choice. Awaited during bootstrap before the

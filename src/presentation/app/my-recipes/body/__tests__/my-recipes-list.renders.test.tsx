@@ -42,7 +42,6 @@ const props: MyRecipesListProps = {
   items: [],
   gridColumns: 1,
   isExpanded: false,
-  isSaved: () => false,
   onToggleSave: jest.fn(),
   onOpenRecipe: jest.fn(),
   onOpenDraft: jest.fn(),

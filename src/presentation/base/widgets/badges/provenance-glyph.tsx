@@ -3,6 +3,7 @@ import Svg, { Circle, Defs, G, LinearGradient, Path, Rect, Stop } from 'react-na
 import { ProvenanceMark, type ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
 import { BrandColors } from '@presentation/base/theme';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
+import { CharConstants } from '@core/constants';
 
 export interface ProvenanceGlyphProps {
   mark: ProvenanceMarkType;
@@ -56,7 +57,7 @@ const AI_STOPS = [
  *   seals sharing one id would both paint with whichever gradient came last.
  */
 export const ProvenanceGlyph = ({ mark, size, tint }: ProvenanceGlyphProps): React.JSX.Element => {
-  const inkId = `provenance-ink-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  const inkId = `provenance-ink-${useId().replace(/[^a-zA-Z0-9]/g, CharConstants.empty)}`;
   const ink = `url(#${inkId})`;
 
   if (mark === ProvenanceMark.Curated) return <RecipelyLogo size={size} />;

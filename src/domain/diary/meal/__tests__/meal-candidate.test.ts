@@ -11,14 +11,14 @@ describe('MealCandidate', () => {
   it('rescales every nutrient linearly from the parser portion when the grams change', () => {
     const doubled = mealCandidateOf().withGrams(300);
     expect(doubled.grams).toBe(300);
-    expect(doubled.nutrients.value).toEqual({ calories: 400, protein: 24, carbs: 12, fat: 28, fiber: 4 });
+    expect(doubled.nutrients().value).toEqual({ calories: 400, protein: 24, carbs: 12, fat: 28, fiber: 4 });
     // Back down from an edit: still scaled from the original portion, not compounded.
-    expect(doubled.withGrams(75).nutrients.calories).toBe(100);
+    expect(doubled.withGrams(75).nutrients().calories).toBe(100);
   });
 
   it('keeps an unknown macro unknown when rescaling', () => {
     const c = mealCandidateOf({ grams: 100, portionGrams: 100, portion: nutrientsOf({ calories: 100 }) }).withGrams(50);
-    expect(c.nutrients.value).toEqual({ calories: 50, protein: null, carbs: null, fat: null, fiber: null });
+    expect(c.nutrients().value).toEqual({ calories: 50, protein: null, carbs: null, fat: null, fiber: null });
   });
 
   it('clamps edited grams to whole grams within 1..5000, and ignores a non-number', () => {

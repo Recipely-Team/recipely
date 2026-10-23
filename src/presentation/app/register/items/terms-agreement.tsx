@@ -3,9 +3,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, borderWidths, BrandColors, targetSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api/api-hosts';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface TermsAgreementProps {
   agree: boolean;
@@ -14,6 +14,7 @@ export interface TermsAgreementProps {
 
 /** Terms/Privacy consent checkbox with inline links to the policy pages. */
 export const TermsAgreement = ({ agree, onToggle }: TermsAgreementProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -35,26 +36,26 @@ export const TermsAgreement = ({ agree, onToggle }: TermsAgreementProps): React.
         {agree ? <Ionicons name="checkmark" size={iconSizes.sm} color={colors.primaryText} /> : null}
       </View>
       <ThemedText variant="caption" muted style={styles.termsText}>
-        {t().register.agreeText}{' '}
+        {t.register.agreeText}{CharConstants.space}
         <ThemedText
           variant="caption"
           style={[styles.linkWeight, { color: colors.primary }]}
           accessibilityRole="link"
-          accessibilityLabel={t().register.terms}
-          onPress={() => Linking.openURL(TERMS_OF_USE_URL)}
+          accessibilityLabel={t.register.terms}
+          onPress={() => void Linking.openURL(TERMS_OF_USE_URL).catch(() => undefined)}
         >
-          {t().register.terms}
+          {t.register.terms}
         </ThemedText>
-        {' '}
-        {t().register.and}{' '}
+        {CharConstants.space}
+        {t.register.and}{CharConstants.space}
         <ThemedText
           variant="caption"
           style={[styles.linkWeight, { color: colors.primary }]}
           accessibilityRole="link"
-          accessibilityLabel={t().register.privacy}
-          onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+          accessibilityLabel={t.register.privacy}
+          onPress={() => void Linking.openURL(PRIVACY_POLICY_URL).catch(() => undefined)}
         >
-          {t().register.privacy}
+          {t.register.privacy}
         </ThemedText>
       </ThemedText>
     </Pressable>

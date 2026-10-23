@@ -2,7 +2,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { controlSizes, fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface LoadMoreRowProps {
   failed: boolean;
@@ -11,8 +11,9 @@ export interface LoadMoreRowProps {
 
 /** Under a list whose next page is loading ("Loading more…"), or failed ("Try again", inline). */
 export const LoadMoreRow = ({ failed, onRetry }: LoadMoreRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().diary;
+  const strings = t.diary;
   if (failed) {
     return (
       <Pressable onPress={onRetry} accessibilityRole="button" style={styles.row}>

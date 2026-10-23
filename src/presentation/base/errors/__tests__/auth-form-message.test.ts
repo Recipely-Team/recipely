@@ -11,22 +11,22 @@ import { en } from '@presentation/i18n/locales/en';
 describe('authFormMessage', () => {
   it('uses the contextual override for the matching failure code', () => {
     expect(
-      authFormMessage(new UnauthorizedFailure(), {
+      authFormMessage(en, new UnauthorizedFailure(), {
         unauthorized: 'Wrong email or password',
       }),
     ).toBe('Wrong email or password');
 
     expect(
-      authFormMessage(new ConflictFailure(), { conflict: 'Email taken' }),
+      authFormMessage(en, new ConflictFailure(), { conflict: 'Email taken' }),
     ).toBe('Email taken');
   });
 
   it('falls back to the class-based short copy when the code is not overridden', () => {
     expect(
-      authFormMessage(new NetworkFailure(), { unauthorized: 'irrelevant' }),
+      authFormMessage(en, new NetworkFailure(), { unauthorized: 'irrelevant' }),
     ).toBe(en.errors.network.short);
 
-    expect(authFormMessage(new ValidationFailure('x'), {})).toBe(
+    expect(authFormMessage(en, new ValidationFailure('x'), {})).toBe(
       en.errors.validation.short,
     );
   });
@@ -41,7 +41,7 @@ describe('authFormMessage', () => {
       ErrorMessageKey.codeExpired,
     );
 
-    expect(authFormMessage(expired, { validation: 'Wrong code' })).toBe(
+    expect(authFormMessage(en, expired, { validation: 'Wrong code' })).toBe(
       en.errors.codeExpired.short,
     );
   });
@@ -52,7 +52,7 @@ describe('authFormMessage', () => {
       'errors.unauthorized.invalid_token',
     );
 
-    expect(authFormMessage(invalidToken, { unauthorized: 'Wrong email or password' })).toBe(
+    expect(authFormMessage(en, invalidToken, { unauthorized: 'Wrong email or password' })).toBe(
       'Wrong email or password',
     );
   });

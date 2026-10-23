@@ -1,4 +1,5 @@
-import { useCallback, useRef } from 'react';
+import { useRef } from 'react';
+import { useStore } from 'zustand';
 import { router, type Href } from 'expo-router';
 import { AssistantAction, type AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
@@ -6,10 +7,10 @@ import type { AssistantActionResultType } from '@domain/assistant/actions/assist
 import type { AssistantRecipeRow } from '@presentation/base/hooks/assistant/args/resolving/assistant-recipe-row';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { RoutePaths } from '@presentation/base/constants';
-import { StoreStatus } from '@application/store/store-status';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { useIsSignedIn } from '@presentation/base/hooks/auth/use-is-signed-in';
 
 /** How long the recipe screen has to mount and register what it answers. */
 const SCREEN_ARRIVAL_TIMEOUT_MS = 4_000;
@@ -39,98 +40,66 @@ const SCREEN_ARRIVAL_TIMEOUT_MS = 4_000;
  *   instead of ending it.
  */
 export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[]): void => {
-  const { assistantActionRegistry: registry, authStore, likesStore } = useStores();
-  const setLikedInStore = likesStore((s) => s.setLiked);
+  const { assistantActionRegistry: registry, likesStore, savedRecipesStore } = useStores();
+  const setLikedInStore = useStore(likesStore, (s) => s.setLiked);
   const favourites = useSaveRecipe();
-  const authState = authStore((s) => s.state);
-  // Read through a ref so list re-renders do not re-register the actions.
-  const latest = useRef({ rows, favourites, isSignedIn: authState.status === StoreStatus.Authenticated });
-  latest.current = { rows, favourites, isSignedIn: authState.status === StoreStatus.Authenticated };
+  const isSignedIn = useIsSignedIn();
   // One hop at a time, so a failed navigation cannot loop back here.
   const travelling = useRef(false);
 
-  const find = useCallback((arg?: string): AssistantRecipeRow | null => {
-    const { rows: current } = latest.current;
-    const at = rowAt(current.map((row) => row.name), arg);
-    return at === null ? null : (current[at] ?? null);
-  }, []);
+  const find = (arg?: string): AssistantRecipeRow | null => {
+    const at = rowAt(rows.map((row) => row.name), arg);
+    return at === null ? null : (rows[at] ?? null);
+  };
 
-  const save = useCallback(
-    async (arg?: string): Promise<AssistantActionResultType> => {
-      const { favourites: saved, isSignedIn } = latest.current;
-      if (!isSignedIn) return { ok: false, error: AssistantActionError.SignedOut };
-      const row = find(arg);
-      if (row === null) return { ok: false, notMine: true };
-      // Already saved is success, not a toggle.
-      if (!saved.isSaved(row.id)) await saved.toggleSave(row.id);
-      return { ok: true, title: row.name };
-    },
-    [find],
-  );
+  const save = async (arg?: string): Promise<AssistantActionResultType> => {
+    if (!isSignedIn) return { ok: false, error: AssistantActionError.SignedOut };
+    const row = find(arg);
+    if (row === null) return { ok: false, notMine: true };
+    // Already saved is success, not a toggle.
+    if (!savedRecipesStore.getState().savedIds.has(row.id)) await favourites.toggleSave(row.id);
+    return { ok: true, title: row.name };
+  };
 
   /** Opens the recipe and lets its own screen answer, so the change is seen. */
-  const runOnRecipe = useCallback(
-    async (arg: string | undefined, action: AssistantActionType): Promise<AssistantActionResultType> => {
-      if (travelling.current) return { ok: false, error: AssistantActionError.NotFound };
-      const row = find(arg);
-      if (row === null) return { ok: false, notMine: true };
+  const runOnRecipe = async (arg: string | undefined, action: AssistantActionType): Promise<AssistantActionResultType> => {
+    if (travelling.current) return { ok: false, error: AssistantActionError.NotFound };
+    const row = find(arg);
+    if (row === null) return { ok: false, notMine: true };
 
-      travelling.current = true;
-      try {
-        router.push(RoutePaths.recipeDetail(row.id) as Href);
-        const arrived = await registry.waitForScreenHandler(action, SCREEN_ARRIVAL_TIMEOUT_MS);
-        if (!arrived) return { ok: false, error: AssistantActionError.ScreenDidNotOpen };
-        return await registry.run(action, arg);
-      } finally {
-        travelling.current = false;
-      }
-    },
-    [find, registry],
-  );
+    travelling.current = true;
+    const travel = async (): Promise<AssistantActionResultType> => {
+      router.push(RoutePaths.recipeDetail(row.id) as Href);
+      const hasArrived = await registry.waitForScreenHandler(action, SCREEN_ARRIVAL_TIMEOUT_MS);
+      if (!hasArrived) return { ok: false, error: AssistantActionError.ScreenDidNotOpen };
+      return registry.run(action, arg);
+    };
+    return travel().finally(() => {
+      travelling.current = false;
+    });
+  };
 
-  const setLiked = useCallback(
-    async (arg: string | undefined, wanted: boolean): Promise<AssistantActionResultType> => {
-      const { isSignedIn } = latest.current;
-      if (!isSignedIn) return { ok: false, error: AssistantActionError.SignedOut };
-      const row = find(arg);
-      if (row === null) return { ok: false, notMine: true };
+  const setLiked = async (arg: string | undefined, isWanted: boolean): Promise<AssistantActionResultType> => {
+    if (!isSignedIn) return { ok: false, error: AssistantActionError.SignedOut };
+    const row = find(arg);
+    if (row === null) return { ok: false, notMine: true };
 
-      // The store reports when the row's like state is unknown.
-      const result = await setLikedInStore(row.id, wanted);
-      return result.ok ? { ok: true, title: row.name } : { ok: false, error: AssistantActionError.NotReady };
-    },
-    [find, setLikedInStore],
-  );
+    // The store reports when the row's like state is unknown.
+    const result = await setLikedInStore(row.id, isWanted);
+    return result.ok ? { ok: true, title: row.name } : { ok: false, error: AssistantActionError.NotReady };
+  };
 
   useAssistantAction(AssistantAction.Save, save);
-  useAssistantAction(
-    AssistantAction.Like,
-    useCallback((arg?: string) => setLiked(arg, true), [setLiked]),
-  );
-  useAssistantAction(
-    AssistantAction.Unlike,
-    useCallback((arg?: string) => setLiked(arg, false), [setLiked]),
-  );
+  useAssistantAction(AssistantAction.Like, (arg?: string) => setLiked(arg, true));
+  useAssistantAction(AssistantAction.Unlike, (arg?: string) => setLiked(arg, false));
 
   // Confirmed actions travel to the recipe screen, where the confirm sheet lives.
-  useAssistantAction(
-    AssistantAction.Unsave,
-    useCallback(
-      async (arg?: string): Promise<AssistantActionResultType> => {
-        const answered = await runOnRecipe(arg, AssistantAction.Unsave);
-        return answered.ok ? { ...answered, awaiting: true } : answered;
-      },
-      [runOnRecipe],
-    ),
-  );
-  useAssistantAction(
-    AssistantAction.DeleteRecipe,
-    useCallback(
-      async (arg?: string): Promise<AssistantActionResultType> => {
-        const answered = await runOnRecipe(arg, AssistantAction.DeleteRecipe);
-        return answered.ok ? { ...answered, awaiting: true } : answered;
-      },
-      [runOnRecipe],
-    ),
-  );
+  useAssistantAction(AssistantAction.Unsave, async (arg?: string): Promise<AssistantActionResultType> => {
+    const answered = await runOnRecipe(arg, AssistantAction.Unsave);
+    return answered.ok ? { ...answered, awaiting: true } : answered;
+  });
+  useAssistantAction(AssistantAction.DeleteRecipe, async (arg?: string): Promise<AssistantActionResultType> => {
+    const answered = await runOnRecipe(arg, AssistantAction.DeleteRecipe);
+    return answered.ok ? { ...answered, awaiting: true } : answered;
+  });
 };

@@ -6,5 +6,3 @@ export const ImportSource = {
   Link: 'link',
   File: 'file',
 } as const;
-
-export type ImportSourceType = (typeof ImportSource)[keyof typeof ImportSource];

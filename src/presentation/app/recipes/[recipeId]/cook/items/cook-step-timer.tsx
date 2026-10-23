@@ -7,7 +7,7 @@ import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
 import { formatTimer } from '@presentation/base/utils/format-timer';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { stepTimerId } from '@presentation/base/timers/step-timer-id';
 import { CookCopyToken } from '@presentation/app/recipes/[recipeId]/cook/model/cook-copy-token';
 
@@ -28,11 +28,12 @@ export interface CookStepTimerProps {
  * off this screen, alarms when done and shows in the app-wide timers bar.
  */
 export const CookStepTimer = ({ recipeId, recipeName, stepIndex, minutes, caption }: CookStepTimerProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const timer = useRecipeTimer({ timerId: stepTimerId(recipeId, stepIndex, minutes), recipeId, recipeName, minutes });
 
   if (!timer.isActive) {
-    const label = t().cookMode.startTimer.replace(CookCopyToken.minutes, String(minutes));
+    const label = t.cookMode.startTimer.replace(CookCopyToken.minutes, String(minutes));
     return (
       <Pressable
         accessibilityRole="button"
@@ -59,12 +60,12 @@ export const CookStepTimer = ({ recipeId, recipeName, stepIndex, minutes, captio
         </ThemedText>
       ) : null}
       <ThemedText variant="title" accessibilityRole="timer" style={[styles.time, { color: colors.text }]}>
-        {timer.isDone ? t().timer.done : formatTimer(timer.remainingSeconds)}
+        {timer.isDone ? t.timer.done : formatTimer(timer.remainingSeconds)}
       </ThemedText>
       {timer.isDone ? null : (
         <RoundIconButton
           icon={timer.isPaused ? 'play' : 'pause'}
-          accessibilityLabel={timer.isPaused ? t().timer.resume : t().timer.pause}
+          accessibilityLabel={timer.isPaused ? t.timer.resume : t.timer.pause}
           onPress={() => void (timer.isPaused ? timer.resume() : timer.pause())}
           size={controlSizes.touchTarget}
           tone={RoundIconButtonTone.Outlined}
@@ -72,7 +73,7 @@ export const CookStepTimer = ({ recipeId, recipeName, stepIndex, minutes, captio
       )}
       <RoundIconButton
         icon="stop"
-        accessibilityLabel={t().timer.stop}
+        accessibilityLabel={t.timer.stop}
         onPress={() => void timer.stop()}
         size={controlSizes.touchTarget}
         tone={RoundIconButtonTone.Outlined}

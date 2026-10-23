@@ -11,7 +11,7 @@ import {
   mediaSizes,
   borderWidths,
 } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface ResumingViewProps {
@@ -37,6 +37,7 @@ const ROW_WIDTHS = ['92%', '78%', '86%', '64%'] as const;
  *   fail; a wait with no way out is the thing that made this feel stuck.
  */
 export const ResumingView = ({ isWebShell, topInset, onClose }: ResumingViewProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -56,7 +57,7 @@ export const ResumingView = ({ isWebShell, topInset, onClose }: ResumingViewProp
           hitSlop={spacing.sm}
           style={styles.iconBtn}
           accessibilityRole="button"
-          accessibilityLabel={t().createRecipe.cancel}
+          accessibilityLabel={t.createRecipe.cancel}
         >
           <Ionicons name="close" size={iconSizes.lg} color={colors.text} />
         </Pressable>
@@ -64,7 +65,7 @@ export const ResumingView = ({ isWebShell, topInset, onClose }: ResumingViewProp
         <View style={styles.iconBtn} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} accessibilityLabel={t().common.loading}>
+      <ScrollView contentContainerStyle={styles.content} accessibilityLabel={t.common.loading}>
         <SkeletonLoader width="100%" height={mediaSizes.coverMaxHeight} borderRadius={radii.xl} />
         <SkeletonLoader width="70%" height={fontSizes.title} borderRadius={radii.sm} />
 

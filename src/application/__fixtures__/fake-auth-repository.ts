@@ -4,16 +4,22 @@ import type { Result } from '@core/result/result';
 import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';
+import type { AccountRepositoryInterface } from '@domain/auth/account-repository-interface';
+import type { CreatorClaimRepositoryInterface } from '@domain/auth/creator-claim-repository-interface';
 import type { FakeAuthRepositoryConfig } from '@application/__fixtures__/fake-auth-repository-config';
 import type { CreatorTag } from '@domain/creators/creator-tag';
 import type { CreatorPlatformType } from '@domain/creators/creator-platform';
 
 /**
- * In-memory test double for `AuthRepositoryInterface`. Each method returns the
+ * In-memory test double for the three user ports (`AuthRepositoryInterface`,
+ * `AccountRepositoryInterface`, `CreatorClaimRepositoryInterface`), so one
+ * configured fake can stand behind all of them. Each method returns the
  * pre-configured `Result` from `FakeAuthRepositoryConfig`, defaulting to an
  * `UnknownFailure` (sign-in/up) or `ok(null)` (session) when not configured.
  */
-export class FakeAuthRepository implements AuthRepositoryInterface {
+export class FakeAuthRepository
+  implements AuthRepositoryInterface, AccountRepositoryInterface, CreatorClaimRepositoryInterface
+{
   constructor(private readonly config: FakeAuthRepositoryConfig = {}) {}
 
   signIn(_email: string, _password: string): Promise<Result<AuthSessionEntity, Failure>> {

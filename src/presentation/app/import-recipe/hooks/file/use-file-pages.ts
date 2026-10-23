@@ -59,6 +59,7 @@ export const useFilePages = (): UseFilePagesResult => {
       if (to < ValueConstants.zero || to >= current.length || from === to) return current;
       const next = [...current];
       const [page] = next.splice(from, ValueConstants.one);
+      if (page === undefined) return current;
       next.splice(to, ValueConstants.zero, page);
       return next;
     });

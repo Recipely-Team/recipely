@@ -80,7 +80,7 @@ export class NotificationService implements NotificationServiceInterface {
     try {
       Notifications.setNotificationHandler({
         handleNotification: async (n: NotificationsType.Notification) => {
-          const type = (n.request.content.data as Record<string, unknown> | undefined)?.['type'];
+          const type = (n.request.content.data)?.['type'];
           const isReminder = type === ENGAGEMENT_REMINDER;
           return {
             shouldShowBanner: !isReminder,
@@ -152,7 +152,7 @@ export class NotificationService implements NotificationServiceInterface {
           title: `${ALARM_EMOJI} ${recipeName}`,
           body,
           // iOS reads sound from content; Android from the channel.
-          sound: isIos() ? 'default' : undefined,
+          ...(isIos() ? { sound: 'default' } : {}),
           categoryIdentifier: TIMER_ALERT_CATEGORY,
           data: { type: TIMER_COMPLETE, timerId, recipeName },
         }),

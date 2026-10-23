@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
-import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { toastStore } from '@presentation/base/feedback/toast-store';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { UseSaveRecipeResult } from '@presentation/base/hooks/recipes/use-save-recipe-result';
+import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-user-id';
 
 /**
  * Shared favorites wiring for the recipe cards and hero card. Reads the
@@ -18,40 +18,37 @@ import type { UseSaveRecipeResult } from '@presentation/base/hooks/recipes/use-s
  * - **Unsaving offers Undo** — on the Saved tab the card vanishes at once.
  */
 export const useSaveRecipe = (): UseSaveRecipeResult => {
-  const { savedRecipesStore, favoritesStore, authStore } = useStores();
-  const savedIds = savedRecipesStore((s) => s.savedIds);
-  const authState = authStore((s) => s.state);
-  const userId = authState.status === StoreStatus.Authenticated ? authState.session.user.id : null;
-
-  const isSaved = useCallback((recipeId: string): boolean => savedIds.has(recipeId), [savedIds]);
+  const t = useTranslations();
+  const { savedRecipesStore, favoritesStore } = useStores();
+  const userId = useSignedInUserId();
 
   const toggleSave = useCallback(
     async (recipeId: string): Promise<void> => {
       const favorites = favoritesStore.getState();
       if (favorites.pending.has(recipeId) || userId === null) return;
       const wasSaved = savedRecipesStore.getState().savedIds.has(recipeId);
-      if (wasSaved) {
-        await favorites.removeFavorite(userId, recipeId);
-      } else {
-        await favorites.addFavorite(userId, recipeId);
-      }
-      const failure = favoritesStore.getState().error;
+      const failure = wasSaved
+        ? await favorites.removeFavorite(recipeId)
+        : await favorites.addFavorite(recipeId);
       if (failure !== null) {
         showErrorToast(failure);
-        favoritesStore.getState().clearError();
         return;
       }
       if (wasSaved) {
         toastStore.getState().show({
           severity: SeverityType.Neutral,
-          message: t().recipes.removedFromSaved,
-          actionLabel: t().common.undo,
-          onAction: () => void favoritesStore.getState().addFavorite(userId, recipeId),
+          message: t.recipes.removedFromSaved,
+          actionLabel: t.common.undo,
+          onAction: () => {
+            void favoritesStore.getState().addFavorite(recipeId).then((undoFailure) => {
+              if (undoFailure !== null) showErrorToast(undoFailure);
+            });
+          },
         });
       }
     },
-    [favoritesStore, savedRecipesStore, userId],
+    [favoritesStore, savedRecipesStore, userId, t],
   );
 
-  return { isSaved, toggleSave };
+  return { toggleSave };
 };

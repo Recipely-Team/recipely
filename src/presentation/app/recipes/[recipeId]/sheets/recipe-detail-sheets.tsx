@@ -2,7 +2,7 @@ import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { DeleteRecipeSheet } from '@presentation/app/recipes/[recipeId]/sheets/delete-recipe-sheet';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants } from '@core/constants';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 
@@ -49,22 +49,24 @@ export interface RecipeDetailSheetsProps {
  *   also be the only one the recipe has. Deleting a comment asks too: it cannot
  *   be undone.
  */
-export const RecipeDetailSheets = (props: RecipeDetailSheetsProps): React.JSX.Element => (
+export const RecipeDetailSheets = (props: RecipeDetailSheetsProps): React.JSX.Element => {
+  const t = useTranslations();
+  return (
   <>
     <ConfirmSheet
       visible={props.unsavePending}
-      title={t().assistant.unsaveTitle}
-      message={t().assistant.unsaveMessage}
-      confirmLabel={t().assistant.unsaveConfirm}
+      title={t.assistant.unsaveTitle}
+      message={t.assistant.unsaveMessage}
+      confirmLabel={t.assistant.unsaveConfirm}
       onConfirm={props.onConfirmUnsave}
       onClose={props.onCancelUnsave}
     />
 
     <ConfirmSheet
       visible={props.photoPendingRemoval !== null}
-      title={t().photoViewer.removeA11y}
-      message={t().recipes.removePhotoConfirm}
-      confirmLabel={t().photoViewer.remove}
+      title={t.photoViewer.removeA11y}
+      message={t.recipes.removePhotoConfirm}
+      confirmLabel={t.photoViewer.remove}
       destructive
       onConfirm={props.onConfirmRemovePhoto}
       onClose={props.onCancelRemovePhoto}
@@ -72,18 +74,18 @@ export const RecipeDetailSheets = (props: RecipeDetailSheetsProps): React.JSX.El
 
     <FeedbackDialog
       visible={props.photoError !== null}
-      title={t().recipes.addPhoto}
+      title={t.recipes.addPhoto}
       message={props.photoError ?? CharConstants.empty}
-      primaryLabel={t().common.ok}
+      primaryLabel={t.common.ok}
       onPrimary={props.onDismissPhotoError}
       onClose={props.onDismissPhotoError}
     />
 
     <ConfirmSheet
       visible={props.commentDeletePending}
-      title={t().comments.delete}
-      message={t().comments.deleteConfirm}
-      confirmLabel={t().comments.delete}
+      title={t.comments.delete}
+      message={t.comments.deleteConfirm}
+      confirmLabel={t.comments.delete}
       destructive
       onConfirm={props.onConfirmDeleteComment}
       onClose={props.onCancelDeleteComment}
@@ -105,3 +107,4 @@ export const RecipeDetailSheets = (props: RecipeDetailSheetsProps): React.JSX.El
     />
   </>
 );
+};

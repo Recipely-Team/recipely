@@ -16,7 +16,7 @@ import { useAutomationActivity } from '@presentation/app/automations/activity/ho
 import { ActivitySummary } from '@presentation/app/automations/activity/body/activity-summary';
 import { SendRow } from '@presentation/app/automations/activity/items/send-row';
 import { borderWidths, controlSizes, fontSizes, fontWeights, lineHeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * One automation's Activity (spec §4): what it is, how many it sent, and
@@ -24,11 +24,12 @@ import { t } from '@presentation/i18n';
  * with the no-retry note under it.
  */
 export const AutomationActivityScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const scrollEndPadding = useScrollEndPadding();
   const colors = useTheme().colors;
   const vm = useAutomationActivity();
   const scrollable = useAssistantScrollable(vm.opened.status === StoreStatus.Loaded);
-  const copy = t().instagram;
+  const copy = t.instagram;
   const failed = vm.opened.status === StoreStatus.Error ? vm.opened.failure : vm.sends.status === StoreStatus.Error ? vm.sends.failure : null;
 
   const edit = (
@@ -41,7 +42,7 @@ export const AutomationActivityScreen = (): React.JSX.Element => {
 
   const body = (): React.JSX.Element => {
     if (failed !== null) {
-      const content = failureContent(failed);
+      const content = failureContent(t, failed);
       return <ErrorState icon={failureIcon(failed)} severity={failureSeverity(failed)} title={content.title} body={content.body} primaryLabel={copy.tryAgain} onPrimary={vm.onRetry} />;
     }
     if (vm.opened.status !== StoreStatus.Loaded) return <ActivityIndicator style={styles.spinner} color={colors.primary} />;

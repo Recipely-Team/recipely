@@ -52,13 +52,13 @@ export class DiaryDay {
     return this.props.entries.length > ValueConstants.zero;
   }
 
-  get totals(): Nutrients {
+  totals(): Nutrients {
     return Nutrients.sum(this.props.entries.map((entry) => entry.nutrients));
   }
 
   /** Kcal left against the goal; negative once over (the ring shows `+|n|`). */
   get remainingCalories(): number {
-    return this.props.goals.remainingCalories(this.totals.calories);
+    return this.props.goals.remainingCalories(this.totals().calories);
   }
 
   get overCalories(): number {
@@ -69,15 +69,15 @@ export class DiaryDay {
   get calorieProgress(): number {
     const goal = this.props.goals.calories;
     if (goal <= ValueConstants.zero) return ValueConstants.zero;
-    return Math.min(ValueConstants.one, Math.max(ValueConstants.zero, this.totals.calories / goal));
+    return Math.min(ValueConstants.one, Math.max(ValueConstants.zero, this.totals().calories / goal));
   }
 
   get calorieStatus(): CalorieStatusType {
-    return this.props.goals.calorieStatus(this.totals.calories, this.hasEntries);
+    return this.props.goals.calorieStatus(this.totals().calories, this.hasEntries);
   }
 
   /** The four meal cards, in display order, each with its own sum. */
-  get mealGroups(): MealGroup[] {
+  mealGroups(): MealGroup[] {
     return Object.values(MealSlot).map((meal) => {
       const entries = this.entriesFor(meal);
       return { meal, entries, totals: Nutrients.sum(entries.map((entry) => entry.nutrients)) };

@@ -3,7 +3,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { borderWidths, controlSizes, fontSizes, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface OnboardingActionsProps {
@@ -23,8 +23,9 @@ const CREATE_WEB_MIN = 200;
  * the old "Explore" and "Don't show again" links did the same thing it does.
  */
 export const OnboardingActions = ({ web = false, onSignUp, onSignIn }: OnboardingActionsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const labels = t().onboarding;
+  const labels = t.onboarding;
   return (
     <View style={[styles.row, web && styles.rowWeb]}>
       <Pressable

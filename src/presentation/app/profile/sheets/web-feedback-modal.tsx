@@ -1,11 +1,13 @@
 import { useState } from 'react';
+import { useStore } from 'zustand';
+import type { Failure } from '@core/failure';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { WebFeedbackForm } from '@presentation/app/profile/sheets/web-feedback-form';
 import { WebFeedbackSuccess } from '@presentation/app/profile/sheets/web-feedback-success';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { layoutSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface WebFeedbackModalProps {
@@ -19,26 +21,28 @@ export interface WebFeedbackModalProps {
  * swaps to WebFeedbackSuccess.
  */
 export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): React.JSX.Element => {
+  const t = useTranslations();
   const { feedbackStore } = useStores();
-  const submit = feedbackStore((s) => s.submit);
-  const isSubmitting = feedbackStore((s) => s.isSubmitting);
-  const error = feedbackStore((s) => s.error);
-  const reset = feedbackStore((s) => s.reset);
+  const submit = useStore(feedbackStore, (s) => s.submit);
+  const isSubmitting = useStore(feedbackStore, (s) => s.isSubmitting);
 
   const [subject, setSubject] = useState(CharConstants.empty);
   const [message, setMessage] = useState(CharConstants.empty);
-  const [sent, setSent] = useState(false);
+  const [wasSent, setSent] = useState(false);
+  // This sheet's own failure; another submitter's never shows here.
+  const [error, setError] = useState<Failure | null>(null);
 
   // The UI requires a subject although the domain allows none.
   const canSend = subject.trim().length > ValueConstants.zero && message.trim().length > ValueConstants.zero;
 
   const handleSend = async (): Promise<void> => {
-    const ok = await submit({ subject, message });
-    if (ok) setSent(true);
+    const failure = await submit({ subject, message });
+    setError(failure);
+    if (failure === null) setSent(true);
   };
 
   const handleClose = (): void => {
-    reset();
+    setError(null);
     setSubject(CharConstants.empty);
     setMessage(CharConstants.empty);
     setSent(false);
@@ -48,16 +52,16 @@ export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): R
   return (
     <BottomSheet
       visible={visible}
-      title={t().support.sheetTitle}
+      title={t.support.sheetTitle}
       onClose={handleClose}
       showCloseButton
       dialogMaxWidth={layoutSizes.webModalMaxWidth}
       footer={
-        sent ? (
-          <PrimaryButton label={t().support.sentDone} onPress={handleClose} />
+        wasSent ? (
+          <PrimaryButton label={t.support.sentDone} onPress={handleClose} />
         ) : (
           <PrimaryButton
-            label={t().support.send}
+            label={t.support.send}
             onPress={() => void handleSend()}
             disabled={!canSend}
             loading={isSubmitting}
@@ -65,7 +69,7 @@ export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): R
         )
       }
     >
-      {sent ? (
+      {wasSent ? (
         <WebFeedbackSuccess />
       ) : (
         <WebFeedbackForm

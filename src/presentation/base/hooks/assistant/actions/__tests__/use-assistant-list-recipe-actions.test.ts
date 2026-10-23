@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { StoreStatus } from '@application/store/store-status';
@@ -35,7 +36,6 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@presentation/base/hooks/recipes/use-save-recipe', () => ({
   useSaveRecipe: () => ({
-    isSaved: (id: string) => (globalThis as never as { __rows: Probe }).__rows.saved.has(id),
     toggleSave: async (id: string) => {
       const state = (globalThis as never as { __rows: Probe }).__rows;
       state.toggled.push(id);
@@ -46,26 +46,29 @@ jest.mock('@presentation/base/hooks/recipes/use-save-recipe', () => ({
 }));
 
 const mockRegistry = new AssistantActionRegistry();
+// The hook reads the saved set at action time, not through a subscription.
+const mockSavedRecipesStore = {
+  getState: () => ({ savedIds: (globalThis as never as { __rows: Probe }).__rows.saved }),
+};
 const mockAuth = { in: StoreStatus.Authenticated, out: StoreStatus.Unauthenticated };
 jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: () => ({
     assistantActionRegistry: mockRegistry,
-    authStore: (select: (s: { state: { status: string } }) => unknown) =>
-      select({
+    savedRecipesStore: mockSavedRecipesStore,
+    authStore: mockStoreReading(() => ({
         state: {
           status: (globalThis as never as { __rows: Probe }).__rows.signedIn
             ? mockAuth.in
             : mockAuth.out,
         },
-      }),
-    likesStore: (select: (s: { setLiked: unknown }) => unknown) =>
-      select({
+      })),
+    likesStore: mockStoreReading(() => ({
         setLiked: async (id: string, wanted: boolean) => {
           const state = (globalThis as never as { __rows: Probe }).__rows;
           state.liked.push({ id, wanted });
           return { ok: true, value: undefined };
         },
-      }),
+      })),
   }),
 }));
 const registry = mockRegistry;

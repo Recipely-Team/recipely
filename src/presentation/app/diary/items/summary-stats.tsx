@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { diarySizes, fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface SummaryStatsProps {
@@ -13,24 +13,25 @@ export interface SummaryStatsProps {
 
 /** Eaten · Goal · Remaining (or Over) beside the ring. */
 export const SummaryStats = ({ day }: SummaryStatsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().diary;
-  const kcal = t().nutrition.kcal;
+  const strings = t.diary;
+  const kcal = t.nutrition.kcal;
   const isOver = day.overCalories > ValueConstants.zero;
-  const line = (label: string, value: number, strong: boolean): React.JSX.Element => (
+  const line = (label: string, value: number, isStrong: boolean): React.JSX.Element => (
     <View style={styles.line} accessible>
-      <SizedText size={strong ? fontSizes.caption : fontSizes.small} weight={strong ? fontWeights.bold : undefined} muted={!strong}>
+      <SizedText size={isStrong ? fontSizes.caption : fontSizes.small} weight={isStrong ? fontWeights.bold : undefined} muted={!isStrong}>
         {label}
       </SizedText>
-      <SizedText size={strong ? fontSizes.heading : fontSizes.medium} weight={strong ? fontWeights.bold : fontWeights.semibold}>
+      <SizedText size={isStrong ? fontSizes.heading : fontSizes.medium} weight={isStrong ? fontWeights.bold : fontWeights.semibold}>
         {`${formatWholeNumber(value, locale)} ${kcal}`}
       </SizedText>
     </View>
   );
   return (
     <View style={styles.column}>
-      {line(strings.eaten, day.totals.calories, false)}
+      {line(strings.eaten, day.totals().calories, false)}
       {line(strings.goal, day.goals.calories, false)}
       <View style={[styles.divider, { backgroundColor: colors.cardBorder }]} />
       {isOver ? line(strings.over, day.overCalories, true) : line(strings.remaining, day.remainingCalories, true)}

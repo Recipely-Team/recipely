@@ -14,7 +14,7 @@ interface IngredientLineProps {
 }
 
 /** The character that turns an ingredient line into a heading. */
-const GROUP_MARKER = '#';
+const GROUP_MARKER = CharConstants.hash;
 /** The colon that closes a written heading is not part of its name. */
 const TRAILING_COLON = /\s*:\s*$/;
 /**
@@ -122,7 +122,7 @@ export class IngredientLine extends BaseValueObject<IngredientLineProps> {
     return `${qty}${CharConstants.space}${name}`;
   }
 
-  equals(other: IngredientLine): boolean {
+  override equals(other: IngredientLine): boolean {
     return this.toText() === other.toText();
   }
 

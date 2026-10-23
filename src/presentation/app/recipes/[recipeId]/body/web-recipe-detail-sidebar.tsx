@@ -9,7 +9,7 @@ import { TickBox } from '@presentation/base/widgets/inputs/tick-box';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, lineHeights, iconSizes, layoutSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 import { NutritionPanel } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-panel';
@@ -20,7 +20,7 @@ import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/us
 
 export interface WebRecipeDetailSidebarProps {
   recipe: RecipeEntity;
-  checkedIngredients: boolean[];
+  checkedIngredients: readonly boolean[];
   portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
   /** The backend is still computing nutrition; the empty state says so. */
@@ -39,8 +39,9 @@ export const WebRecipeDetailSidebar = ({
   onToggleIngredient,
   isNutritionCalculating,
 }: WebRecipeDetailSidebarProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t();
+  const strings = t;
   const checkedCount = checkedIngredients.filter(Boolean).length;
   const ingredients = IngredientList.of(portions.ingredients);
 
@@ -49,7 +50,7 @@ export const WebRecipeDetailSidebar = ({
   const metaRows: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string; control?: React.JSX.Element }[] = [
     { icon: 'timer-outline' as const, label: strings.recipes.prepTime, value: `${String(recipe.prepTimeMinutes)} ${strings.createRecipe.minShort}` },
     { icon: 'flame-outline' as const, label: strings.recipes.cookTime, value: `${String(recipe.cookTimeMinutes)} ${strings.createRecipe.minShort}` },
-    { icon: 'speedometer-outline' as const, label: strings.recipes.difficulty, value: difficultyLabel(recipe.difficulty) },
+    { icon: 'speedometer-outline' as const, label: strings.recipes.difficulty, value: difficultyLabel(t, recipe.difficulty) },
     { icon: 'people-outline' as const, label: strings.recipes.servings, value: String(portions.servings), control: <PortionStepper portions={portions} /> },
   ];
 
@@ -79,24 +80,24 @@ export const WebRecipeDetailSidebar = ({
                 </ThemedText>
               );
             }
-            const checked = checkedIngredients[i] ?? false;
+            const isChecked = checkedIngredients[i] ?? false;
             return (
               <Pressable
                 key={i}
                 onPress={() => onToggleIngredient(i)}
                 accessibilityRole="checkbox"
-                accessibilityState={{ checked }}
+                accessibilityState={{ checked: isChecked }}
                 accessibilityLabel={item}
                 style={styles.checkRow}
               >
-                <TickBox checked={checked} />
+                <TickBox checked={isChecked} />
                 <ThemedText
                   variant="body"
                   style={[
                     styles.checkText,
                     {
-                      color: checked ? colors.textMuted : colors.text,
-                      textDecorationLine: checked ? 'line-through' : 'none',
+                      color: isChecked ? colors.textMuted : colors.text,
+                      textDecorationLine: isChecked ? 'line-through' : 'none',
                     },
                   ]}
                 >
@@ -143,7 +144,7 @@ export const WebRecipeDetailSidebar = ({
           {strings.recipes.nutrition}
         </ThemedText>
         <NutritionPanel
-          facts={recipe.nutritionFacts}
+          facts={recipe.nutritionFacts()}
           isCalculating={isNutritionCalculating}
           source={recipe.nutritionSource}
           compact

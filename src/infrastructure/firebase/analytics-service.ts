@@ -1,3 +1,4 @@
+import type * as AnalyticsExports from '@react-native-firebase/analytics';
 import type { AnalyticsServiceInterface } from '@domain/analytics/analytics-service-interface';
 
 // WHY: a top-level static import of @react-native-firebase/analytics causes the
@@ -9,16 +10,16 @@ import type { AnalyticsServiceInterface } from '@domain/analytics/analytics-serv
 // The web half of this pair (`analytics-service.web.ts`) speaks to the Firebase
 // JS SDK instead; nothing here asks `Platform.OS`, because the bundler already
 // answered that question by picking a file (rule 13).
-type AnalyticsModule = typeof import('@react-native-firebase/analytics');
+type AnalyticsModule = typeof AnalyticsExports;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const mod: AnalyticsModule | null = (() => { try { return require('@react-native-firebase/analytics') as AnalyticsModule; } catch { return null; } })();
 
 export const analyticsService: AnalyticsServiceInterface = {
-  async setEnabled(enabled: boolean): Promise<void> {
+  async setEnabled(isEnabled: boolean): Promise<void> {
     if (mod === null) return;
     try {
-      await mod.setAnalyticsCollectionEnabled(mod.getAnalytics(), enabled);
+      await mod.setAnalyticsCollectionEnabled(mod.getAnalytics(), isEnabled);
     } catch {
       // Firebase native module unavailable — no-op.
     }
@@ -30,7 +31,7 @@ export const analyticsService: AnalyticsServiceInterface = {
   ): Promise<void> {
     if (mod === null) return;
     try {
-      await mod.logEvent(mod.getAnalytics(), name, params);
+      mod.logEvent(mod.getAnalytics(), name, params);
     } catch {
       // no-op
     }

@@ -1,40 +1,35 @@
-import { create } from 'zustand';
+import type { AssistantSessionState } from '@application/assistant/session/assistant-session-state';
+import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
+import { createStore } from 'zustand/vanilla';
 import {
   AssistantController,
   AssistantStatus as SessionStatus,
   EndReason,
   ToolRegistry,
 } from '@live-assistant/core';
-import type {
-  AssistantFailure,
-  AssistantMicrophone,
-  AssistantPlayer,
-  AssistantSession,
-  TranscriptEntry,
-} from '@live-assistant/core';
+import type { AssistantFailure, AssistantMicrophone, AssistantPlayer, AssistantSession, TranscriptEntry } from '@live-assistant/core';
 import { AssistantLevelMeter } from '@application/assistant/session/assistant-level-meter';
 import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import { createRunActionTool } from '@application/assistant/session/assistant-live-tool';
 import { AssistantStatus } from '@application/assistant/session/assistant-status';
 import type { AssistantStatusType } from '@application/assistant/session/assistant-status';
-import { toTranscriptLines } from '@application/assistant/session/assistant-transcript-lines';
+import { AssistantHeartbeat } from '@application/assistant/session/runtime/assistant-heartbeat';
+import { AssistantTranscriptExtras } from '@application/assistant/session/runtime/assistant-transcript-extras';
+import { meteredAssistantIo } from '@application/assistant/session/runtime/metered-assistant-io';
 import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
 import { AssistantView } from '@application/assistant/session/assistant-view';
 import { AssistantFailurePolicy } from '@application/assistant/session/assistant-failure-policy';
 import type { AskAssistantUseCase } from '@application/assistant/session/ask-assistant-use-case';
 import type { RunAssistantActionUseCase } from '@application/assistant/actions/run-assistant-action-use-case';
 import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
-import type { AssistantSessionStoreState } from '@application/assistant/session/assistant-session-store-state';
-import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
-import type { BoundStore } from '@application/store/bound-store';
+import type { AssistantSessionStore } from '@application/assistant/session/assistant-session-store-contract';
+import type { StoreApi } from 'zustand/vanilla';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
-import type { AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
-import { AssistantBudget } from '@domain/assistant/session/assistant-budget';
 import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import type { LiveSessionCredentials } from '@domain/assistant/session/live-session-credentials';
 import { ChatRole } from '@domain/drafts/chat-role';
-import { CharConstants, ValueConstants, TimeConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 interface AssistantSessionStoreDeps {
   session: AssistantSession<LiveSessionCredentials>;
@@ -46,20 +41,6 @@ interface AssistantSessionStoreDeps {
   runAction: RunAssistantActionUseCase;
 }
 
-/** A line the app adds itself; its id is given when it is placed. */
-type NewLine =
-  | { readonly kind: typeof AssistantTranscriptLineKind.Speech; readonly speaker: ChatRole; readonly text: string }
-  | { readonly kind: typeof AssistantTranscriptLineKind.Action; readonly action: AssistantActionType; readonly detail?: string };
-
-const HEARTBEAT_INTERVAL_MS = 15_000;
-const HEARTBEAT_SECONDS = 15;
-/**
- * How much budget is left when the assistant says out loud that it is running
- * out. One heartbeat of slack past a round minute, so a tick cannot straddle
- * the threshold and skip it — the session used to end mid-sentence with only a
- * caption to explain it ("asistan bir anda kesildi").
- */
-const BUDGET_WARNING_SECONDS = TimeConstants.secondsPerMinute + HEARTBEAT_SECONDS;
 /**
  * What the model is told when the budget is nearly gone: an instruction, not a
  * sentence to repeat — the session knows which language it is speaking.
@@ -68,7 +49,6 @@ const BUDGET_WARNING_PROMPT =
   'SYSTEM: about one minute of voice time remains today. Tell the user briefly, ' +
   'in the language you are speaking, that you are almost out of time and they ' +
   'can keep going by typing. Say nothing else and call no action.';
-const EXTRA_ID_PREFIX = 'app-';
 
 /**
  * Recipely's voice assistant: `@live-assistant/core`'s controller, plus what
@@ -81,8 +61,8 @@ const EXTRA_ID_PREFIX = 'app-';
  *   live in `AssistantController`, tested there against fakes and the live API.
  *   This store keeps the shape the screens were written against and adds
  *   Recipely's own concerns.
- * - **The budget.** The server cannot see a socket it is not part of, so a
- *   heartbeat reports seconds while live; a metered account at zero ends the
+ * - **The budget.** The server cannot see a socket it is not part of, so
+ *   `AssistantHeartbeat` reports seconds while live; a metered account at zero ends the
  *   session as `Unavailable`, and one minute before that the model is told —
  *   hidden from the transcript — to say so in the user's language. Minting
  *   goes through the backend, so every handover re-checks the budget too.
@@ -102,108 +82,66 @@ const EXTRA_ID_PREFIX = 'app-';
  */
 export const configureAssistantSessionStore = (
   deps: AssistantSessionStoreDeps,
-): BoundStore<AssistantSessionStoreState> => {
+): StoreApi<AssistantSessionStore> => {
   const { tokens, registry, askAssistant, runAction } = deps;
   const meter = new AssistantLevelMeter();
   let languageCode = CharConstants.empty;
   let overlay: AssistantStatusType | null = null;
-  let extras: { after: number; line: AssistantTranscriptLineType }[] = [];
-  let extraId = ValueConstants.zero;
+  /** Why the last start was refused; read only while the session is `Unavailable`. */
+  let denied: AssistantDenialReasonType | null = null;
+  const extras = new AssistantTranscriptExtras();
   let typedEpoch = ValueConstants.zero;
   let typedQueue: Promise<void> = Promise.resolve();
-  let heartbeat: ReturnType<typeof setInterval> | null = null;
-  let heartbeatEpoch = ValueConstants.zero;
   let seenError: AssistantFailure | null = null;
   let seenEntries: readonly TranscriptEntry[] | null = null;
   let previousStatus: string = SessionStatus.Idle;
 
-  return create<AssistantSessionStoreState>((set, get) => {
+  return createStore<AssistantSessionStore>((set, get) => {
     let controller!: AssistantController<LiveSessionCredentials>;
 
-    const publishLevel = (samples: Float32Array<ArrayBuffer>): void => {
-      const level = meter.measure(samples);
-      if (level !== null) set({ level });
-    };
-
-    // Frames arrive after mute/echo gating, so the waveform follows what the model hears.
-    const session: AssistantSession<LiveSessionCredentials> = {
-      audioFormat: deps.session.audioFormat,
-      connect: (credentials) => deps.session.connect(credentials),
-      sendAudio: (samples) => {
-        deps.session.sendAudio(samples);
-        // Drop frames captured during teardown.
+    const { session, player } = meteredAssistantIo(deps.session, deps.player, {
+      isCapturing: () => {
         const { status } = controller.getState();
-        if (status !== SessionStatus.Idle && status !== SessionStatus.Speaking) publishLevel(samples);
+        return status !== SessionStatus.Idle && status !== SessionStatus.Speaking;
       },
-      sendText: (text) => deps.session.sendText(text),
-      respondToTool: (call, response) => deps.session.respondToTool(call, response),
-      subscribe: (listener) => deps.session.subscribe(listener),
-      close: () => deps.session.close(),
-    };
-    const player: AssistantPlayer = {
-      level: () => deps.player.level(),
-      remainingSeconds: () => deps.player.remainingSeconds(),
-      prepare: (sampleRate) => deps.player.prepare(sampleRate),
-      enqueue: (samples) => {
-        deps.player.enqueue(samples);
-        publishLevel(samples);
+      publish: (samples) => {
+        const level = meter.measure(samples);
+        if (level !== null) set({ level });
       },
-      flush: () => {
-        deps.player.flush();
+      onFlush: () => {
         meter.reset();
         set({ level: ValueConstants.zero });
       },
-      stop: () => deps.player.stop(),
+    });
+
+    const addExtra = (line: Parameters<AssistantTranscriptExtras['add']>[0]): void => {
+      extras.add(line, controller.getState().transcript.length);
+      set({ transcript: extras.merge(controller.getState().transcript) });
     };
 
-    const addExtra = (line: NewLine): void => {
-      extraId += ValueConstants.one;
-      const after = controller.getState().transcript.length;
-      extras = [...extras, { after, line: { ...line, id: `${EXTRA_ID_PREFIX}${extraId}` } }];
-      set({ transcript: toTranscriptLines(controller.getState().transcript, extras) });
-    };
+    const heartbeat = new AssistantHeartbeat(tokens, {
+      onUsage: ({ remainingSeconds, isUnlimited }) => set({ remainingSeconds, isUnlimited }),
+      onExhausted: () => {
+        overlay = AssistantStatus.Unavailable;
+        void controller.stop();
+      },
+      onNearlyOut: () => controller.sendText(BUDGET_WARNING_PROMPT, { hidden: true }),
+    });
 
-    const stopHeartbeat = (): void => {
-      heartbeatEpoch += ValueConstants.one;
-      if (heartbeat !== null) clearInterval(heartbeat);
-      heartbeat = null;
-    };
-
-    const startHeartbeat = (): void => {
-      stopHeartbeat();
-      const ownEpoch = heartbeatEpoch;
-      // Once per session, or a second session would run out in silence.
-      let warned = false;
-      heartbeat = setInterval(() => {
-        void tokens.reportUsage(HEARTBEAT_SECONDS).then((reported) => {
-          // A report in flight when the session ended must not write onto the next one.
-          if (heartbeatEpoch !== ownEpoch || !reported.ok) return;
-          set({ remainingSeconds: reported.value.remainingSeconds, isUnlimited: reported.value.isUnlimited });
-          const budget = AssistantBudget.create(reported.value);
-          if (!budget.ok) return;
-          if (budget.value.isExhausted()) {
-            overlay = AssistantStatus.Unavailable;
-            void controller.stop();
-            return;
-          }
-          if (!warned && budget.value.needsWarning(BUDGET_WARNING_SECONDS)) {
-            warned = true;
-            controller.sendText(BUDGET_WARNING_PROMPT, { hidden: true });
-          }
-        });
-      }, HEARTBEAT_INTERVAL_MS);
-    };
+    /** The named state for a status; the refusal reason rides only on `Unavailable`. */
+    const sessionFor = (status: AssistantStatusType): AssistantSessionState =>
+      status === AssistantStatus.Unavailable ? { status, deniedReason: denied } : { status };
 
     const sync = (): void => {
       const state = controller.getState();
-      const patch: Partial<AssistantSessionStoreState> = {
+      const patch: Partial<AssistantSessionStore> = {
         isMuted: state.isMuted,
         tokensUsed: state.tokensUsed,
-        status: state.status !== SessionStatus.Idle ? state.status : (overlay ?? AssistantStatus.Idle),
+        session: sessionFor(state.status !== SessionStatus.Idle ? state.status : (overlay ?? AssistantStatus.Idle)),
       };
       if (state.transcript !== seenEntries) {
         seenEntries = state.transcript;
-        patch.transcript = toTranscriptLines(state.transcript, extras);
+        patch.transcript = extras.merge(state.transcript);
       }
       if (state.error !== seenError) {
         seenError = state.error;
@@ -213,12 +151,12 @@ export const configureAssistantSessionStore = (
         meter.reset();
         patch.level = ValueConstants.zero;
       }
-      const ended = previousStatus !== SessionStatus.Idle && state.status === SessionStatus.Idle;
+      const hasEnded = previousStatus !== SessionStatus.Idle && state.status === SessionStatus.Idle;
       previousStatus = state.status;
       set(patch);
 
-      if (ended) {
-        stopHeartbeat();
+      if (hasEnded) {
+        heartbeat.stop();
         // Say that it ended: torn down in silence, the session simply was not there any more.
         if (state.endReason === EndReason.Silence) {
           addExtra({ kind: AssistantTranscriptLineKind.Action, action: AssistantAction.Stop });
@@ -279,7 +217,7 @@ export const configureAssistantSessionStore = (
     };
 
     return {
-      status: AssistantStatus.Idle,
+      session: { status: AssistantStatus.Idle },
       view: AssistantView.Closed,
       level: ValueConstants.zero,
       isMuted: false,
@@ -287,7 +225,6 @@ export const configureAssistantSessionStore = (
       remainingSeconds: ValueConstants.zero,
       isUnlimited: false,
       tokensUsed: ValueConstants.zero,
-      deniedReason: null,
       error: null,
 
       setView: (view) => set({ view }),
@@ -301,11 +238,12 @@ export const configureAssistantSessionStore = (
 
       startVoice: async (locale: string) => {
         // Not "is it idle": a refused session leaves Unavailable, and the next press must start.
-        if (assistantIsLive(get().status)) return;
+        if (assistantIsLive(get().session.status)) return;
         typedEpoch += ValueConstants.one;
         overlay = null;
         languageCode = locale;
-        set({ deniedReason: null, error: null });
+        denied = null;
+        set({ error: null });
 
         const started = await controller.start();
         if (!started.ok) {
@@ -313,12 +251,14 @@ export const configureAssistantSessionStore = (
           const denial = AssistantFailurePolicy.toStartDenial(started.failure);
           if (denial !== null) {
             overlay = AssistantStatus.Unavailable;
-            if (Object.keys(denial).length > ValueConstants.zero) set(denial);
+            const { deniedReason, ...budget } = denial;
+            if (deniedReason !== undefined) denied = deniedReason;
+            if (Object.keys(budget).length > ValueConstants.zero) set(budget);
           }
           sync();
           return;
         }
-        if (assistantIsLive(controller.getState().status)) startHeartbeat();
+        if (assistantIsLive(controller.getState().status)) heartbeat.start();
       },
 
       stopVoice: async () => {
@@ -339,7 +279,8 @@ export const configureAssistantSessionStore = (
       reset: () => {
         typedEpoch += ValueConstants.one;
         overlay = null;
-        extras = [];
+        denied = null;
+        extras.clear();
         void controller.stop();
         controller.clearTranscript();
         meter.reset();
@@ -348,8 +289,8 @@ export const configureAssistantSessionStore = (
           remainingSeconds: ValueConstants.zero,
           isUnlimited: false,
           tokensUsed: ValueConstants.zero,
-          deniedReason: null,
           error: null,
+          session: { status: AssistantStatus.Idle },
           view: AssistantView.Closed,
           level: ValueConstants.zero,
           isMuted: false,

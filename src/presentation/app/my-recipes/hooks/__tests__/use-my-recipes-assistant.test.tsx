@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { act } from 'react-test-renderer';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
@@ -17,8 +18,7 @@ import { useMyRecipesAssistant } from '@presentation/app/my-recipes/hooks/use-my
  */
 const selectorOf =
   <S,>(state: S) =>
-  (select: (s: S) => unknown): unknown =>
-    select(state);
+  mockStoreReading(() => (state));
 
 const DRAFTS =[{ id: 'd1', prompt: 'chicken and yogurt', snapshot: { name: 'Yogurt chicken' } }] as unknown as RecipeDraft[];
 

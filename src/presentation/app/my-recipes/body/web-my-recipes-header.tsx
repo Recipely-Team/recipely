@@ -4,7 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface WebMyRecipesHeaderProps {
@@ -13,22 +13,23 @@ export interface WebMyRecipesHeaderProps {
 
 /** Web My Recipes header band: h1 title + muted subtitle + "Create recipe" CTA. */
 export const WebMyRecipesHeader = ({ onCreate }: WebMyRecipesHeaderProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <View style={[styles.band, { borderBottomColor: colors.border }]}>
       <View style={styles.text}>
         <ThemedText accessibilityRole="header" style={[styles.title, { color: colors.text }]}>
-          {t().myRecipes.title}
+          {t.myRecipes.title}
         </ThemedText>
         <ThemedText style={[styles.subtitle, { color: colors.textMuted }]}>
-          {t().myRecipes.webSubtitle}
+          {t.myRecipes.webSubtitle}
         </ThemedText>
       </View>
       <View style={styles.actions}>
         <Pressable
           onPress={onCreate}
           accessibilityRole="button"
-          accessibilityLabel={t().myRecipes.createNew}
+          accessibilityLabel={t.myRecipes.createNew}
           style={({ pressed }) => [
             styles.createBtn,
             shadows.sm,
@@ -37,7 +38,7 @@ export const WebMyRecipesHeader = ({ onCreate }: WebMyRecipesHeaderProps): React
         >
           <Ionicons name="add" size={iconSizes.xl} color={colors.primaryText} />
           <ThemedText style={[styles.createLabel, { color: colors.primaryText }]}>
-            {t().myRecipes.createNew}
+            {t.myRecipes.createNew}
           </ThemedText>
         </Pressable>
       </View>

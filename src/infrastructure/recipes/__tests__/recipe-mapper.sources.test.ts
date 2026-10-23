@@ -40,7 +40,7 @@ describe('toRecipe — Recipely Kitchen', () => {
     const recipe = detail({ origin: 'CURATED', aiWritten: false, imageCredit: CREDIT, nutritionSource: 'USDA_FDC' });
 
     expect(recipe.origin).toBe(RecipeOrigin.Curated);
-    expect(recipe.provenanceMarks).toEqual([ProvenanceMark.Curated]);
+    expect(recipe.provenanceMarks()).toEqual([ProvenanceMark.Curated]);
     expect([recipe.imageCredit?.author, recipe.imageCredit?.license, recipe.imageCredit?.url]).toEqual([
       CREDIT.author,
       CREDIT.license,
@@ -67,7 +67,7 @@ describe('toRecipeSummary — Recipely Kitchen', () => {
   it('carries the curated mark, credit and source onto a card', () => {
     const card = summary({ origin: 'CURATED', aiWritten: false, imageCredit: CREDIT, nutritionSource: 'USDA_FDC' });
 
-    expect(card.provenanceMarks).toEqual([ProvenanceMark.Curated]);
+    expect(card.provenanceMarks()).toEqual([ProvenanceMark.Curated]);
     expect(card.imageCredit?.author).toBe(CREDIT.author);
     expect(card.nutritionSource).toBe(NutritionSource.Usda);
   });

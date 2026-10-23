@@ -10,7 +10,6 @@ import { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-cas
 import { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
 import { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
-import { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import { EnqueueInstagramImportUseCase } from '@application/recipes/import/enqueue-instagram-import-use-case';
 import { ImportRecipeFromFilesUseCase } from '@application/recipes/import-file/import-recipe-from-files-use-case';
 import { configureFileImportStore } from '@application/recipes/import-file/file-import-store';
@@ -34,7 +33,8 @@ import { configureRecipeListStore } from '@application/recipes/list/recipe-list-
 import { configureTrendingRecipesStore } from '@application/recipes/trending/trending-recipes-store';
 import { configureRecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
 import { configureSavedRecipesStore } from '@application/recipes/saved/saved-recipes-store';
-import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
+import { configureRecipeAuthoringStore } from '@application/recipes/create/recipe-authoring-store';
+import { configureMyRecipesStore } from '@application/recipes/my-recipes/my-recipes-store';
 import { configureFavoritesStore } from '@application/favorites/favorites-store';
 
 /**
@@ -43,7 +43,7 @@ import { configureFavoritesStore } from '@application/favorites/favorites-store'
  *
  * @remarks
  * - **Order:** `recipeListStore` and `recipeDetailStore` are built before the stores that
- *   refresh them (`recipePublishingStore`, `createdRecipesStore`).
+ *   refresh them (`recipePublishingStore`, `recipeAuthoringStore`).
  */
 export const registerRecipes = (
   container: Container,
@@ -54,7 +54,8 @@ export const registerRecipes = (
   | 'recipeDetailStore'
   | 'recipePublishingStore'
   | 'savedRecipesStore'
-  | 'createdRecipesStore'
+  | 'recipeAuthoringStore'
+  | 'myRecipesStore'
   | 'importJobStore'
   | 'fileImportStore'
   | 'favoritesStore'
@@ -91,15 +92,15 @@ export const registerRecipes = (
     removeFavoriteUseCase: new RemoveFavoriteUseCase(favoritesRepo),
     savedRecipesStore,
   });
-  const createdRecipesStore = configureCreatedRecipesStore({
+  const myRecipesStore = configureMyRecipesStore({ listMyRecipesUseCase: new ListMyRecipesUseCase(recipeRepo) });
+  const recipeAuthoringStore = configureRecipeAuthoringStore({
     createRecipeUseCase: new CreateRecipeUseCase(recipeRepo),
-    listMyRecipesUseCase: new ListMyRecipesUseCase(recipeRepo),
     generateRecipeUseCase: new GenerateRecipeUseCase(recipeRepo),
-    importInstagramRecipeUseCase: new ImportInstagramRecipeUseCase(recipeRepo),
     refineRecipeUseCase: new RefineRecipeUseCase(recipeRepo),
     deleteRecipeUseCase: new DeleteRecipeUseCase(recipeRepo),
     recipeListStore,
     recipeDetailStore,
+    myRecipesStore,
   });
   const importJobStore = configureImportJobStore({
     enqueueInstagramImportUseCase: new EnqueueInstagramImportUseCase(recipeRepo),
@@ -116,7 +117,8 @@ export const registerRecipes = (
     recipeDetailStore,
     recipePublishingStore,
     savedRecipesStore,
-    createdRecipesStore,
+    recipeAuthoringStore,
+    myRecipesStore,
     importJobStore,
     fileImportStore,
     favoritesStore,

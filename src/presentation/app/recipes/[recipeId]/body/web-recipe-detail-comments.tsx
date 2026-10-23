@@ -6,7 +6,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { CommentCard } from '@presentation/app/recipes/[recipeId]/items/comment-card';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
@@ -42,24 +42,25 @@ export const WebRecipeDetailComments = ({
   onDeleteComment,
   commentHighlight,
 }: WebRecipeDetailCommentsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const total = commentState?.total ?? ValueConstants.zero;
   const items = commentState?.items ?? [];
   const canLoadMore = commentState !== undefined && items.length < commentState.total;
   const composer = useCommentDraft(onAddComment);
-  const submitDisabled = commentState?.isSubmitting === true || composer.isEmpty;
+  const isSubmitDisabled = commentState?.isSubmitting === true || composer.isEmpty;
 
   return (
     <View style={styles.section}>
       <ThemedText style={[styles.heading, { color: colors.text }]}>
-        {total > ValueConstants.zero ? `${t().comments.title} · ${String(total)}` : t().comments.title}
+        {total > ValueConstants.zero ? `${t.comments.title} · ${String(total)}` : t.comments.title}
       </ThemedText>
 
       <View style={styles.inputRow}>
         <AutoGrowTextInput
           value={composer.draft}
           onChangeText={composer.onChangeDraft}
-          placeholder={t().comments.placeholder}
+          placeholder={t.comments.placeholder}
           placeholderTextColor={colors.textMuted}
           style={[
             styles.input,
@@ -70,12 +71,12 @@ export const WebRecipeDetailComments = ({
         />
         <Pressable
           onPress={composer.onSubmit}
-          disabled={submitDisabled}
+          disabled={isSubmitDisabled}
           accessibilityRole="button"
-          accessibilityLabel={t().comments.send}
+          accessibilityLabel={t.comments.send}
           style={({ pressed }) => [
             styles.sendBtn,
-            { backgroundColor: colors.primary, opacity: pressed || submitDisabled ? opacities.disabledFaint : opacities.full },
+            { backgroundColor: colors.primary, opacity: pressed || isSubmitDisabled ? opacities.disabledFaint : opacities.full },
           ]}
         >
           <Ionicons name="send" size={iconSizes.md} color={colors.onOverlay} />
@@ -92,7 +93,7 @@ export const WebRecipeDetailComments = ({
         <ActivityIndicator size="small" color={colors.primary} style={styles.loader} />
       ) : items.length === ValueConstants.zero ? (
         <ThemedText variant="caption" muted style={styles.empty}>
-          {t().comments.empty}
+          {t.comments.empty}
         </ThemedText>
       ) : (
         <View style={styles.list}>
@@ -124,14 +125,14 @@ export const WebRecipeDetailComments = ({
         <Pressable
           onPress={onLoadMore}
           accessibilityRole="button"
-          accessibilityLabel={t().comments.loadMore}
+          accessibilityLabel={t.comments.loadMore}
           style={({ pressed }) => [
             styles.loadMore,
             { borderColor: colors.border, opacity: pressed ? opacities.pressedStrong : opacities.full },
           ]}
         >
           <ThemedText variant="caption" muted>
-            {commentState?.isLoadingMore === true ? t().common.loading : t().comments.loadMore}
+            {commentState.isLoadingMore === true ? t.common.loading : t.comments.loadMore}
           </ThemedText>
         </Pressable>
       ) : null}

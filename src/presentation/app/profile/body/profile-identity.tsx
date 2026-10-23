@@ -5,7 +5,7 @@ import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, fontWeights, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { CreatorBadge } from '@presentation/base/widgets/creators/creator-badge';
 import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
@@ -43,6 +43,7 @@ export const ProfileIdentity = ({
   onAddBio,
   isCreator,
 }: ProfileIdentityProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { isWebShell } = useLayout();
 
@@ -73,7 +74,7 @@ export const ProfileIdentity = ({
             isUploading ? styles.cameraBtnDisabled : null,
           ]}
           accessibilityRole="button"
-          accessibilityLabel={t().profile.changePhoto}
+          accessibilityLabel={t.profile.changePhoto}
         >
           <Ionicons name="camera" size={CAMERA_ICON} color={colors.primaryText} />
         </Pressable>
@@ -102,10 +103,10 @@ export const ProfileIdentity = ({
           style={styles.bioPrompt}
           hitSlop={spacing.sm}
           accessibilityRole="button"
-          accessibilityLabel={t().profile.addBioPrompt}
+          accessibilityLabel={t.profile.addBioPrompt}
         >
           <ThemedText variant="caption" muted style={styles.bioPromptText}>
-            {t().profile.addBioPrompt}
+            {t.profile.addBioPrompt}
           </ThemedText>
         </Pressable>
       )}

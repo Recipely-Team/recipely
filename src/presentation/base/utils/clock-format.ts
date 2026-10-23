@@ -1,3 +1,4 @@
+import { CharConstants } from '@core/constants';
 /**
  * How a clock reading is padded: `9:05`, never `9:5`.
  *
@@ -9,5 +10,5 @@
  */
 export const ClockFormat = {
   digits: 2,
-  pad: '0',
+  pad: CharConstants.zeroDigit,
 } as const;

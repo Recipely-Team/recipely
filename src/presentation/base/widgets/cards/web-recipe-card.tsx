@@ -21,7 +21,7 @@ import {
   durations,
   aspectRatios,
 } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 import { CARD_HOVER_LIFT } from '@presentation/base/widgets/cards/card-hover-lift';
@@ -63,23 +63,28 @@ export interface WebRecipeCardProps {
  * lifts slightly on hover. No author row (that would be an N+1 fetch).
  */
 export const WebRecipeCard = ({
-  recipe, saved, onOpen, onToggleSave, ownedByMe = false, photoCount = recipe.photoCount,
-  likedByMe = recipe.likedByMe, likeCount = recipe.likeCount,
+  recipe, saved, onOpen, onToggleSave, ownedByMe = false, photoCount: photoCountProp,
+  likedByMe: isLikedByMeProp, likeCount: likeCountProp,
 }: WebRecipeCardProps): React.JSX.Element => {
+  // Defaulted here, not in the parameter list: a default that reads another prop stops the compiler.
+  const photoCount = photoCountProp ?? recipe.photoCount;
+  const isLikedByMe = isLikedByMeProp ?? recipe.likedByMe;
+  const likeCount = likeCountProp ?? recipe.likeCount;
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
   const scale = useSharedValue(ValueConstants.one);
   const totalMin = recipe.totalTimeMinutes;
 
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.get() }] }));
   const hoverProps =
     isWeb()
       ? {
           onMouseEnter: () => {
-            scale.value = withTiming(CARD_HOVER_LIFT, { duration: durations.hover });
+            scale.set(withTiming(CARD_HOVER_LIFT, { duration: durations.hover }));
           },
           onMouseLeave: () => {
-            scale.value = withTiming(ValueConstants.one, { duration: durations.hover });
+            scale.set(withTiming(ValueConstants.one, { duration: durations.hover }));
           },
         }
       : {};
@@ -103,13 +108,13 @@ export const WebRecipeCard = ({
               focus={recipe.imageFocus}
               style={styles.image}
               accessibilityLabel={recipe.name}
-              placeholderLabel={t().recipes.noPhoto}
+              placeholderLabel={t.recipes.noPhoto}
             />
             {/* Top-left here: the save bookmark holds the top-right, so the
                 seal shares the cuisine tag's corner instead. */}
             <View style={styles.topLeft}>
               <ProvenanceSeal
-                marks={recipe.provenanceMarks}
+                marks={recipe.provenanceMarks()}
                 surface={SealSurface.Photo}
                 size={provenanceSealMetrics.webCardSize}
               />
@@ -134,13 +139,13 @@ export const WebRecipeCard = ({
                 <>
                   <Ionicons name="time-outline" size={iconSizes.md} color={colors.textMuted} />
                   <ThemedText variant="caption" muted>
-                    {t().recipes.heroTotalMin.replace('{n}', String(totalMin))}
+                    {t.recipes.heroTotalMin.replace('{n}', String(totalMin))}
                   </ThemedText>
                 </>
               )}
               <Ionicons name="speedometer-outline" size={iconSizes.md} color={colors.textMuted} />
               <ThemedText variant="caption" muted>
-                {difficultyLabel(recipe.difficulty)}
+                {difficultyLabel(t, recipe.difficulty)}
               </ThemedText>
             </View>
 
@@ -153,9 +158,9 @@ export const WebRecipeCard = ({
               </View>
               <View style={styles.footerItem}>
                 <MaterialCommunityIcons
-                  name={likedByMe ? 'heart' : 'heart-outline'}
+                  name={isLikedByMe ? 'heart' : 'heart-outline'}
                   size={iconSizes.md}
-                  color={likedByMe ? colors.likeActive : colors.textMuted}
+                  color={isLikedByMe ? colors.likeActive : colors.textMuted}
                 />
                 <ThemedText variant="caption" muted>
                   {likeCount}
@@ -170,7 +175,7 @@ export const WebRecipeCard = ({
         <Pressable
           onPress={() => onToggleSave(recipe.id)}
           accessibilityRole="button"
-          accessibilityLabel={saved ? t().recipes.saved : t().recipes.save}
+          accessibilityLabel={saved ? t.recipes.saved : t.recipes.save}
           hitSlop={spacing.sm}
           style={[styles.saveBtn, { backgroundColor: colors.overlay }]}
         >

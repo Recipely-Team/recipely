@@ -6,7 +6,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, controlSizes } from '@presentation/base/theme';
 import { useProfile } from '@presentation/app/profile/hooks/use-profile';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ProfileAppBar } from '@presentation/app/profile/body/profile-app-bar';
 import { ProfileIdentity } from '@presentation/app/profile/body/profile-identity';
 import { ProfileStats } from '@presentation/app/profile/body/profile-stats';
@@ -20,6 +20,7 @@ import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actio
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
 export const ProfileScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
@@ -70,9 +71,9 @@ export const ProfileScreen = (): React.JSX.Element => {
       <FeedbackDialog
         severity={SeverityType.Danger}
         visible={vm.uploadError !== null}
-        title={t().errors.genericTitle}
+        title={t.errors.genericTitle}
         message={vm.uploadError ?? CharConstants.empty}
-        primaryLabel={t().common.ok}
+        primaryLabel={t.common.ok}
         onPrimary={vm.onDismissUploadError}
         onClose={vm.onDismissUploadError}
       />

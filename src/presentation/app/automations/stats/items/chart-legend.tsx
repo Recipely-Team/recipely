@@ -3,12 +3,13 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { StatsMetrics } from '@presentation/app/automations/stats/model/stats-metrics';
 import { colorAlphas, fontSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /** Above the daily chart: a square for the Sent bars, short strokes for the Opened and Saved lines. */
 export const ChartLegend = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().creatorStats;
+  const copy = t.creatorStats;
   const items = [
     { key: 'sent', label: copy.legendSent, swatch: [styles.square, { backgroundColor: colors.textMuted + colorAlphas.medium }] },
     { key: 'opened', label: copy.legendOpened, swatch: [styles.line, { backgroundColor: colors.primary }] },

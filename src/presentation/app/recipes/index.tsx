@@ -1,4 +1,5 @@
 import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
+import { useStore } from 'zustand';
 import { useAssistantFeedActions } from '@presentation/app/recipes/hooks/use-assistant-feed-actions';
 import { useMemo } from 'react';
 import { StoreStatus } from '@application/store/store-status';
@@ -46,7 +47,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
   useAssistantScroll(vm.onAssistantScroll);
 
   // Hero rows are offered to the assistant only while the hero is rendered.
-  const trendingState = trendingRecipesStore((state) => state.state);
+  const trendingState = useStore(trendingRecipesStore, (state) => state.state);
   const featured = useMemo<readonly RecipeSummaryEntity[]>(
     () =>
       vm.isExpanded && !vm.isSearching && trendingState.status === StoreStatus.Loaded

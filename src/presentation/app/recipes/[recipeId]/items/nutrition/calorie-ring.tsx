@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { fontSizes, fontWeights, letterSpacings, lineHeights, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { formatNutritionNumber } from '@presentation/app/recipes/[recipeId]/model/nutrition/format-nutrition-number';
 import { nutritionPanelSizes } from '@presentation/app/recipes/[recipeId]/model/nutrition/nutrition-panel-sizes';
@@ -25,6 +25,7 @@ export interface CalorieRingProps {
  *   one-prop change.
  */
 export const CalorieRing = ({ calories, compact }: CalorieRingProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
   const size = compact ? nutritionPanelSizes.ringCompact : nutritionPanelSizes.ring;
@@ -45,7 +46,7 @@ export const CalorieRing = ({ calories, compact }: CalorieRingProps): React.JSX.
         {calories === undefined ? CharConstants.emDash : formatNutritionNumber(calories, locale)}
       </ThemedText>
       <ThemedText muted style={[styles.unit, { lineHeight: unitLineHeight }]}>
-        {t().nutrition.kcal}
+        {t.nutrition.kcal}
       </ThemedText>
     </View>
   );

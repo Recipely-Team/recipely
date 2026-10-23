@@ -8,7 +8,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { controlSizes, fontSizes, fontWeights, iconSizes, opacities, spacing } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { CreatorsRoundButton } from '@presentation/app/creators/[userId]/body/creators-round-button';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface CreatorsPageHeaderProps {
   onBack: () => void;
@@ -28,12 +28,13 @@ export interface CreatorsPageHeaderProps {
  *   above, so there it sits a plain step below it (rule 6b2).
  */
 export const CreatorsPageHeader = ({ onBack, backLabel, trailing }: CreatorsPageHeaderProps): React.JSX.Element => {
+  const t = useTranslations();
   const insets = useSafeAreaInsets();
   const colors = useTheme().colors;
   const { isWebShell } = useLayout();
 
   if (isWebShell) {
-    const label = backLabel ?? t().creators.back;
+    const label = backLabel ?? t.creators.back;
     return (
       <View style={styles.web}>
         <View style={styles.webBar}>
@@ -56,7 +57,7 @@ export const CreatorsPageHeader = ({ onBack, backLabel, trailing }: CreatorsPage
 
   return (
     <View style={[styles.bar, { paddingTop: insets.top + spacing.md }]}>
-      <CreatorsRoundButton icon="chevron-back" label={t().creators.back} onPress={onBack} />
+      <CreatorsRoundButton icon="chevron-back" label={t.creators.back} onPress={onBack} />
       <View style={styles.spacer} />
       {trailing ?? null}
     </View>

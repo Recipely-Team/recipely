@@ -1,10 +1,11 @@
+import type { TranslationsType } from '@presentation/i18n';
 import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { resolveTargetName } from '@presentation/base/hooks/assistant/args/resolving/resolve-target-name';
 import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolving/resolve-taxonomy-key';
 import { ALL_THEMES } from '@presentation/base/theme/colors/palette/themes';
 import type { ThemeIdType } from '@presentation/base/theme/context/theme-id';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { parseKeyValue } from '@presentation/base/hooks/assistant/args/resolving/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
@@ -81,6 +82,7 @@ const SETTINGS_ROWS: readonly string[] = [
  *   everything behind it, and voice mishears — a one-syllable word most of all.
  */
 export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps): void => {
+  const t = useTranslations();
   const { language, preference, themeId, onSetLanguage, onSetThemePreference, onSetThemeId, onRequestSignOut } =
     deps;
 
@@ -94,7 +96,7 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
     [
       `language=${LANGUAGE_NAMES[language] ?? language}`,
       `theme=${preference}`,
-      `palette=${paletteName(themeId)}`,
+      `palette=${paletteName(t, themeId)}`,
       listReading(ROWS_LABEL, SETTINGS_ROWS, ListState.Ready),
     ].join(SCREEN_PART_SEPARATOR),
   );
@@ -127,7 +129,7 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
         if (key === PALETTE) {
           // Matched by the swatch name the user sees.
           const themeId = resolveTaxonomyKey(
-            ALL_THEMES.map((id) => ({ key: id, name: paletteName(id) })),
+            ALL_THEMES.map((id) => ({ key: id, name: paletteName(t, id) })),
             parsed.value,
           );
           if (themeId === null || !(ALL_THEMES as string[]).includes(themeId)) {
@@ -144,7 +146,7 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
         }
         return { ok: false, error: AssistantActionError.UnknownPreference };
       },
-      [onSetLanguage, onSetThemePreference, onSetThemeId],
+      [onSetLanguage, onSetThemePreference, onSetThemeId, t],
     ),
   );
 
@@ -158,6 +160,6 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
 };
 
 /** The palette's name in the language the user is reading, as the swatch shows it. */
-function paletteName(id: ThemeIdType): string {
-  return t().settings.themeNames[id];
+function paletteName(t: TranslationsType, id: ThemeIdType): string {
+  return t.settings.themeNames[id];
 }

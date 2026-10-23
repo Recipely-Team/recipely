@@ -3,7 +3,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { ErrorMessageKey, ValidationFailure } from '@core/failure';
-import { CharConstants, ValueConstants } from '@core/constants';
+import { CharConstants, UrlConstants, ValueConstants } from '@core/constants';
 import { SourcePlatform, type SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 
 const INSTAGRAM_HOSTS: readonly string[] = ['instagram.com', 'instagr.am'];
@@ -50,7 +50,7 @@ const IPV4_LITERAL = /^\d{1,3}(?:\.\d{1,3}){3}$/;
 const TRAILING_SLASH = /\/+$/;
 /** How much of a web page's path the confirmation line shows before it trails off. */
 const SHORT_FORM_MAX = 48;
-const ELLIPSIS = '…';
+const ELLIPSIS = CharConstants.ellipsis;
 
 /**
  * A link an import can run against: an Instagram post, a TikTok, Facebook or
@@ -104,7 +104,7 @@ export class ImportLink extends BaseValueObject<string> {
 
     let url: URL;
     try {
-      url = new URL(HTTP_PREFIX.test(trimmed) ? trimmed : `https://${trimmed}`);
+      url = new URL(HTTP_PREFIX.test(trimmed) ? trimmed : `${UrlConstants.httpsScheme}${trimmed}`);
     } catch {
       return fail(ImportLink.invalid(trimmed));
     }
@@ -150,8 +150,8 @@ export class ImportLink extends BaseValueObject<string> {
       return fail(ImportLink.unsupported(trimmed));
     }
 
-    const isAddressLiteral = IPV4_LITERAL.test(fullHost) || fullHost.includes(':') || fullHost.startsWith('[');
-    if (isAddressLiteral || !fullHost.includes('.') || url.username !== CharConstants.empty) {
+    const isAddressLiteral = IPV4_LITERAL.test(fullHost) || fullHost.includes(CharConstants.colon) || fullHost.startsWith(CharConstants.openBracket);
+    if (isAddressLiteral || !fullHost.includes(CharConstants.dot) || url.username !== CharConstants.empty) {
       return fail(ImportLink.invalid(trimmed));
     }
     return ok(new ImportLink(url.toString(), SourcePlatform.Web, host, ImportLink.shorten(`${host}${path}`)));

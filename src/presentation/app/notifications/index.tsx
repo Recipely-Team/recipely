@@ -1,4 +1,5 @@
 import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
+import { useStore } from 'zustand';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAssistantNotificationActions } from '@presentation/app/notifications/hooks/use-assistant-notification-actions';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
@@ -23,12 +24,12 @@ import {
 } from '@presentation/base/errors/failure-lookups';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, fontSizes, fontWeights, letterSpacings, avatarSizes } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifRow } from '@presentation/app/notifications/items/notif-row';
 import { ValueConstants } from '@core/constants';
-import { toNotifItem } from '@presentation/app/notifications/model/to-notif-item';
+import { useNotifItems } from '@presentation/app/notifications/hooks/use-notif-items';
 import { NotificationsHeader } from '@presentation/app/notifications/body/notifications-header';
 import { NotificationFilterPills } from '@presentation/app/notifications/body/notification-filter-pills';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
@@ -50,16 +51,17 @@ const NotifSeparator = (): React.JSX.Element => {
  * only when their own notification changes.
  */
 export const NotificationsScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const goBackOrHome = useGoBackOrHome();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
 
   const { notificationsStore } = useStores();
-  const state = notificationsStore((s) => s.state);
-  const load = notificationsStore((s) => s.load);
-  const loadMore = notificationsStore((s) => s.loadMore);
-  const unreadCount = notificationsStore((s) => s.unreadCount);
-  const markOneRead = notificationsStore((s) => s.markOneRead);
+  const state = useStore(notificationsStore, (s) => s.state);
+  const load = useStore(notificationsStore, (s) => s.load);
+  const loadMore = useStore(notificationsStore, (s) => s.loadMore);
+  const unreadCount = useStore(notificationsStore, (s) => s.unreadCount);
+  const markOneRead = useStore(notificationsStore, (s) => s.markOneRead);
 
   const [filter, setFilter] = useState<NotificationFilterType>(NotificationFilter.All);
   const { isRefreshing, refresh, markAll } = useInboxActions();
@@ -69,18 +71,12 @@ export const NotificationsScreen = (): React.JSX.Element => {
   // Load once per mount; opening the screen never clears the badge.
   useEffect(() => {
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [load]);
 
-  const items: NotifItem[] = useMemo(() => {
-    if (state.status !== StoreStatus.Loaded) return [];
-    return state.items.map(toNotifItem);
-  }, [state]);
+  const items = useNotifItems(state);
 
-  const locale = useLocale();
   // Section titles are translated: a language switch rebuilds them.
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- locale is read through t() inside buildSections
-  const sections = useMemo(() => buildSections(items, filter), [items, filter, locale]);
+  const sections = useMemo(() => buildSections(t, items, filter), [t, items, filter]);
 
   const openTarget = useOpenNotificationTarget();
 
@@ -135,9 +131,9 @@ export const NotificationsScreen = (): React.JSX.Element => {
         <ErrorState
           severity={failureSeverity(state.failure)}
           icon={failureIcon(state.failure)}
-          title={failureContent(state.failure).title}
-          body={failureContent(state.failure).body}
-          primaryLabel={t().errors.retry}
+          title={failureContent(t, state.failure).title}
+          body={failureContent(t, state.failure).body}
+          primaryLabel={t.errors.retry}
           onPrimary={() => void load()}
         />
       ) : (
@@ -160,8 +156,8 @@ export const NotificationsScreen = (): React.JSX.Element => {
         onEndReachedThreshold={ListConstants.endReachedThreshold}
         ListFooterComponent={
           <FeedFooter
-            isLoadingMore={state.status === StoreStatus.Loaded && state.isLoadingMore}
-            failure={state.status === StoreStatus.Loaded ? state.moreFailure : null}
+            isLoadingMore={state.isLoadingMore}
+            failure={state.moreFailure}
             onRetry={() => void loadMore()}
           />
         }

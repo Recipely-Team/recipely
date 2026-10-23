@@ -8,7 +8,7 @@ export interface SerializedSessionUser {
   id: string;
   email: string;
   displayName: string;
-  photoUrl?: string;
+  photoUrl?: string | undefined;
   /** One entry per claimed platform; absent when there is none. */
   creatorTags?: CreatorClaimDto[];
   /** A single claim, as sessions stored before per-platform tags held it; read, never written. */

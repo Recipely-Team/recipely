@@ -15,7 +15,7 @@ import {
   spacing,
 } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CreatorPlatformMark } from '@presentation/base/widgets/creators/creator-platform-mark';
 import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
 import { creatorPlatformName } from '@presentation/base/widgets/creators/creator-platform-name';
@@ -38,10 +38,11 @@ export interface CreatorTagChipProps {
  *   says the account is verified, on which platform, and which handle.
  */
 export const CreatorTagChip = ({ tag }: CreatorTagChipProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const label = t()
+  const label = t
     .creators.verifiedAccount.replace('{handle}', tag.displayHandle)
-    .replace('{platform}', creatorPlatformName(tag.platform));
+    .replace('{platform}', creatorPlatformName(t, tag.platform));
 
   return (
     <Pressable

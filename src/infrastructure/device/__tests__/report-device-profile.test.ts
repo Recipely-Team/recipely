@@ -72,8 +72,8 @@ describe('the device profile', () => {
   it('sends nothing that names the person holding the device', () => {
     reportDeviceProfile();
 
-    const attributes = jest.mocked(setCrashAttributes).mock.calls[0][0];
-    const event = jest.mocked(analyticsService.logEvent).mock.calls[0][1];
+    const attributes = jest.mocked(setCrashAttributes).mock.calls[0]![0];
+    const event = jest.mocked(analyticsService.logEvent).mock.calls[0]![1];
 
     for (const value of [...Object.values(attributes), ...Object.values(event ?? {})]) {
       expect(String(value)).not.toContain(DEVICE_NAME);

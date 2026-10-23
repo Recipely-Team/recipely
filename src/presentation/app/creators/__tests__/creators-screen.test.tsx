@@ -8,7 +8,7 @@ import { act, type ReactTestInstance } from 'react-test-renderer';
 import { create } from 'zustand';
 import { loadedList } from '@application/store/paging/loaded-list';
 import { creatorPageOf } from '@application/__fixtures__/creator-page-of';
-import type { CreatorsStoreState } from '@application/creators/creators-store-state';
+import type { CreatorsStore } from '@application/creators/creators-store-contract';
 import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 import { creatorSummaryOf } from '@application/__fixtures__/creator-summary-of';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
@@ -29,7 +29,7 @@ jest.mock('expo-router', () => ({
 }));
 
 const storeOf = (creators: CreatorSummaryEntity[]) =>
-  create<CreatorsStoreState>(() => ({
+  create<CreatorsStore>(() => ({
     creators: loadedList(creatorPageOf(creators)),
     load: jest.fn(async () => undefined),
     refresh: jest.fn(async () => undefined),
@@ -67,7 +67,7 @@ describe('CreatorsScreen', () => {
   it('has no back button', () => {
     const { root } = renderComponent(<CreatorsScreen />, { creatorsStore: storeOf([creatorSummaryOf('1')]) });
 
-    expect(root.findAll((n) => n.props.accessibilityLabel === t().creators.back && typeof n.props.onPress === 'function')).toHaveLength(0);
+    expect(root.findAll((n) => n.props['accessibilityLabel'] === t().creators.back && typeof n.props['onPress'] === 'function')).toHaveLength(0);
   });
 
   // The Chefs grid pages as it scrolls: reaching the end asks the store for the next page.
@@ -75,8 +75,8 @@ describe('CreatorsScreen', () => {
     const creatorsStore = storeOf([creatorSummaryOf('1'), creatorSummaryOf('2')]);
     const { root } = renderComponent(<CreatorsScreen />, { creatorsStore });
 
-    const list = root.find((n) => typeof n.props.onEndReached === 'function' && n.props.numColumns !== undefined);
-    act(() => (list.props.onEndReached as () => void)());
+    const list = root.find((n) => typeof n.props['onEndReached'] === 'function' && n.props['numColumns'] !== undefined);
+    act(() => (list.props['onEndReached'] as () => void)());
 
     expect(creatorsStore.getState().loadMore).toHaveBeenCalledTimes(1);
   });
@@ -94,9 +94,9 @@ describe('CreatorsScreen', () => {
     const { root } = renderComponent(<CreatorsScreen />, { creatorsStore: storeOf([]) });
 
     const apply = root.find(
-      (node: ReactTestInstance) => node.props.accessibilityRole === 'button' && typeof node.props.onPress === 'function' && textContent(node).includes(t().creators.comingSoon.apply),
+      (node: ReactTestInstance) => node.props['accessibilityRole'] === 'button' && typeof node.props['onPress'] === 'function' && textContent(node).includes(t().creators.comingSoon.apply),
     );
-    act(() => (apply.props.onPress as () => void)());
+    act(() => (apply.props['onPress'] as () => void)());
 
     expect(mockPush).toHaveBeenCalledWith(RoutePaths.editProfileCreatorAccount);
   });
@@ -112,9 +112,9 @@ describe('CreatorsScreen', () => {
 
     const card = root.find(
       (node: ReactTestInstance) =>
-        typeof node.props.accessibilityLabel === 'string' && node.props.accessibilityLabel.startsWith('Creator 1') && typeof node.props.onPress === 'function',
+        typeof node.props['accessibilityLabel'] === 'string' && node.props['accessibilityLabel'].startsWith('Creator 1') && typeof node.props['onPress'] === 'function',
     );
-    act(() => (card.props.onPress as () => void)());
+    act(() => (card.props['onPress'] as () => void)());
 
     expect(mockPush).toHaveBeenCalledWith('/creators/chef_1');
   });

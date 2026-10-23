@@ -1,13 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react';
+import { useStore } from 'zustand';
 import { isString } from '@core/guards/type-guards';
 import { StoreStatus } from '@application/store/store-status';
-import { ScrollView } from 'react-native';
+import type { ScrollView } from 'react-native';
 import { type Href, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
+import { useRecipeComments } from '@presentation/app/recipes/[recipeId]/hooks/comments/use-recipe-comments';
 import { useScrollToEndOnKeyboard } from '@presentation/app/recipes/[recipeId]/hooks/use-scroll-to-end-on-keyboard';
-import { useCommentRemoval } from '@presentation/app/recipes/[recipeId]/hooks/comments/use-comment-removal';
 import { useRecipeAuthor } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
 import { useDmArrival } from '@presentation/app/recipes/[recipeId]/hooks/use-dm-arrival';
 import { useNutritionRecheck } from '@presentation/app/recipes/[recipeId]/hooks/use-nutrition-recheck';
@@ -15,17 +16,19 @@ import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/
 import { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
-import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { durations } from '@presentation/base/theme';
+import { useSignedInUser } from '@presentation/base/hooks/auth/use-signed-in-user';
 
 /** No step ticked yet: one shared empty list, so the selector result stays stable. */
 const NO_STEPS_DONE: readonly boolean[] = [];
+const NO_MEDIA: readonly MediaItem[] = [];
+const NO_INGREDIENT_TICKS: { forCount: number; checked: readonly boolean[] } = { forCount: ValueConstants.zero, checked: NO_STEPS_DONE };
 
 /**
  * Orchestrates the recipe-detail screen: resolves the recipe (local or network),
@@ -36,9 +39,6 @@ const NO_STEPS_DONE: readonly boolean[] = [];
  * - **One source of truth for the like.** A second `likedByMe` without the
  *   `recipe?.likedByMe` fallback left the floating heart empty until the likes
  *   store synced, and empty for good whenever the sync was skipped.
- * - **Failures come from the store's `error` field**, which it records instead
- *   of throwing, so a dropped connection or an expired session doesn't read as
- *   a generic "try again". The static copy is only a defensive fallback.
  * - **A delete failure shows inline in the still-open confirm sheet**; a global
  *   toast would be occluded by the sheet. Flows on the screen below use toasts.
  * - **The network sync re-runs on every entry**, not just the first: a cached
@@ -52,39 +52,40 @@ const NO_STEPS_DONE: readonly boolean[] = [];
  *   profile store; resolving it through the shared store would clobber the
  *   signed-in user's cached profile, so other authors load in `useRecipeAuthor`.
  */
-export const useRecipeDetail = (): UseRecipeDetailResult => {
+export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): UseRecipeDetailResult => {
+  const t = useTranslations();
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
   const pathname = usePathname();
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = isString(params.recipeId) ? params.recipeId : CharConstants.empty;
 
-  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore, userProfileStore, stepProgressStore, dmArrivalStore } = useStores();
+  const { recipeDetailStore, savedRecipesStore, recipeAuthoringStore, favoritesStore, commentsStore, likesStore, userProfileStore, stepProgressStore, dmArrivalStore } = useStores();
   useDmArrival(recipeId);
   const { cuisineLabel } = useTaxonomyLabel();
-  const networkState = recipeDetailStore((s) => s.byId[recipeId]);
-  const load = recipeDetailStore((s) => s.load);
-  const localRecipe = createdRecipesStore((s) => s.findById(recipeId));
-  const isSaved = savedRecipesStore((s) => s.savedIds.has(recipeId));
-  const isLoading = favoritesStore((s) => s.pending.has(recipeId));
-  const authState = authStore((s) => s.state);
-  const userId = authState.status === StoreStatus.Authenticated ? authState.session.user.id : null;
+  const networkState = useStore(recipeDetailStore, (s) => s.byId[recipeId]);
+  const load = useStore(recipeDetailStore, (s) => s.load);
+  const localRecipe = useStore(recipeAuthoringStore, (s) => s.findById(recipeId));
+  const isSaved = useStore(savedRecipesStore, (s) => s.savedIds.has(recipeId));
+  const isLoading = useStore(favoritesStore, (s) => s.pending.has(recipeId));
+  const signedInUser = useSignedInUser();
+  const userId = signedInUser?.id ?? null;
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
-  const onGoToSignIn = useCallback(() => {
+  const onGoToSignIn = (): void => {
     closePrompt();
     // Cast: a runtime path is not in the typed-routes union.
     router.push(RoutePaths.loginWithRedirect(pathname) as Href);
-  }, [closePrompt, pathname, router]);
+  };
   const shownRecipe = localRecipe ?? (networkState?.status === StoreStatus.Loaded ? networkState.recipe : null);
   const recipeOwnerId = shownRecipe?.ownerId ?? null;
   const isOwner = shownRecipe?.isOwnedBy(userId) ?? false;
-  const ownProfileState = userProfileStore((s) => s.state);
-  const loadOwnProfile = userProfileStore((s) => s.load);
+  const ownProfileState = useStore(userProfileStore, (s) => s.state);
+  const loadOwnProfile = useStore(userProfileStore, (s) => s.load);
   const owner: ResolvedAuthor | null =
-    isOwner && authState.status === StoreStatus.Authenticated && ownProfileState.status === StoreStatus.Loaded
+    isOwner && signedInUser !== null && ownProfileState.status === StoreStatus.Loaded
       ? {
-          authorName: authState.session.user.displayName,
-          authorPhotoUrl: authState.session.user.photoUrl,
+          authorName: signedInUser.displayName,
+          authorPhotoUrl: signedInUser.photoUrl,
           recipeCount: ownProfileState.profile.recipeCount,
           isOwner: true,
         }
@@ -103,97 +104,60 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     }
   }, [isOwner, userId, ownProfileState.status, loadOwnProfile]);
 
-  const likeState = likesStore((s) => s.byRecipe[recipeId]);
-  const commentState = commentsStore((s) => s.byRecipe[recipeId]);
-  const deleteState = createdRecipesStore((s) => s.deleteState);
+  const likeState = useStore(likesStore, (s) => s.byRecipe[recipeId]);
+  const commentState = useStore(commentsStore, (s) => s.byRecipe[recipeId]);
+  const deleteState = useStore(recipeAuthoringStore, (s) => s.deleteState);
   const isDeleting = deleteState.status === StoreStatus.Deleting;
-  const [shareOpen, setShareOpen] = useState(false);
-  const [showDeleteSheet, setShowDeleteSheet] = useState(false);
+  const [isShareOpen, setShareOpen] = useState(false);
+  const [shouldShowDeleteSheet, setShowDeleteSheet] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const scrollViewRef = useRef<ScrollView>(null);
   const revealCommentInput = useScrollToEndOnKeyboard(scrollViewRef);
+  const comments = useRecipeComments({ recipeId, userId, requestGate });
 
-  const onConfirmDelete = useCallback(async () => {
+  const onConfirmDelete = async (): Promise<void> => {
     setDeleteError(null);
-    await createdRecipesStore.getState().deleteRecipe(recipeId);
-    const { deleteState: s } = createdRecipesStore.getState();
+    await recipeAuthoringStore.getState().deleteRecipe(recipeId);
+    const { deleteState: s } = recipeAuthoringStore.getState();
     if (s.status === StoreStatus.Success) {
-      createdRecipesStore.getState().resetDeleteState();
+      recipeAuthoringStore.getState().resetDeleteState();
       setShowDeleteSheet(false);
       // Wait for the modal dismiss animation to complete before navigating.
       setTimeout(goBackOrHome, durations.sheetDismiss);
     } else if (s.status === StoreStatus.Error) {
-      createdRecipesStore.getState().resetDeleteState();
-      setDeleteError(t().myRecipes.deleteError);
+      recipeAuthoringStore.getState().resetDeleteState();
+      setDeleteError(t.myRecipes.deleteError);
     }
-  }, [recipeId, goBackOrHome, createdRecipesStore]);
+  };
 
-  const handleDeleteComment = useCallback(
-    async (commentId: string): Promise<void> => {
-      const removed = await commentsStore.getState().deleteComment(recipeId, commentId);
-      if (!removed) {
-        const failure = commentsStore.getState().byRecipe[recipeId]?.error;
-        if (failure != null) showErrorToast(failure);
-      }
-    },
-    [commentsStore, recipeId],
-  );
-  const commentRemoval = useCommentRemoval(handleDeleteComment);
-
-  /**
-   * Posts `text`; resolves true once the post lands.
-   *
-   * The text always comes from the caller — the composer (which owns its
-   * draft, so typing does not re-render this screen) or the assistant. Writing
-   * the field and posting in the same tick used to read the PREVIOUS render's
-   * value — normally empty, which this drops — while still reporting success.
-   */
-  const handleAddComment = useCallback(async (text: string): Promise<boolean> => {
-    const trimmed = text.trim();
-    if (trimmed.length === ValueConstants.zero) return false;
-    const ok = await commentsStore.getState().addComment(recipeId, trimmed);
-    if (ok) {
-      setSubmitError(null);
-    } else {
-      const failure = commentsStore.getState().byRecipe[recipeId]?.error;
-      setSubmitError(failure != null ? failureToastMessage(failure) : t().comments.error);
-    }
-    return ok;
-  }, [commentsStore, recipeId]);
 
   const handleToggleSave = useCallback(async () => {
     if (isLoading || !userId) return;
-    if (isSaved) {
-      await favoritesStore.getState().removeFavorite(userId, recipeId);
-    } else {
-      await favoritesStore.getState().addFavorite(userId, recipeId);
-    }
-    const failure = favoritesStore.getState().error;
+    const failure = isSaved
+      ? await favoritesStore.getState().removeFavorite(recipeId)
+      : await favoritesStore.getState().addFavorite(recipeId);
     if (failure !== null) {
       showErrorToast(failure);
-      favoritesStore.getState().clearError();
     } else if (!isSaved) {
       dmArrivalStore.getState().saved(recipeId);
     }
   }, [isSaved, isLoading, recipeId, userId, favoritesStore, dmArrivalStore]);
 
-  const handleToggleLike = useCallback(async (): Promise<void> => {
-    if (!userId) return;
-    const result = await likesStore.getState().toggle(recipeId);
-    if (!result.ok) showErrorToast(result.failure);
-  }, [userId, recipeId, likesStore]);
 
-  const handleToggleCommentLike = useCallback(async (commentId: string): Promise<void> => {
-    if (userId === null) return;
-    const result = await commentsStore.getState().toggleLike(recipeId, commentId);
-    if (!result.ok) showErrorToast(result.failure);
-  }, [userId, recipeId, commentsStore]);
 
-  const [checkedIngredients, setCheckedIngredients] = useState<boolean[]>([]);
+  const onToggleLike = (): void =>
+    requestGate(() => {
+      if (userId === null) return;
+      void likesStore.getState().toggle(recipeId).then((result) => {
+        if (!result.ok) showErrorToast(result.failure);
+      });
+    }, t.recipes.signInToLike);
+  const onOpenDelete = (): void => setShowDeleteSheet(true);
+
+  // Tagged with the ingredient count it was ticked against: a different list starts unticked.
+  const [ingredientTicks, setIngredientTicks] = useState(NO_INGREDIENT_TICKS);
   // Shared with cook mode, so a step ticked there reads as done here.
-  const completedSteps = stepProgressStore((s) => s.byRecipe[recipeId]) ?? NO_STEPS_DONE;
-  const toggleStoredStep = stepProgressStore((s) => s.toggleStep);
+  const completedSteps = useStore(stepProgressStore, (s) => s.byRecipe[recipeId]) ?? NO_STEPS_DONE;
+  const toggleStoredStep = useStore(stepProgressStore, (s) => s.toggleStep);
 
   // Local (user-created) recipes short-circuit the network store entirely.
   const isLocal = localRecipe !== undefined;
@@ -204,8 +168,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
 
   useEffect(() => {
     if (!isLocal && recipeId.length > ValueConstants.zero) void load(recipeId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLocal, recipeId]);
+  }, [isLocal, recipeId, load]);
 
   useEffect(() => {
     if (recipeState?.status === StoreStatus.Loaded && commentState === undefined) {
@@ -214,41 +177,34 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   }, [recipeState?.status, commentState, commentsStore, recipeId]);
 
   const syncLikeCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.likeCount : null;
-  const syncLikedByMe = recipeState?.status === StoreStatus.Loaded ? recipeState.likedByMe : null;
+  const isSyncLikedByMe = recipeState?.status === StoreStatus.Loaded ? recipeState.likedByMe : null;
   const syncFetchedAt = recipeState?.status === StoreStatus.Loaded ? recipeState.fetchedAt : null;
 
   useEffect(() => {
-    if (syncLikeCount !== null && syncLikedByMe !== null && syncFetchedAt !== null) {
-      likesStore.getState().syncFromApi(recipeId, syncLikeCount, syncLikedByMe, syncFetchedAt);
+    if (syncLikeCount !== null && isSyncLikedByMe !== null && syncFetchedAt !== null) {
+      likesStore.getState().syncFromApi(recipeId, syncLikeCount, isSyncLikedByMe, syncFetchedAt);
     }
-  }, [syncLikeCount, syncLikedByMe, syncFetchedAt, recipeId, likesStore]);
+  }, [syncLikeCount, isSyncLikedByMe, syncFetchedAt, recipeId, likesStore]);
 
   const ingredientCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.ingredients.length : ValueConstants.zero;
 
-  useEffect(() => {
-    if (ingredientCount > ValueConstants.zero) {
-      setCheckedIngredients(new Array(ingredientCount).fill(false) as boolean[]);
-    }
-  }, [ingredientCount]);
+  const checkedIngredients = ingredientTicks.forCount === ingredientCount ? ingredientTicks.checked : NO_STEPS_DONE;
 
-  const onRetry = useCallback(() => {
+  const onRetry = (): void => {
     if (recipeId.length > ValueConstants.zero) {
       void load(recipeId);
     }
-  }, [recipeId, load]);
+  };
 
-  const onToggleIngredient = useCallback((index: number) => {
-    setCheckedIngredients((prev) => {
-      const next = [...prev];
-      next[index] = !next[index];
-      return next;
+  const onToggleIngredient = (index: number): void => {
+    setIngredientTicks((prev) => {
+      const next = prev.forCount === ingredientCount ? [...prev.checked] : [];
+      next[index] = !(next[index] ?? false);
+      return { forCount: ingredientCount, checked: next };
     });
-  }, []);
+  };
 
-  const onToggleStep = useCallback(
-    (index: number) => toggleStoredStep(recipeId, index),
-    [toggleStoredStep, recipeId],
-  );
+  const onToggleStep = (index: number): void => toggleStoredStep(recipeId, index);
 
   const current = recipeState ?? { status: StoreStatus.Loading };
   const status: StateViewStatus =
@@ -260,16 +216,17 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const failure: Failure | undefined = current.status === StoreStatus.Error ? current.failure : undefined;
 
   const recipe = current.status === StoreStatus.Loaded ? current.recipe : null;
-  const media: readonly MediaItem[] = recipe?.heroPhotos ?? [];
+  // heroPhotos() builds a new array on every call; one per recipe keeps the photo viewer memoised.
+  const media: readonly MediaItem[] = useMemo(() => recipe?.heroPhotos() ?? NO_MEDIA, [recipe]);
   const firstImageUrl = media[ValueConstants.zero]?.url ?? CharConstants.empty;
   const cuisineName = recipe !== null ? cuisineLabel(recipe.cuisine).name : CharConstants.empty;
-  const liked = likeState?.likedByMe ?? (current.status === StoreStatus.Loaded && current.likedByMe);
+  const isLiked = likeState?.likedByMe ?? (current.status === StoreStatus.Loaded && current.likedByMe);
   const likeCount = likeState?.likeCount ?? recipe?.likeCount ?? ValueConstants.zero;
 
   // Ask the calculator once more before calling nutrition absent.
   const isNutritionCalculating = useNutritionRecheck(
     recipeId,
-    recipe === null || recipe.nutritionFacts.hasAny,
+    recipe === null || recipe.nutritionFacts().hasAny,
     load,
   );
 
@@ -283,7 +240,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     firstImageUrl,
     cuisineName,
     isNutritionCalculating,
-    liked,
+    liked: isLiked,
     likeCount,
     isOwner,
     isSaved,
@@ -291,20 +248,17 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     userId,
     authorState,
     commentState,
-    submitError,
+    submitError: comments.submitError,
     onFocusCommentInput: revealCommentInput,
-    scrollViewRef,
     checkedIngredients,
     completedSteps,
     onToggleIngredient,
     onToggleStep,
-    onToggleLike: () => requestGate(() => void handleToggleLike(), t().recipes.signInToLike),
-    onToggleSave: () => requestGate(() => void handleToggleSave(), t().recipes.signInToSave),
-    onAddComment: (text: string, onPosted: () => void) =>
-      requestGate(() => void handleAddComment(text).then((ok) => ok && onPosted()), t().comments.signInToComment),
+    onToggleLike,
+    onToggleSave: () => requestGate(() => void handleToggleSave(), t.recipes.signInToSave),
+    onAddComment: comments.onAddComment,
     /** Posts text the caller already has — the assistant's path. */
-    onPostComment: (text: string) =>
-      requestGate(() => void handleAddComment(text), t().comments.signInToComment),
+    onPostComment: comments.onPostComment,
     /**
      * Opens the create screen seeded from this recipe.
      *
@@ -319,22 +273,21 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
       requestGate(
         // Cast: same as onGoToSignIn.
         () => router.push(RoutePaths.createRecipeFromRecipe(recipeId) as Href),
-        t().recipes.signInToCopy,
+        t.recipes.signInToCopy,
       ),
-    onLoadMoreComments: () => void commentsStore.getState().loadMore(recipeId),
-    onToggleCommentLike: (id: string) =>
-      requestGate(() => void handleToggleCommentLike(id), t().comments.signInToLikeComment),
-    onDeleteComment: commentRemoval.request,
-    commentDeletePending: commentRemoval.pendingId !== null,
-    onConfirmDeleteComment: commentRemoval.confirm,
-    onCancelDeleteComment: commentRemoval.cancel,
-    shareOpen,
+    onLoadMoreComments: comments.onLoadMoreComments,
+    onToggleCommentLike: comments.onToggleCommentLike,
+    onDeleteComment: comments.removal.request,
+    commentDeletePending: comments.removal.pendingId !== null,
+    onConfirmDeleteComment: comments.removal.confirm,
+    onCancelDeleteComment: comments.removal.cancel,
+    shareOpen: isShareOpen,
     onOpenShare: () => setShareOpen(true),
     onCloseShare: () => setShareOpen(false),
-    showDeleteSheet,
+    showDeleteSheet: shouldShowDeleteSheet,
     deleteError,
     isDeleting,
-    onOpenDelete: () => setShowDeleteSheet(true),
+    onOpenDelete,
     onCloseDelete: () => { setShowDeleteSheet(false); setDeleteError(null); },
     onConfirmDelete: () => void onConfirmDelete(),
     promptVisible,

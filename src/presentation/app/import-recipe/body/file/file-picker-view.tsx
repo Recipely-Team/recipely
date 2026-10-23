@@ -14,7 +14,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import type { PickSource } from '@presentation/base/utils/pick-source';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { isWeb } from '@infrastructure/constants/platform';
 import type { FilePage } from '@presentation/app/import-recipe/model/file/file-page';
 import { FileDropZone } from '@presentation/app/import-recipe/body/file/file-drop-zone';
@@ -49,10 +49,11 @@ const AI_MARK = [ProvenanceMark.Ai] as const;
  *   tiles never push it out of reach.
  */
 export const FilePickerView = (props: FilePickerViewProps): React.JSX.Element => {
+  const t = useTranslations();
   const scrollEndPadding = useScrollEndPadding();
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
-  const copy = t().fileImport;
+  const copy = t.fileImport;
   const { pages, pickFailure, onPick } = props;
   const isEmpty = pages.length === ValueConstants.zero;
 
@@ -64,7 +65,7 @@ export const FilePickerView = (props: FilePickerViewProps): React.JSX.Element =>
             onPress={props.onClose}
             style={[styles.closeBtn, { backgroundColor: colors.surface }]}
             accessibilityRole="button"
-            accessibilityLabel={t().common.cancel}
+            accessibilityLabel={t.common.cancel}
           >
             <Ionicons name="close" size={iconSizes.lg} color={colors.text} />
           </Pressable>
@@ -80,7 +81,7 @@ export const FilePickerView = (props: FilePickerViewProps): React.JSX.Element =>
 
         {pickFailure !== null ? (
           <FormBanner
-            message={failureContent(pickFailure).body}
+            message={failureContent(t, pickFailure).body}
             severity={failureSeverity(pickFailure)}
             icon={failureIcon(pickFailure)}
           />

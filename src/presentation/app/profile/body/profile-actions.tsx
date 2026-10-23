@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 const EDIT_BTN_HEIGHT = controlSizes.editBtn;
@@ -16,6 +16,7 @@ export interface ProfileActionsProps {
 export const ProfileActions = ({
   onEditProfile,
 }: ProfileActionsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -28,12 +29,12 @@ export const ProfileActions = ({
           pressed ? styles.pressed : null,
         ]}
         accessibilityRole="button"
-        accessibilityLabel={t().profile.editProfile}
+        accessibilityLabel={t.profile.editProfile}
         hitSlop={spacing.xs}
       >
         <Ionicons name="create-outline" size={iconSizes.md} color={colors.primaryText} />
         <ThemedText style={[styles.editBtnLabel, { color: colors.primaryText }]}>
-          {t().profile.editProfile}
+          {t.profile.editProfile}
         </ThemedText>
       </Pressable>
     </View>

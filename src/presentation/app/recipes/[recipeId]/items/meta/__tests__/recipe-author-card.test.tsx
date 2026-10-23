@@ -75,9 +75,9 @@ describe('RecipeAuthorCard — not interactive', () => {
 
     const expected = `${t().recipes.recipeBy}, Ada Lovelace, ${t().recipes.recipeCount.replace('{count}', '12')}`;
     const labelled = root.find(
-      (node) => node.props.accessibilityLabel === expected,
+      (node) => node.props['accessibilityLabel'] === expected,
     );
-    expect(labelled.props.accessible).toBe(true);
+    expect(labelled.props['accessible']).toBe(true);
   });
 });
 
@@ -88,6 +88,6 @@ describe('RecipeAuthorCard — Recipely Kitchen', () => {
     const texts = textContent(root);
     expect(texts).toContain(t().recipes.originCuratedDetailLabel);
     expect(texts).not.toContain(t().recipes.recipeCount.replace('{count}', '12'));
-    expect(root.findAll((n) => typeof n.props.accessibilityLabel === 'string' && n.props.accessibilityLabel.includes(t().creators.verified)).length).toBeGreaterThan(0);
+    expect(root.findAll((n) => typeof n.props['accessibilityLabel'] === 'string' && n.props['accessibilityLabel'].includes(t().creators.verified)).length).toBeGreaterThan(0);
   });
 });

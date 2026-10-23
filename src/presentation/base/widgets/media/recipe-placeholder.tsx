@@ -18,9 +18,9 @@ const COMPACT_LOGO_SIZE = 30;
 
 export interface RecipePlaceholderProps {
   /** Caption under the motif (e.g. "No photo yet"). Hidden when `compact`. */
-  label?: string;
+  label?: string | undefined;
   /** Smaller motif and no caption — for dense thumbnails / grids. */
-  compact?: boolean;
+  compact?: boolean | undefined;
   /** Overrides the motif logo size. */
   logoSize?: number;
   style?: StyleProp<ViewStyle>;

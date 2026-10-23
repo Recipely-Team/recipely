@@ -10,7 +10,7 @@ export const diaryScreenLine = (view: DiaryDayViewType, selected: CalendarDate, 
   const { day } = view;
   return [
     ...parts,
-    `kcal=${Math.round(day.totals.calories)}/${day.goals.calories}`,
+    `kcal=${Math.round(day.totals().calories)}/${day.goals.calories}`,
     `status=${day.calorieStatus}`,
     `entries=${day.entries.length}`,
     `water=${day.waterGlasses}/${day.goals.waterGlasses}`,

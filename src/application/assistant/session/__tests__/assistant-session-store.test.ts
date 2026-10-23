@@ -243,6 +243,10 @@ const toolCall = (callId: string, action: string, arg?: string): SessionEvent =>
 /** Enough samples that the queued audio is still playing when the frame arrives. */
 const SPEECH_SAMPLES = 24_000;
 
+/** The refusal reason, as the pill reads it: only an `Unavailable` session has one. */
+const deniedOf = (state: { session: { status: string; deniedReason?: unknown } }): unknown =>
+  state.session.status === AssistantStatus.Unavailable ? state.session.deniedReason : null;
+
 describe('assistant session store', () => {
   afterEach(async () => {
     for (const store of openStores.splice(0)) await store.getState().stopVoice();
@@ -253,7 +257,7 @@ describe('assistant session store', () => {
 
     await store.getState().startVoice('tr-TR');
 
-    expect(store.getState().status).toBe(AssistantStatus.Listening);
+    expect(store.getState().session.status).toBe(AssistantStatus.Listening);
     expect(store.getState().remainingSeconds).toBe(480);
   });
 
@@ -265,8 +269,8 @@ describe('assistant session store', () => {
 
     await store.getState().startVoice('tr-TR');
 
-    expect(store.getState().status).toBe(AssistantStatus.Unavailable);
-    expect(store.getState().deniedReason).toBe(AssistantDenialReason.GlobalDailyLimit);
+    expect(store.getState().session.status).toBe(AssistantStatus.Unavailable);
+    expect(deniedOf(store.getState())).toBe(AssistantDenialReason.GlobalDailyLimit);
     expect(store.getState().error).toBeNull();
   });
 
@@ -286,7 +290,7 @@ describe('assistant session store', () => {
 
         expect(store.getState().isUnlimited).toBe(true);
         expect(store.getState().remainingSeconds).toBe(0);
-        expect(store.getState().status).toBe(AssistantStatus.Listening);
+        expect(store.getState().session.status).toBe(AssistantStatus.Listening);
       } finally {
         jest.useRealTimers();
       }
@@ -306,7 +310,7 @@ describe('assistant session store', () => {
         await settle();
 
         expect(store.getState().isUnlimited).toBe(false);
-        expect(store.getState().status).toBe(AssistantStatus.Unavailable);
+        expect(store.getState().session.status).toBe(AssistantStatus.Unavailable);
       } finally {
         jest.useRealTimers();
       }
@@ -320,7 +324,7 @@ describe('assistant session store', () => {
 
     await store.getState().startVoice('tr-TR');
 
-    expect(store.getState().status).toBe(AssistantStatus.Idle);
+    expect(store.getState().session.status).toBe(AssistantStatus.Idle);
     expect(calls.micStopped).toBeGreaterThan(0);
   });
 
@@ -345,8 +349,8 @@ describe('assistant session store', () => {
 
       await store.getState().startVoice('tr-TR');
 
-      expect(store.getState().status).toBe(AssistantStatus.Unavailable);
-      expect(store.getState().deniedReason).toBe(AssistantDenialReason.MicrophoneDenied);
+      expect(store.getState().session.status).toBe(AssistantStatus.Unavailable);
+      expect(deniedOf(store.getState())).toBe(AssistantDenialReason.MicrophoneDenied);
       expect(store.getState().error).toBeNull();
     });
 
@@ -359,7 +363,7 @@ describe('assistant session store', () => {
 
       await store.getState().startVoice('tr-TR');
 
-      expect(store.getState().deniedReason).toBe(AssistantDenialReason.MicrophoneDenied);
+      expect(deniedOf(store.getState())).toBe(AssistantDenialReason.MicrophoneDenied);
       expect(store.getState().error).toBeNull();
     });
 
@@ -372,7 +376,7 @@ describe('assistant session store', () => {
 
       await store.getState().startVoice('tr-TR');
 
-      expect(store.getState().deniedReason).toBeNull();
+      expect(deniedOf(store.getState())).toBeNull();
       expect(store.getState().error).not.toBeNull();
     });
   });
@@ -383,7 +387,7 @@ describe('assistant session store', () => {
   it('starts on the first press after a session failed to begin', async () => {
     const { store, calls } = harness({ grantDenied: true });
     await store.getState().startVoice('tr-TR');
-    expect(store.getState().status).toBe(AssistantStatus.Unavailable);
+    expect(store.getState().session.status).toBe(AssistantStatus.Unavailable);
 
     await store.getState().startVoice('tr-TR');
 
@@ -416,7 +420,7 @@ describe('assistant session store', () => {
 
     await starting;
 
-    expect(store.getState().status).toBe(AssistantStatus.Idle);
+    expect(store.getState().session.status).toBe(AssistantStatus.Idle);
     expect(calls.onFrame).toBeNull();
   });
 
@@ -457,7 +461,7 @@ describe('assistant session store', () => {
       await starting;
       await settled();
 
-      expect(store.getState().status).toBe(AssistantStatus.Idle);
+      expect(store.getState().session.status).toBe(AssistantStatus.Idle);
       // The device is the thing that matters: a live callback here means a
       // microphone still recording for a session the user ended.
       expect(calls.onFrame).toBeNull();
@@ -474,7 +478,7 @@ describe('assistant session store', () => {
 
     await store.getState().startVoice('tr-TR');
 
-    expect(store.getState().status).toBe(AssistantStatus.Listening);
+    expect(store.getState().session.status).toBe(AssistantStatus.Listening);
   });
 
   describe('while a session runs', () => {
@@ -485,7 +489,7 @@ describe('assistant session store', () => {
       emit({ kind: SessionEventKind.Audio, samples: new Float32Array([0.1]) });
 
       expect(calls.enqueued).toBe(1);
-      expect(store.getState().status).toBe(AssistantStatus.Speaking);
+      expect(store.getState().session.status).toBe(AssistantStatus.Speaking);
     });
 
     // Dropping the queued audio IS the interruption. Anything gentler leaves
@@ -498,7 +502,7 @@ describe('assistant session store', () => {
       emit({ kind: SessionEventKind.Interrupted });
 
       expect(calls.flush).toBe(1);
-      expect(store.getState().status).toBe(AssistantStatus.Listening);
+      expect(store.getState().session.status).toBe(AssistantStatus.Listening);
     });
 
     // "Konuşurken beni dinlemiyor." The microphone was shut while the assistant
@@ -651,7 +655,7 @@ describe('assistant session store', () => {
         await settle();
 
         expect(calls.connects).toBe(1);
-        expect(store.getState().status).not.toBe(AssistantStatus.Idle);
+        expect(store.getState().session.status).not.toBe(AssistantStatus.Idle);
       });
 
       // Without the handle the new session would pay for setup and the whole
@@ -696,7 +700,7 @@ describe('assistant session store', () => {
         await settle();
 
         expect(calls.connects).toBe(0);
-        expect(store.getState().status).toBe(AssistantStatus.Idle);
+        expect(store.getState().session.status).toBe(AssistantStatus.Idle);
       });
 
       // The reconnect is where the daily budget is re-checked, so a user who
@@ -711,7 +715,7 @@ describe('assistant session store', () => {
         emit({ kind: SessionEventKind.Closed, expected: false });
         await settle();
 
-        expect(store.getState().status).toBe(AssistantStatus.Idle);
+        expect(store.getState().session.status).toBe(AssistantStatus.Idle);
         expect(calls.micStopped).toBeGreaterThan(0);
       });
     });
@@ -751,7 +755,7 @@ describe('assistant session store', () => {
         }
 
         expect(calls.connects).toBeLessThanOrEqual(3);
-        expect(store.getState().status).toBe(AssistantStatus.Idle);
+        expect(store.getState().session.status).toBe(AssistantStatus.Idle);
       });
 
       it('keeps handing over across a long conversation', async () => {
@@ -769,7 +773,7 @@ describe('assistant session store', () => {
         }
 
         expect(calls.connects).toBe(5);
-        expect(store.getState().status).not.toBe(AssistantStatus.Idle);
+        expect(store.getState().session.status).not.toBe(AssistantStatus.Idle);
       });
 
       // The turn the pill was showing died with the socket, so it must not be
@@ -784,7 +788,7 @@ describe('assistant session store', () => {
         emit({ kind: SessionEventKind.Closed, expected: false });
         await settle();
 
-        expect(store.getState().status).toBe(AssistantStatus.Listening);
+        expect(store.getState().session.status).toBe(AssistantStatus.Listening);
       });
 
       // Saying "stop" during the handover used to open a fresh socket AFTER
@@ -802,7 +806,7 @@ describe('assistant session store', () => {
         await settle();
 
         expect(calls.connects).toBe(0);
-        expect(store.getState().status).toBe(AssistantStatus.Idle);
+        expect(store.getState().session.status).toBe(AssistantStatus.Idle);
       });
 
     // The budget only exists because the server is told how long the socket
@@ -824,7 +828,7 @@ describe('assistant session store', () => {
         await settle();
 
         expect(store.getState().remainingSeconds).toBe(0);
-        expect(store.getState().status).toBe(AssistantStatus.Unavailable);
+        expect(store.getState().session.status).toBe(AssistantStatus.Unavailable);
       } finally {
         jest.useRealTimers();
       }
@@ -846,7 +850,7 @@ describe('assistant session store', () => {
       emit({ kind: SessionEventKind.Closed, expected: false });
       await settled();
 
-      expect(store.getState().status).toBe(AssistantStatus.Idle);
+      expect(store.getState().session.status).toBe(AssistantStatus.Idle);
     });
   });
 
@@ -856,7 +860,7 @@ describe('assistant session store', () => {
 
     await store.getState().stopVoice();
 
-    expect(store.getState().status).toBe(AssistantStatus.Idle);
+    expect(store.getState().session.status).toBe(AssistantStatus.Idle);
     expect(calls.micStopped).toBeGreaterThan(0);
   });
 
@@ -975,7 +979,7 @@ describe('assistant session store', () => {
 
         await jest.advanceTimersByTimeAsync(30_000);
 
-        expect(store.getState().status).not.toBe(AssistantStatus.Idle);
+        expect(store.getState().session.status).not.toBe(AssistantStatus.Idle);
         expect(store.getState().isMuted).toBe(true);
       } finally {
         jest.useRealTimers();
@@ -992,7 +996,7 @@ describe('assistant session store', () => {
 
         await jest.advanceTimersByTimeAsync(120_000);
 
-        expect(store.getState().status).toBe(AssistantStatus.Idle);
+        expect(store.getState().session.status).toBe(AssistantStatus.Idle);
       } finally {
         jest.useRealTimers();
       }
@@ -1153,7 +1157,7 @@ describe('assistant session store', () => {
 
         await jest.advanceTimersByTimeAsync(30_000);
 
-        expect(store.getState().status).not.toBe(AssistantStatus.Idle);
+        expect(store.getState().session.status).not.toBe(AssistantStatus.Idle);
       } finally {
         jest.useRealTimers();
       }
@@ -1167,7 +1171,7 @@ describe('assistant session store', () => {
 
         await jest.advanceTimersByTimeAsync(120_000);
 
-        expect(store.getState().status).toBe(AssistantStatus.Idle);
+        expect(store.getState().session.status).toBe(AssistantStatus.Idle);
         expect(store.getState().transcript.at(-1)).toMatchObject({ action: AssistantAction.Stop });
       } finally {
         jest.useRealTimers();
@@ -1359,13 +1363,13 @@ describe('assistant session store — the wait after the user speaks', () => {
       await store.getState().startVoice('tr-TR');
       emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.User, text: 'ekrandaki tarifi oku' });
 
-      expect(store.getState().status).toBe(AssistantStatus.Listening);
+      expect(store.getState().session.status).toBe(AssistantStatus.Listening);
 
       // The pause that ends an utterance is also the moment the turn becomes
       // the model's — the protocol marks no other.
       await jest.advanceTimersByTimeAsync(1_500);
 
-      expect(store.getState().status).toBe(AssistantStatus.Thinking);
+      expect(store.getState().session.status).toBe(AssistantStatus.Thinking);
     } finally {
       jest.useRealTimers();
     }
@@ -1383,7 +1387,7 @@ describe('assistant session store — the wait after the user speaks', () => {
 
       // Speaking is further along than thinking; describing it as less would
       // be a status that moves backwards while the user listens to a voice.
-      expect(store.getState().status).toBe(AssistantStatus.Speaking);
+      expect(store.getState().session.status).toBe(AssistantStatus.Speaking);
     } finally {
       jest.useRealTimers();
     }
@@ -1402,7 +1406,7 @@ describe('assistant session store — the wait after the user speaks', () => {
       // Back to listening, not torn down: the socket is fine and saying it
       // again is all the user has to do. The notice is what turns "it ignored
       // me" into something they can act on.
-      expect(store.getState().status).toBe(AssistantStatus.Listening);
+      expect(store.getState().session.status).toBe(AssistantStatus.Listening);
       expect(store.getState().error).not.toBeNull();
     } finally {
       jest.useRealTimers();

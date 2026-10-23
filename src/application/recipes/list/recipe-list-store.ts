@@ -1,8 +1,11 @@
-import type { BoundStore } from '@application/store/bound-store';
+import { appendById } from '@application/store/paging/append-by-id';
+import type { RecipeListLoaded } from '@application/recipes/list/states/recipe-list-loaded';
+import type { RecipeListError } from '@application/recipes/list/states/recipe-list-error';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RequestEpoch } from '@application/store/request-epoch';
 
@@ -12,12 +15,12 @@ interface RecipeListStoreDeps {
   listRecipes: ListRecipesUseCase;
 }
 
-export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<RecipeListStoreState> => {
+export const configureRecipeListStore = (deps: RecipeListStoreDeps): StoreApi<RecipeListStore> => {
   // Only the latest load may write; `isLatestLoad` is that load's check, which an append borrows.
   const epoch = new RequestEpoch();
   let isLatestLoad = epoch.start();
 
-  return create<RecipeListStoreState>((set, get) => ({
+  return createStore<RecipeListStore>((set, get) => ({
     state: { status: StoreStatus.Idle },
     // A filter change re-fetches in place (isRefreshing) instead of blanking the list.
     load: async (filters?: RecipeFilters) => {
@@ -34,24 +37,26 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
       const result = await deps.listRecipes.execute(filters);
       if (!isCurrent()) return;
       if (!result.ok) {
-        set((s) => ({
-          state:
-            s.state.status === StoreStatus.Loaded
-              ? { ...s.state, isRefreshing: false, refreshFailure: result.failure }
-              : { status: StoreStatus.Error, failure: result.failure },
-        }));
+        set((s) => {
+          if (s.state.status === StoreStatus.Loaded) {
+            // A failed refresh keeps the rows on screen and says why.
+            const kept: RecipeListLoaded = { ...s.state, isRefreshing: false, refreshFailure: result.failure };
+            return { state: kept };
+          }
+          const failed: RecipeListError = { status: StoreStatus.Error, failure: result.failure };
+          return { state: failed };
+        });
         return;
       }
-      set({
-        state: {
-          status: StoreStatus.Loaded,
-          recipes: [...result.value.items],
-          query: filters?.search ?? CharConstants.empty,
-          page: result.value.page,
-          hasMore: result.value.hasMore,
-          total: result.value.total,
-        },
-      });
+      const loaded: RecipeListLoaded = {
+        status: StoreStatus.Loaded,
+        recipes: [...result.value.items],
+        query: filters?.search ?? CharConstants.empty,
+        page: result.value.page,
+        hasMore: result.value.hasMore,
+        total: result.value.total,
+      };
+      set({ state: loaded });
     },
 
     /**
@@ -80,16 +85,16 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
         set({ state: { ...state, isLoadingMore: false, refreshFailure: result.failure } });
         return;
       }
-      set({
-        state: {
-          ...state,
-          recipes: [...state.recipes, ...result.value.items],
-          page: result.value.page,
-          hasMore: result.value.hasMore,
-          total: result.value.total,
-          isLoadingMore: false,
-        },
-      });
+      const appended: RecipeListLoaded = {
+        ...state,
+        // A recipe published between two pages shifts the server's offsets; never show a row twice.
+        recipes: appendById(state.recipes, result.value.items),
+        page: result.value.page,
+        hasMore: result.value.hasMore,
+        total: result.value.total,
+        isLoadingMore: false,
+      };
+      set({ state: appended });
     },
     remove: (id) =>
       set((s) => {

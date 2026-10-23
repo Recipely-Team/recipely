@@ -38,7 +38,7 @@ const handleNotificationResponse = (
   response: NotificationsType.NotificationResponse | null,
 ): void => {
   if (response === null) return;
-  const data = response.notification.request.content.data as Record<string, unknown> | undefined;
+  const data = response.notification.request.content.data;
   if (data?.['type'] !== TIMER_COMPLETE) return;
   const timerId = typeof data['timerId'] === 'string' ? data['timerId'] : 'unknown';
   const recipeName = typeof data['recipeName'] === 'string' ? data['recipeName'] : CharConstants.empty;
@@ -68,9 +68,9 @@ export const useTimerNotificationSync = (): void => {
   useEffect(() => {
     let unsubscribeTick: (() => void) | null = null;
     const syncTick = (): void => {
-      const running = hasRunningTimer(timerStore.getState().timers);
-      if (running && unsubscribeTick === null) unsubscribeTick = subscribeToTick(checkForCompletedTimers);
-      if (!running && unsubscribeTick !== null) {
+      const isRunning = hasRunningTimer(timerStore.getState().timers);
+      if (isRunning && unsubscribeTick === null) unsubscribeTick = subscribeToTick(checkForCompletedTimers);
+      if (!isRunning && unsubscribeTick !== null) {
         unsubscribeTick();
         unsubscribeTick = null;
       }
@@ -103,7 +103,7 @@ export const useTimerNotificationSync = (): void => {
     );
 
     // Cold-start: app launched by tapping the notification.
-    void (Notifications.getLastNotificationResponseAsync() as Promise<NotificationsType.NotificationResponse | null>).then(
+    void (Notifications.getLastNotificationResponseAsync()).then(
       handleNotificationResponse,
     );
 

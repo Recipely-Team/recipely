@@ -30,22 +30,11 @@ export interface RecipeRepositoryInterface {
   ): Promise<Result<RecipeEntity, Failure>>;
   generateRecipe(prompt: string): Promise<Result<RecipeEntity, Failure>>;
   /**
-   * Imports an Instagram reel/video into a full preview `Recipe`. The result is
-   * NOT persisted (same contract as `generateRecipe` — throwaway id,
-   * `isPublished: false`, empty image); the client decides whether to publish
-   * it via `createRecipe`. The locale rides the `Accept-Language` header.
-   *
-   * This call can be slow (the backend runs download + transcription + vision,
-   * up to ~120s), so the implementation uses an extended request timeout.
-   */
-  importInstagramRecipe(url: string): Promise<Result<RecipeEntity, Failure>>;
-
-  /**
    * Queues an Instagram import and returns immediately with a receipt.
    *
-   * The synchronous {@link importInstagramRecipe} holds a request open for the
-   * 59-128 s the pipeline takes, which a backgrounded app loses outright. This
-   * hands the work to a worker instead; the user is told by notification.
+   * The pipeline takes 59-128 s, which a request held open from a
+   * backgrounded app loses outright, so the work goes to a worker and the user
+   * is told by notification.
    */
   enqueueInstagramImport(url: string): Promise<Result<ImportJob, Failure>>;
 

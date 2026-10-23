@@ -8,7 +8,7 @@ export interface StatTileTextProps {
   value: string;
   label: string;
   /** Overrides the value's ink, for a finished timer. */
-  valueColor?: string;
+  valueColor?: string | undefined;
 }
 
 /**

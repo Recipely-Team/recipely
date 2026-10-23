@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { FridgeAvailability, type FridgeAvailabilityType } from '@application/fridge/fridge-availability';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
@@ -9,8 +10,8 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  */
 export const useFridgeAvailability = (): FridgeAvailabilityType => {
   const { fridgeStore } = useStores();
-  const availability = fridgeStore((s) => s.availability);
-  const check = fridgeStore((s) => s.checkAvailability);
+  const availability = useStore(fridgeStore, (s) => s.availability);
+  const check = useStore(fridgeStore, (s) => s.checkAvailability);
   useEffect(() => {
     if (availability === FridgeAvailability.Unknown) void check();
   }, [availability, check]);

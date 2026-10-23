@@ -1,5 +1,5 @@
+import type { TranslationsType } from '@presentation/i18n';
 import type { FoodUnit } from '@domain/diary/foods/units/food-unit';
-import { t } from '@presentation/i18n';
 import { formatOneDecimal } from '@presentation/base/utils/diary/format-one-decimal';
 import { hasUnitWord } from '@presentation/base/utils/diary/units/has-unit-word';
 import { unitWord } from '@presentation/base/utils/diary/units/unit-word';
@@ -9,9 +9,9 @@ import { unitWord } from '@presentation/base/utils/diary/units/unit-word';
  * A serving unit this build has no word for is shown as its amount in the
  * base unit ("300 ml") when the base unit is known, else under its raw key.
  */
-export const formatFoodPortion = (unit: FoodUnit, quantity: number, baseUnit: string | null, locale: string): string => {
-  const known = hasUnitWord(unit.key) || baseUnit === null;
-  const amount = known ? quantity : quantity * unit.amount;
-  const key = known ? unit.key : baseUnit;
-  return t().diary.portion.replace('{n}', formatOneDecimal(amount, locale)).replace('{u}', unitWord(key, amount));
+export const formatFoodPortion = (t: TranslationsType, unit: FoodUnit, quantity: number, baseUnit: string | null, locale: string): string => {
+  const isKnown = hasUnitWord(t, unit.key) || baseUnit === null;
+  const amount = isKnown ? quantity : quantity * unit.amount;
+  const key = isKnown ? unit.key : baseUnit;
+  return t.diary.portion.replace('{n}', formatOneDecimal(amount, locale)).replace('{u}', unitWord(t, key, amount));
 };

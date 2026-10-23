@@ -6,7 +6,7 @@ import { useInstagramConnect } from '@presentation/base/hooks/instagram/use-inst
 import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { RoutePaths } from '@presentation/base/constants';
 import type { UseInstagramAccountResult } from '@presentation/app/edit-profile/model/use-instagram-account-result';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * The creator card's Instagram row (Instagram automations spec §1): the
@@ -18,6 +18,7 @@ import { t } from '@presentation/i18n';
  *   unless another platform is approved, and the card must say so at once.
  */
 export const useInstagramAccount = (): UseInstagramAccountResult => {
+  const t = useTranslations();
   const router = useRouter();
   const { instagramStore, authStore } = useStores();
   const connection = useInstagramConnection();
@@ -47,7 +48,7 @@ export const useInstagramAccount = (): UseInstagramAccountResult => {
           setDisconnectOpen(false);
           if (!result.ok) return void showErrorToast(result.failure);
           void authStore.getState().refreshCreatorClaim();
-          showSuccessToast(t().instagram.disconnectedToast);
+          showSuccessToast(t.instagram.disconnectedToast);
         });
     },
     openAutomations: () => router.push(RoutePaths.automations),

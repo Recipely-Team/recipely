@@ -27,8 +27,8 @@ const labels = (): string[] =>
       onChangeCook={jest.fn()}
     />,
   )
-    .root.findAll((node) => typeof node.props.accessibilityLabel === 'string')
-    .map((node) => node.props.accessibilityLabel as string);
+    .root.findAll((node) => typeof node.props['accessibilityLabel'] === 'string')
+    .map((node) => node.props['accessibilityLabel'] as string);
 
 describe('RecipeSpecCard — difficulty toggle', () => {
   afterEach(() => setLocale(LocaleConstants.en));

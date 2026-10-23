@@ -37,5 +37,5 @@ const fraction = (value: number): string | null => {
   return whole > ValueConstants.zero ? `${String(whole)}${glyph}` : glyph;
 };
 
-export const formatAmount = (value: number, asFraction: boolean, decimalMark: string): string =>
-  (asFraction ? fraction(value) : null) ?? decimal(value, decimalMark);
+export const formatAmount = (value: number, isAsFraction: boolean, decimalMark: string): string =>
+  (isAsFraction ? fraction(value) : null) ?? decimal(value, decimalMark);

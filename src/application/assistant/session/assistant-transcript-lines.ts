@@ -14,7 +14,7 @@ const STRUCTURED_DETAIL = /[{}[\]<>]/;
 
 /** What the handler NAMED wins over what the model asked for: the title that now exists, not the request. */
 export function actionDetail(arg: unknown, response: Readonly<Record<string, unknown>> | undefined): string | undefined {
-  const title = response?.title;
+  const title = response?.['title'];
   const candidate = isString(title) ? title : isString(arg) ? arg : undefined;
   if (candidate === undefined || candidate === CharConstants.empty) return undefined;
   if (candidate.length > MAX_DETAIL_CHARS || STRUCTURED_DETAIL.test(candidate)) return undefined;

@@ -1,7 +1,7 @@
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import { getKeyValueStore } from '@application/storage/get-key-value-store';
 import { TIMERS_BAR_COLLAPSED_STORAGE_KEY } from '@infrastructure/constants/storage';
-import type { TimersBarStoreState } from '@presentation/base/timers/timers-bar-store-state';
+import type { TimersBarStore } from '@presentation/base/timers/timers-bar-store-contract';
 
 const COLLAPSED = 'true';
 
@@ -16,7 +16,7 @@ const COLLAPSED = 'true';
  * touch handler as an unhandled rejection would be worse than a forgotten
  * preference.
  */
-export const timersBarStore = create<TimersBarStoreState>((set, get) => ({
+export const timersBarStore = createStore<TimersBarStore>((set, get) => ({
   collapsed: false,
   chosen: false,
 
@@ -33,11 +33,11 @@ export const timersBarStore = create<TimersBarStoreState>((set, get) => ({
     set({ collapsed: stored === COLLAPSED });
   },
 
-  setCollapsed: async (collapsed) => {
-    set({ collapsed, chosen: true });
+  setCollapsed: async (isCollapsed) => {
+    set({ collapsed: isCollapsed, chosen: true });
     try {
       const store = getKeyValueStore();
-      await (collapsed
+      await (isCollapsed
         ? store.setItem(TIMERS_BAR_COLLAPSED_STORAGE_KEY, COLLAPSED)
         : store.removeItem(TIMERS_BAR_COLLAPSED_STORAGE_KEY));
     } catch {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { SEVERITY_ICON } from '@presentation/base/theme/colors/surfaces/severity-icon';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -11,7 +11,7 @@ import {
 
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import {
   ACTION_TOAST_DURATION_MS,
   DEFAULT_TOAST_DURATION_MS,
@@ -46,11 +46,12 @@ export interface ToastProps {
  *   reader, and a long message gets three lines (WCAG 2.2.1).
  */
 export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
+  const t = useTranslations();
   const { scheme } = useTheme();
   const surfaces = useSeveritySurfaces();
   const accent = surfaces[item.severity].icon;
-  const anim = useRef(new Animated.Value(ValueConstants.zero)).current;
-  const screenReader = useScreenReaderEnabled();
+  const [anim] = useState(() => new Animated.Value(ValueConstants.zero));
+  const isScreenReaderOn = useScreenReaderEnabled();
   useAnnounce(item.message);
 
   const dismiss = useCallback(() => {
@@ -71,9 +72,9 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
     const base = item.durationMs ?? (item.actionLabel !== undefined ? ACTION_TOAST_DURATION_MS : DEFAULT_TOAST_DURATION_MS);
     if (base <= ValueConstants.zero) return;
     const floor = item.actionLabel !== undefined ? Math.max(base, ACTION_TOAST_DURATION_MS) : base;
-    const timer = setTimeout(dismiss, screenReader ? floor * SCREEN_READER_DURATION_FACTOR : floor);
+    const timer = setTimeout(dismiss, isScreenReaderOn ? floor * SCREEN_READER_DURATION_FACTOR : floor);
     return () => clearTimeout(timer);
-  }, [anim, item.durationMs, item.actionLabel, screenReader, dismiss]);
+  }, [anim, item.durationMs, item.actionLabel, isScreenReaderOn, dismiss]);
 
   const handleAction = useCallback(() => {
     item.onAction?.();
@@ -121,7 +122,7 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
           onPress={dismiss}
           hitSlop={spacing.sm}
           accessibilityRole="button"
-          accessibilityLabel={t().errors.dismiss}
+          accessibilityLabel={t.errors.dismiss}
         >
           <Ionicons name="close" size={iconSizes.md} color={TOAST_FOREGROUND} style={styles.close} />
         </Pressable>

@@ -1,1 +1,2 @@
-export type GoogleSigninMod = typeof import('@react-native-google-signin/google-signin');
+import type * as GoogleSigninModule from '@react-native-google-signin/google-signin';
+export type GoogleSigninMod = typeof GoogleSigninModule;

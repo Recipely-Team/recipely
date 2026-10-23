@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -16,7 +16,7 @@ import {
   controlSizes,
   mediaSizes,
 } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface AlarmScreenProps {
@@ -37,9 +37,10 @@ const PULSE_DURATION = 600;
 const HAPTIC_INTERVAL_MS = 1500;
 
 export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JSX.Element => {
+  const t = useTranslations();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const scale = useRef(new Animated.Value(ValueConstants.one)).current;
+  const [scale] = useState(() => new Animated.Value(ValueConstants.one));
 
   useEffect(() => {
     // Pulse animation
@@ -106,7 +107,7 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
         </Animated.Text>
 
         <ThemedText variant="headline" style={styles.centered}>
-          {t().alarm.title}
+          {t.alarm.title}
         </ThemedText>
         <ThemedText variant="subtitle" style={[styles.centered, { color: colors.primary }]}>
           {recipeName}
@@ -115,12 +116,12 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={t().alarm.dismiss}
+        accessibilityLabel={t.alarm.dismiss}
         onPress={dismiss}
         style={[styles.dismissBtn, { backgroundColor: colors.primary }]}
       >
         <ThemedText variant="subtitle" style={[styles.dismissLabel, { color: colors.primaryText }]}>
-          {t().alarm.dismiss}
+          {t.alarm.dismiss}
         </ThemedText>
       </Pressable>
     </View>

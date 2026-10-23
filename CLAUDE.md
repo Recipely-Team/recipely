@@ -86,7 +86,7 @@ research/review); run agents in parallel when their files don't overlap.
 | `design-handoff` | anything with a visual surface — rule 28, prototype → spec → build → compare |
 | `new-screen` | adding, renaming or removing a route |
 | `i18n-copy` | adding or changing user-visible copy in the 14 locales |
-| `paged-list` | any backend list: page envelope, store paging (`PagedListLoader` / `list-paging/`), infinite scroll, footer retry, refresh on focus |
+| `paged-list` | any backend list: page envelope, store paging (`PagedListLoader`), infinite scroll, footer retry, refresh on focus |
 | `release` | `dev → main` release PR, backend cherry-pick promotion, dev APK/IPA markers |
 | `dev-db` | read-only dev Postgres queries and dev API logs over SSH |
 | `live-e2e` | the gated live specs in `recipely-tests` against dev |
@@ -131,7 +131,11 @@ APK/IPA unless the user asks for one (`release` skill).
 
 Recipely is an Expo SDK 57 + React Native 0.86 + React 19.2 app using **DDD / Clean Architecture** with **expo-router** file-based routing. See `architecture.md` for the full structure and coding rules.
 
-TypeScript is strict. All five layers live under `src/`; the `@layer/*` aliases point at
+TypeScript runs at its strictest: `strict` plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`,
+`noPropertyAccessFromIndexSignature`, `noImplicitOverride`, `noImplicitReturns`, `noFallthroughCasesInSwitch` and
+`noUnusedLocals`/`Parameters` — handle the missing case, never assert it away in app code (tests may use `!` on data
+they set up). Environment variables are declared in `process-env.d.ts`; `EXPO_PUBLIC_*` is read with a dot (Expo
+inlines no bracket reads; eslint enforces it). All five layers live under `src/`; the `@layer/*` aliases point at
 `src/<layer>/`, `@/*` maps to the repo root, and `@assets/*` maps to the root `assets/`
 folder (asset requires are centralised in `src/infrastructure/constants/assets.ts`).
 Entry point is `expo-router/entry` (set in `package.json` `main`). App config lives in `app.json`.
@@ -166,7 +170,9 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
 1. **One declaration per file** — one EXPORTED class, interface, type alias or component per `.ts`/`.tsx`.
    Exempt: barrel `index.ts`, a component's `Props` interface, non-exported types. A shape only its own
    consumer names stays unexported above it; a factory gets no alias for its return type (a store module
-   exports only its factory, typed `BoundStore<XState>`). `check:structure` rule A.
+   exports only its factory, typed `StoreApi<XStore>` from `zustand/vanilla`). `check:structure` rule A. A store's contract
+   (`XStore`, state + actions, in `x-store-contract.ts`) is not a state: its `state` field is the union
+   `XState` of named states (`XLoaded`, `XError`, …), one interface each in a `states/` folder.
 2. **Class vs. function** — classes for use cases, repositories, HTTP clients, storage, domain entities;
    stateless mappers/formatters are plain exported functions.
 3. **Comments live at the head of the thing they describe** — ONE doc block per class/hook/component/module
@@ -181,7 +187,8 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
    The test is reuse, not type. A vocabulary (status, error code, platform, role, a screen's own states) is ONE
    const object referenced everywhere; `Failure.message` sentences live in `DiagnosticMessage` (`@core/failure`);
    narrowing unknown values goes through `@core/guards/type-guards`; no raw number sequences in components.
-   `check:structure` rules P and Y.
+   Separator and character literals (`'@'`, `', '`, `'\n'`, `''`) are `CharConstants`; a URL scheme is `UrlConstants`.
+   `check:structure` rules P, Y and AV.
 6. **StyleSheet.create() for static styles** — inline objects only for dynamic values: `[styles.base, { color: dynamic }]`.
 6b. **Responsive sizing** — `minHeight`, never `height`, on boxes with text; never an absolute `lineHeight`
    (`useTextLineHeight` / `lineHeightFor`); `aspectRatio` over pinned image heights, capping **width** not
@@ -194,12 +201,28 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
    and `FlatList` turns it ON by default on Android, so leaving it out is not enough (v1.7.0). Bound mounted rows with
    `windowSize` / `maxToRenderPerBatch` / `initialNumToRender`. `check:structure` rule R.
 7. **Component props interface** — `ComponentNameProps`, exported, above the component in the same file.
-8. **Custom hooks** — prefix `use`, one hook per file, no store state passed as props.
+7b. **Booleans read as questions** — a boolean variable or parameter we name starts with a verb: `isLoading`, `hasMore`,
+   `canSave`, `shouldReduceMotion`, `wasSent`, `doPasswordsMatch`. Props and fields keep the name of the API they mirror
+   (React Native's `visible`/`disabled`, the backend's `likedByMe`). eslint `@typescript-eslint/naming-convention`.
+8. **Hooks, stores and the React Compiler** — prefix `use`, one hook per file, no store state passed as props.
+   Stores are vanilla (`createStore` from `zustand/vanilla`, no React in `application/`); components read them
+   with `useStore(store, selector)`, selecting the narrowest value (`s.state.status`, `s.savedIds.has(id)`).
+   The React Compiler memoizes: new code writes no `useMemo`/`useCallback`/`memo` except as a documented
+   escape hatch. Rules of React are gated — no ref read or written during render (`useEffectEvent` inside
+   effects, `useLatestRef` for handlers), no `setState` mirrored through an effect (derive it, key it, or
+   `useSyncExternalStore` for an outside source), no `eslint-disable` of a hooks rule, no `try…finally` in a
+   hook (`.finally()` or a plain async function), no prop default reading another prop, Reanimated values via
+   `.get()`/`.set()`; outside mutable state (the clock: `useToday`) is subscribed to, never read in render.
+   A getter returns a stored value; anything it would compute is a method. `'use no memo'` only with a
+   one-line reason. Auth goes through `useSignedInUserId` / `useIsSignedIn` / `useSignedInUser`.
+   `check:structure` rules AW and `assert-react-compiler.mjs`; eslint `react-hooks/*`.
 9. **FlatList keyExtractor** — always stable, never the array index for mutable lists.
 10. **Accessibility** — every `Pressable` / `TouchableOpacity` has `accessibilityRole`, and
     `accessibilityLabel` when the visual label is not plain text.
-11. **i18n** — all user-visible strings via `t()` from `src/presentation/i18n/`; every locale in sync
-    (`i18n-copy` skill).
+11. **i18n** — all user-visible strings from `src/presentation/i18n/`; every locale in sync (`i18n-copy`
+    skill). The language is state: components and hooks read `const t = useTranslations()`, text helpers take
+    the catalogue as their first parameter, and the global `t()` is only for code that runs at event time
+    (toasts, alerts, notifications) — eslint `no-restricted-imports` blocks it everywhere else.
 12. **Error handling** — `Result<T, Failure>` everywhere; no thrown exceptions in domain / application code.
 13. **Platform files** — `*.web.ts` / `*.ts` pairs use RN platform-extension resolution (e.g. `kv-store`);
     types shared by the pair live in one separate file.
@@ -219,7 +242,8 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
     `check:structure` rules B, C and AO.
 15b. **Keep the map fresh** — after adding/moving/deleting files run `npm run map`; never hand-edit
     `PROJECT-MAP.md`. `check:structure` rule J.
-16. **Structure gate** — `npm run check:structure` must be green before any commit/PR. It enforces rules 1,
+16. **Structure gate** — `npm run check:structure` must be green before any commit/PR. It also runs `knip` (no unused files,
+    exports or types in `src/`) and `assert-i18n-keys-used` (no translation key nothing reads). It enforces rules 1,
     6b, 8, 14, 14c, 15, 15b, 18, 21, 22, 23, 23b, 23c, 25, 24 (rules AB, AC, AQ, AR, AS and others), 27 (rule AD) and the
     vocabulary half of rule 5 (rule P); the full letter list heads `scripts/check-structure.mjs`. `KNOWN_DEBT`
     only shrinks; never add to it without user approval. New rules land here from rule 24.
@@ -227,7 +251,7 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
     through port interfaces resolved via DI; a new direct `@infrastructure` import is always blocking, never
     `KNOWN_DEBT`. (Evans 2003 p.55.)
 18. **Smart-UI guard (screen size)** — routed `index.tsx` is composition only (≤ ~200 lines, zero business
-    rules); any `.tsx` over 300 lines blocks (i18n dictionaries exempt); a business rule found in UI moves
+    rules); any `.tsx` or presentation hook (`use-*.ts`) over 300 lines blocks (i18n dictionaries exempt); a business rule found in UI moves
     down in the same PR. `check:structure` rule F.
 19. **OOP & rich domain** — invariants and derivations are entity / value-object methods; `private`
     constructor + static `create(): Result`, `private readonly` fields, no public setters; viewer-dependent

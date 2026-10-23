@@ -5,7 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 
@@ -19,6 +19,7 @@ export interface NotificationsHeaderProps {
 
 /** Back, title, and "mark all read" — shown only while something is unread; a spacer keeps the title centred otherwise. */
 export const NotificationsHeader = ({ unreadCount, onBack, onMarkAllRead }: NotificationsHeaderProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
@@ -29,22 +30,22 @@ export const NotificationsHeader = ({ unreadCount, onBack, onMarkAllRead }: Noti
         hitSlop={TARGET_SLOP}
         style={[styles.backBtn, { backgroundColor: colors.chipBackground }]}
         accessibilityRole="button"
-        accessibilityLabel={t().common.back}
+        accessibilityLabel={t.common.back}
       >
         <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.primary} />
       </Pressable>
       <ThemedText variant="subtitle" style={styles.headerTitle}>
-        {t().notifications.title}
+        {t.notifications.title}
       </ThemedText>
       {unreadCount > ValueConstants.zero ? (
         <Pressable
           onPress={onMarkAllRead}
           style={styles.markReadBtn}
           accessibilityRole="button"
-          accessibilityLabel={t().notifications.markRead}
+          accessibilityLabel={t.notifications.markRead}
         >
           <ThemedText variant="caption" style={[styles.markReadLabel, { color: colors.primary }]}>
-            {t().notifications.markRead}
+            {t.notifications.markRead}
           </ThemedText>
         </Pressable>
       ) : (

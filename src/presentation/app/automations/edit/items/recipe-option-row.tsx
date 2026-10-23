@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
 import { ValueConstants } from '@core/constants';
@@ -7,7 +8,7 @@ import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { borderWidths, fontSizes, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface RecipeOptionRowProps {
   hit: RecipeFoodHit;
@@ -20,11 +21,12 @@ export interface RecipeOptionRowProps {
  * a radio. A recipe that is not published cannot be sent to a stranger, so
  * it shows why and cannot be chosen.
  */
-export const RecipeOptionRow = ({ hit, selected, onSelect }: RecipeOptionRowProps): React.JSX.Element => {
+const RecipeOptionRowComponent = ({ hit, selected, onSelect }: RecipeOptionRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const copy = t().instagram;
-  const meta = hit.isDraft ? copy.draftUnavailable : t().diary.perServingMeta.replace('{k}', formatWholeNumber(hit.perServing.calories, locale));
+  const copy = t.instagram;
+  const meta = hit.isDraft ? copy.draftUnavailable : t.diary.perServingMeta.replace('{k}', formatWholeNumber(hit.perServing.calories, locale));
   return (
     <Pressable
       onPress={() => onSelect(hit)}
@@ -68,3 +70,6 @@ const styles = StyleSheet.create({
   },
   dot: { width: AutomationMetrics.radio / ValueConstants.two, height: AutomationMetrics.radio / ValueConstants.two, borderRadius: radii.round },
 });
+
+/** Memoized: rendered once per list item, it re-renders only when its own props change. */
+export const RecipeOptionRow = memo(RecipeOptionRowComponent);

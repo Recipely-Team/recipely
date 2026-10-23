@@ -7,5 +7,3 @@ export const PickRowType = {
   /** A list's next page loading, or its retry after a failure. */
   More: 'more',
 } as const;
-
-export type PickRowTypeType = (typeof PickRowType)[keyof typeof PickRowType];

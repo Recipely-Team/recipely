@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useStore } from 'zustand';
 import type { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { CalendarMonth } from '@domain/diary/calendar/calendar-month';
 import { CalorieStatus } from '@domain/diary/nutrition/calorie-status';
@@ -21,7 +22,7 @@ const LAST_WEEKDAY_OFFSET = 6;
  */
 export const useWeekLooks = (selected: CalendarDate): ((date: CalendarDate) => DayLook) => {
   const { diaryStore } = useStores();
-  const days = diaryStore((s) => s.days);
+  const days = useStore(diaryStore, (s) => s.days);
   const monday = selected.weekStart();
   const first = useDiaryMonth(CalendarMonth.of(monday));
   const last = useDiaryMonth(CalendarMonth.of(monday.addDays(LAST_WEEKDAY_OFFSET)));
@@ -29,7 +30,7 @@ export const useWeekLooks = (selected: CalendarDate): ((date: CalendarDate) => D
   return useCallback(
     (date: CalendarDate): DayLook => {
       const loaded = days[date.value];
-      if (loaded !== undefined) return { calories: loaded.totals.calories, status: loaded.calorieStatus };
+      if (loaded !== undefined) return { calories: loaded.totals().calories, status: loaded.calorieStatus };
       const month = [first, last].find((candidate) => candidate?.month.contains(date) === true);
       return {
         calories: month?.caloriesOn(date) ?? ValueConstants.zero,

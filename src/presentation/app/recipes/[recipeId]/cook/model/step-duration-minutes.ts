@@ -33,7 +33,7 @@ export const stepDurationMinutes = (step: string): number | null => {
   if (match === null || amount === undefined) return null;
 
   const value = Number.parseFloat(amount.replace(CharConstants.comma, CharConstants.dot));
-  const isHours = match.groups?.latinHour !== undefined || match.groups?.gluedHour !== undefined;
+  const isHours = match.groups?.['latinHour'] !== undefined || match.groups?.['gluedHour'] !== undefined;
   const minutes = Math.round(isHours ? value * TimeConstants.minutesPerHour : value);
   return minutes > ValueConstants.zero ? minutes : null;
 };

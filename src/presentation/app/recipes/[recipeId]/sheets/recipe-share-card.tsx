@@ -5,10 +5,10 @@ import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { fontWeights } from '@presentation/base/theme';
 import { SiteMetadata } from '@presentation/base/constants/site-metadata';
-import { t } from '@presentation/i18n';
-import { getLocale } from '@presentation/i18n/i18n';
+import { useTranslations, useLocale } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { PROD_WEB_APP_DOMAIN } from '@infrastructure/constants/api/api-hosts';
+import { isWeb } from '@infrastructure/constants/platform';
 import { ShareCardLayout as L } from '@presentation/app/recipes/[recipeId]/model/share/share-card-layout';
 import { shareCardIngredients } from '@presentation/app/recipes/[recipeId]/model/share/share-card-ingredients';
 import { shareCardMeta } from '@presentation/app/recipes/[recipeId]/model/share/share-card-meta';
@@ -16,11 +16,11 @@ import { shareCardNameTier } from '@presentation/app/recipes/[recipeId]/model/sh
 
 export interface RecipeShareCardProps {
   recipeName: string;
-  cuisine?: string;
+  cuisine?: string | undefined;
   totalMinutes: number;
   servings: number;
   ingredients: readonly string[];
-  imageUrl?: string;
+  imageUrl?: string | undefined;
   /** Called once the photo has loaded or failed — the card is ready to capture. */
   onReady: () => void;
 }
@@ -44,9 +44,11 @@ const FIXED_TEXT = { allowFontScaling: false, maxFontSizeMultiplier: L.fontScale
  */
 export const RecipeShareCard = forwardRef<View, RecipeShareCardProps>(
   ({ recipeName, cuisine, totalMinutes, servings, ingredients, imageUrl, onReady }, ref) => {
+    const t = useTranslations();
+  const locale = useLocale();
     const colors = useTheme().colors;
-    const [photoFailed, setPhotoFailed] = useState(false);
-    const hasPhoto = imageUrl !== undefined && !photoFailed;
+    const [hasPhotoFailed, setPhotoFailed] = useState(false);
+    const hasPhoto = imageUrl !== undefined && !hasPhotoFailed;
     useEffect(() => {
       if (!hasPhoto) onReady();
     }, [hasPhoto, onReady]);
@@ -57,14 +59,15 @@ export const RecipeShareCard = forwardRef<View, RecipeShareCardProps>(
     const fade = [paper + clear, paper + quarter, paper + most, paper + almost, paper] as const;
     const accent = { color: colors.primary };
     const tier = shareCardNameTier(recipeName);
-    const meta = shareCardMeta(cuisine, totalMinutes, servings);
+    const meta = shareCardMeta(t, cuisine, totalMinutes, servings);
     const { shown, hidden } = shareCardIngredients(ingredients);
-    const [footerBefore, footerAfter = CharConstants.empty] = t().recipes.shareCardFooter.split(DOMAIN_PLACEHOLDER);
+    const [footerBefore, footerAfter = CharConstants.empty] = t.recipes.shareCardFooter.split(DOMAIN_PLACEHOLDER);
 
     return (
       <View
         ref={ref}
-        collapsable={false}
+        // Native only: keeps the view un-flattened so it can be captured; on the web React writes it to the DOM and warns.
+        collapsable={isWeb() ? undefined : false}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
         style={[styles.card, { backgroundColor: paper }]}
@@ -104,7 +107,7 @@ export const RecipeShareCard = forwardRef<View, RecipeShareCardProps>(
               <>
                 <View style={[styles.rule, { backgroundColor: rule }]} />
                 <Text {...FIXED_TEXT} style={[styles.label, { color: colors.textSubtle }]}>
-                  {t().recipes.shareCardNeed.toLocaleUpperCase(getLocale())}
+                  {t.recipes.shareCardNeed.toLocaleUpperCase(locale)}
                 </Text>
                 <Text {...FIXED_TEXT} numberOfLines={L.ingredients.lines} style={[styles.ingredients, { color: colors.text }]}>
                   {shown.map((name, index) => (
@@ -115,7 +118,7 @@ export const RecipeShareCard = forwardRef<View, RecipeShareCardProps>(
                   ))}
                   {hidden > ValueConstants.zero ? (
                     <Text style={[styles.strong, accent]}>
-                      {CharConstants.space + CharConstants.space + t().recipes.shareCardMore.replace('{n}', String(hidden))}
+                      {CharConstants.space + CharConstants.space + t.recipes.shareCardMore.replace('{n}', String(hidden))}
                     </Text>
                   ) : null}
                 </Text>

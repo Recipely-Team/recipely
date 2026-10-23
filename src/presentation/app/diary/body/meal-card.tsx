@@ -18,7 +18,7 @@ import {
 } from '@presentation/base/theme';
 import { MealEntryRow } from '@presentation/app/diary/items/meal-entry-row';
 import { EmptyMealButton } from '@presentation/app/diary/items/empty-meal-button';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface MealCardProps {
@@ -29,9 +29,10 @@ export interface MealCardProps {
 
 /** One meal of the day: its name and kcal, its foods, and a way to add more (design spec → Food Diary §4). */
 export const MealCard = ({ group, onAdd, onEdit }: MealCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const name = mealLabel(group.meal);
+  const name = mealLabel(t, group.meal);
   const hasItems = group.entries.length > ValueConstants.zero;
   return (
     <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
@@ -41,7 +42,7 @@ export const MealCard = ({ group, onAdd, onEdit }: MealCardProps): React.JSX.Ele
             {name}
           </SizedText>
           <SizedText size={fontSizes.caption} muted>
-            {`${formatWholeNumber(group.totals.calories, locale)} ${t().nutrition.kcal}`}
+            {`${formatWholeNumber(group.totals.calories, locale)} ${t.nutrition.kcal}`}
           </SizedText>
         </View>
         {hasItems ? (
@@ -49,14 +50,14 @@ export const MealCard = ({ group, onAdd, onEdit }: MealCardProps): React.JSX.Ele
             onPress={() => onAdd(group.meal)}
             hitSlop={spacing.xs2}
             accessibilityRole="button"
-            accessibilityLabel={t().diary.addToMeal.replace('{meal}', name)}
+            accessibilityLabel={t.diary.addToMeal.replace('{meal}', name)}
             style={({ pressed }) => [
               styles.addPill,
               { backgroundColor: colors.chipBackground, opacity: pressed ? opacities.pressedSubtle : opacities.full },
             ]}
           >
             <SizedText size={fontSizes.caption} weight={fontWeights.bold} color={colors.chipText}>
-              {`+ ${t().diary.add}`}
+              {`+ ${t.diary.add}`}
             </SizedText>
           </Pressable>
         ) : null}

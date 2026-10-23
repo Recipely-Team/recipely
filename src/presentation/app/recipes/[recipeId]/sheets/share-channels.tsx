@@ -1,3 +1,4 @@
+import { mailtoShareUrl, smsShareUrl, whatsappShareUrl } from '@presentation/base/constants/external-links';
 import { useState } from 'react';
 import { Linking, Platform, Share, StyleSheet, View } from 'react-native';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
@@ -6,23 +7,21 @@ import { RecipeShareCard } from '@presentation/app/recipes/[recipeId]/sheets/rec
 import { useShareCard } from '@presentation/app/recipes/[recipeId]/hooks/share/use-share-card';
 import { ShareCardLayout } from '@presentation/app/recipes/[recipeId]/model/share/share-card-layout';
 import { spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
-import { ValueConstants } from '@core/constants';
+import { useTranslations } from '@presentation/i18n';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface ShareChannelsProps {
   /** The card is drawn only while the sheet is open, so its photo loads then. */
   visible: boolean;
   recipeName: string;
-  cuisine?: string;
-  imageUrl?: string;
+  cuisine?: string | undefined;
+  imageUrl?: string | undefined;
   url: string;
   totalMinutes: number;
   servings: number;
   ingredients: readonly string[];
 }
 
-/** Opens WhatsApp's own chat picker on phones, WhatsApp Web elsewhere. */
-const WHATSAPP_SHARE_URL = 'https://wa.me/?text=';
 /** The image card needs the native capture and file-share modules; the web shares the link. */
 const CAN_SHARE_CARD = Platform.OS !== 'web';
 
@@ -44,40 +43,34 @@ export const ShareChannels = ({
   servings,
   ingredients,
 }: ShareChannelsProps): React.JSX.Element => {
-  const shareText = t().recipes.shareText.replace('{name}', recipeName);
+  const t = useTranslations();
+  const shareText = t.recipes.shareText.replace('{name}', recipeName);
 
   const handleMessage = (): void => {
-    void Linking.openURL(
-      'sms:?body=' + encodeURIComponent(shareText + ' ' + url),
-    ).catch(() => undefined);
+    void Linking.openURL(smsShareUrl(shareText + CharConstants.space + url)).catch(() => undefined);
   };
 
   const handleEmail = (): void => {
-    void Linking.openURL(
-      'mailto:?subject=' +
-        encodeURIComponent(recipeName) +
-        '&body=' +
-        encodeURIComponent(shareText + '\n\n' + url),
-    ).catch(() => undefined);
+    void Linking.openURL(mailtoShareUrl(recipeName, shareText + CharConstants.paragraphBreak + url)).catch(() => undefined);
   };
 
   const handleMore = (): void => {
-    void Share.share({ message: shareText + ' ' + url, url, title: recipeName }).catch(
+    void Share.share({ message: shareText + CharConstants.space + url, url, title: recipeName }).catch(
       () => undefined,
     );
   };
 
   const handleWhatsApp = (): void => {
-    void Linking.openURL(WHATSAPP_SHARE_URL + encodeURIComponent(shareText + ' ' + url)).catch(() => undefined);
+    void Linking.openURL(whatsappShareUrl(shareText + CharConstants.space + url)).catch(() => undefined);
   };
 
   const { cardRef, onCardReady, shareCard } = useShareCard();
-  const [cardBusy, setCardBusy] = useState(false);
+  const [isCardBusy, setCardBusy] = useState(false);
   const handleStory = (): void => {
     setCardBusy(true);
-    void shareCard(t().recipes.shareTitle).then((shared) => {
+    void shareCard(t.recipes.shareTitle).then((wasShared) => {
       setCardBusy(false);
-      if (!shared) handleMore();
+      if (!wasShared) handleMore();
     });
   };
 
@@ -100,7 +93,7 @@ export const ShareChannels = ({
 
         {CAN_SHARE_CARD ? (
           <View style={styles.storyButton}>
-            <PrimaryButton label={t().recipes.shareChannelStory} onPress={handleStory} loading={cardBusy} />
+            <PrimaryButton label={t.recipes.shareChannelStory} onPress={handleStory} loading={isCardBusy} />
           </View>
         ) : null}
 
@@ -108,22 +101,22 @@ export const ShareChannels = ({
         <View style={styles.channelRow}>
           <ChannelTile
             icon="logo-whatsapp"
-            label={t().recipes.shareChannelWhatsApp}
+            label={t.recipes.shareChannelWhatsApp}
             onPress={handleWhatsApp}
           />
           <ChannelTile
             icon="chatbubble-outline"
-            label={t().recipes.shareChannelMessage}
+            label={t.recipes.shareChannelMessage}
             onPress={handleMessage}
           />
           <ChannelTile
             icon="mail-outline"
-            label={t().recipes.shareChannelEmail}
+            label={t.recipes.shareChannelEmail}
             onPress={handleEmail}
           />
           <ChannelTile
             icon="share-social-outline"
-            label={t().recipes.shareChannelMore}
+            label={t.recipes.shareChannelMore}
             onPress={handleMore}
           />
         </View>

@@ -1,0 +1,32 @@
+import type { Failure } from '@core/failure';
+import type { StoreStatus } from '@application/store/store-status';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+
+/**
+ * isRefreshing / refreshFailure keep the previous recipes on screen during a refetch.
+ */
+export interface RecipeListLoaded {
+  status: typeof StoreStatus.Loaded;
+  recipes: RecipeSummaryEntity[];
+  /**
+   * The `RecipeFilters.search` these `recipes` are the answer to — empty
+   * for the unfiltered feed.
+   *
+   * Search is server-side and debounced, so between a keystroke and its
+   * response `recipes` still holds the PREVIOUS answer. Screens compare
+   * this with the query currently typed to tell "these rows match what is
+   * being asked" from "these rows are last question's answer", instead of
+   * rendering whatever is loaded as results.
+   */
+  query: string;
+  /** 1-based page these `recipes` currently reach up to. */
+  page: number;
+  /** True while the backend has more matching recipes than are loaded. */
+  hasMore: boolean;
+  /** How many recipes match in all, from the page envelope — what "N recipes" says; absent from old fixtures. */
+  total?: number;
+  /** True while an appending fetch for the NEXT page is in flight. */
+  isLoadingMore?: boolean;
+  isRefreshing?: boolean;
+  refreshFailure?: Failure | undefined;
+}

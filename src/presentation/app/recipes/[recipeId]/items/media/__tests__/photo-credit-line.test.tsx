@@ -6,7 +6,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { t } from '@presentation/i18n';
 
 const links = (root: ReturnType<typeof renderComponent>['root']) =>
-  root.findAll((n) => n.props.accessibilityRole === 'link' && typeof n.props.onPress === 'function');
+  root.findAll((n) => n.props['accessibilityRole'] === 'link' && typeof n.props['onPress'] === 'function');
 
 describe('PhotoCreditLine', () => {
   it('renders nothing when the photo needs no credit', () => {
@@ -22,10 +22,10 @@ describe('PhotoCreditLine', () => {
 
     const [link, ...rest] = links(root);
     expect(rest).toHaveLength(0);
-    expect(link?.props.accessibilityLabel).toBe(
+    expect(link?.props['accessibilityLabel']).toBe(
       t().recipes.photoCreditA11y.replace('{author}', 'Jane Doe').replace('{license}', 'CC-BY-4.0'),
     );
-    const press: unknown = link?.props.onPress;
+    const press: unknown = link?.props['onPress'];
     if (typeof press !== 'function') throw new Error('no link');
     act(() => press());
     expect(openURL).toHaveBeenCalledWith(credit.url);

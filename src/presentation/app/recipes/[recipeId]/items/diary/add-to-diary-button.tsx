@@ -7,7 +7,7 @@ import { AddFoodSheet } from '@presentation/base/widgets/diary/add-food/add-food
 import { controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { useAddToDiary } from '@presentation/app/recipes/[recipeId]/hooks/use-add-to-diary';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AddToDiaryButtonProps {
   recipe: RecipeEntity;
@@ -21,6 +21,7 @@ export interface AddToDiaryButtonProps {
  * own Add food sheet and sign-in prompt, so the page wires nothing.
  */
 export const AddToDiaryButton = ({ recipe, inCard }: AddToDiaryButtonProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const diary = useAddToDiary(recipe);
   if (diary.food === null) return null;
@@ -39,7 +40,7 @@ export const AddToDiaryButton = ({ recipe, inCard }: AddToDiaryButtonProps): Rea
       >
         <Ionicons name="calendar-outline" size={iconSizes.lg} color={ink} />
         <SizedText size={inCard ? fontSizes.medium : fontSizes.body} weight={fontWeights.bold} color={ink}>
-          {t().diary.addToDiary}
+          {t.diary.addToDiary}
         </SizedText>
       </Pressable>
       <AddFoodSheet request={diary.request} onClose={diary.close} onOpenDiary={diary.openDiary} />

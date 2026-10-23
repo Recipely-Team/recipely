@@ -24,13 +24,13 @@ describe('Profile — Creator stats row', () => {
   it("sums up the last 30 days and opens the stats", async () => {
     const tree = await render();
     expect(JSON.stringify(tree.renderer.toJSON())).toContain('Last 30 days · 36 DMs · 50% opened');
-    const button = tree.root.findAll((n) => n.props.accessibilityRole === 'button')[0];
-    await act(async () => (button?.props.onPress as () => void)());
+    const button = tree.root.findAll((n) => n.props['accessibilityRole'] === 'button')[0];
+    await act(async () => (button?.props['onPress'] as () => void)());
     expect(mockPush).toHaveBeenCalledWith('/automations/stats');
   });
 
   it('stays hidden until there is at least one automation', async () => {
     const tree = await render(statsOf({ posts: [] }));
-    expect(tree.root.findAll((n) => n.props.accessibilityRole === 'button')).toHaveLength(0);
+    expect(tree.root.findAll((n) => n.props['accessibilityRole'] === 'button')).toHaveLength(0);
   });
 });

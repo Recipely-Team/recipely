@@ -1,7 +1,7 @@
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { opacities, radii, targetSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 const DOT_SIZE = 6;
@@ -16,28 +16,29 @@ export interface OnboardingDotsProps {
   index: number;
   onSelect: (index: number) => void;
   /** 0→1 fill of the active dot while autoplay runs; absent = fully filled. */
-  progress?: Animated.Value;
+  progress?: Animated.Value | undefined;
 }
 
 /** Page dots: tap to go to a slide; the active one fills as autoplay counts down. */
 export const OnboardingDots = ({ count, index, onSelect, progress }: OnboardingDotsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <View style={styles.row}>
       {Array.from({ length: count }).map((_, i) => {
-        const active = i === index;
+        const isActive = i === index;
         return (
           <Pressable
             key={i}
             onPress={() => onSelect(i)}
             accessibilityRole="tab"
-            accessibilityLabel={`${t().onboarding.slideLabel} ${i + ValueConstants.one} / ${count}`}
-            accessibilityState={{ selected: active }}
+            accessibilityLabel={`${t.onboarding.slideLabel} ${i + ValueConstants.one} / ${count}`}
+            accessibilityState={{ selected: isActive }}
             style={styles.target}
           >
-            <View style={[styles.dot, { width: active ? ACTIVE_WIDTH : DOT_SIZE }]}>
+            <View style={[styles.dot, { width: isActive ? ACTIVE_WIDTH : DOT_SIZE }]}>
               <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.textMuted, opacity: TRACK_OPACITY }]} />
-              {active ? (
+              {isActive ? (
                 <Animated.View
                   style={[
                     StyleSheet.absoluteFill,

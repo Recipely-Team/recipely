@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { type Href, useRouter } from 'expo-router';
+import { useStore } from 'zustand';
+import { useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import type { Failure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
@@ -8,7 +9,7 @@ import { RoutePaths } from '@presentation/base/constants';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { askPickSource } from '@presentation/base/utils/ask-pick-source';
 import type { PickSource } from '@presentation/base/utils/pick-source';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useFilePages } from '@presentation/app/import-recipe/hooks/file/use-file-pages';
 import { usePickImportFiles } from '@presentation/app/import-recipe/hooks/file/use-pick-import-files';
 import { useFileDrop } from '@presentation/app/import-recipe/hooks/file/use-file-drop';
@@ -63,31 +64,38 @@ const STAGE_COUNT = FILE_STAGE_KEYS.length;
  *   dropped, so it cannot navigate from behind whatever they opened next.
  */
 export const useFileImport = (): UseFileImportResult => {
+  const t = useTranslations();
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
   const { fileImportStore } = useStores();
-  const state = fileImportStore((s) => s.state);
+  const state = useStore(fileImportStore, (s) => s.state);
   const pages = useFilePages();
   const pick = usePickImportFiles();
   const isDragging = useFileDrop(pages.add);
   const [selected, setSelected] = useState<number | null>(null);
-  const [ticks, setTicks] = useState(ValueConstants.zero);
+  // Tagged with whether a read is running: a new read starts its stages from the first.
+  const [stage, setStage] = useState({ isReading: false, ticks: ValueConstants.zero });
 
   const isReading = state.status === StoreStatus.Loading;
   const draftId = state.status === StoreStatus.Loaded ? state.receipt.draftId : null;
 
   useEffect(() => () => fileImportStore.getState().clear(), [fileImportStore]);
 
+  if (stage.isReading !== isReading) setStage({ isReading, ticks: ValueConstants.zero });
+  const ticks = stage.isReading === isReading ? stage.ticks : ValueConstants.zero;
+
   useEffect(() => {
     if (!isReading) return;
-    setTicks(ValueConstants.zero);
-    const tick = setInterval(() => setTicks((n) => n + ValueConstants.one), FILE_STAGE_TICK_MS);
+    const tick = setInterval(
+      () => setStage((current) => ({ ...current, ticks: current.ticks + ValueConstants.one })),
+      FILE_STAGE_TICK_MS,
+    );
     return () => clearInterval(tick);
   }, [isReading]);
 
   useEffect(() => {
     if (draftId === null) return;
-    router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } } as Href);
+    router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } });
   }, [draftId, router]);
 
   const { add, remove, move } = pages;
@@ -101,10 +109,10 @@ export const useFileImport = (): UseFileImportResult => {
   );
 
   const onAddPage = useCallback((): void => {
-    void askPickSource(t().fileImport.addSheet).then((source) => {
+    void askPickSource(t.fileImport.addSheet).then((source) => {
       if (source !== null) onPick(source);
     });
-  }, [onPick]);
+  }, [onPick, t]);
 
   const onRemove = useCallback(
     (index: number): void => {

@@ -7,7 +7,7 @@ import { formatWeekRange } from '@presentation/base/utils/meal-plan/format-week-
 import { formatPlanWeekday } from '@presentation/base/utils/meal-plan/format-plan-weekday';
 import { formatPlanDay } from '@presentation/base/utils/meal-plan/format-plan-day';
 import { borderWidths, controlSizes, fontSizes, fontWeights, mealPlanSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface PlanDayPickerProps {
@@ -26,9 +26,10 @@ export interface PlanDayPickerProps {
  * disabled at 40%, today is outlined, the chosen day is filled `primary`.
  */
 export const PlanDayPicker = ({ week, selected, today, onSelect, onPage }: PlanDayPickerProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const canPageBack = !week.isBefore(today.weekStart()) && !week.equals(today.weekStart());
   return (
     <View style={styles.stack}>

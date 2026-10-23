@@ -1,1 +1,2 @@
-export type FirebaseAuthMod = typeof import('@react-native-firebase/auth');
+import type * as AuthModule from '@react-native-firebase/auth';
+export type FirebaseAuthMod = typeof AuthModule;

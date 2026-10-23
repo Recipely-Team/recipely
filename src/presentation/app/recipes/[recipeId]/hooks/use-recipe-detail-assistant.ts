@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { Dimensions } from 'react-native';
-import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import { type RefObject, useCallback, useMemo, useRef, useState } from 'react';
+import { Dimensions, type NativeScrollEvent, type NativeSyntheticEvent, type ScrollView } from 'react-native';
 import { recipeFacts } from '@presentation/app/recipes/[recipeId]/model/recipe-facts';
 import { usePortionScaling } from '@presentation/app/recipes/[recipeId]/hooks/use-portion-scaling';
 import { spokenIngredientLines } from '@presentation/app/recipes/[recipeId]/model/portions/spoken-ingredient-lines';
@@ -36,16 +35,19 @@ interface RecipeDetailAssistant {
  * - **One confirmation at a time**: delete is a modal over everything, and sheets drawn later
  *   (share, sign-in) take the spoken answer away from unsave.
  */
-export const useRecipeDetailAssistant = (vm: UseRecipeDetailResult): RecipeDetailAssistant => {
-  const [unsavePending, setUnsavePending] = useState(false);
+export const useRecipeDetailAssistant = (
+  vm: UseRecipeDetailResult,
+  scrollViewRef: RefObject<ScrollView | null>,
+): RecipeDetailAssistant => {
+  const [isUnsavePending, setUnsavePending] = useState(false);
   const scrollOffset = useRef(ValueConstants.zero);
   const scrollDetail = useCallback(
     (direction: AssistantScrollDirectionType): boolean =>
       moveScrollTo(
-        vm.scrollViewRef.current,
+        scrollViewRef.current,
         scrollTargetFor(direction, scrollOffset.current, Dimensions.get('window').height),
       ),
-    [vm.scrollViewRef],
+    [scrollViewRef],
   );
   const portions = usePortionScaling(vm.recipe ?? null);
   const ingredients = useMemo(() => spokenIngredientLines(portions.ingredients), [portions.ingredients]);
@@ -53,12 +55,12 @@ export const useRecipeDetailAssistant = (vm: UseRecipeDetailResult): RecipeDetai
   const recipeName = vm.recipe?.name ?? CharConstants.empty;
   const cookMinutes = vm.recipe?.cookTimeMinutes ?? ValueConstants.zero;
   const startCookTimer = useCallback(
-    () => startTimer(timerId, vm.recipeId, recipeName, cookMinutes),
+    () => void startTimer(timerId, vm.recipeId, recipeName, cookMinutes),
     [timerId, vm.recipeId, recipeName, cookMinutes],
   );
-  const pauseCookTimer = useCallback(() => pauseTimer(timerId), [timerId]);
-  const resumeCookTimer = useCallback(() => resumeTimer(timerId), [timerId]);
-  const stopCookTimer = useCallback(() => stopTimer(timerId), [timerId]);
+  const pauseCookTimer = useCallback(() => void pauseTimer(timerId), [timerId]);
+  const resumeCookTimer = useCallback(() => void resumeTimer(timerId), [timerId]);
+  const stopCookTimer = useCallback(() => void stopTimer(timerId), [timerId]);
   useAssistantRecipeActions({
     recipeId: vm.recipeId,
     recipeName,
@@ -94,14 +96,14 @@ export const useRecipeDetailAssistant = (vm: UseRecipeDetailResult): RecipeDetai
 
   useAssistantConfirmation(vm.showDeleteSheet, vm.onConfirmDelete, vm.onCloseDelete);
   useAssistantConfirmation(
-    unsavePending && !vm.showDeleteSheet && !vm.shareOpen && !vm.promptVisible,
+    isUnsavePending && !vm.showDeleteSheet && !vm.shareOpen && !vm.promptVisible,
     confirmUnsave,
     cancelUnsave,
   );
   useAssistantScroll(scrollDetail);
 
   return {
-    unsavePending,
+    unsavePending: isUnsavePending,
     confirmUnsave,
     cancelUnsave,
     onScroll: (event) => {

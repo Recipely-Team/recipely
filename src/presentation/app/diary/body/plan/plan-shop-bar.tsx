@@ -3,7 +3,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, controlSizes, fontSizes, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface PlanShopBarProps {
@@ -21,8 +21,9 @@ export interface PlanShopBarProps {
  * the voice assistant's orb floats there, just above the tab bar.
  */
 export const PlanShopBar = ({ wide, summary, onPress }: PlanShopBarProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const label = t().mealPlan.shopCta;
+  const label = t.mealPlan.shopCta;
   if (wide) {
     return (
       <View style={styles.footer}>

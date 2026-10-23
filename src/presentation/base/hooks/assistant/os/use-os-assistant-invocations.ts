@@ -92,12 +92,13 @@ export const useOsAssistantInvocations = (): void => {
 
   const dispatch = useCallback(
     async (invocation: OsIntentInvocation): Promise<void> => {
-      try {
-        if (!isStaleInvocation(invocation, Date.now())) await perform(invocation);
-      } finally {
-        // Swallowed: a failed acknowledge must not strand the rest of the queue.
-        await osAssistant.acknowledge(invocation.invocationId).catch(() => undefined);
-      }
+      // Acknowledged whatever perform did; a failed acknowledge is swallowed so it cannot strand the queue.
+      const acknowledge = (): Promise<void> => osAssistant.acknowledge(invocation.invocationId).catch(() => undefined);
+      const work = isStaleInvocation(invocation, Date.now()) ? Promise.resolve() : perform(invocation);
+      await work.then(acknowledge, async (failure: unknown) => {
+        await acknowledge();
+        throw failure;
+      });
     },
     [osAssistant, perform],
   );
@@ -105,7 +106,7 @@ export const useOsAssistantInvocations = (): void => {
   const drain = useCallback(async (): Promise<void> => {
     if (isDraining.current) return;
     isDraining.current = true;
-    try {
+    const drainQueue = async (): Promise<void> => {
       const link = PendingOsIntent.take();
       if (link !== null) {
         await perform(link);
@@ -114,11 +115,13 @@ export const useOsAssistantInvocations = (): void => {
       for (const invocation of await osAssistant.pendingInvocations()) {
         await dispatch(invocation);
       }
-    } catch {
-      // Unreadable queue: the next foreground retries.
-    } finally {
-      isDraining.current = false;
-    }
+    };
+    // Unreadable queue: swallowed, the next foreground retries.
+    await drainQueue()
+      .catch(() => undefined)
+      .finally(() => {
+        isDraining.current = false;
+      });
   }, [osAssistant, dispatch, perform]);
 
   useEffect(() => {

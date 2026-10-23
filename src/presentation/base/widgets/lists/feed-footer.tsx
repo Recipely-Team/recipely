@@ -3,7 +3,7 @@ import type { Failure } from '@core/failure';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { controlSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface FeedFooterProps {
   /** True while the next page is being appended below the rows already shown. */
@@ -17,7 +17,7 @@ export interface FeedFooterProps {
    * before the next fetch starts; `false` says the list is finished. Absent
    * keeps the old behaviour (spinner only while loading).
    */
-  hasMore?: boolean;
+  hasMore?: boolean | undefined;
 }
 
 /**
@@ -43,26 +43,27 @@ export interface FeedFooterProps {
  *   its `moreFailure` and its `loadMore` here.
  */
 export const FeedFooter = ({ isLoadingMore, failure, onRetry, hasMore }: FeedFooterProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const failed = failure != null && onRetry !== undefined;
-  if (isLoadingMore || (hasMore === true && !failed)) {
-    return <ActivityIndicator color={colors.primary} style={styles.root} accessibilityLabel={t().common.loadingMore} />;
+  const hasFailed = failure != null && onRetry !== undefined;
+  if (isLoadingMore || (hasMore === true && !hasFailed)) {
+    return <ActivityIndicator color={colors.primary} style={styles.root} accessibilityLabel={t.common.loadingMore} />;
   }
-  if (!failed) {
+  if (!hasFailed) {
     return hasMore === false ? (
       <ThemedText variant="caption" muted style={styles.end}>
-        {t().common.endOfList}
+        {t.common.endOfList}
       </ThemedText>
     ) : null;
   }
   return (
     <View style={styles.failed}>
       <ThemedText variant="caption" muted>
-        {t().errors.loadMoreFailed}
+        {t.errors.loadMoreFailed}
       </ThemedText>
       <Pressable accessibilityRole="button" onPress={onRetry} style={styles.retry}>
         <ThemedText variant="caption" style={[styles.retryLabel, { color: colors.primary }]}>
-          {t().errors.retry}
+          {t.errors.retry}
         </ThemedText>
       </Pressable>
     </View>

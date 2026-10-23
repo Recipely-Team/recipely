@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import { useStore } from 'zustand';
 import { type Href, useFocusEffect, useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import { ValueConstants } from '@core/constants';
@@ -28,9 +29,9 @@ export const useCreatorStats = (): UseCreatorStatsResult => {
   const router = useRouter();
   const { width } = useLayout();
   const { instagramStore, creatorStatsStore } = useStores();
-  const connection = instagramStore((s) => s.connection);
-  const range = creatorStatsStore((s) => s.range);
-  const state = creatorStatsStore((s) => s.byRange[s.range]);
+  const connection = useStore(instagramStore, (s) => s.connection);
+  const range = useStore(creatorStatsStore, (s) => s.range);
+  const state = useStore(creatorStatsStore, (s) => s.byRange[s.range]);
   const { phase, connect } = useInstagramConnect();
   const linked = connection.status === StoreStatus.Loaded ? connection.connection : null;
   const isConnected = linked?.isConnected ?? false;

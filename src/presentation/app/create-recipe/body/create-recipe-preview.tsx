@@ -7,7 +7,7 @@ import type { UseCreateRecipeResult } from '@presentation/app/create-recipe/mode
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { controlSizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface CreateRecipePreviewProps {
   vm: UseCreateRecipeResult;
@@ -19,6 +19,7 @@ export interface CreateRecipePreviewProps {
  * transcript is expanded). All state and handlers come from the parent screen.
  */
 export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -58,7 +59,6 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
           onChangeCook={(v) => vm.onUpdateField('cookTimeMinutes', v)}
           onChangeIngredient={vm.onChangeIngredient}
           onRemoveIngredient={vm.onRemoveIngredient}
-          onAddIngredient={vm.onAddIngredient}
           onAddIngredientAt={vm.onAddIngredientAt}
           onMoveIngredient={vm.onMoveIngredient}
           onRemoveIngredientGroup={vm.onRemoveIngredientGroup}
@@ -77,7 +77,7 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
           style={[StyleSheet.absoluteFill, { backgroundColor: colors.overlay }]}
           onPress={vm.onCollapseChat}
           accessibilityRole="button"
-          accessibilityLabel={t().common.close}
+          accessibilityLabel={t.common.close}
         />
       ) : null}
       <RefineDock
