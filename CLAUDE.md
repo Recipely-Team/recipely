@@ -131,7 +131,11 @@ APK/IPA unless the user asks for one (`release` skill).
 
 Recipely is an Expo SDK 57 + React Native 0.86 + React 19.2 app using **DDD / Clean Architecture** with **expo-router** file-based routing. See `architecture.md` for the full structure and coding rules.
 
-TypeScript is strict. All five layers live under `src/`; the `@layer/*` aliases point at
+TypeScript runs at its strictest: `strict` plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`,
+`noPropertyAccessFromIndexSignature`, `noImplicitOverride`, `noImplicitReturns`, `noFallthroughCasesInSwitch` and
+`noUnusedLocals`/`Parameters` — handle the missing case, never assert it away in app code (tests may use `!` on data
+they set up). Environment variables are declared in `process-env.d.ts`; `EXPO_PUBLIC_*` is read with a dot (Expo
+inlines no bracket reads; eslint enforces it). All five layers live under `src/`; the `@layer/*` aliases point at
 `src/<layer>/`, `@/*` maps to the repo root, and `@assets/*` maps to the root `assets/`
 folder (asset requires are centralised in `src/infrastructure/constants/assets.ts`).
 Entry point is `expo-router/entry` (set in `package.json` `main`). App config lives in `app.json`.
