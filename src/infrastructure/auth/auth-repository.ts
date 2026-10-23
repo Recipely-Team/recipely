@@ -7,13 +7,10 @@ import type { RefreshSessionRequestDto } from '@infrastructure/auth/dtos/refresh
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
-import { AVATAR_UPLOAD_URL } from '@infrastructure/constants/api/api-hosts';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { REFRESH_RACE_RETRY_MS } from '@infrastructure/constants/api/api-timeouts';
 import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
-import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
 import type { RecipelyAuthSessionDto } from '@infrastructure/auth/session/recipely-auth-session-dto';
-import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
 import type { RegistrationChallengeDto } from '@infrastructure/auth/registration/registration-challenge-dto';
 import { toUser } from '@infrastructure/auth/user-info-mapper';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
@@ -23,29 +20,15 @@ import {
 } from '@infrastructure/auth/social/social-auth-provider';
 import { toChallenge } from '@infrastructure/auth/registration/to-challenge';
 import { expiresAtFromToken } from '@infrastructure/auth/session/expires-at-from-token';
-import { rebuildSessionWithUser } from '@infrastructure/auth/session/rebuild-session-with-user';
-import type { UpdateProfileInput } from '@domain/auth/update-profile-input';
-import type { UserResponseDto } from '@infrastructure/auth/dtos/user-response-dto';
 import type { SignInRequestDto } from '@infrastructure/auth/dtos/sign-in-request-dto';
 import type { RegisterRequestDto } from '@infrastructure/auth/dtos/register-request-dto';
 import type { VerifyRegistrationRequestDto } from '@infrastructure/auth/dtos/verify-registration-request-dto';
 import type { EmailOnlyRequestDto } from '@infrastructure/auth/dtos/email-only-request-dto';
 import type { ResetPasswordRequestDto } from '@infrastructure/auth/dtos/reset-password-request-dto';
 import type { SocialSignInRequestDto } from '@infrastructure/auth/dtos/social-sign-in-request-dto';
-import type { UpdateProfileRequestDto } from '@infrastructure/auth/dtos/update-profile-request-dto';
 import type { DeviceIdentityInterface } from '@domain/device/device-identity-interface';
 import type { DeviceContextDto } from '@infrastructure/device/device-context-dto';
 import { toDeviceContextDto } from '@infrastructure/device/to-device-context-dto';
-import type { CreatorTag } from '@domain/creators/creator-tag';
-import type { CreatorClaimDto } from '@infrastructure/creators/dtos/creator-claim-dto';
-import type { MeCreatorDto } from '@infrastructure/creators/dtos/me-creator-dto';
-import { toCreatorClaim } from '@infrastructure/creators/to-creator-claim';
-import { readCreatorClaims } from '@infrastructure/creators/read-creator-claims';
-import type { CreatorPlatformType } from '@domain/creators/creator-platform';
-import { toCreatorTagRequest } from '@infrastructure/creators/to-creator-tag-request';
-import { replaceSessionUser } from '@infrastructure/auth/session/replace-session-user';
-import { signedInUserId } from '@infrastructure/auth/session/signed-in-user-id';
-import { signedInUser } from '@infrastructure/auth/session/signed-in-user';
 
 /**
  * Implements `AuthRepositoryInterface` against the Recipely backend (email/password)
@@ -183,85 +166,6 @@ export class AuthRepository implements AuthRepositoryInterface {
       return result;
     }
     return ok(undefined);
-  }
-
-  async uploadAvatar(
-    fileUri: string,
-    fileName: string,
-    mimeType: string,
-  ): Promise<Result<AuthSessionEntity, Failure>> {
-    const formData = new FormData();
-    await appendFilePart(formData, 'avatar', { uri: fileUri, fileName, mimeType });
-
-    const result = await this.http.uploadMultipart<{ user: RecipelyUserDto }>(
-      AVATAR_UPLOAD_URL,
-      formData,
-    );
-    if (!result.ok) {
-      return result;
-    }
-    return rebuildSessionWithUser(this.storage, result.value.user);
-  }
-
-  async updateProfile(input: UpdateProfileInput): Promise<Result<AuthSessionEntity, Failure>> {
-    const result = await this.http.patch<UserResponseDto>(ApiRoutes.me.profile, input satisfies UpdateProfileRequestDto);
-    if (!result.ok) {
-      return result;
-    }
-    return rebuildSessionWithUser(this.storage, result.value.user);
-  }
-
-  async deleteAccount(): Promise<Result<void, Failure>> {
-    const result = await this.http.delete<void>(ApiRoutes.me.root);
-    // Keep the session on failure; clear only once the server confirms.
-    if (!result.ok) {
-      return result;
-    }
-    const clearResult = await this.storage.clear();
-    if (!clearResult.ok) {
-      return fail(clearResult.failure);
-    }
-    return ok(undefined);
-  }
-
-  // The claim calls read the issuing user first: see `replaceSessionUser`.
-  async requestCreatorTag(tag: CreatorTag): Promise<Result<AuthSessionEntity, Failure>> {
-    const issuer = await signedInUserId(this.storage);
-    if (!issuer.ok) return issuer;
-    const result = await this.http.put<CreatorClaimDto>(ApiRoutes.me.creator, toCreatorTagRequest(tag));
-    if (!result.ok) return result;
-    const claim = toCreatorClaim(result.value);
-    if (!claim.ok) return claim;
-    return replaceSessionUser(this.storage, issuer.value, (user) =>
-      ok(user.withCreatorClaims(user.creatorClaims.with(claim.value))),
-    );
-  }
-
-  async removeCreatorTag(platform: CreatorPlatformType): Promise<Result<AuthSessionEntity, Failure>> {
-    const issuer = await signedInUserId(this.storage);
-    if (!issuer.ok) return issuer;
-    const result = await this.http.delete<void>(ApiRoutes.me.creatorPlatform(platform));
-    if (!result.ok) return result;
-    return replaceSessionUser(this.storage, issuer.value, (user) =>
-      ok(user.withCreatorClaims(user.creatorClaims.without(platform))),
-    );
-  }
-
-  // Writes only if the stored claim has not changed since the read.
-  async refreshCreatorClaim(): Promise<Result<AuthSessionEntity, Failure>> {
-    const issuer = await signedInUser(this.storage);
-    if (!issuer.ok) return issuer;
-    const readBefore = issuer.value.creatorClaims;
-    const result = await this.http.get<MeCreatorDto>(ApiRoutes.me.root);
-    if (!result.ok) return result;
-    const { creatorTags } = result.value;
-    return replaceSessionUser(this.storage, issuer.value.id, (user) =>
-      ok(
-        creatorTags === undefined || !user.holdsCreatorClaims(readBefore)
-          ? user
-          : user.withCreatorClaims(readCreatorClaims(creatorTags)),
-      ),
-    );
   }
 
   /** Sends a Firebase ID token to the backend and persists the returned backend JWT. */

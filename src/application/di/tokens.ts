@@ -14,6 +14,8 @@
  */
 export const TOKENS = {
   AuthRepository: Symbol.for('AuthRepository'),
+  AccountRepository: Symbol.for('AccountRepository'),
+  CreatorClaimRepository: Symbol.for('CreatorClaimRepository'),
   RecipeRepository: Symbol.for('RecipeRepository'),
   TaxonomyRepository: Symbol.for('TaxonomyRepository'),
   RecipeDraftRepository: Symbol.for('RecipeDraftRepository'),

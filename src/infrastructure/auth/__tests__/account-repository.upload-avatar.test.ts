@@ -4,8 +4,7 @@ import type { Result } from '@core/result/result';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
-import { AuthRepository } from '@infrastructure/auth/auth-repository';
-import { FixedDeviceIdentity } from '@infrastructure/device/__fixtures__/fixed-device-identity';
+import { AccountRepository } from '@infrastructure/auth/account-repository';
 import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
 import { AVATAR_UPLOAD_URL } from '@infrastructure/constants/api/api-hosts';
 import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
@@ -73,12 +72,12 @@ const makeStorage = (
   return { storage: stub, saved };
 };
 
-describe('AuthRepository.uploadAvatar', () => {
+describe('AccountRepository.uploadAvatar', () => {
   it('reuses the current token/id and saves a session with the new photoUrl', async () => {
     const current = buildCurrentSession();
     const { http, calls } = makeHttp(ok({ user: userDto }));
     const { storage, saved } = makeStorage(ok(current));
-    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
+    const repo = new AccountRepository(http, storage);
 
     const result = await repo.uploadAvatar('file:///tmp/a.png', 'a.png', 'image/png');
 
@@ -101,7 +100,7 @@ describe('AuthRepository.uploadAvatar', () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const { storage, saved } = makeStorage(ok(buildCurrentSession()));
-    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
+    const repo = new AccountRepository(http, storage);
 
     const result = await repo.uploadAvatar('file:///tmp/a.png', 'a.png', 'image/png');
 
@@ -114,7 +113,7 @@ describe('AuthRepository.uploadAvatar', () => {
   it('returns UnauthorizedFailure when there is no current session and does not save', async () => {
     const { http } = makeHttp(ok({ user: userDto }));
     const { storage, saved } = makeStorage(ok(null));
-    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
+    const repo = new AccountRepository(http, storage);
 
     const result = await repo.uploadAvatar('file:///tmp/a.png', 'a.png', 'image/png');
 
@@ -128,7 +127,7 @@ describe('AuthRepository.uploadAvatar', () => {
   it('does not put the previous user into the session of whoever is signed in now', async () => {
     const { http } = makeHttp(ok({ user: { ...userDto, id: 'someone-else' } }));
     const { storage, saved } = makeStorage(ok(buildCurrentSession()));
-    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
+    const repo = new AccountRepository(http, storage);
 
     const result = await repo.uploadAvatar('file:///tmp/a.png', 'a.png', 'image/png');
 
@@ -141,7 +140,7 @@ describe('AuthRepository.uploadAvatar', () => {
     const failure = new UnknownFailure('Failed to read session');
     const { http } = makeHttp(ok({ user: userDto }));
     const { storage, saved } = makeStorage(fail(failure));
-    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
+    const repo = new AccountRepository(http, storage);
 
     const result = await repo.uploadAvatar('file:///tmp/a.png', 'a.png', 'image/png');
 

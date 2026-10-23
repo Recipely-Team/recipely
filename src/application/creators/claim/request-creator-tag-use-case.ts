@@ -1,7 +1,7 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
-import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';
+import type { CreatorClaimRepositoryInterface } from '@domain/auth/creator-claim-repository-interface';
 import { CreatorTag } from '@domain/creators/creator-tag';
 import type { RequestCreatorTagInput } from '@application/creators/claim/request-creator-tag-input';
 
@@ -18,7 +18,7 @@ import type { RequestCreatorTagInput } from '@application/creators/claim/request
  *   when the tag is the one already approved.
  */
 export class RequestCreatorTagUseCase {
-  constructor(private readonly repo: AuthRepositoryInterface) {}
+  constructor(private readonly repo: CreatorClaimRepositoryInterface) {}
 
   async execute(input: RequestCreatorTagInput): Promise<Result<AuthSessionEntity, Failure>> {
     const tag = CreatorTag.create(input.platform, input.handle);

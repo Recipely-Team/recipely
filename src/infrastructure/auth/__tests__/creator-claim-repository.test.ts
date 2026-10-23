@@ -8,8 +8,8 @@ import { CreatorClaim } from '@domain/creators/creator-claim';
 import { CreatorClaims } from '@domain/creators/creator-claims';
 import { CreatorStatus } from '@domain/creators/creator-status';
 import { CreatorTag } from '@domain/creators/creator-tag';
-import { AuthRepository } from '@infrastructure/auth/auth-repository';
-import { FixedDeviceIdentity } from '@infrastructure/device/__fixtures__/fixed-device-identity';
+import { CreatorClaimRepository } from '@infrastructure/auth/creator-claim-repository';
+import { AccountRepository } from '@infrastructure/auth/account-repository';
 import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
@@ -51,7 +51,7 @@ interface RequestCall {
 const makeRepo = (
   httpResult: Result<unknown, unknown>,
   stored: AuthSessionEntity | null = buildSession(),
-): { repo: AuthRepository; calls: RequestCall[]; saved: AuthSessionEntity[] } => {
+): { repo: CreatorClaimRepository; account: AccountRepository; calls: RequestCall[]; saved: AuthSessionEntity[] } => {
   const calls: RequestCall[] = [];
   const http = withHttpVerbs(jest.fn((config: RequestCall) => {
     calls.push({ method: config.method, url: config.url, data: config.data });
@@ -65,7 +65,7 @@ const makeRepo = (
       return Promise.resolve(ok(undefined));
     }),
   } as unknown as SecureTokenStorage;
-  return { repo: new AuthRepository(http, storage, new FixedDeviceIdentity()), calls, saved };
+  return { repo: new CreatorClaimRepository(http, storage), account: new AccountRepository(http, storage), calls, saved };
 };
 
 /**
@@ -75,7 +75,7 @@ const makeRepo = (
 const repoSwitchingUserMidRequest = (
   httpResult: Result<unknown, unknown>,
   next: AuthSessionEntity,
-): { repo: AuthRepository; saved: AuthSessionEntity[] } => {
+): { repo: CreatorClaimRepository; saved: AuthSessionEntity[] } => {
   let stored = buildSession(approvedClaim());
   const http = withHttpVerbs(jest.fn(() => {
     stored = next;
@@ -89,16 +89,16 @@ const repoSwitchingUserMidRequest = (
       return Promise.resolve(ok(undefined));
     }),
   } as unknown as SecureTokenStorage;
-  return { repo: new AuthRepository(http, storage, new FixedDeviceIdentity()), saved };
+  return { repo: new CreatorClaimRepository(http, storage), saved };
 };
 
-describe('AuthRepository — a claim answer for a user who has since signed out', () => {
+describe('CreatorClaimRepository — a claim answer for a user who has since signed out', () => {
   const otherUser = (): AuthSessionEntity => buildSession(null, 'u-2');
 
   it.each([
-    ['requestCreatorTag', (repo: AuthRepository) => repo.requestCreatorTag(tagOf('instagram', 'chef')), ok({ platform: 'instagram', handle: 'chef', status: 'pending' })],
-    ['removeCreatorTag', (repo: AuthRepository) => repo.removeCreatorTag('instagram'), ok(undefined)],
-    ['refreshCreatorClaim', (repo: AuthRepository) => repo.refreshCreatorClaim(), ok({ creatorTags: [{ platform: 'tiktok', handle: 'ab', status: 'approved' }] })],
+    ['requestCreatorTag', (repo: CreatorClaimRepository) => repo.requestCreatorTag(tagOf('instagram', 'chef')), ok({ platform: 'instagram', handle: 'chef', status: 'pending' })],
+    ['removeCreatorTag', (repo: CreatorClaimRepository) => repo.removeCreatorTag('instagram'), ok(undefined)],
+    ['refreshCreatorClaim', (repo: CreatorClaimRepository) => repo.refreshCreatorClaim(), ok({ creatorTags: [{ platform: 'tiktok', handle: 'ab', status: 'approved' }] })],
   ])('%s does not write the first user\'s claim into the next user\'s session', async (_name, call, answer) => {
     const { repo, saved } = repoSwitchingUserMidRequest(answer, otherUser());
 
@@ -110,7 +110,7 @@ describe('AuthRepository — a claim answer for a user who has since signed out'
   });
 });
 
-describe('AuthRepository.requestCreatorTag', () => {
+describe('CreatorClaimRepository.requestCreatorTag', () => {
   it('PUTs the normalised tag to /me/creator and persists the pending claim for that platform, keeping the other', async () => {
     const { repo, calls, saved } = makeRepo(ok({ platform: 'tiktok', handle: 'chef.ada', status: 'pending' }), buildSession(approvedClaim()));
 
@@ -147,7 +147,7 @@ describe('AuthRepository.requestCreatorTag', () => {
   });
 });
 
-describe('AuthRepository.removeCreatorTag', () => {
+describe('CreatorClaimRepository.removeCreatorTag', () => {
   it('DELETEs /me/creator/:platform and persists the user without that platform\'s claim', async () => {
     const { repo, calls, saved } = makeRepo(ok(undefined), buildSession(approvedClaim()));
 
@@ -160,7 +160,7 @@ describe('AuthRepository.removeCreatorTag', () => {
   });
 });
 
-describe('AuthRepository.refreshCreatorClaim', () => {
+describe('CreatorClaimRepository.refreshCreatorClaim', () => {
   it('reads the claim from GET /me and stores what the admin decided', async () => {
     const { repo, calls } = makeRepo(
       ok({
@@ -197,7 +197,7 @@ describe('AuthRepository.refreshCreatorClaim', () => {
   });
 });
 
-describe('AuthRepository.updateProfile — creator claim', () => {
+describe('AccountRepository.updateProfile — creator claim', () => {
   const userDto = {
     id: 'u-1',
     email: 'cook@example.com',
@@ -207,17 +207,17 @@ describe('AuthRepository.updateProfile — creator claim', () => {
   };
 
   it('keeps the stored claims when the profile answer has no creatorTags field', async () => {
-    const { repo } = makeRepo(ok({ user: userDto }), buildSession(approvedClaim()));
+    const { account } = makeRepo(ok({ user: userDto }), buildSession(approvedClaim()));
 
-    const r = await repo.updateProfile({ bio: 'new' });
+    const r = await account.updateProfile({ bio: 'new' });
 
     expect(r.ok && r.value.user.creatorClaims.forPlatform('instagram')?.isApproved).toBe(true);
   });
 
   it('takes the claims from the profile answer when it carries them', async () => {
-    const { repo } = makeRepo(ok({ user: { ...userDto, creatorTags: [] } }), buildSession(approvedClaim()));
+    const { account } = makeRepo(ok({ user: { ...userDto, creatorTags: [] } }), buildSession(approvedClaim()));
 
-    const r = await repo.updateProfile({ bio: 'new' });
+    const r = await account.updateProfile({ bio: 'new' });
 
     expect(r.ok && r.value.user.creatorClaims.isEmpty).toBe(true);
   });
@@ -229,7 +229,7 @@ describe('AuthRepository.updateProfile — creator claim', () => {
  * interleave the way a focus refresh and a send do on Edit Profile.
  */
 const racingRepo = (): {
-  repo: AuthRepository;
+  repo: CreatorClaimRepository;
   stored: () => AuthSessionEntity | null;
   answer: (method: string, body: unknown) => void;
 } => {
@@ -248,7 +248,7 @@ const racingRepo = (): {
     }),
   } as unknown as SecureTokenStorage;
   return {
-    repo: new AuthRepository(http, storage, new FixedDeviceIdentity()),
+    repo: new CreatorClaimRepository(http, storage),
     stored: () => stored,
     answer: (method, body) => pending.get(method)?.(ok(body)),
   };
@@ -256,7 +256,7 @@ const racingRepo = (): {
 
 const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
-describe('AuthRepository.refreshCreatorClaim — overtaken by a request', () => {
+describe('CreatorClaimRepository.refreshCreatorClaim — overtaken by a request', () => {
   // A refresh read the claim before the request changed it, and saved that
   // old claim over the request's even when the store then dropped the answer:
   // the next cold start brought the old claim back from disk.

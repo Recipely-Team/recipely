@@ -8,6 +8,8 @@ import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-
 import { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { PreferenceStore } from '@infrastructure/storage/preference-store';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
+import { AccountRepository } from '@infrastructure/auth/account-repository';
+import { CreatorClaimRepository } from '@infrastructure/auth/creator-claim-repository';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { TaxonomyRepository } from '@infrastructure/recipes/taxonomy/taxonomy-repository';
 import { RecipeDraftRepository } from '@infrastructure/drafts/recipe-draft-repository';
@@ -124,6 +126,8 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   const refresher = new SessionRefresher(() => authRepository.refreshSession());
 
   container.register(TOKENS.AuthRepository, () => authRepository);
+  container.register(TOKENS.AccountRepository, () => new AccountRepository(http, storage));
+  container.register(TOKENS.CreatorClaimRepository, () => new CreatorClaimRepository(http, storage));
   container.register(TOKENS.DeviceRepository, () => new DeviceRepository(http));
   container.register(TOKENS.RecipeRepository, () => new RecipeRepository(http, new FirstPageCache(kvStore, FEED_FIRST_PAGE_STORAGE_KEY)));
   container.register(TOKENS.TaxonomyRepository, () => new TaxonomyRepository(http));

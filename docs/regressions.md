@@ -89,7 +89,7 @@ decided to drop the answer, so a cold start restored it. *Guard:* on screen,
 `configureAuthStore` drops a refresh when a request / remove was in flight as it
 started or started while it ran ("a focus refresh that started before a request…" and
 "…started while a request was in flight…", `auth-store.test.ts`); on disk,
-`AuthRepository.refreshCreatorClaim` writes only if the stored claim is still the one
+`CreatorClaimRepository.refreshCreatorClaim` writes only if the stored claim is still the one
 it read before the GET ("a cold start after the race restores the request's claim",
 `auth-repository.creator.test.ts`). **Dropping an answer in the store does not undo a
 write the layer below already made.**
