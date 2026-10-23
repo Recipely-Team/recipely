@@ -7,8 +7,8 @@ import { type Href, useLocalSearchParams, usePathname, useRouter } from 'expo-ro
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
+import { useRecipeComments } from '@presentation/app/recipes/[recipeId]/hooks/comments/use-recipe-comments';
 import { useScrollToEndOnKeyboard } from '@presentation/app/recipes/[recipeId]/hooks/use-scroll-to-end-on-keyboard';
-import { useCommentRemoval } from '@presentation/app/recipes/[recipeId]/hooks/comments/use-comment-removal';
 import { useRecipeAuthor } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
 import { useDmArrival } from '@presentation/app/recipes/[recipeId]/hooks/use-dm-arrival';
 import { useNutritionRecheck } from '@presentation/app/recipes/[recipeId]/hooks/use-nutrition-recheck';
@@ -19,7 +19,6 @@ import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label
 import { useTranslations } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
-import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
@@ -40,9 +39,6 @@ const NO_INGREDIENT_TICKS: { forCount: number; checked: readonly boolean[] } = {
  * - **One source of truth for the like.** A second `likedByMe` without the
  *   `recipe?.likedByMe` fallback left the floating heart empty until the likes
  *   store synced, and empty for good whenever the sync was skipped.
- * - **Failures come from the store's `error` field**, which it records instead
- *   of throwing, so a dropped connection or an expired session doesn't read as
- *   a generic "try again". The static copy is only a defensive fallback.
  * - **A delete failure shows inline in the still-open confirm sheet**; a global
  *   toast would be occluded by the sheet. Flows on the screen below use toasts.
  * - **The network sync re-runs on every entry**, not just the first: a cached
@@ -75,11 +71,11 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
   const signedInUser = useSignedInUser();
   const userId = signedInUser?.id ?? null;
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
-  const onGoToSignIn = useCallback(() => {
+  const onGoToSignIn = (): void => {
     closePrompt();
     // Cast: a runtime path is not in the typed-routes union.
     router.push(RoutePaths.loginWithRedirect(pathname) as Href);
-  }, [closePrompt, pathname, router]);
+  };
   const shownRecipe = localRecipe ?? (networkState?.status === StoreStatus.Loaded ? networkState.recipe : null);
   const recipeOwnerId = shownRecipe?.ownerId ?? null;
   const isOwner = shownRecipe?.isOwnedBy(userId) ?? false;
@@ -115,10 +111,10 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
   const [isShareOpen, setShareOpen] = useState(false);
   const [shouldShowDeleteSheet, setShowDeleteSheet] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const revealCommentInput = useScrollToEndOnKeyboard(scrollViewRef);
+  const comments = useRecipeComments({ recipeId, userId, requestGate });
 
-  const onConfirmDelete = useCallback(async () => {
+  const onConfirmDelete = async (): Promise<void> => {
     setDeleteError(null);
     await recipeAuthoringStore.getState().deleteRecipe(recipeId);
     const { deleteState: s } = recipeAuthoringStore.getState();
@@ -131,40 +127,8 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
       recipeAuthoringStore.getState().resetDeleteState();
       setDeleteError(t.myRecipes.deleteError);
     }
-  }, [recipeId, goBackOrHome, recipeAuthoringStore, t]);
+  };
 
-  const handleDeleteComment = useCallback(
-    async (commentId: string): Promise<void> => {
-      const wasRemoved = await commentsStore.getState().deleteComment(recipeId, commentId);
-      if (!wasRemoved) {
-        const failure = commentsStore.getState().byRecipe[recipeId]?.error;
-        if (failure != null) showErrorToast(failure);
-      }
-    },
-    [commentsStore, recipeId],
-  );
-  const commentRemoval = useCommentRemoval(handleDeleteComment);
-
-  /**
-   * Posts `text`; resolves true once the post lands.
-   *
-   * The text always comes from the caller — the composer (which owns its
-   * draft, so typing does not re-render this screen) or the assistant. Writing
-   * the field and posting in the same tick used to read the PREVIOUS render's
-   * value — normally empty, which this drops — while still reporting success.
-   */
-  const handleAddComment = useCallback(async (text: string): Promise<boolean> => {
-    const trimmed = text.trim();
-    if (trimmed.length === ValueConstants.zero) return false;
-    const isOk = await commentsStore.getState().addComment(recipeId, trimmed);
-    if (isOk) {
-      setSubmitError(null);
-    } else {
-      const failure = commentsStore.getState().byRecipe[recipeId]?.error;
-      setSubmitError(failure != null ? failureToastMessage(t, failure) : t.comments.error);
-    }
-    return isOk;
-  }, [commentsStore, recipeId, t]);
 
   const handleToggleSave = useCallback(async () => {
     if (isLoading || !userId) return;
@@ -178,37 +142,16 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
     }
   }, [isSaved, isLoading, recipeId, userId, favoritesStore, dmArrivalStore]);
 
-  const handleToggleLike = useCallback(async (): Promise<void> => {
-    if (!userId) return;
-    const result = await likesStore.getState().toggle(recipeId);
-    if (!result.ok) showErrorToast(result.failure);
-  }, [userId, recipeId, likesStore]);
 
-  const handleToggleCommentLike = useCallback(async (commentId: string): Promise<void> => {
-    if (userId === null) return;
-    const result = await commentsStore.getState().toggleLike(recipeId, commentId);
-    if (!result.ok) showErrorToast(result.failure);
-  }, [userId, recipeId, commentsStore]);
 
-  // Stable, so the memoised sections they are handed skip a page re-render.
-  const onToggleLike = useCallback(
-    () => requestGate(() => void handleToggleLike(), t.recipes.signInToLike),
-    [requestGate, handleToggleLike, t],
-  );
-  const onAddComment = useCallback(
-    (text: string, onPosted: () => void) =>
-      requestGate(() => void handleAddComment(text).then((isOk) => isOk && onPosted()), t.comments.signInToComment),
-    [requestGate, handleAddComment, t],
-  );
-  const onLoadMoreComments = useCallback(
-    () => void commentsStore.getState().loadMore(recipeId),
-    [commentsStore, recipeId],
-  );
-  const onToggleCommentLike = useCallback(
-    (id: string) => requestGate(() => void handleToggleCommentLike(id), t.comments.signInToLikeComment),
-    [requestGate, handleToggleCommentLike, t],
-  );
-  const onOpenDelete = useCallback(() => setShowDeleteSheet(true), []);
+  const onToggleLike = (): void =>
+    requestGate(() => {
+      if (userId === null) return;
+      void likesStore.getState().toggle(recipeId).then((result) => {
+        if (!result.ok) showErrorToast(result.failure);
+      });
+    }, t.recipes.signInToLike);
+  const onOpenDelete = (): void => setShowDeleteSheet(true);
 
   // Tagged with the ingredient count it was ticked against: a different list starts unticked.
   const [ingredientTicks, setIngredientTicks] = useState(NO_INGREDIENT_TICKS);
@@ -247,27 +190,21 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
 
   const checkedIngredients = ingredientTicks.forCount === ingredientCount ? ingredientTicks.checked : NO_STEPS_DONE;
 
-  const onRetry = useCallback(() => {
+  const onRetry = (): void => {
     if (recipeId.length > ValueConstants.zero) {
       void load(recipeId);
     }
-  }, [recipeId, load]);
+  };
 
-  const onToggleIngredient = useCallback(
-    (index: number) => {
-      setIngredientTicks((prev) => {
-        const next = prev.forCount === ingredientCount ? [...prev.checked] : [];
-        next[index] = !(next[index] ?? false);
-        return { forCount: ingredientCount, checked: next };
-      });
-    },
-    [ingredientCount],
-  );
+  const onToggleIngredient = (index: number): void => {
+    setIngredientTicks((prev) => {
+      const next = prev.forCount === ingredientCount ? [...prev.checked] : [];
+      next[index] = !(next[index] ?? false);
+      return { forCount: ingredientCount, checked: next };
+    });
+  };
 
-  const onToggleStep = useCallback(
-    (index: number) => toggleStoredStep(recipeId, index),
-    [toggleStoredStep, recipeId],
-  );
+  const onToggleStep = (index: number): void => toggleStoredStep(recipeId, index);
 
   const current = recipeState ?? { status: StoreStatus.Loading };
   const status: StateViewStatus =
@@ -311,7 +248,7 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
     userId,
     authorState,
     commentState,
-    submitError,
+    submitError: comments.submitError,
     onFocusCommentInput: revealCommentInput,
     checkedIngredients,
     completedSteps,
@@ -319,10 +256,9 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
     onToggleStep,
     onToggleLike,
     onToggleSave: () => requestGate(() => void handleToggleSave(), t.recipes.signInToSave),
-    onAddComment,
+    onAddComment: comments.onAddComment,
     /** Posts text the caller already has — the assistant's path. */
-    onPostComment: (text: string) =>
-      requestGate(() => void handleAddComment(text), t.comments.signInToComment),
+    onPostComment: comments.onPostComment,
     /**
      * Opens the create screen seeded from this recipe.
      *
@@ -339,12 +275,12 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
         () => router.push(RoutePaths.createRecipeFromRecipe(recipeId) as Href),
         t.recipes.signInToCopy,
       ),
-    onLoadMoreComments,
-    onToggleCommentLike,
-    onDeleteComment: commentRemoval.request,
-    commentDeletePending: commentRemoval.pendingId !== null,
-    onConfirmDeleteComment: commentRemoval.confirm,
-    onCancelDeleteComment: commentRemoval.cancel,
+    onLoadMoreComments: comments.onLoadMoreComments,
+    onToggleCommentLike: comments.onToggleCommentLike,
+    onDeleteComment: comments.removal.request,
+    commentDeletePending: comments.removal.pendingId !== null,
+    onConfirmDeleteComment: comments.removal.confirm,
+    onCancelDeleteComment: comments.removal.cancel,
     shareOpen: isShareOpen,
     onOpenShare: () => setShareOpen(true),
     onCloseShare: () => setShareOpen(false),

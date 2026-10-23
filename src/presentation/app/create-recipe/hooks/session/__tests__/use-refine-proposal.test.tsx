@@ -33,7 +33,7 @@ import type { RecipeListStore } from '@application/recipes/list/recipe-list-stor
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
-import { useRefineProposal } from '@presentation/app/create-recipe/hooks/use-refine-proposal';
+import { useRefineProposal } from '@presentation/app/create-recipe/hooks/session/use-refine-proposal';
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 
 import type { ChatMessage } from '@domain/drafts/chat-message';

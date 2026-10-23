@@ -8,7 +8,7 @@ import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { ApplicationStores } from '@application/di/application-stores';
-import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/use-assistant-draft-actions';
+import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/assistant/use-assistant-draft-actions';
 
 const CUISINES = [{ key: 'italian', name: 'İtalyan', emoji: '🇮🇹' }];
 const CATEGORIES = [{ key: 'soup', name: 'Çorba', emoji: '🍲' }];

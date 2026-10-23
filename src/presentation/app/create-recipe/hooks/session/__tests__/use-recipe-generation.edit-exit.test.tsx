@@ -27,7 +27,7 @@ import type { RecipeListStore } from '@application/recipes/list/recipe-list-stor
 import type { ApplicationStores } from '@application/di/application-stores';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import { renderComponent } from '@presentation/base/test-support/render-component';
-import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-recipe-generation';
+import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/session/use-recipe-generation';
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';

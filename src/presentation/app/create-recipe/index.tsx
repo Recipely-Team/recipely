@@ -5,8 +5,8 @@ import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsiv
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTranslations } from '@presentation/i18n';
 import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
-import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/use-assistant-draft-actions';
-import { useAssistantExitActions } from '@presentation/app/create-recipe/hooks/use-assistant-exit-actions';
+import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/assistant/use-assistant-draft-actions';
+import { useAssistantExitActions } from '@presentation/app/create-recipe/hooks/assistant/use-assistant-exit-actions';
 import { useCreateRecipe } from '@presentation/app/create-recipe/hooks/use-create-recipe';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 import { assistantSheetGates } from '@presentation/app/create-recipe/model/assistant-sheet-gates';

@@ -4,7 +4,7 @@ import { AssistantActionRegistry } from '@application/assistant/actions/assistan
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { ApplicationStores } from '@application/di/application-stores';
-import { useAssistantExitActions } from '@presentation/app/create-recipe/hooks/use-assistant-exit-actions';
+import { useAssistantExitActions } from '@presentation/app/create-recipe/hooks/assistant/use-assistant-exit-actions';
 
 /**
  * "Çık ama kaydetme" saved the draft. `goBack` reached the global handler,

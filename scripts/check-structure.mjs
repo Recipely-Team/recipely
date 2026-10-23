@@ -9,7 +9,7 @@
  *   C. Alias-only imports (`@layer/...`); `./` allowed only in barrel index.ts.
  *   D. No loose files at the base/widgets root (category folders only).
  *   E. app/ co-location convention (page code in body/items/sheets/hooks/model/).
- *   F. Smart-UI size guard (CLAUDE.md §18): no non-test .tsx over 300 lines; a routed
+ *   F. Smart-UI size guard (CLAUDE.md §18): no non-test .tsx, and no presentation hook, over 300 lines; a routed
  *      app/.../index.tsx over 200.
  *   G. Entity naming (CLAUDE.md §21): *Entity classes in *-entity.ts files.
  *   H. Responsive sizing (CLAUDE.md §6b): no absolute lineHeight, no bare
@@ -252,6 +252,14 @@ for (const file of files) {
   // sheets/hooks/model parts (or a hook) instead of growing the component.
   // Past 250 it is a warning: files were landing at 295-299 lines, split only
   // when the gate forced it, so the warning asks for the split while it is cheap.
+  // Hooks too: a hook is where a screen's logic goes when the screen is split, so a
+  // 495-line hook was the same smart UI with the markup removed.
+  if (file.startsWith('presentation/') && /\/use-[^/]+\.ts$/.test(file)) {
+    const lines = src.split('\n').length;
+    if (lines > 300) {
+      errors.push(`${file}: ${lines} lines — a hook stays under 300 lines too (CLAUDE.md §18); split it into the hooks it is made of`);
+    }
+  }
   if (file.endsWith('.tsx')) {
     const lines = src.split('\n').length;
     if (lines > TSX_SOFT_LINE_LIMIT && lines <= 300) nearSizeLimit.push(`${file} (${String(lines)})`);

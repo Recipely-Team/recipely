@@ -197,54 +197,45 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
 
   useAssistantAction(
     AssistantAction.AddComment,
-    useCallback(
-      async (arg?: string): Promise<AssistantActionResultType> => {
-        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: AssistantActionError.Empty };
-        // The text goes with the call; the field would still hold the previous render's value.
-        onPostComment(arg);
-        return { ok: true, title: recipeName };
-      },
-      [onPostComment, recipeName],
-    ),
+    async (arg?: string): Promise<AssistantActionResultType> => {
+      if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: AssistantActionError.Empty };
+      // The text goes with the call; the field would still hold the previous render's value.
+      onPostComment(arg);
+      return { ok: true, title: recipeName };
+    },
   );
 
   // Name or 1-based position ("the yoghurt" / "the second one").
   useAssistantAction(
     AssistantAction.ToggleIngredient,
-    useCallback(
-      async (arg?: string): Promise<AssistantActionResultType> => {
-        const index = rowAt(ingredients, arg);
-        if (index === null) return { ok: false, error: AssistantActionError.NotFound };
-        onToggleIngredient(index);
-        return {
-          ok: true,
-          n: {
-            ing: ingredients.length,
-            checked: checkedIngredients.filter(Boolean).length + (checkedIngredients[index] === true ? ValueConstants.minusOne : ValueConstants.one),
-          },
-        };
-      },
-      [ingredients, onToggleIngredient, checkedIngredients],
-    ),
+    async (arg?: string): Promise<AssistantActionResultType> => {
+      const index = rowAt(ingredients, arg);
+      if (index === null) return { ok: false, error: AssistantActionError.NotFound };
+      onToggleIngredient(index);
+      return {
+        ok: true,
+        n: {
+          ing: ingredients.length,
+          checked: checkedIngredients.filter(Boolean).length + (checkedIngredients[index] === true ? ValueConstants.minusOne : ValueConstants.one),
+        },
+      };
+    },
   );
 
   useAssistantAction(
     AssistantAction.ToggleStep,
-    useCallback(
-      async (arg?: string): Promise<AssistantActionResultType> => {
-        const index = rowAt(instructions, arg);
-        if (index === null) return { ok: false, error: AssistantActionError.NotFound };
-        onToggleStep(index);
-        return {
-          ok: true,
-          n: {
-            step: instructions.length,
-            done: completedSteps.filter(Boolean).length + (completedSteps[index] === true ? ValueConstants.minusOne : ValueConstants.one),
-          },
-        };
-      },
-      [instructions, onToggleStep, completedSteps],
-    ),
+    async (arg?: string): Promise<AssistantActionResultType> => {
+      const index = rowAt(instructions, arg);
+      if (index === null) return { ok: false, error: AssistantActionError.NotFound };
+      onToggleStep(index);
+      return {
+        ok: true,
+        n: {
+          step: instructions.length,
+          done: completedSteps.filter(Boolean).length + (completedSteps[index] === true ? ValueConstants.minusOne : ValueConstants.one),
+        },
+      };
+    },
   );
 
   useAssistantAction(

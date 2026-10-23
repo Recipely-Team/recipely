@@ -250,7 +250,7 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
     through port interfaces resolved via DI; a new direct `@infrastructure` import is always blocking, never
     `KNOWN_DEBT`. (Evans 2003 p.55.)
 18. **Smart-UI guard (screen size)** — routed `index.tsx` is composition only (≤ ~200 lines, zero business
-    rules); any `.tsx` over 300 lines blocks (i18n dictionaries exempt); a business rule found in UI moves
+    rules); any `.tsx` or presentation hook (`use-*.ts`) over 300 lines blocks (i18n dictionaries exempt); a business rule found in UI moves
     down in the same PR. `check:structure` rule F.
 19. **OOP & rich domain** — invariants and derivations are entity / value-object methods; `private`
     constructor + static `create(): Result`, `private readonly` fields, no public setters; viewer-dependent

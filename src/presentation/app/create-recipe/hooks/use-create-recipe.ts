@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Crypto from 'expo-crypto';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useEditableRecipe } from '@presentation/app/create-recipe/hooks/use-editable-recipe';
-import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-recipe-generation';
+import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/session/use-recipe-generation';
 import { useRecipeSave } from '@presentation/app/create-recipe/hooks/use-recipe-save';
 import type { UseCreateRecipeResult } from '@presentation/app/create-recipe/model/use-create-recipe-result';
 
