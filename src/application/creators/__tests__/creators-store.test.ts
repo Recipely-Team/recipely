@@ -22,7 +22,7 @@ const deferredList = () => {
       return new Promise<Answer>((resolve) => pending.push(resolve));
     },
   } as unknown as ListCreatorsUseCase;
-  return { listCreators, calls, answer: (i: number, a: Answer) => pending[i](a) };
+  return { listCreators, calls, answer: (i: number, a: Answer) => pending[i]!(a) };
 };
 
 const immediateList = (...answers: Answer[]) => {

@@ -1,7 +1,7 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
-import type { AuthStoreState } from '@application/auth/auth-store-state';
+import { createStore } from 'zustand/vanilla';
+import type { AuthStore } from '@application/auth/auth-store-contract';
 import { ClaimWriteQueue } from '@application/auth/claim-write-queue';
 import type { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
 import type { RequestRegistrationUseCase } from '@application/auth/registration/request-registration-use-case';
@@ -17,7 +17,7 @@ import type { UploadAvatarUseCase } from '@application/auth/profile/upload-avata
 import type { UpdateProfileUseCase } from '@application/auth/profile/update-profile-use-case';
 import type { DeleteAccountUseCase } from '@application/auth/session/delete-account-use-case';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
-import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
 import type { RequestCreatorTagUseCase } from '@application/creators/claim/request-creator-tag-use-case';
 import type { RemoveCreatorTagUseCase } from '@application/creators/claim/remove-creator-tag-use-case';
 import type { RefreshCreatorClaimUseCase } from '@application/creators/claim/refresh-creator-claim-use-case';
@@ -33,7 +33,7 @@ interface AuthStoreDeps {
   signOut: SignOutUseCase;
   getSession: GetSessionUseCase;
   loadFavorites: LoadFavoritesUseCase;
-  savedRecipesStore: BoundStore<SavedRecipesStoreState>;
+  savedRecipesStore: StoreApi<SavedRecipesStore>;
   signInWithGoogle: SignInWithGoogleUseCase;
   signInWithApple: SignInWithAppleUseCase;
   requestPasswordReset: RequestPasswordResetUseCase;
@@ -63,7 +63,7 @@ interface AuthStoreDeps {
  * expiry.
  *
  * @remarks
- * - **Errors are page-scoped.** `AuthStoreState` has no error variant: an
+ * - **Errors are page-scoped.** `AuthStore` has no error variant: an
  *   action returns the `Failure` and the screen holds it in local state, so a
  *   wrong password on the login page cannot surface anywhere else. A failed
  *   action returns the store to its resting status.
@@ -85,10 +85,10 @@ interface AuthStoreDeps {
  *   from before the change. Writes run one at a time, in order, so writing
  *   both platforms together cannot lose one ({@link ClaimWriteQueue}).
  */
-export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreState> => {
+export const configureAuthStore = (deps: AuthStoreDeps): StoreApi<AuthStore> => {
   const claims = new ClaimWriteQueue();
 
-  return create<AuthStoreState>((set, get) => {
+  return createStore<AuthStore>((set, get) => {
     type SessionCall = () => Promise<Result<AuthSessionEntity, Failure>>;
 
     /** The signed-in user's id, or `null` — read when a claim call starts. */

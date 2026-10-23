@@ -126,9 +126,9 @@ describe('ActiveTimersBar — collapse', () => {
   const buttonLabelled = (r: ReactTestRenderer, label: string): ReactTestInstance | undefined =>
     r.root.findAll(
       (node) =>
-        node.props.accessibilityRole === 'button' &&
-        node.props.accessibilityLabel === label &&
-        typeof node.props.onPress === 'function',
+        node.props['accessibilityRole'] === 'button' &&
+        node.props['accessibilityLabel'] === label &&
+        typeof node.props['onPress'] === 'function',
     )[0];
 
   const renderBar = (): ReactTestRenderer => {
@@ -152,7 +152,7 @@ describe('ActiveTimersBar — collapse', () => {
     const collapse = buttonLabelled(renderer, t().timer.collapse);
 
     act(() => {
-      (collapse?.props.onPress as () => void)();
+      (collapse?.props['onPress'] as () => void)();
     });
 
     expect(buttonLabelled(renderer, t().timer.expand)).toBeDefined();
@@ -163,7 +163,7 @@ describe('ActiveTimersBar — collapse', () => {
     renderer = renderBar();
 
     act(() => {
-      (buttonLabelled(renderer!, t().timer.collapse)?.props.onPress as () => void)();
+      (buttonLabelled(renderer!, t().timer.collapse)?.props['onPress'] as () => void)();
     });
 
     // Losing sight of a running countdown entirely would be worse than the
@@ -176,10 +176,10 @@ describe('ActiveTimersBar — collapse', () => {
     renderer = renderBar();
 
     act(() => {
-      (buttonLabelled(renderer!, t().timer.collapse)?.props.onPress as () => void)();
+      (buttonLabelled(renderer!, t().timer.collapse)?.props['onPress'] as () => void)();
     });
     act(() => {
-      (buttonLabelled(renderer!, t().timer.expand)?.props.onPress as () => void)();
+      (buttonLabelled(renderer!, t().timer.expand)?.props['onPress'] as () => void)();
     });
 
     expect(buttonLabelled(renderer, t().timer.collapse)).toBeDefined();
@@ -192,7 +192,7 @@ describe('ActiveTimersBar — collapse', () => {
   it('stays collapsed when the bar is mounted again', () => {
     renderer = renderBar();
     act(() => {
-      (buttonLabelled(renderer!, t().timer.collapse)?.props.onPress as () => void)();
+      (buttonLabelled(renderer!, t().timer.collapse)?.props['onPress'] as () => void)();
     });
     act(() => {
       renderer?.unmount();
@@ -212,8 +212,8 @@ describe('ActiveTimersBar — collapse', () => {
    * `controlSizes.searchBar` is, device-scaled like every other token.
    */
   const pressableTarget = (node: ReactTestInstance): { width: number; height: number } => {
-    const style = StyleSheet.flatten(node.props.style as StyleProp<ViewStyle>) ?? {};
-    const slop = typeof node.props.hitSlop === 'number' ? (node.props.hitSlop as number) : 0;
+    const style = StyleSheet.flatten(node.props['style'] as StyleProp<ViewStyle>) ?? {};
+    const slop = typeof node.props['hitSlop'] === 'number' ? (node.props['hitSlop'] as number) : 0;
     // A pill without a fixed width grows with its content, so only the axis the
     // stylesheet actually pins can be asserted on.
     const width = style.width ?? Number.POSITIVE_INFINITY;
@@ -236,7 +236,7 @@ describe('ActiveTimersBar — collapse', () => {
   it('keeps the collapsed pill pressable rather than shrinking it to a badge', () => {
     renderer = renderBar();
     act(() => {
-      (buttonLabelled(renderer!, t().timer.collapse)?.props.onPress as () => void)();
+      (buttonLabelled(renderer!, t().timer.collapse)?.props['onPress'] as () => void)();
     });
 
     const target = pressableTarget(buttonLabelled(renderer, t().timer.expand)!);

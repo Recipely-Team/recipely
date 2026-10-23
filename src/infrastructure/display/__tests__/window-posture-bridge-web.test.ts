@@ -38,20 +38,20 @@ const fireQueryChange = (): void => queries.forEach((query) => query.listeners.f
 beforeEach(() => {
   queries.clear();
   windowListeners.clear();
-  target.window = target;
-  target.matchMedia = jest.fn(fakeQuery);
-  target.addEventListener = (_type: string, listener: () => void) => windowListeners.add(listener);
-  target.removeEventListener = (_type: string, listener: () => void) => windowListeners.delete(listener);
-  delete target.viewport;
+  target['window'] = target;
+  target['matchMedia'] = jest.fn(fakeQuery);
+  target['addEventListener'] = (_type: string, listener: () => void) => windowListeners.add(listener);
+  target['removeEventListener'] = (_type: string, listener: () => void) => windowListeners.delete(listener);
+  delete target['viewport'];
 });
 
 afterAll(() => {
-  delete target.viewport;
+  delete target['viewport'];
 });
 
 describe('WindowPostureBridge (web) — Viewport Segments API', () => {
   it('reads a spanned Duo held as a book as a 34 px vertical hinge between the segments', () => {
-    target.viewport = segments([0, 0, 540, 720], [574, 0, 540, 720]);
+    target['viewport'] = segments([0, 0, 540, 720], [574, 0, 540, 720]);
 
     expect(new WindowPostureBridge().current()).toEqual({
       isSeparating: true,
@@ -62,7 +62,7 @@ describe('WindowPostureBridge (web) — Viewport Segments API', () => {
   });
 
   it('reads stacked segments as a horizontal hinge', () => {
-    target.viewport = segments([0, 0, 720, 540], [0, 574, 720, 540]);
+    target['viewport'] = segments([0, 0, 720, 540], [0, 574, 720, 540]);
 
     expect(new WindowPostureBridge().current()).toMatchObject({
       orientation: FoldOrientation.Horizontal,
@@ -74,11 +74,11 @@ describe('WindowPostureBridge (web) — Viewport Segments API', () => {
     const bridge = new WindowPostureBridge();
 
     expect(bridge.current()).toBeNull();
-    target.viewport = segments([0, 0, 1114, 720]);
+    target['viewport'] = segments([0, 0, 1114, 720]);
     expect(bridge.current()).toBeNull();
-    target.viewport = { segments: [{ x: 0 }, { x: 574 }] };
+    target['viewport'] = { segments: [{ x: 0 }, { x: 574 }] };
     expect(bridge.current()).toBeNull();
-    target.viewport = { segments: null };
+    target['viewport'] = { segments: null };
     expect(bridge.current()).toBeNull();
   });
 
@@ -87,14 +87,14 @@ describe('WindowPostureBridge (web) — Viewport Segments API', () => {
     const listener = jest.fn();
     const unsubscribe = bridge.subscribe(listener);
 
-    target.viewport = segments([0, 0, 540, 720], [574, 0, 540, 720]);
+    target['viewport'] = segments([0, 0, 540, 720], [574, 0, 540, 720]);
     fireQueryChange();
     windowListeners.forEach((fire) => fire());
 
     expect(listener).toHaveBeenCalledTimes(1);
     expect(listener).toHaveBeenLastCalledWith(expect.objectContaining({ orientation: FoldOrientation.Vertical }));
 
-    target.viewport = segments([0, 0, 1114, 720]);
+    target['viewport'] = segments([0, 0, 1114, 720]);
     windowListeners.forEach((fire) => fire());
     expect(listener).toHaveBeenLastCalledWith(null);
 

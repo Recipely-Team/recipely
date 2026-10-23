@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -15,7 +16,7 @@ import { PasswordStrengthMeter } from '@presentation/app/register/items/password
 import { TermsAgreement } from '@presentation/app/register/items/terms-agreement';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, fontWeights, targetSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
@@ -36,49 +37,50 @@ import { isBlank } from '@core/guards/type-guards';
  *   submit) and names the first rule that fails.
  */
 export const RegisterForm = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const goBack = useGoBackOrHome(RoutePaths.login);
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
-  const isLoading = authStore((s) => s.state.status === StoreStatus.Loading);
-  const register = authStore((s) => s.register);
+  const isLoading = useStore(authStore, (s) => s.state.status === StoreStatus.Loading);
+  const register = useStore(authStore, (s) => s.register);
 
   const [name, setName] = useState(CharConstants.empty);
   const [email, setEmail] = useState(CharConstants.empty);
   const [password, setPassword] = useState(CharConstants.empty);
   const [confirm, setConfirm] = useState(CharConstants.empty);
-  const [agree, setAgree] = useState(false);
+  const [hasAgreed, setAgree] = useState(false);
   const [localError, setLocalError] = useState<string | undefined>(undefined);
 
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
   const confirmRef = useRef<TextInput>(null);
 
-  const emailValid = Email.create(email).ok;
-  const passwordsMatch = password.length > ValueConstants.zero && password === confirm;
+  const isEmailValid = Email.create(email).ok;
+  const doPasswordsMatch = password.length > ValueConstants.zero && password === confirm;
   const strength = useMemo(() => Password.strengthOf(password), [password]);
 
   const handleRegister = useCallback(async () => {
     if (isBlank(name)) {
-      setLocalError(t().register.errorName);
+      setLocalError(t.register.errorName);
       return;
     }
-    if (!emailValid) {
-      setLocalError(t().register.errorEmail);
+    if (!isEmailValid) {
+      setLocalError(t.register.errorEmail);
       return;
     }
     if (!Password.create(password).ok) {
-      setLocalError(t().register.errorPwdShort);
+      setLocalError(t.register.errorPwdShort);
       return;
     }
     if (password !== confirm) {
-      setLocalError(t().register.errorMismatch);
+      setLocalError(t.register.errorMismatch);
       return;
     }
-    if (!agree) {
-      setLocalError(t().register.errorAgree);
+    if (!hasAgreed) {
+      setLocalError(t.register.errorAgree);
       return;
     }
     setLocalError(undefined);
@@ -93,9 +95,9 @@ export const RegisterForm = (): React.JSX.Element => {
         },
       });
     } else {
-      setLocalError(authFormMessage(result.failure, { conflict: t().register.emailTaken }));
+      setLocalError(authFormMessage(t, result.failure, { conflict: t.register.emailTaken }));
     }
-  }, [name, email, emailValid, password, confirm, agree, register, router, redirect]);
+  }, [name, email, isEmailValid, password, confirm, hasAgreed, register, router, redirect, t]);
 
   const errorMessage = localError;
 
@@ -104,7 +106,7 @@ export const RegisterForm = (): React.JSX.Element => {
       <AuthTextField
         iconName="person-outline"
         autofill={AuthAutofill.Name}
-        placeholder={t().register.namePlaceholder}
+        placeholder={t.register.namePlaceholder}
         value={name}
         onChangeText={setName}
         autoCapitalize="words"
@@ -117,12 +119,12 @@ export const RegisterForm = (): React.JSX.Element => {
         ref={emailRef}
         iconName="mail-outline"
         autofill={AuthAutofill.Email}
-        placeholder={t().register.emailPlaceholder}
+        placeholder={t.register.emailPlaceholder}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         returnKeyType="next"
-        valid={email.length > ValueConstants.zero ? emailValid : undefined}
+        valid={email.length > ValueConstants.zero ? isEmailValid : undefined}
         onSubmitEditing={() => passwordRef.current?.focus()}
         containerStyle={styles.fieldSpacing}
       />
@@ -131,7 +133,7 @@ export const RegisterForm = (): React.JSX.Element => {
         ref={passwordRef}
         iconName="lock-closed-outline"
         autofill={AuthAutofill.NewPassword}
-        placeholder={t().register.passwordPlaceholder}
+        placeholder={t.register.passwordPlaceholder}
         value={password}
         onChangeText={setPassword}
         password
@@ -146,17 +148,17 @@ export const RegisterForm = (): React.JSX.Element => {
         ref={confirmRef}
         iconName="lock-closed-outline"
         autofill={AuthAutofill.NewPassword}
-        placeholder={t().register.confirmPlaceholder}
+        placeholder={t.register.confirmPlaceholder}
         value={confirm}
         onChangeText={setConfirm}
         password
         returnKeyType="done"
-        valid={confirm.length > ValueConstants.zero ? passwordsMatch : undefined}
+        valid={confirm.length > ValueConstants.zero ? doPasswordsMatch : undefined}
         onSubmitEditing={() => { void handleRegister(); }}
         containerStyle={styles.fieldSpacing}
       />
 
-      <TermsAgreement agree={agree} onToggle={() => setAgree((a) => !a)} />
+      <TermsAgreement agree={hasAgreed} onToggle={() => setAgree((hadAgreed) => !hadAgreed)} />
 
       {errorMessage !== undefined ? (
         <View style={styles.error}>
@@ -166,7 +168,7 @@ export const RegisterForm = (): React.JSX.Element => {
 
       <View style={styles.submitRow}>
         <PrimaryButton
-          label={t().register.signUp}
+          label={t.register.signUp}
           onPress={() => { void handleRegister(); }}
           loading={isLoading}
         />
@@ -174,11 +176,11 @@ export const RegisterForm = (): React.JSX.Element => {
 
       <View style={styles.signInRow}>
         <ThemedText variant="caption" style={{ color: colors.textMuted }}>
-          {t().register.haveAccount}
+          {t.register.haveAccount}
         </ThemedText>
         <Pressable accessibilityRole="link" onPress={goBack} style={styles.linkTarget}>
           <ThemedText variant="caption" style={[styles.signInLink, { color: colors.primary }]}>
-            {t().register.signIn}
+            {t.register.signIn}
           </ThemedText>
         </Pressable>
       </View>

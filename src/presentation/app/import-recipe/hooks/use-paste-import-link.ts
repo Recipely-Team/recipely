@@ -47,7 +47,7 @@ export const usePasteImportLink = (): UsePasteImportLinkResult => {
   const [value, setValue] = useState(CharConstants.empty);
   const [isEmpty, setIsEmpty] = useState(false);
   const [failure, setFailure] = useState<Failure | null>(null);
-  const [showManualHint, setShowManualHint] = useState(false);
+  const [shouldShowManualHint, setShowManualHint] = useState(false);
   const [recognised, setRecognised] = useState<ImportLink | null>(null);
 
   /**
@@ -111,7 +111,7 @@ export const usePasteImportLink = (): UsePasteImportLinkResult => {
     onChangeValue,
     isEmpty,
     failure,
-    showManualHint,
+    showManualHint: shouldShowManualHint,
     onPaste,
     recognised,
     onBlur: () => inspect(value),

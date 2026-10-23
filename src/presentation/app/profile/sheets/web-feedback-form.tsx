@@ -3,7 +3,7 @@ import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-t
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, controlSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 
 export interface WebFeedbackFormProps {
@@ -22,19 +22,20 @@ export const WebFeedbackForm = ({
   onChangeMessage,
   showError,
 }: WebFeedbackFormProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <View style={styles.wrap}>
-      <ThemedText variant="body" muted>{t().support.subtitle}</ThemedText>
+      <ThemedText variant="body" muted>{t.support.subtitle}</ThemedText>
       <View style={styles.field}>
         <ThemedText variant="caption" muted style={styles.fieldLabel}>
-          {upperCase(t().support.subject)}
+          {upperCase(t.support.subject)}
         </ThemedText>
         <TextInput
           value={subject}
           onChangeText={onChangeSubject}
-          placeholder={t().support.subjectPlaceholder}
+          placeholder={t.support.subjectPlaceholder}
           placeholderTextColor={colors.textMuted}
           returnKeyType="next"
           style={[
@@ -45,12 +46,12 @@ export const WebFeedbackForm = ({
       </View>
       <View style={styles.field}>
         <ThemedText variant="caption" muted style={styles.fieldLabel}>
-          {upperCase(t().support.message)}
+          {upperCase(t.support.message)}
         </ThemedText>
         <AutoGrowTextInput
           value={message}
           onChangeText={onChangeMessage}
-          placeholder={t().support.messagePlaceholder}
+          placeholder={t.support.messagePlaceholder}
           placeholderTextColor={colors.textMuted}
           minHeight={controlSizes.messageField}
           style={[
@@ -62,7 +63,7 @@ export const WebFeedbackForm = ({
       </View>
       {showError ? (
         <ThemedText variant="caption" style={[styles.errorText, { color: colors.danger }]}>
-          {t().support.error}
+          {t.support.error}
         </ThemedText>
       ) : null}
     </View>

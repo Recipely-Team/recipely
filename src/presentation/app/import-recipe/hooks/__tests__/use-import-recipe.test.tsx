@@ -15,7 +15,7 @@
  */
 
 import { ensurePushRegistration } from "@application/notifications/ensure-push-registration";
-import type { ImportJobStoreState } from "@application/recipes/import/import-job-store-state";
+import type { ImportJobStore } from "@application/recipes/import/import-job-store-contract";
 import { ImportJobStatus } from "@domain/recipes/import/import-job-status";
 import { useImportRecipe } from "@presentation/app/import-recipe/hooks/use-import-recipe";
 import { IMPORT_STAGE_COUNT } from "@presentation/app/import-recipe/model/import-stage";
@@ -73,7 +73,7 @@ const makeStores = (
   // The queue moves under a waiting job, so each poll may answer differently.
   const positionAt = (n: number): number | null =>
     positions[Math.min(n, positions.length - 1)] ?? null;
-  const importJobStore = create<ImportJobStoreState>((set) => ({
+  const importJobStore = create<ImportJobStore>((set) => ({
     state: { status: "idle" },
     startImport: async () => {
       set({

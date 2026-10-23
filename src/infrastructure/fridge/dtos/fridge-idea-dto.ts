@@ -4,6 +4,8 @@ export interface FridgeIdeaDto {
   summary: string;
   totalMinutes: number;
   difficulty: string;
-  uses: string[];
-  missing: string[];
+  /** Older servers omit it. */
+  uses?: string[];
+  /** Older servers omit it. */
+  missing?: string[];
 }

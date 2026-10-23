@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface CookControlsProps {
@@ -16,8 +16,9 @@ export interface CookControlsProps {
 
 /** Previous and Next (Finish on the last step), big enough for a floury thumb. */
 export const CookControls = ({ isFirst, isLast, onPrevious, onNext }: CookControlsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const nextLabel = isLast ? t().cookMode.finish : t().cookMode.next;
+  const nextLabel = isLast ? t.cookMode.finish : t.cookMode.next;
 
   return (
     <View style={styles.row}>
@@ -38,7 +39,7 @@ export const CookControls = ({ isFirst, isLast, onPrevious, onNext }: CookContro
       >
         <Ionicons name="chevron-back" size={iconSizes.lg} color={colors.text} />
         <ThemedText variant="body" style={[styles.label, { color: colors.text }]}>
-          {t().cookMode.previous}
+          {t.cookMode.previous}
         </ThemedText>
       </Pressable>
       <Pressable

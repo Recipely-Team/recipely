@@ -58,10 +58,10 @@ export const mountAdsenseUnit = async (host: HTMLElement, slotId: string): Promi
   const unit = document.createElement('ins');
   unit.className = 'adsbygoogle';
   unit.style.display = 'block';
-  unit.dataset.adClient = ADSENSE_CLIENT_ID;
-  unit.dataset.adSlot = slotId;
-  unit.dataset.adFormat = 'auto';
-  unit.dataset.fullWidthResponsive = 'true';
+  unit.dataset['adClient'] = ADSENSE_CLIENT_ID;
+  unit.dataset['adSlot'] = slotId;
+  unit.dataset['adFormat'] = 'auto';
+  unit.dataset['fullWidthResponsive'] = 'true';
   host.appendChild(unit);
 
   await loadScript();

@@ -1,7 +1,7 @@
 import { AssistantFailureCode } from '@live-assistant/core';
 import type { AssistantFailure } from '@live-assistant/core';
 import { toAppFailure } from '@application/assistant/session/to-app-failure';
-import type { AssistantSessionStoreState } from '@application/assistant/session/assistant-session-store-state';
+import type { AssistantSessionStore } from '@application/assistant/session/assistant-session-store-contract';
 import { AssistantDenialReason } from '@domain/assistant/session/assistant-denial-reason';
 import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
 import { Failure } from '@core/failure/failure';
@@ -14,8 +14,10 @@ class GrantRefusal {
   ) {}
 }
 
-/** What a refused start writes to the store, beside the `Unavailable` pill. */
-type StartDenialPatch = Partial<Pick<AssistantSessionStoreState, 'deniedReason' | 'remainingSeconds' | 'isUnlimited'>>;
+/** What a refused start tells the store: the reason the `Unavailable` state carries, and the budget it read. */
+type StartDenialPatch = Partial<Pick<AssistantSessionStore, 'remainingSeconds' | 'isUnlimited'>> & {
+  deniedReason?: AssistantDenialReasonType;
+};
 
 /**
  * **Assistant failure policy** — which `@live-assistant/*` failures the user is

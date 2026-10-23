@@ -8,6 +8,7 @@
  * never brought along, so the only thing standing between a modern camera and
  * the reverse proxy's body cap was luck.
  */
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
 
 // `mock`-prefixed so Jest's module factory may close over them.
@@ -32,7 +33,7 @@ jest.mock('@infrastructure/constants/platform', () => ({
 }));
 
 jest.mock('@presentation/bootstrap/use-stores', () => ({
-  useStores: () => ({ authStore: (select: (s: unknown) => unknown) => select({ uploadAvatar: mockUploadAvatar }) }),
+  useStores: () => ({ authStore: mockStoreReading(() => ({ uploadAvatar: mockUploadAvatar })) }),
 }));
 
 jest.mock('@presentation/base/feedback/show-toast', () => ({ showSuccessToast: jest.fn() }));

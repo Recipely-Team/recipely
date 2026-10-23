@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { MealSlot } from '@domain/diary/meal-slot';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import { mealPlanSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface PlanSkeletonProps {
   wide: boolean;
@@ -16,8 +16,10 @@ const GRID_ROWS = Object.values(MealSlot).length;
  * day head and three slot cards, or the web grid's cells, as `skeleton`
  * placeholders. Announced once as busy, "Loading your plan".
  */
-export const PlanSkeleton = ({ wide }: PlanSkeletonProps): React.JSX.Element => (
-  <View accessible accessibilityState={{ busy: true }} accessibilityLabel={t().mealPlan.loading} style={styles.stack}>
+export const PlanSkeleton = ({ wide }: PlanSkeletonProps): React.JSX.Element => {
+  const t = useTranslations();
+  return (
+  <View accessible accessibilityState={{ busy: true }} accessibilityLabel={t.mealPlan.loading} style={styles.stack}>
     {wide ? (
       Array.from({ length: GRID_ROWS }, (_, row) => (
         <SkeletonLoader key={row} width="100%" height={mealPlanSizes.gridCellMin} borderRadius={radii.lg} />
@@ -32,6 +34,7 @@ export const PlanSkeleton = ({ wide }: PlanSkeletonProps): React.JSX.Element => 
     )}
   </View>
 );
+};
 
 const styles = StyleSheet.create({
   stack: { gap: spacing.md },

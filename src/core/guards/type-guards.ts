@@ -17,6 +17,12 @@ export const isObject = (value: unknown): value is Record<string, unknown> =>
 
 export const isString = (value: unknown): value is string => typeof value === 'string';
 
+/**
+ * Whether a wire list really is a list. `Array.isArray` narrows a `readonly T[]` to `any[]` (TypeScript
+ * cannot express the readonly overload), which throws the element type away; this keeps it.
+ */
+export const isList = <T>(value: readonly T[] | null | undefined): value is readonly T[] => Array.isArray(value);
+
 /** True for a string with something in it — the check a required field needs. */
 export const isNonEmptyString = (value: unknown): value is string =>
   isString(value) && value.length > ValueConstants.zero;

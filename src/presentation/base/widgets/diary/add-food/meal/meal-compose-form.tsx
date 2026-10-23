@@ -9,7 +9,7 @@ import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import type { MealLog } from '@presentation/base/widgets/diary/add-food/meal/state/meal-log';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface MealComposeFormProps {
   log: MealLog;
@@ -21,8 +21,9 @@ export interface MealComposeFormProps {
  * be estimates.
  */
 export const MealComposeForm = ({ log }: MealComposeFormProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().diary;
+  const strings = t.diary;
   return (
     <ScrollView contentContainerStyle={styles.stack} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
       <SizedText size={fontSizes.caption} weight={fontWeights.semibold} muted>

@@ -3,9 +3,10 @@ import type { ImportFile } from '@domain/recipes/import-file/import-file';
 import { ImportFileMimeType } from '@domain/recipes/import-file/import-file-mime-type';
 import type { PickImportFilesCallback } from '@presentation/app/import-recipe/model/file/pick-import-files';
 import { toImportFile } from '@presentation/app/import-recipe/model/file/to-import-file';
+import { CharConstants } from '@core/constants';
 
 const INPUT_TYPE = 'file';
-const ACCEPT = Object.values(ImportFileMimeType).join(',');
+const ACCEPT = Object.values(ImportFileMimeType).join(CharConstants.comma);
 const CANCEL_EVENT = 'cancel';
 
 /**

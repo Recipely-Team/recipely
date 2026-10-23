@@ -526,6 +526,75 @@ const withResolvedShortcuts = (config) =>
     },
   ]);
 
+/**
+ * Keeps credentials out of Android Auto Backup.
+ *
+ * `allowBackup` is on, and with no rules every SharedPreferences file went to
+ * the user's Google Drive backup and to a device-to-device transfer — the
+ * assistant's intent token among them, in plain text. Two files are excluded:
+ * this module's own store, and SecureStore's, whose values are sealed by a
+ * Keystore key that never leaves the phone and could not be opened after a
+ * restore anyway. Both rule files are written by this plugin; if another
+ * plugin has already claimed the attributes the build fails here rather than
+ * shipping one set of rules silently replacing the other.
+ */
+const BACKUP_RULES = 'recipely_backup_rules';
+const DATA_EXTRACTION_RULES = 'recipely_data_extraction_rules';
+const BACKUP_EXCLUDED_PREFS = ['recipely.assistant.xml', 'SecureStore.xml'];
+
+const excludes = (indent) =>
+  BACKUP_EXCLUDED_PREFS.map((file) => `${indent}<exclude domain="sharedpref" path="${file}"/>`).join('\n');
+
+const BACKUP_RULES_XML = `<?xml version="1.0" encoding="utf-8"?>
+<!-- Written by plugins/withAssistantKit.js. Android 11 and lower. -->
+<full-backup-content>
+  <include domain="sharedpref" path="."/>
+${excludes('  ')}
+</full-backup-content>
+`;
+
+const DATA_EXTRACTION_RULES_XML = `<?xml version="1.0" encoding="utf-8"?>
+<!-- Written by plugins/withAssistantKit.js. Android 12 and higher. -->
+<data-extraction-rules>
+  <cloud-backup>
+    <include domain="sharedpref" path="."/>
+${excludes('    ')}
+  </cloud-backup>
+  <device-transfer>
+    <include domain="sharedpref" path="."/>
+${excludes('    ')}
+  </device-transfer>
+</data-extraction-rules>
+`;
+
+const claimBackupAttribute = (application, attribute, value) => {
+  application.$ = application.$ ?? {};
+  const current = application.$[attribute];
+  if (current !== undefined && current !== value) {
+    throw new Error(`[withAssistantKit] ${attribute} is already set to ${current}; merge the exclusions of ${value} into it`);
+  }
+  application.$[attribute] = value;
+};
+
+const withBackupExclusions = (config) => {
+  const withManifest = withAndroidManifest(config, (mod) => {
+    const application = AndroidConfig.Manifest.getMainApplicationOrThrow(mod.modResults);
+    claimBackupAttribute(application, 'android:fullBackupContent', `@xml/${BACKUP_RULES}`);
+    claimBackupAttribute(application, 'android:dataExtractionRules', `@xml/${DATA_EXTRACTION_RULES}`);
+    return mod;
+  });
+  return withDangerousMod(withManifest, [
+    'android',
+    (mod) => {
+      const out = path.join(mod.modRequest.platformProjectRoot, 'app', 'src', 'main', 'res', 'xml');
+      fs.mkdirSync(out, { recursive: true });
+      fs.writeFileSync(path.join(out, `${BACKUP_RULES}.xml`), BACKUP_RULES_XML);
+      fs.writeFileSync(path.join(out, `${DATA_EXTRACTION_RULES}.xml`), DATA_EXTRACTION_RULES_XML);
+      return mod;
+    },
+  ]);
+};
+
 const withAssistantKit = (config) => {
   let next = withAppGroupInfoPlist(config);
   next = withAppGroupEntitlement(next);
@@ -533,6 +602,7 @@ const withAssistantKit = (config) => {
   next = withIntentSourcesInTarget(next);
   next = withSchemeMetaData(next);
   next = withResolvedShortcuts(next);
+  next = withBackupExclusions(next);
   return next;
 };
 
@@ -545,3 +615,4 @@ module.exports.ANDROID_SCHEME_META_DATA = ANDROID_SCHEME_META_DATA;
 module.exports.ENVELOPE_KEY_INFO_KEY = ENVELOPE_KEY_INFO_KEY;
 module.exports.ANDROID_ENVELOPE_KEY_META_DATA = ANDROID_ENVELOPE_KEY_META_DATA;
 module.exports.XCODE_GROUP = XCODE_GROUP;
+module.exports.BACKUP_EXCLUDED_PREFS = BACKUP_EXCLUDED_PREFS;

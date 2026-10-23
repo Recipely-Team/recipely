@@ -9,7 +9,6 @@ export interface MyRecipeCellProps {
   recipe: RecipeSummaryEntity;
   gridColumns: number;
   isExpanded: boolean;
-  saved: boolean;
   /** The Created tab: the viewer's own recipe, so the card shows its status and photo edit. */
   ownedByMe: boolean;
   onOpen: (id: string) => void;
@@ -29,14 +28,13 @@ const MyRecipeCellComponent = ({
   recipe,
   gridColumns,
   isExpanded,
-  saved,
   ownedByMe,
   onOpen,
   onToggleSave,
 }: MyRecipeCellProps): React.JSX.Element => (
   <View style={gridColumns > ValueConstants.one ? styles.gridCell : null}>
     {isExpanded ? (
-      <WebRecipeListItem recipe={recipe} saved={saved} onOpen={onOpen} onToggleSave={onToggleSave} ownedByMe={ownedByMe} />
+      <WebRecipeListItem recipe={recipe} onOpen={onOpen} onToggleSave={onToggleSave} ownedByMe={ownedByMe} />
     ) : (
       <RecipeCard
         name={recipe.name}

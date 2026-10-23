@@ -40,20 +40,20 @@ export const HoverTooltip = ({
 }: HoverTooltipProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const [isHovered, setIsHovered] = useState(false);
-  const hoverable = isWeb();
+  const isHoverable = isWeb();
 
   return (
     <View
       accessible
       accessibilityLabel={accessibilityLabel}
       style={styles.trigger}
-      {...(hoverable
+      {...(isHoverable
         ? { onMouseEnter: () => setIsHovered(true), onMouseLeave: () => setIsHovered(false) }
         : {})}
     >
       {children}
 
-      {hoverable && isHovered ? (
+      {isHoverable && isHovered ? (
         <View style={[styles.bubble, { backgroundColor: colors.overlay }]}>
           <ThemedText style={[styles.label, { color: colors.onOverlay }]}>{label}</ThemedText>
         </View>

@@ -9,7 +9,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { formatOneDecimal } from '@presentation/base/utils/diary/format-one-decimal';
 import { borderWidths, controlSizes, diarySizes, fontSizes, fontWeights, iconSizes, radii, shadows, spacing } from '@presentation/base/theme';
 import { WaterPills } from '@presentation/app/diary/items/water-pills';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface WaterCardProps {
   day: DiaryDay;
@@ -18,9 +18,10 @@ export interface WaterCardProps {
 
 /** Glasses of water for the day, with − / + (design spec → Food Diary §4). The store applies a tap at once. */
 export const WaterCard = ({ day, onChange }: WaterCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   const summary = strings.waterSummary
     .replace('{n}', String(day.waterGlasses))
     .replace('{g}', String(day.goals.waterGlasses))

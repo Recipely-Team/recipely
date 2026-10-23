@@ -8,7 +8,7 @@ import { failureContent, failureIcon, failureSeverity } from '@presentation/base
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import { spacing, radii, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ImportPasteSteps } from '@presentation/app/import-recipe/body/import-paste-steps';
 import { ImportPasteLead } from '@presentation/app/import-recipe/body/import-paste-lead';
 import { usePasteImportLink } from '@presentation/app/import-recipe/hooks/use-paste-import-link';
@@ -38,10 +38,11 @@ export interface ImportPasteViewProps {
  *   instructions for one problem.
  */
 export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): React.JSX.Element => {
+  const t = useTranslations();
   const scrollEndPadding = useScrollEndPadding();
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
-  const copy = t().importRecipe;
+  const copy = t.importRecipe;
   const vm = usePasteImportLink();
   const recognised = vm.failure === null ? vm.recognised : null;
   const danger = useSeveritySurfaces().danger;
@@ -62,7 +63,7 @@ export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): R
           onPress={onCancel}
           style={[styles.closeBtn, { backgroundColor: colors.surface }]}
           accessibilityRole="button"
-          accessibilityLabel={t().common.cancel}
+          accessibilityLabel={t.common.cancel}
         >
           <Ionicons name="close" size={iconSizes.lg} color={colors.text} />
         </Pressable>
@@ -118,7 +119,7 @@ export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): R
       {vm.failure !== null ? (
         <View style={styles.banner}>
           <FormBanner
-            message={failureContent(vm.failure).body}
+            message={failureContent(t, vm.failure).body}
             severity={failureSeverity(vm.failure)}
             icon={failureIcon(vm.failure)}
             onDismiss={vm.onDismissFailure}

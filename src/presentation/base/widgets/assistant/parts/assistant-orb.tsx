@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 import { AssistantOrbAura } from '@presentation/base/widgets/assistant/parts/assistant-orb-aura';
@@ -11,16 +12,17 @@ import { useReduceMotion } from '@presentation/base/hooks/accessibility/use-redu
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, colorAlphas, opacities, radii, spacing } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
+import { useStores } from '@presentation/bootstrap/use-stores';
 
 export interface AssistantOrbProps {
   status: AssistantStatusType;
-  level: number;
   isMuted: boolean;
 }
 
 const SVG_SIZE = 100;
 const CENTRE = SVG_SIZE / ValueConstants.two;
 const HIGHLIGHT_STOPS = ['0.42', '0'] as const;
+const [HIGHLIGHT_FROM, HIGHLIGHT_TO] = HIGHLIGHT_STOPS;
 /** The orb drawing, as fractions of its centre (circles) or of the orb (overlays). */
 const ORB_SHAPE = {
   light: { cx: 0.7, cy: 0.6, r: 0.8 },
@@ -51,28 +53,29 @@ const ORB_SHAPE = {
  *   and two drifting highlights; React Native has no radial gradient and no
  *   blur, so a CSS translation of this design would have been flat circles.
  */
-export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): React.JSX.Element => {
+export const AssistantOrb = ({ status, isMuted }: AssistantOrbProps): React.JSX.Element => {
+  const level = useStore(useStores().assistantSessionStore, (s) => s.level);
   const { colors } = useTheme();
-  const reduceMotion = useReduceMotion();
-  const speaking = status === AssistantStatus.Speaking && !isMuted;
-  const live = assistantIsLive(status);
+  const shouldReduceMotion = useReduceMotion();
+  const isSpeaking = status === AssistantStatus.Speaking && !isMuted;
+  const isLive = assistantIsLive(status);
 
-  const drift = useRef(new Animated.Value(ValueConstants.zero)).current;
-  const sweep = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const [drift] = useState(() => new Animated.Value(ValueConstants.zero));
+  const [sweep] = useState(() => new Animated.Value(ValueConstants.zero));
 
   useEffect(() => {
-    if (reduceMotion) return;
+    if (shouldReduceMotion) return;
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(drift, {
           toValue: ValueConstants.one,
-          duration: speaking ? assistantMetrics.orbSpeakingBobMs : assistantMetrics.orbBobMs,
+          duration: isSpeaking ? assistantMetrics.orbSpeakingBobMs : assistantMetrics.orbBobMs,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(drift, {
           toValue: ValueConstants.zero,
-          duration: speaking ? assistantMetrics.orbSpeakingBobMs : assistantMetrics.orbBobMs,
+          duration: isSpeaking ? assistantMetrics.orbSpeakingBobMs : assistantMetrics.orbBobMs,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
@@ -80,10 +83,10 @@ export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): Rea
     );
     loop.start();
     return () => loop.stop();
-  }, [drift, speaking, reduceMotion]);
+  }, [drift, isSpeaking, shouldReduceMotion]);
 
   useEffect(() => {
-    if (reduceMotion || status !== AssistantStatus.Connecting) {
+    if (shouldReduceMotion || status !== AssistantStatus.Connecting) {
       sweep.setValue(ValueConstants.zero);
       return;
     }
@@ -97,7 +100,7 @@ export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): Rea
     );
     loop.start();
     return () => loop.stop();
-  }, [sweep, status, reduceMotion]);
+  }, [sweep, status, shouldReduceMotion]);
 
   const bob = drift.interpolate({
     inputRange: [ValueConstants.zero, ValueConstants.one],
@@ -111,7 +114,7 @@ export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): Rea
 
   return (
     <View style={styles.halo} pointerEvents="none">
-      {live && !isMuted ? <AssistantOrbAura isSpeaking={speaking} /> : null}
+      {isLive && !isMuted ? <AssistantOrbAura isSpeaking={isSpeaking} /> : null}
       <Animated.View
         style={[
           styles.orb,
@@ -119,7 +122,7 @@ export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): Rea
             opacity: isMuted ? opacities.disabledFaint : opacities.full,
             transform: [
               { translateY: bob },
-              { scale: speaking ? ValueConstants.one + level * assistantMetrics.orbLevelGrowth : breath },
+              { scale: isSpeaking ? ValueConstants.one + level * assistantMetrics.orbLevelGrowth : breath },
             ],
           },
         ]}
@@ -131,12 +134,12 @@ export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): Rea
               <Stop offset="1" stopColor={colors.primaryGradientEnd} />
             </RadialGradient>
             <RadialGradient id="assistantOrbLight">
-              <Stop offset="0" stopColor={colors.onOverlay} stopOpacity={HIGHLIGHT_STOPS[ValueConstants.zero]} />
-              <Stop offset="1" stopColor={colors.onOverlay} stopOpacity={HIGHLIGHT_STOPS[ValueConstants.one]} />
+              <Stop offset="0" stopColor={colors.onOverlay} stopOpacity={HIGHLIGHT_FROM} />
+              <Stop offset="1" stopColor={colors.onOverlay} stopOpacity={HIGHLIGHT_TO} />
             </RadialGradient>
             <RadialGradient id="assistantOrbShade">
-              <Stop offset="0" stopColor={colors.shadow} stopOpacity={HIGHLIGHT_STOPS[ValueConstants.zero]} />
-              <Stop offset="1" stopColor={colors.shadow} stopOpacity={HIGHLIGHT_STOPS[ValueConstants.one]} />
+              <Stop offset="0" stopColor={colors.shadow} stopOpacity={HIGHLIGHT_FROM} />
+              <Stop offset="1" stopColor={colors.shadow} stopOpacity={HIGHLIGHT_TO} />
             </RadialGradient>
           </Defs>
 
@@ -175,12 +178,11 @@ export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): Rea
         ) : null}
       </Animated.View>
 
-      {live && !isMuted ? (
+      {isLive && !isMuted ? (
         <>
           <View style={[styles.lift, { backgroundColor: colors.primary + colorAlphas.faint }]} />
           <View style={[styles.waveBadge, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
             <AssistantWave
-              level={level}
               active
               color={colors.primary}
               bars={assistantMetrics.orbWaveBars}

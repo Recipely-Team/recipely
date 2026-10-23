@@ -7,7 +7,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, iconSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ImportProgressRing } from '@presentation/app/import-recipe/body/import-progress-ring';
 import { ImportStageList } from '@presentation/app/import-recipe/body/import-stage-list';
 import { ImportQueueHeading } from '@presentation/app/import-recipe/body/import-queue-heading';
@@ -54,14 +54,15 @@ export const ImportQueueView = ({
   host,
   onPrimary,
 }: ImportQueueViewProps): React.JSX.Element => {
+  const t = useTranslations();
   const scrollEndPadding = useScrollEndPadding();
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
-  const copy = t().importRecipe;
+  const copy = t.importRecipe;
   const isWeb = platform === SourcePlatform.Web;
   const look = importLookFor(platform, colors);
 
-  const primaryLabel = isDone ? copy.openDraft : isWeb ? t().common.close : copy.notify;
+  const primaryLabel = isDone ? copy.openDraft : isWeb ? t.common.close : copy.notify;
 
   return (
     <>

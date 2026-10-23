@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { MealSlot, type MealSlotType } from '@domain/diary/meal-slot';
 import { Servings } from '@domain/diary/entry/servings';
@@ -9,7 +9,7 @@ import { formatPlanDay } from '@presentation/base/utils/meal-plan/format-plan-da
 import { planMealLabel } from '@presentation/base/utils/meal-plan/plan-meal-label';
 import type { AddToPlanRequest } from '@presentation/base/widgets/meal-plan/model/add-to-plan-request';
 import type { PlanRecipeChoice } from '@presentation/base/widgets/meal-plan/model/plan-recipe-choice';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 interface AddToPlanSheetModel {
   today: CalendarDate;
@@ -47,6 +47,7 @@ interface AddToPlanSheetModel {
  *   way to the plan.
  */
 export const useAddToPlanSheet = (request: AddToPlanRequest | null, onClose: () => void, onView: (() => void) | undefined): AddToPlanSheetModel => {
+  const t = useTranslations();
   const { mealPlanStore } = useStores();
   const locale = useLocale();
   const [today] = useState(() => CalendarDate.today());
@@ -58,15 +59,19 @@ export const useAddToPlanSheet = (request: AddToPlanRequest | null, onClose: () 
   const [isSubmitting, setSubmitting] = useState(false);
   const inFlight = useRef(false);
 
-  useEffect(() => {
-    if (request === null) return;
-    const start = request.date.isBefore(today) ? today : request.date;
-    setRecipe(request.recipe);
-    setDate(start);
-    setPickerWeek(start.weekStart());
-    setMeal(request.meal ?? request.recipe?.meal ?? MealSlot.Dinner);
-    setServings(Servings.one());
-  }, [request, today]);
+  // Each request starts the form afresh, in the render it arrives in.
+  const [startedFor, setStartedFor] = useState<AddToPlanRequest | null>(null);
+  if (request !== startedFor) {
+    setStartedFor(request);
+    if (request !== null) {
+      const start = request.date.isBefore(today) ? today : request.date;
+      setRecipe(request.recipe);
+      setDate(start);
+      setPickerWeek(start.weekStart());
+      setMeal(request.meal ?? request.recipe?.meal ?? MealSlot.Dinner);
+      setServings(Servings.one());
+    }
+  }
 
   const choose = useCallback(
     (choice: PlanRecipeChoice) => {
@@ -87,10 +92,10 @@ export const useAddToPlanSheet = (request: AddToPlanRequest | null, onClose: () 
       showErrorToast(result.failure);
       return;
     }
-    const message = t().mealPlan.addedTo.replace('{slot}', planMealLabel(meal)).replace('{day}', formatPlanDay(date, locale));
-    showSuccessToast(message, onView === undefined ? undefined : { label: t().mealPlan.view, onRetry: onView });
+    const message = t.mealPlan.addedTo.replace('{slot}', planMealLabel(t, meal)).replace('{day}', formatPlanDay(date, locale));
+    showSuccessToast(message, onView === undefined ? undefined : { label: t.mealPlan.view, onRetry: onView });
     onClose();
-  }, [date, locale, meal, mealPlanStore, onClose, onView, recipe, servings, today]);
+  }, [date, locale, meal, mealPlanStore, onClose, onView, recipe, servings, today, t]);
 
   return {
     today,

@@ -1,11 +1,11 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import { ErrorMessageKey, type Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
 import type { PublishOutcome } from '@domain/recipes/publishing/publish-outcome';
-import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
-import type { RecipePublishingStoreState } from '@application/recipes/publishing/recipe-publishing-store-state';
+import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store-contract';
+import type { RecipePublishingStore } from '@application/recipes/publishing/recipe-publishing-store-contract';
 import type { PublishRecipeUseCase } from '@application/recipes/publishing/publish-recipe-use-case';
 import type { UnpublishRecipeUseCase } from '@application/recipes/publishing/unpublish-recipe-use-case';
 import type { EditRecipeUseCase } from '@application/recipes/edit/edit-recipe-use-case';
@@ -14,7 +14,7 @@ interface RecipePublishingStoreDeps {
   publishRecipe: PublishRecipeUseCase;
   unpublishRecipe: UnpublishRecipeUseCase;
   editRecipe: EditRecipeUseCase;
-  recipeDetailStore: BoundStore<RecipeDetailStoreState>;
+  recipeDetailStore: StoreApi<RecipeDetailStore>;
 }
 
 /**
@@ -29,14 +29,14 @@ interface RecipePublishingStoreDeps {
  */
 export const configureRecipePublishingStore = (
   deps: RecipePublishingStoreDeps,
-): BoundStore<RecipePublishingStoreState> => {
+): StoreApi<RecipePublishingStore> => {
   const applyOutcome = (recipeId: string, outcome: PublishOutcome): void => {
     const cached = deps.recipeDetailStore.getState().byId[recipeId];
     if (cached?.status !== StoreStatus.Loaded) return;
     deps.recipeDetailStore.getState().put(cached.recipe.withPublishOutcome(outcome));
   };
 
-  return create<RecipePublishingStoreState>((set) => {
+  return createStore<RecipePublishingStore>((set) => {
     const run = async (
       recipeId: string,
       request: () => Promise<Result<PublishOutcome, Failure>>,

@@ -3,7 +3,7 @@ import type { ThemeColors } from '@presentation/base/theme/colors/palette/theme-
 import type { ThemeDefinition } from '@presentation/base/theme/context/theme-definition';
 import type { VariantSemantics } from '@presentation/base/theme/colors/surfaces/variant-semantics';
 import type { Palette } from '@presentation/base/theme/colors/palette/palette';
-import { RadixConstants, RegexConstants, ValueConstants } from '@core/constants';
+import { CharConstants, RadixConstants, RegexConstants, ValueConstants } from '@core/constants';
 import { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
 import { contrastRatio } from '@presentation/base/theme/colors/contrast/contrast';
 
@@ -14,7 +14,7 @@ const B_START = 5;
 /** Largest value one 8-bit colour channel can hold. */
 const CHANNEL_MAX = 255;
 /** Pad character for a single-digit hex byte. */
-const HEX_PAD = '0';
+const HEX_PAD = CharConstants.zeroDigit;
 
 const parseRgb = (hex: string): [number, number, number] => {
   if (!RegexConstants.hexColor6.test(hex)) {

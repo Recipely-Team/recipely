@@ -1,5 +1,5 @@
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { buildOnboardingSlides } from '@presentation/app/onboarding/model/build-onboarding-slides';
 import { useOnboarding } from '@presentation/app/onboarding/hooks/use-onboarding';
 import { OnboardingMobile } from '@presentation/app/onboarding/body/onboarding-mobile';
@@ -12,9 +12,10 @@ import { OnboardingWeb } from '@presentation/app/onboarding/body/onboarding-web'
  * the web shell and the swipeable carousel on phones.
  */
 export const OnboardingScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   useLocale(); // re-read slide copy when the language changes
   const { isWebShell } = useLayout();
-  const slides = buildOnboardingSlides();
+  const slides = buildOnboardingSlides(t);
   const actions = useOnboarding();
 
   return isWebShell ? (

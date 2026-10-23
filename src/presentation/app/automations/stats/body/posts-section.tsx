@@ -7,7 +7,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { PostRow } from '@presentation/app/automations/stats/items/post-row';
 import { StatsMetrics } from '@presentation/app/automations/stats/model/stats-metrics';
 import { borderWidths, controlSizes, fontSizes, fontWeights, letterSpacings, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface PostsSectionProps {
   posts: readonly StatsPost[];
@@ -17,8 +17,9 @@ export interface PostsSectionProps {
 
 /** By post, sorted by opens (the server's order): five at a time, a table with a header row when wide. */
 export const PostsSection = ({ posts, wide, onOpen }: PostsSectionProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().creatorStats;
+  const copy = t.creatorStats;
   const [shown, setShown] = useState<number>(StatsMetrics.postsPerPage);
   const columns: readonly { key: string; label: string; width: number }[] = [
     { key: 'sent', label: copy.colSent, width: StatsMetrics.numberColumn },

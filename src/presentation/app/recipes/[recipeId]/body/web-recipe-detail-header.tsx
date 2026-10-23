@@ -9,7 +9,7 @@ import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths, opacities, targetSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 import { formatRating } from '@presentation/base/utils/format-rating';
@@ -57,6 +57,7 @@ export const WebRecipeDetailHeader = ({
   onCopyToDraft,
   photos,
 }: WebRecipeDetailHeaderProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
   const author = authorState.status === StoreStatus.Resolved ? authorState.author : null;
@@ -76,7 +77,7 @@ export const WebRecipeDetailHeader = ({
             style={[styles.chip, { backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: ValueConstants.one }]}
           >
             <ThemedText variant="caption" style={[styles.chipText, { color: colors.textMuted }]}>
-              {difficultyLabel(recipe.difficulty)}
+              {difficultyLabel(t, recipe.difficulty)}
             </ThemedText>
           </View>
         </View>
@@ -96,7 +97,7 @@ export const WebRecipeDetailHeader = ({
           <Pressable
             onPress={onToggleLike}
             accessibilityRole="button"
-            accessibilityLabel={liked ? t().recipes.unlike : t().recipes.like}
+            accessibilityLabel={liked ? t.recipes.unlike : t.recipes.like}
             style={styles.statItem}
           >
             <MaterialCommunityIcons
@@ -126,7 +127,7 @@ export const WebRecipeDetailHeader = ({
             variable-length sentence with an inline link would make it wrap
             unevenly. */}
         <ProvenanceNote
-          marks={recipe.provenanceMarks}
+          marks={recipe.provenanceMarks()}
           sourceHandle={recipe.sourceHandle}
           sourceUrl={recipe.sourceUrl}
           style={styles.provenance}
@@ -140,7 +141,7 @@ export const WebRecipeDetailHeader = ({
         {isOwner ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t().myRecipes.deleteRecipe}
+            accessibilityLabel={t.myRecipes.deleteRecipe}
             onPress={onDelete}
             style={({ pressed }) => [
               styles.pill,
@@ -149,13 +150,13 @@ export const WebRecipeDetailHeader = ({
           >
             <Ionicons name="trash-outline" size={iconSizes.md} color={colors.danger} />
             <ThemedText variant="caption" style={[styles.pillLabel, { color: colors.danger }]}>
-              {t().myRecipes.deleteRecipe}
+              {t.myRecipes.deleteRecipe}
             </ThemedText>
           </Pressable>
         ) : null}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t().recipes.copyToDrafts}
+          accessibilityLabel={t.recipes.copyToDrafts}
           onPress={onCopyToDraft}
           style={({ pressed }) => [
             styles.pill,
@@ -164,12 +165,12 @@ export const WebRecipeDetailHeader = ({
         >
           <Ionicons name="copy-outline" size={iconSizes.md} color={colors.text} />
           <ThemedText variant="caption" style={[styles.pillLabel, { color: colors.text }]}>
-            {t().recipes.copyToDrafts}
+            {t.recipes.copyToDrafts}
           </ThemedText>
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={isSaved ? t().recipes.saved : t().recipes.save}
+          accessibilityLabel={isSaved ? t.recipes.saved : t.recipes.save}
           onPress={onToggleSave}
           disabled={saveDisabled}
           style={({ pressed }) => [
@@ -189,7 +190,7 @@ export const WebRecipeDetailHeader = ({
             variant="caption"
             style={[styles.pillLabel, { color: isSaved ? colors.primaryText : colors.text }]}
           >
-            {isSaved ? t().recipes.saved : t().recipes.save}
+            {isSaved ? t.recipes.saved : t.recipes.save}
           </ThemedText>
         </Pressable>
       </View>

@@ -10,19 +10,19 @@ import { AccessibilityInfo } from 'react-native';
  * - **Answers `false` until the platform answers** — the common case.
  */
 export const useScreenReaderEnabled = (): boolean => {
-  const [enabled, setEnabled] = useState(false);
+  const [isEnabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    let active = true;
-    void AccessibilityInfo.isScreenReaderEnabled().then((on) => {
-      if (active) setEnabled(on);
+    let isActive = true;
+    void AccessibilityInfo.isScreenReaderEnabled().then((isOn) => {
+      if (isActive) setEnabled(isOn);
     });
     const subscription = AccessibilityInfo.addEventListener('screenReaderChanged', setEnabled);
     return () => {
-      active = false;
+      isActive = false;
       subscription.remove();
     };
   }, []);
 
-  return enabled;
+  return isEnabled;
 };

@@ -6,7 +6,7 @@ import { AssistantFab } from '@presentation/base/widgets/assistant/views/assista
 import { AssistantMiniBar } from '@presentation/base/widgets/assistant/views/assistant-mini-bar';
 import { AssistantOrbSurface } from '@presentation/base/widgets/assistant/views/assistant-orb-surface';
 import { assistantNotice } from '@presentation/base/widgets/assistant/assistant-notice';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { AssistantPanel } from '@presentation/base/widgets/assistant/views/assistant-panel';
 import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import { AssistantView } from '@application/assistant/session/assistant-view';
@@ -64,13 +64,13 @@ import { ValueConstants } from '@core/constants';
  *   still runs. The panel says which limit was reached instead.
  */
 export const AssistantPill = (): React.JSX.Element | null => {
+  const t = useTranslations();
   const insets = useSafeAreaInsets();
   const { isWebShell, isExpanded } = useLayout();
   const {
     status,
     view,
     setView,
-    level,
     isMuted,
     transcript,
     deniedReason,
@@ -95,7 +95,7 @@ export const AssistantPill = (): React.JSX.Element | null => {
   useOsAssistantCredentials();
 
   const isOffered = useAssistantIsOffered();
-  const live = assistantIsLive(status);
+  const isLive = assistantIsLive(status);
   const floatingClearance = useAssistantFloatingClearance();
   const hasTabBar = useTabBarState() !== null && !isWebShell;
   const edge = isExpanded ? spacing.xl : spacing.lg;
@@ -110,19 +110,19 @@ export const AssistantPill = (): React.JSX.Element | null => {
 
   // Hiding the controls must not leave a session running (e.g. on an expired-session redirect).
   useEffect(() => {
-    if (!isOffered && live) void toggleVoice();
-  }, [isOffered, live, toggleVoice]);
+    if (!isOffered && isLive) void toggleVoice();
+  }, [isOffered, isLive, toggleVoice]);
 
   // Below every hook, so the order never changes with the route.
   if (!isOffered) return null;
 
   // Minimise keeps a running session in the mini bar; close only when nothing is running.
   const minimize = (): void => {
-    setView(live ? AssistantView.Mini : AssistantView.Closed);
+    setView(isLive ? AssistantView.Mini : AssistantView.Closed);
   };
 
   const end = (): void => {
-    if (live) void toggleVoice();
+    if (isLive) void toggleVoice();
     setView(AssistantView.Closed);
   };
 
@@ -139,7 +139,7 @@ export const AssistantPill = (): React.JSX.Element | null => {
    */
   const open = (): void => {
     setView(AssistantView.Open);
-    if (!live) void toggleVoice();
+    if (!isLive) void toggleVoice();
   };
 
   // On a phone the orb is the only form, so Mini and Open are the same surface.
@@ -151,10 +151,9 @@ export const AssistantPill = (): React.JSX.Element | null => {
         {isOpen ? (
           <AssistantOrbSurface
             status={status}
-            level={level}
             isMuted={isMuted}
             transcript={transcript}
-            notice={error !== null ? t().assistant.requestFailed : assistantNotice(status, deniedReason)}
+            notice={error !== null ? t.assistant.requestFailed : assistantNotice(t, status, deniedReason)}
             noticeTone={assistantNoticeTone(error !== null, deniedReason)}
             onToggleVoice={toggleVoice}
             onToggleMute={toggleMute}
@@ -185,7 +184,6 @@ export const AssistantPill = (): React.JSX.Element | null => {
       {view === AssistantView.Mini ? (
         <AssistantMiniBar
           status={status}
-          level={level}
           isMuted={isMuted}
           onExpand={() => setView(AssistantView.Open)}
           onToggleMute={toggleMute}

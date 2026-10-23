@@ -12,7 +12,7 @@ import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CreatorProfileSummary } from '@presentation/app/creators/[userId]/body/creator-profile-summary';
 import { CreatorRecipeCell } from '@presentation/app/creators/[userId]/items/creator-recipe-cell';
 import { CreatorProfileMetrics } from '@presentation/app/creators/[userId]/model/creator-profile-metrics';
@@ -40,9 +40,10 @@ const keyOf = (cell: GridCell): string => cell.id;
  * it scrolls and pull-to-refresh throughout.
  */
 export const CreatorProfileBody = ({ vm, scrollable }: CreatorProfileBodyProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { isExpanded } = useLayout();
-  const { profileState, recipesState, gridColumns, onOpenRecipe, isSaved, onToggleSave } = vm;
+  const { profileState, recipesState, gridColumns, onOpenRecipe, onToggleSave } = vm;
   const rowGap = isExpanded ? CreatorProfileMetrics.gapExpanded : CreatorProfileMetrics.rowGap;
   const columnGap = isExpanded ? CreatorProfileMetrics.gapExpanded : CreatorProfileMetrics.columnGap;
 
@@ -59,23 +60,22 @@ export const CreatorProfileBody = ({ vm, scrollable }: CreatorProfileBodyProps):
         <CreatorRecipeCell
           recipe={item}
           expanded={isExpanded}
-          saved={isSaved(item.id)}
           onOpen={onOpenRecipe}
           onToggleSave={onToggleSave}
         />
       ),
-    [isExpanded, isSaved, onOpenRecipe, onToggleSave],
+    [isExpanded, onOpenRecipe, onToggleSave],
   );
 
   if (profileState.status === StoreStatus.Error) {
-    const content = failureContent(profileState.failure);
+    const content = failureContent(t, profileState.failure);
     return (
       <ErrorState
         severity={failureSeverity(profileState.failure)}
         icon={failureIcon(profileState.failure)}
         title={content.title}
         body={content.body}
-        primaryLabel={t().errors.retry}
+        primaryLabel={t.errors.retry}
         onPrimary={vm.onRefresh}
       />
     );
@@ -89,7 +89,7 @@ export const CreatorProfileBody = ({ vm, scrollable }: CreatorProfileBodyProps):
   }
 
   const emptyNote =
-    recipesState.status === StoreStatus.Error ? failureToastMessage(recipesState.failure) : t().creators.noRecipes;
+    recipesState.status === StoreStatus.Error ? failureToastMessage(t, recipesState.failure) : t.creators.noRecipes;
 
   return (
     <FlatList

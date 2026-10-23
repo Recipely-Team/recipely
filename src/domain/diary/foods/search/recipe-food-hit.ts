@@ -39,7 +39,7 @@ export class RecipeFoodHit {
     return this.props.isDraft;
   }
 
-  get food(): LoggableFood {
+  food(): LoggableFood {
     return LoggableFood.of({
       name: this.props.name,
       perServing: this.props.perServing,

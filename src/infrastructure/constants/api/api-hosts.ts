@@ -1,4 +1,5 @@
 import { IS_DEV_BUILD } from "@infrastructure/constants/app-variant";
+import { CharConstants, UrlConstants } from '@core/constants';
 
 /**
  * Which backend the app talks to, and the URLs that sit outside `/api/v1`.
@@ -21,7 +22,7 @@ const DEV_SERVER_URL = "https://dev-api.recipely.net";
 const DEFAULT_SERVER_URL = IS_DEV_BUILD ? DEV_SERVER_URL : PROD_SERVER_URL;
 
 const SERVER_URL: string =
-  process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ??
+  process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, CharConstants.empty) ??
   DEFAULT_SERVER_URL;
 
 
@@ -41,7 +42,7 @@ export const AVATAR_UPLOAD_URL: string = `${SERVER_URL}/me/avatar`;
 export const PROD_WEB_APP_BASE_URL = "https://recipely.net";
 
 /** The same origin without its scheme, which is the form Firebase auth wants. */
-export const PROD_WEB_APP_DOMAIN = PROD_WEB_APP_BASE_URL.replace('https://', '');
+export const PROD_WEB_APP_DOMAIN = PROD_WEB_APP_BASE_URL.replace(UrlConstants.httpsScheme, CharConstants.empty);
 const DEV_WEB_APP_BASE_URL = "https://app-recipely-dev.web.app";
 const DEFAULT_WEB_APP_BASE_URL = IS_DEV_BUILD
   ? DEV_WEB_APP_BASE_URL
@@ -49,7 +50,7 @@ const DEFAULT_WEB_APP_BASE_URL = IS_DEV_BUILD
 
 /** Public web origin (the universal-link domain), not the API server. */
 const WEB_APP_BASE_URL: string =
-  process.env.EXPO_PUBLIC_WEB_APP_URL?.replace(/\/$/, "") ??
+  process.env.EXPO_PUBLIC_WEB_APP_URL?.replace(/\/$/, CharConstants.empty) ??
   DEFAULT_WEB_APP_BASE_URL;
 
 /** Always production: the legal text is environment-independent and dev doesn't serve it. */

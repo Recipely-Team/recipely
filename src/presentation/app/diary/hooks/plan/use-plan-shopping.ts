@@ -9,7 +9,7 @@ import { RoutePaths } from '@presentation/base/constants';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { toastStore } from '@presentation/base/feedback/toast-store';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 interface PlanShoppingModel {
   /** Null while the week's ingredients load. */
@@ -26,39 +26,51 @@ interface PlanShoppingModel {
 
 const NO_LINES: readonly PlanShoppingLine[] = [];
 
+/** What one shopping-list read answered, and for which week and attempt. */
+interface PlanShoppingAnswer {
+  weekStart: CalendarDate;
+  attempt: number;
+  lines: readonly PlanShoppingLine[] | null;
+  failure: Failure | null;
+}
+
 /**
  * The shopping confirm's state (design spec → Meal planner, Shopping
  * confirm): the week's merged ingredients, every line ticked but the staples,
  * and "Add N items" sending the ticked lines' drafts to the shopping list.
  * Read again each time the sheet opens, so it follows the plan.
  */
-export const usePlanShopping = (open: boolean, weekStart: CalendarDate, onDone: () => void): PlanShoppingModel => {
+export const usePlanShopping = (isOpen: boolean, weekStart: CalendarDate, onDone: () => void): PlanShoppingModel => {
+  const t = useTranslations();
   const router = useRouter();
   const { mealPlanStore, shoppingListStore } = useStores();
-  const [lines, setLines] = useState<readonly PlanShoppingLine[] | null>(null);
-  const [failure, setFailure] = useState<Failure | null>(null);
+  // The answer, tagged with the week and attempt it answers: anything else reads as loading.
+  const [answer, setAnswer] = useState<PlanShoppingAnswer | null>(null);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [isSubmitting, setSubmitting] = useState(false);
   const [attempt, setAttempt] = useState<number>(ValueConstants.zero);
+  // Closing forgets the answer, so the next open shows loading rather than last time's list.
+  if (!isOpen && answer !== null) setAnswer(null);
+  const current = answer !== null && answer.attempt === attempt && answer.weekStart.equals(weekStart) ? answer : null;
+  const lines = current?.lines ?? null;
+  const failure = current?.failure ?? null;
 
   useEffect(() => {
-    if (!open) return;
-    let live = true;
-    setLines(null);
-    setFailure(null);
+    if (!isOpen) return;
+    let isLive = true;
     void mealPlanStore.getState().shoppingList(weekStart).then((result) => {
-      if (!live) return;
+      if (!isLive) return;
       if (!result.ok) {
-        setFailure(result.failure);
+        setAnswer({ weekStart, attempt, lines: null, failure: result.failure });
         return;
       }
-      setLines(result.value);
+      setAnswer({ weekStart, attempt, lines: result.value, failure: null });
       setSelected(new Set(result.value.filter((line) => !line.isStaple).map((line) => line.key)));
     });
     return () => {
-      live = false;
+      isLive = false;
     };
-  }, [attempt, mealPlanStore, open, weekStart]);
+  }, [attempt, mealPlanStore, isOpen, weekStart]);
 
   const toggle = useCallback((key: string) => {
     setSelected((current) => {
@@ -79,14 +91,14 @@ export const usePlanShopping = (open: boolean, weekStart: CalendarDate, onDone: 
       return;
     }
     onDone();
-    const strings = t().mealPlan;
+    const strings = t.mealPlan;
     toastStore.getState().show({
       severity: SeverityType.Success,
       message: strings.itemsAdded.replace('{n}', String(chosen.length)),
       actionLabel: strings.viewList,
       onAction: () => router.push(RoutePaths.shoppingList),
     });
-  }, [lines, onDone, router, selected, shoppingListStore]);
+  }, [lines, onDone, router, selected, shoppingListStore, t]);
 
   return {
     lines,

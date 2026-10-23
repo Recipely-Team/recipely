@@ -5,7 +5,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, fontSizes, lineHeights, radii, spacing } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useCreatorAccount } from '@presentation/app/edit-profile/hooks/use-creator-account';
 import { CreatorAccountRowKind } from '@presentation/app/edit-profile/model/creator-account-row-kind';
 import type { CreatorAccountRowType } from '@presentation/app/edit-profile/model/creator-account-row';
@@ -37,10 +37,11 @@ const platformOf = (row: CreatorAccountRowType): CreatorPlatformType =>
  * connected account (Instagram automations spec §1).
  */
 export const CreatorAccountSection = ({ onLayout }: CreatorAccountSectionProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const vm = useCreatorAccount();
   const ig = useInstagramAccount();
-  const copy = t().instagram;
+  const copy = t.instagram;
 
   const renderClaimRow = (row: Extract<CreatorAccountRowType, { kind: typeof CreatorAccountRowKind.Linked }>): React.JSX.Element => (
     <CreatorLinkedRow
@@ -101,10 +102,10 @@ export const CreatorAccountSection = ({ onLayout }: CreatorAccountSectionProps):
 
   return (
     <View style={styles.section} onLayout={onLayout}>
-      <SectionHeader title={t().creators.account.title} />
+      <SectionHeader title={t.creators.account.title} />
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
         <SizedText size={fontSizes.caption} ratio={lineHeights.normal} style={styles.intro}>
-          {t().creators.account.intro}
+          {t.creators.account.intro}
         </SizedText>
         {vm.rows.map((row) => (
           <Fragment key={platformOf(row)}>

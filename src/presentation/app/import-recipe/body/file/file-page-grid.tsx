@@ -6,7 +6,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { spacing, radii, fontWeights, iconSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { isWeb } from '@infrastructure/constants/platform';
 import { COUNT_TOKEN, MAX_TOKEN } from '@presentation/app/import-recipe/model/file/count-token';
@@ -45,9 +45,10 @@ export const FilePageGrid = ({
   onRemove,
   onAdd,
 }: FilePageGridProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { isExpanded } = useLayout();
-  const copy = t().fileImport;
+  const copy = t.fileImport;
   const [width, setWidth] = useState(ValueConstants.zero);
   const columns = isExpanded ? WIDE_COLUMNS : PHONE_COLUMNS;
   const gap = isExpanded ? spacing.md : spacing.sm2;

@@ -36,15 +36,15 @@ describe('mountAdsenseUnit', () => {
     // element in the document, so the element has to be there first.
     const unit = node.querySelector('ins');
     expect(unit?.className).toBe('adsbygoogle');
-    expect(unit?.dataset.adClient).toBe(ADSENSE_CLIENT_ID);
-    expect(unit?.dataset.adSlot).toBe(SLOT);
-    expect(unit?.dataset.adFormat).toBe('auto');
-    expect(unit?.dataset.fullWidthResponsive).toBe('true');
+    expect(unit?.dataset['adClient']).toBe(ADSENSE_CLIENT_ID);
+    expect(unit?.dataset['adSlot']).toBe(SLOT);
+    expect(unit?.dataset['adFormat']).toBe('auto');
+    expect(unit?.dataset['fullWidthResponsive']).toBe('true');
 
     await Promise.resolve();
     expect(window.adsbygoogle).toBeUndefined();
 
-    scripts()[0].onload?.(new Event('load'));
+    scripts()[0]!.onload?.(new Event('load'));
     await mounted;
     expect(window.adsbygoogle).toHaveLength(1);
   });
@@ -53,7 +53,7 @@ describe('mountAdsenseUnit', () => {
     await mountAdsenseUnit(host(), SLOT);
 
     expect(scripts()).toHaveLength(1);
-    expect(scripts()[0].getAttribute('src')).toContain(ADSENSE_CLIENT_ID);
+    expect(scripts()[0]!.getAttribute('src')).toContain(ADSENSE_CLIENT_ID);
     // One push per unit, never two for the same one — pushing again for an
     // element that already has an ad throws.
     expect(window.adsbygoogle).toHaveLength(2);

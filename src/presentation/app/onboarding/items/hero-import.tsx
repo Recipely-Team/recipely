@@ -3,14 +3,14 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ArtCard } from '@presentation/app/onboarding/items/art-card';
 import { ArtChip } from '@presentation/app/onboarding/items/art-chip';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
 import type { HeroProps } from '@presentation/app/onboarding/model/hero-props';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
-const SOURCE_SEPARATOR = ' · ';
+const SOURCE_SEPARATOR = CharConstants.middotSpaced;
 const CHIP_STEP_MS = 60;
 const LINK_DELAY_MS = 260;
 const RECIPE_DELAY_MS = 420;
@@ -24,8 +24,9 @@ const ART_WIDTH = 270;
 
 /** Slide 1, "Save recipes from anywhere": the sources, a pasted link, and the recipe it became. */
 export const HeroImport = ({ active = true }: HeroProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const a = t().onboarding.art;
+  const a = t.onboarding.art;
   return (
     <View style={styles.root}>
       <View style={styles.chips}>

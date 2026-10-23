@@ -4,7 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, opacities, zIndices } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
@@ -53,6 +53,7 @@ export const FeedbackDialog = ({
   onSecondary,
   onClose,
 }: FeedbackDialogProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const surface = useSeveritySurfaces()[severity];
 
@@ -70,7 +71,7 @@ export const FeedbackDialog = ({
           style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }]}
           onPress={onClose}
           accessibilityRole="button"
-          accessibilityLabel={t().common.close}
+          accessibilityLabel={t.common.close}
         />
         <View
           accessibilityViewIsModal
@@ -80,7 +81,7 @@ export const FeedbackDialog = ({
             onPress={onClose}
             hitSlop={spacing.sm}
             accessibilityRole="button"
-            accessibilityLabel={t().common.close}
+            accessibilityLabel={t.common.close}
             style={({ pressed }) => [styles.close, { opacity: pressed ? opacities.pressed : opacities.full }]}
           >
             <Ionicons name="close" size={iconSizes.lg} color={colors.textMuted} />

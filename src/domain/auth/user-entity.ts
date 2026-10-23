@@ -4,7 +4,7 @@ import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
-import { Email } from '@domain/common/email';
+import { type Email } from '@domain/common/email';
 import { CreatorClaims } from '@domain/creators/creator-claims';
 import { isBlank } from '@core/guards/type-guards';
 

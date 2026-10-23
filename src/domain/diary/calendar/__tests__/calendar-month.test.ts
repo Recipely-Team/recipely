@@ -16,7 +16,7 @@ describe('CalendarMonth', () => {
 
   it('knows its bounds, including a leap February', () => {
     expect(month('2026-09').firstDay.value).toBe('2026-09-01');
-    expect(month('2026-09').lastDay.value).toBe('2026-09-30');
+    expect(month('2026-09').lastDay().value).toBe('2026-09-30');
     expect(month('2028-02').dayCount).toBe(29);
     expect(month('2026-02').dayCount).toBe(28);
     expect(month('2026-09').days()).toHaveLength(30);

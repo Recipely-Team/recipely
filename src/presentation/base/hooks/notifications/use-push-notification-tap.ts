@@ -56,9 +56,7 @@ export const usePushNotificationTap = (): void => {
 
     const handle = (response: NotificationsType.NotificationResponse | null): void => {
       if (response === null) return;
-      const data = response.notification.request.content.data as
-        | Record<string, unknown>
-        | undefined;
+      const data = response.notification.request.content.data;
 
       const type = readString(data, DataKey.Type);
       if (type === null || type.startsWith(TIMER_TYPE_PREFIX)) return;
@@ -81,7 +79,7 @@ export const usePushNotificationTap = (): void => {
 
     const sub = Notifications.addNotificationResponseReceivedListener(handle);
     void (
-      Notifications.getLastNotificationResponseAsync() as Promise<NotificationsType.NotificationResponse | null>
+      Notifications.getLastNotificationResponseAsync()
     ).then(handle);
 
     return () => sub.remove();

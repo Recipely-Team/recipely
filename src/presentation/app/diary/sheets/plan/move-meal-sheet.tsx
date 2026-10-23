@@ -7,7 +7,7 @@ import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { PlanDetailsStep } from '@presentation/base/widgets/meal-plan/plan-details-step';
 import { mealPlanSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface MoveMealSheetProps {
   /** The meal to move; null closes the sheet. */
@@ -24,7 +24,8 @@ export interface MoveMealSheetProps {
  * The parent keys it by the meal's id, so each meal starts from its own place.
  */
 export const MoveMealSheet = ({ entry, today, onMove, onClose }: MoveMealSheetProps): React.JSX.Element => {
-  const strings = t().mealPlan;
+  const t = useTranslations();
+  const strings = t.mealPlan;
   const start = entry === null || entry.date.isBefore(today) ? today : entry.date;
   const [date, setDate] = useState<CalendarDate>(start);
   const [week, setWeek] = useState<CalendarDate>(start.weekStart());

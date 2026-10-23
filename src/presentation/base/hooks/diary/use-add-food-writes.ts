@@ -11,7 +11,7 @@ import { showErrorToast, showSuccessToast, showWarningToast } from '@presentatio
 import { mealLabel } from '@presentation/base/utils/diary/meal-label';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
 import type { AddFoodRequestType } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /** The Add food sheet's writes, as `useAddFoodWrites` exposes them. */
 interface AddFoodWrites {
@@ -40,16 +40,17 @@ export const useAddFoodWrites = (
   onClose: () => void,
   onOpenDiary: (() => void) | undefined,
 ): AddFoodWrites => {
+  const t = useTranslations();
   const { diaryStore } = useStores();
   const [isSubmitting, setSubmitting] = useState(false);
 
   const logged = useCallback(
     (meal: MealSlotType): void => {
       onClose();
-      const message = t().diary.addedToast.replace('{meal}', mealLabel(meal));
-      showSuccessToast(message, onOpenDiary === undefined ? undefined : { label: t().diary.toastAction, onRetry: onOpenDiary });
+      const message = t.diary.addedToast.replace('{meal}', mealLabel(t, meal));
+      showSuccessToast(message, onOpenDiary === undefined ? undefined : { label: t.diary.toastAction, onRetry: onOpenDiary });
     },
-    [onClose, onOpenDiary],
+    [onClose, onOpenDiary, t],
   );
 
   const add = useCallback(
@@ -78,16 +79,16 @@ export const useAddFoodWrites = (
       const meal = entries[ValueConstants.zero]?.meal;
       if (failure === null && meal !== undefined) {
         onClose();
-        const message = t().diary.mealLogAdded.replace('{n}', count).replace('{meal}', mealLabel(meal));
-        showSuccessToast(message, onOpenDiary === undefined ? undefined : { label: t().diary.toastAction, onRetry: onOpenDiary });
+        const message = t.diary.mealLogAdded.replace('{n}', count).replace('{meal}', mealLabel(t, meal));
+        showSuccessToast(message, onOpenDiary === undefined ? undefined : { label: t.diary.toastAction, onRetry: onOpenDiary });
       } else if (failure !== null && saved.some(Boolean)) {
-        showWarningToast(t().diary.mealLogPartial.replace('{n}', count));
+        showWarningToast(t.diary.mealLogPartial.replace('{n}', count));
       } else if (failure !== null) {
         showErrorToast(failure);
       }
       return saved;
     },
-    [diaryStore, onClose, onOpenDiary],
+    [diaryStore, onClose, onOpenDiary, t],
   );
 
   const update = useCallback(
@@ -99,9 +100,9 @@ export const useAddFoodWrites = (
       setSubmitting(false);
       if (!result.ok) return void showErrorToast(result.failure);
       onClose();
-      showSuccessToast(t().diary.updatedToast);
+      showSuccessToast(t.diary.updatedToast);
     },
-    [diaryStore, onClose, request],
+    [diaryStore, onClose, request, t],
   );
 
   const remove = useCallback(async (): Promise<void> => {
@@ -116,11 +117,11 @@ export const useAddFoodWrites = (
     }
     toastStore.getState().show({
       severity: SeverityType.Neutral,
-      message: t().diary.removedToast,
-      actionLabel: t().common.undo,
+      message: t.diary.removedToast,
+      actionLabel: t.common.undo,
       onAction: () => void diaryStore.getState().addEntry(entry.toNew()).then((back) => (back.ok ? undefined : showErrorToast(back.failure))),
     });
-  }, [diaryStore, onClose, request]);
+  }, [diaryStore, onClose, request, t]);
 
   return { isSubmitting, add, addMany, update, remove };
 };

@@ -2,7 +2,7 @@ import { AppState } from 'react-native';
 import { act, create as render, type ReactTestRenderer } from 'react-test-renderer';
 import { create } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
-import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
+import type { NotificationsStore } from '@application/notifications/notifications-store-contract';
 import { Email } from '@domain/common/email';
 import { UserEntity } from '@domain/auth/user-entity';
 import { authStoreOf } from '@presentation/base/test-support/auth-store-of';
@@ -32,7 +32,7 @@ const setAppState = (value: string): void => {
 
 const mount = (): { refreshUnread: jest.Mock; renderer: ReactTestRenderer } => {
   const refreshUnread = jest.fn(async () => undefined);
-  const notificationsStore = create<NotificationsStoreState>(() => ({
+  const notificationsStore = create<NotificationsStore>(() => ({
     state: { status: StoreStatus.Idle },
     unreadCount: 0,
     load: jest.fn(async () => undefined),

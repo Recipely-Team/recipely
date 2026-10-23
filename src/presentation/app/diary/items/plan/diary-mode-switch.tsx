@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { SegmentedTabs } from '@presentation/base/widgets/diary/segmented-tabs';
 import { DiaryMode, type DiaryModeType } from '@presentation/app/diary/model/plan/diary-mode';
 import { mealPlanSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface DiaryModeSwitchProps {
   mode: DiaryModeType;
@@ -13,7 +13,8 @@ export interface DiaryModeSwitchProps {
 
 /** Plan | Log at the top of the Diary tab (design spec → Meal planner, Route & entry points). */
 export const DiaryModeSwitch = ({ mode, onChange, wide }: DiaryModeSwitchProps): React.JSX.Element => {
-  const strings = t().mealPlan;
+  const t = useTranslations();
+  const strings = t.mealPlan;
   return (
     <View style={wide ? styles.wide : null} accessibilityLabel={strings.modeA11y}>
       <SegmentedTabs

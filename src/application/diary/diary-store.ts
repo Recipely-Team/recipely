@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import type { BoundStore } from '@application/store/bound-store';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand/vanilla';
 import { ok } from '@core/result/result-helpers';
 import type { Failure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
@@ -8,7 +8,9 @@ import { CalendarMonth } from '@domain/diary/calendar/calendar-month';
 import type { DiaryDay } from '@domain/diary/day/diary-day';
 import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import { DiaryConcern, type DiaryConcernType } from '@application/diary/diary-concern';
-import type { DiaryStoreState } from '@application/diary/diary-store-state';
+import { StoreStatus } from '@application/store/store-status';
+import type { DiaryLoadState } from '@application/diary/diary-load-state';
+import type { DiaryStore } from '@application/diary/diary-store-contract';
 import { WaterTapLedger } from '@application/diary/day/water-tap-ledger';
 import type { LoadDiaryDayUseCase } from '@application/diary/day/load-diary-day-use-case';
 import type { SetDayWaterUseCase } from '@application/diary/day/set-day-water-use-case';
@@ -34,12 +36,12 @@ interface DiaryStoreDeps {
   today?: () => CalendarDate;
 }
 
-const flags = <T>(value: T): Record<DiaryConcernType, T> => ({
-  [DiaryConcern.Day]: value,
-  [DiaryConcern.Month]: value,
-  [DiaryConcern.Recent]: value,
-  [DiaryConcern.Goals]: value,
-  [DiaryConcern.Save]: value,
+const IDLE: DiaryLoadState = { status: StoreStatus.Idle };
+const allIdle = (): Record<DiaryConcernType, DiaryLoadState> => ({
+  [DiaryConcern.Day]: IDLE,
+  [DiaryConcern.Month]: IDLE,
+  [DiaryConcern.Recent]: IDLE,
+  [DiaryConcern.Goals]: IDLE,
 });
 
 /**
@@ -61,7 +63,7 @@ const flags = <T>(value: T): Record<DiaryConcernType, T> => ({
  *   saved goals; `clear()` bumps `session` so nothing started under a previous
  *   account publishes.
  */
-export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStoreState> => {
+export const configureDiaryStore = (deps: DiaryStoreDeps): StoreApi<DiaryStore> => {
   const today = deps.today ?? (() => CalendarDate.today());
   const water = new WaterTapLedger();
   let session = ValueConstants.zero;
@@ -69,9 +71,16 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
   /** Entry ids per date in the order the server last listed them — where a failed delete goes back. */
   const serverOrder = new Map<string, readonly string[]>();
 
-  return create<DiaryStoreState>((set, get) => {
-    const mark = (concern: DiaryConcernType, loading: boolean, failure: Failure | null = null): void =>
-      set((s) => ({ loading: { ...s.loading, [concern]: loading }, errors: { ...s.errors, [concern]: failure } }));
+  return createStore<DiaryStore>((set, get) => {
+    /** Moves one concern's load to its next state. */
+    const mark = (concern: DiaryConcernType, isLoading: boolean, failure: Failure | null = null): void => {
+      const next: DiaryLoadState = isLoading
+        ? { status: StoreStatus.Loading }
+        : failure === null
+          ? { status: StoreStatus.Loaded }
+          : { status: StoreStatus.Error, failure };
+      set((s) => ({ loads: { ...s.loads, [concern]: next } }));
+    };
 
     const updateDay = (key: string, change: (day: DiaryDay) => DiaryDay): void =>
       set((s) => {
@@ -93,8 +102,7 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
       months: {},
       recent: [],
       goals: NutritionGoals.defaults(),
-      loading: flags(false),
-      errors: flags<Failure | null>(null),
+      loads: allIdle(),
 
       selectDate: async (date) => {
         set({ selectedDate: date });
@@ -114,13 +122,13 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
           if (isSelected()) mark(DiaryConcern.Day, false, result.failure);
           return;
         }
-        const fresh = goalsAt === goalsSaves;
-        let loaded = fresh ? result.value : result.value.withGoals(get().goals);
+        const isFresh = goalsAt === goalsSaves;
+        let loaded = isFresh ? result.value : result.value.withGoals(get().goals);
         water.confirmFromLoad(key, loaded.waterGlasses);
         const cached = get().days[key];
         if (water.hasTaps(key) && cached !== undefined) loaded = loaded.withWater(cached.waterGlasses);
         serverOrder.set(key, loaded.entries.map((entry) => entry.id));
-        set((s) => ({ days: { ...s.days, [key]: loaded }, ...(fresh ? { goals: loaded.goals } : {}) }));
+        set((s) => ({ days: { ...s.days, [key]: loaded }, ...(isFresh ? { goals: loaded.goals } : {}) }));
         if (isSelected()) mark(DiaryConcern.Day, false);
       },
 
@@ -131,9 +139,9 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
         const result = await deps.loadMonth.execute(month);
         if (requested !== session) return;
         if (!result.ok) return mark(DiaryConcern.Month, false, result.failure);
-        const fresh = goalsAt === goalsSaves;
-        const loaded = fresh ? result.value : result.value.withGoals(get().goals);
-        set((s) => ({ months: { ...s.months, [month.value]: loaded }, ...(fresh ? { goals: loaded.goals } : {}) }));
+        const isFresh = goalsAt === goalsSaves;
+        const loaded = isFresh ? result.value : result.value.withGoals(get().goals);
+        set((s) => ({ months: { ...s.months, [month.value]: loaded }, ...(isFresh ? { goals: loaded.goals } : {}) }));
         mark(DiaryConcern.Month, false);
       },
 
@@ -161,11 +169,9 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
       saveGoals: async (goals) => {
         const requested = session;
         goalsSaves += ValueConstants.one;
-        mark(DiaryConcern.Save, true);
         const result = await deps.saveGoals.execute(goals);
         if (requested !== session) return result;
         if (!result.ok) {
-          mark(DiaryConcern.Save, false, result.failure);
           return result;
         }
         const saved = result.value;
@@ -174,29 +180,24 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
           days: Object.fromEntries(Object.entries(s.days).map(([key, day]) => [key, day.withGoals(saved)])),
           months: Object.fromEntries(Object.entries(s.months).map(([key, month]) => [key, month.withGoals(saved)])),
         }));
-        mark(DiaryConcern.Save, false);
         return result;
       },
 
       addEntry: async (entry) => {
         const requested = session;
-        mark(DiaryConcern.Save, true);
         const result = await deps.addEntry.execute(entry);
         if (requested !== session) return result;
-        mark(DiaryConcern.Save, false, result.ok ? null : result.failure);
         if (result.ok) void Promise.all([refreshAround([entry.date]), get().loadRecent()]);
         return result;
       },
 
       updateEntry: async (entry, changes) => {
         const requested = session;
-        mark(DiaryConcern.Save, true);
         const result = await deps.updateEntry.execute(entry.id, changes);
         if (requested !== session) return result;
-        mark(DiaryConcern.Save, false, result.ok ? null : result.failure);
         if (result.ok) {
-          const moved = !result.value.date.equals(entry.date);
-          void refreshAround(moved ? [entry.date, result.value.date] : [entry.date]);
+          const hasMoved = !result.value.date.equals(entry.date);
+          void refreshAround(hasMoved ? [entry.date, result.value.date] : [entry.date]);
         }
         return result;
       },
@@ -205,10 +206,8 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
         const requested = session;
         const key = entry.date.value;
         updateDay(key, (day) => day.withoutEntry(entry.id));
-        mark(DiaryConcern.Save, true);
         const result = await deps.deleteEntry.execute(entry.id);
         if (requested !== session) return result;
-        mark(DiaryConcern.Save, false, result.ok ? null : result.failure);
         if (!result.ok) {
           updateDay(key, (day) => day.withEntry(entry, serverOrder.get(key)));
           return result;
@@ -226,20 +225,19 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
         updateDay(key, (day) => day.withWater(glasses));
         const result = await deps.setWater.execute(date, glasses);
         if (requested !== session) return result.ok ? ok(undefined) : result;
-        const latest = water.isLatest(key, tap);
+        const isLatest = water.isLatest(key, tap);
         water.settle(key, tap);
         if (result.ok) {
           water.confirm(key, result.value);
-          if (latest) updateDay(key, (day) => day.withWater(result.value));
+          if (isLatest) updateDay(key, (day) => day.withWater(result.value));
           return ok(undefined);
         }
         const confirmed = water.confirmed(key);
-        if (latest && confirmed !== undefined) updateDay(key, (day) => day.withWater(confirmed));
-        mark(DiaryConcern.Save, false, result.failure);
+        if (isLatest && confirmed !== undefined) updateDay(key, (day) => day.withWater(confirmed));
         return result;
       },
 
-      clearError: (concern) => set((s) => ({ errors: { ...s.errors, [concern]: null } })),
+      clearError: (concern) => set((s) => ({ loads: { ...s.loads, [concern]: IDLE } })),
 
       clear: () => {
         session += ValueConstants.one;
@@ -251,8 +249,7 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
           months: {},
           recent: [],
           goals: NutritionGoals.defaults(),
-          loading: flags(false),
-          errors: flags<Failure | null>(null),
+          loads: allIdle(),
         });
       },
     };

@@ -28,7 +28,7 @@ const render = async (items = [shoppingItemOf({ id: 'a', label: 'Milk', quantity
 };
 
 const checkbox = (root: ReactTestInstance, name: string): ReactTestInstance =>
-  root.find((node) => node.props.accessibilityRole === 'checkbox' && String(node.props.accessibilityLabel).includes(name) && typeof node.props.onPress === 'function');
+  root.find((node) => node.props['accessibilityRole'] === 'checkbox' && String(node.props['accessibilityLabel']).includes(name) && typeof node.props['onPress'] === 'function');
 
 describe('ShoppingListScreen', () => {
   it('shows what is left to buy, then what is done, with amounts and the recipe each came from', async () => {
@@ -58,7 +58,7 @@ describe('ShoppingListScreen', () => {
   it('ticks a line at once and sends the tick', async () => {
     const { root, repo } = await render();
     repo.update.mockResolvedValue(ok(shoppingItemOf({ id: 'a', label: 'Milk', checked: true })));
-    await act(async () => (checkbox(root, 'Milk').props.onPress as () => void)());
+    await act(async () => (checkbox(root, 'Milk').props['onPress'] as () => void)());
     expect(repo.update).toHaveBeenCalledWith('a', { checked: true });
     expect(textContent(root).join('|')).toContain(upperCase(`${t().shopping.completed} (2)`));
   });
@@ -67,8 +67,8 @@ describe('ShoppingListScreen', () => {
     const empty = await render([]);
     expect(textContent(empty.root)).toContain(t().shopping.emptyTitle);
     // An empty list is not an error: it must not wear the red danger disc.
-    const emptyState = empty.root.findAll((n) => n.props.icon === 'cart-outline' && n.props.severity !== undefined)[0];
-    expect(emptyState?.props.severity).toBe('neutral');
+    const emptyState = empty.root.findAll((n) => n.props['icon'] === 'cart-outline' && n.props['severity'] !== undefined)[0];
+    expect(emptyState?.props['severity']).toBe('neutral');
 
     const repo = fakeShoppingRepository();
     repo.list.mockResolvedValue(fail(new NetworkFailure('offline')));

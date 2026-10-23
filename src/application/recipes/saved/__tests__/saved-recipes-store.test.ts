@@ -1,175 +1,91 @@
-/**
- * The saved store owns both the rows the Saved grid renders AND the status that
- * says whether they have been asked for yet.
- *
- * The status is the half that was missing: the screen fetched the favourites
- * itself and had no way to tell an empty grid from an unanswered one, so it
- * rendered "nothing saved yet" for the length of every cold load. `listState`
- * is what the skeleton branch reads.
- */
-
-import type { LoadFavoritesUseCase } from "@application/favorites/load-favorites-use-case";
-import { configureSavedRecipesStore } from "@application/recipes/saved/saved-recipes-store";
-import { NetworkFailure } from "@core/failure";
-import { fail, ok } from "@core/result/result-helpers";
-import { Difficulty } from "@domain/recipes/difficulty";
-import { RecipeSummaryEntity } from "@domain/recipes/recipe-summary-entity";
-import { CuisineKey } from "@domain/recipes/taxonomy/cuisine-key";
-import { RecipeCategory } from "@domain/recipes/taxonomy/recipe-category";
-import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
+import { fail, ok } from '@core/result/result-helpers';
+import { NetworkFailure } from '@core/failure';
+import { StoreStatus } from '@application/store/store-status';
+import { loadedItems } from '@application/store/paging/loaded-items';
+import { configureSavedRecipesStore } from '@application/recipes/saved/saved-recipes-store';
+import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
+import { recipeSummaryOf } from '@application/__fixtures__/recipe-summary-of';
 
-const makeSummary = (id: string): RecipeSummaryEntity => {
-  const result = RecipeSummaryEntity.create({
-    photoCount: 0,
-    id,
-    name: `Recipe ${id}`,
-    image: `https://cdn.example.com/${id}.webp`,
-    cuisine: CuisineKey.Italian,
-    category: RecipeCategory.Dinner,
-    difficulty: Difficulty.Easy,
-    totalTimeMinutes: 30,
-    rating: 4.5,
-    moderationStatus: "approved",
-    isPublished: true,
-    likeCount: 0,
-    likedByMe: false,
-    commentCount: 0,
-    viewCount: 0,
-      origin: RecipeOrigin.User,
-      sourcePlatform: null,
-    aiWritten: false,
-  });
-  if (!result.ok)
-    throw new Error("failed to build RecipeSummaryEntity fixture");
-  return result.value;
-};
+const storeOver = (execute: jest.Mock) =>
+  configureSavedRecipesStore({ loadFavoritesUseCase: { execute } as unknown as LoadFavoritesUseCase });
+const ids = (store: ReturnType<typeof storeOver>): string[] => loadedItems(store.getState().saved).map((r) => r.id);
 
-const makeStore = (execute: LoadFavoritesUseCase["execute"]) =>
-  configureSavedRecipesStore({
-    loadFavoritesUseCase: { execute } as LoadFavoritesUseCase,
+describe('savedRecipesStore', () => {
+  it('loads the first page into one ListLoaded state: rows, total and next-page state together', async () => {
+    const store = storeOver(jest.fn().mockResolvedValue(ok(recipePageOf([recipeSummaryOf('a'), recipeSummaryOf('b')], { total: 5, pageSize: 2 }))));
+
+    expect(await store.getState().loadSaved()).toBeNull();
+
+    const saved = store.getState().saved;
+    expect(saved.status).toBe(StoreStatus.Loaded);
+    expect(saved.status === StoreStatus.Loaded && saved.total).toBe(5);
+    expect(saved.status === StoreStatus.Loaded && saved.hasMore).toBe(true);
+    expect([...store.getState().savedIds]).toEqual(['a', 'b']);
   });
 
-describe("savedRecipesStore.loadSaved", () => {
-  it("starts idle — the grid has not asked for anything yet", () => {
-    const store = makeStore(() => Promise.resolve(ok(recipePageOf([]))));
-
-    expect(store.getState().listState).toEqual({ status: "idle" });
-  });
-
-  it("is loading while the request is in flight and loaded once it answers", async () => {
-    let release!: () => void;
-    const held = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    const store = makeStore(async () => {
-      await held;
-      return ok(recipePageOf([makeSummary("r1")]));
-    });
-
-    const inFlight = store.getState().loadSaved();
-    // The frame the skeleton is rendered for.
-    expect(store.getState().listState).toEqual({ status: "loading" });
-
-    release();
-    await inFlight;
-
-    expect(store.getState().listState).toEqual({ status: "loaded" });
-  });
-
-  it("publishes the rows and the id set from one response", async () => {
-    const rows = [makeSummary("r1"), makeSummary("r2")];
-    const store = makeStore(() => Promise.resolve(ok(recipePageOf(rows))));
-
+  it('appends the next page and adds its ids to the saved set', async () => {
+    const execute = jest.fn()
+      .mockResolvedValueOnce(ok(recipePageOf([recipeSummaryOf('a'), recipeSummaryOf('b')], { total: 4, pageSize: 2 })))
+      .mockResolvedValueOnce(ok(recipePageOf([recipeSummaryOf('c'), recipeSummaryOf('d')], { page: 2, total: 4, pageSize: 2 })));
+    const store = storeOver(execute);
     await store.getState().loadSaved();
 
-    expect(store.getState().savedRecipes).toEqual(rows);
-    expect([...store.getState().savedIds]).toEqual(["r1", "r2"]);
+    await store.getState().loadMoreSaved();
+
+    expect(ids(store)).toEqual(['a', 'b', 'c', 'd']);
+    expect(store.getState().has('d')).toBe(true);
   });
 
-  it("answers loaded for an empty response — that IS an empty grid, not a pending one", async () => {
-    const store = makeStore(() => Promise.resolve(ok(recipePageOf([]))));
-
+  it('a failed reload keeps the saved grid on screen and answers the failure to the caller', async () => {
+    const failure = new NetworkFailure('offline');
+    const execute = jest.fn().mockResolvedValueOnce(ok(recipePageOf([recipeSummaryOf('a')]))).mockResolvedValueOnce(fail(failure));
+    const store = storeOver(execute);
     await store.getState().loadSaved();
 
-    expect(store.getState().listState).toEqual({ status: "loaded" });
-    expect(store.getState().savedRecipes).toEqual([]);
+    expect(await store.getState().loadSaved()).toBe(failure);
+    expect(ids(store)).toEqual(['a']);
   });
 
-  it("keeps the rows it already had when a reload fails", async () => {
-    const rows = [makeSummary("r1")];
-    let call = 0;
-    const failure = new NetworkFailure("offline");
-    const store = makeStore(() => {
-      call++;
-      return Promise.resolve(call === 1 ? ok(recipePageOf(rows)) : fail(failure));
-    });
+  it('unsaving removes the card and counts it out of the total', async () => {
+    const store = storeOver(jest.fn().mockResolvedValue(ok(recipePageOf([recipeSummaryOf('a'), recipeSummaryOf('b')]))));
     await store.getState().loadSaved();
 
-    await store.getState().loadSaved();
+    store.getState().toggle('a');
 
-    // A failed refresh must not blank a grid the user is looking at; the reason
-    // is what the pull-to-refresh handler reads back to raise its toast.
-    expect(store.getState().savedRecipes).toEqual(rows);
-    expect(store.getState().listState).toEqual({ status: "error", failure });
+    expect(ids(store)).toEqual(['b']);
+    expect(store.getState().has('a')).toBe(false);
+    const saved = store.getState().saved;
+    expect(saved.status === StoreStatus.Loaded && saved.total).toBe(1);
   });
 
-  /**
-   * Found in review of the fix above: `Loading` was set on EVERY call, and the
-   * screen re-loads all three tabs on focus. So a user with an empty tab saw
-   * empty state → skeleton → empty state on every visit, and a pull-to-refresh
-   * swapped the ScrollView carrying the RefreshControl out mid-gesture.
-   */
-  it("stays loaded while a grid that is already on screen reloads", async () => {
-    let release!: () => void;
-    let call = 0;
-    const store = makeStore(async () => {
-      call++;
-      if (call > 1) await new Promise<void>((resolve) => (release = resolve));
-      return ok(recipePageOf([makeSummary("r1")]));
-    });
-    await store.getState().loadSaved();
+  it('a local save marks the bookmark before any list has loaded', () => {
+    const store = storeOver(jest.fn());
 
-    const reload = store.getState().loadSaved();
+    store.getState().addLocal('x');
 
-    // The frame that used to render a skeleton over rows the user was reading.
-    expect(store.getState().listState).toEqual({ status: "loaded" });
-    release();
-    await reload;
-    expect(store.getState().listState).toEqual({ status: "loaded" });
+    expect(store.getState().has('x')).toBe(true);
   });
 
-  it("discards a response that started before the session ended", async () => {
-    let release!: () => void;
-    const held = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    const store = makeStore(async () => {
-      await held;
-      return ok(recipePageOf([makeSummary("r1")]));
-    });
+  it('adopts a first page fetched elsewhere (the sign-in pre-load)', () => {
+    const store = storeOver(jest.fn());
 
-    const inFlight = store.getState().loadSaved();
-    // Signing out mid-request: `clearSessionCaches` wipes the store, and the
-    // late answer must not put the previous account's saves back — `savedIds`
-    // drives the bookmark on every recipe card in the app.
+    store.getState().setSaved(recipePageOf([recipeSummaryOf('pre')]));
+
+    expect(ids(store)).toEqual(['pre']);
+    expect(store.getState().has('pre')).toBe(true);
+  });
+
+  it('a load still in flight at sign-out cannot put the previous account back', async () => {
+    let answer: (value: unknown) => void = () => undefined;
+    const store = storeOver(jest.fn(() => new Promise((resolve) => { answer = resolve; })));
+
+    const pending = store.getState().loadSaved();
     store.getState().clear();
-    release();
-    await inFlight;
+    answer(ok(recipePageOf([recipeSummaryOf('previous-user')])));
+    await pending;
 
-    expect(store.getState().savedRecipes).toEqual([]);
-    expect([...store.getState().savedIds]).toEqual([]);
-    expect(store.getState().listState).toEqual({ status: "idle" });
-  });
-
-  it("returns to idle when the session ends, so the next user gets a skeleton", async () => {
-    const store = makeStore(() => Promise.resolve(ok(recipePageOf([makeSummary("r1")]))));
-    await store.getState().loadSaved();
-
-    store.getState().clear();
-
-    expect(store.getState().savedRecipes).toEqual([]);
-    expect([...store.getState().savedIds]).toEqual([]);
-    expect(store.getState().listState).toEqual({ status: "idle" });
+    expect(store.getState().saved.status).toBe(StoreStatus.Idle);
+    expect(store.getState().has('previous-user')).toBe(false);
   });
 });

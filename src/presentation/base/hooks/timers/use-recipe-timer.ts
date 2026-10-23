@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useStore } from 'zustand';
 import { timerStore } from '@application/timers/timer-store';
 import {
   startTimer,
@@ -31,7 +32,9 @@ export const useRecipeTimer = ({
   recipeName,
   minutes,
 }: UseRecipeTimerParams): RecipeTimerState => {
-  const entry = timerStore((s) => s.timers[timerId]);
+  // Not compiled: it reads the clock during render on purpose (below), which memoisation would freeze.
+  'use no memo';
+  const entry = useStore(timerStore, (s) => s.timers[timerId]);
 
   const isActive = entry !== undefined;
   const isPaused = entry?.isPaused ?? false;

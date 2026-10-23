@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, controlSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { NotificationFilter, type NotificationFilterType } from '@presentation/app/notifications/model/notification-filter';
 
 export interface NotificationFilterPillsProps {
@@ -14,14 +14,15 @@ export interface NotificationFilterPillsProps {
 
 /** All / Unread switch, each pill carrying its count. */
 export const NotificationFilterPills = ({ filter, totalCount, unreadCount, onChange }: NotificationFilterPillsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <View style={styles.filterRow}>
       {Object.values(NotificationFilter).map((f) => {
         const isActive = filter === f;
         const label = f === NotificationFilter.All
-          ? `${t().notifications.all} (${totalCount})`
-          : `${t().notifications.unread} (${unreadCount})`;
+          ? `${t.notifications.all} (${totalCount})`
+          : `${t.notifications.unread} (${unreadCount})`;
         return (
           <Pressable
             key={f}

@@ -99,8 +99,8 @@ export const textContent = (root: ReactTestInstance): string[] =>
 
 /** The single instance whose `accessibilityRole` matches, e.g. a pressable button. */
 export const byRole = (root: ReactTestInstance, role: string): ReactTestInstance =>
-  root.find((node: ReactTestInstance) => node.props.accessibilityRole === role);
+  root.find((node: ReactTestInstance) => node.props['accessibilityRole'] === role);
 
 /** Every instance whose `testID` matches — for asserting presence/absence of a node. */
 export const allByTestId = (root: ReactTestInstance, testID: string): ReactTestInstance[] =>
-  root.findAll((node: ReactTestInstance) => node.props.testID === testID);
+  root.findAll((node: ReactTestInstance) => node.props['testID'] === testID);

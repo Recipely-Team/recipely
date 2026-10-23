@@ -11,7 +11,7 @@ import {
 } from '@presentation/base/errors/failure-lookups';
 import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useImportRecipe } from '@presentation/app/import-recipe/hooks/use-import-recipe';
 import { ImportPasteView } from '@presentation/app/import-recipe/body/import-paste-view';
 import { ImportQueueView } from '@presentation/app/import-recipe/body/import-queue-view';
@@ -32,6 +32,7 @@ export interface LinkImportFlowProps {
  *   Android-only today and never exists on the web; a link and a field do.
  */
 export const LinkImportFlow = ({ importUrl }: LinkImportFlowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const vm = useImportRecipe(importUrl);
 
@@ -45,12 +46,12 @@ export const LinkImportFlow = ({ importUrl }: LinkImportFlowProps): React.JSX.El
     onSubmitLink: vm.onSubmitLink,
     onOpenDraft: vm.onOpenDraft,
   });
-  const copy = t().importRecipe;
+  const copy = t.importRecipe;
 
   useReportFailure(vm.failure, 'ImportRecipeScreen');
 
   if (vm.failure !== null) {
-    const content = failureContent(vm.failure);
+    const content = failureContent(t, vm.failure);
     return (
       <ScreenContainer scrollable={false}>
         <ErrorState
@@ -58,9 +59,9 @@ export const LinkImportFlow = ({ importUrl }: LinkImportFlowProps): React.JSX.El
           icon={failureIcon(vm.failure)}
           title={copy.failTitle}
           body={content.body}
-          primaryLabel={t().common.retry}
+          primaryLabel={t.common.retry}
           onPrimary={vm.onRetry}
-          secondaryLabel={t().common.cancel}
+          secondaryLabel={t.common.cancel}
           onSecondary={vm.onClose}
         />
       </ScreenContainer>

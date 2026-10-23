@@ -1,4 +1,4 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 /**
  * Behavior tests for `useRecipeSave` — the save-feedback rework.
  *
@@ -28,12 +28,11 @@ import { Difficulty } from '@domain/recipes/difficulty';
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import type { FakeRecipeRepositoryConfig } from '@application/__fixtures__/fake-recipe-repository-config';
 import { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
-import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
+import { configureRecipeAuthoringStore } from '@application/recipes/create/recipe-authoring-store';
 import { configureDraftsStore } from '@application/drafts/drafts-store';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
-import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
-import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
+import type { MyRecipesStore } from '@application/recipes/my-recipes/my-recipes-store-contract';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
 import type { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
@@ -60,7 +59,7 @@ import { RemoveRecipeMediaUseCase } from '@application/recipes/photos/remove-rec
 import { PublishRecipeUseCase } from '@application/recipes/publishing/publish-recipe-use-case';
 import { UnpublishRecipeUseCase } from '@application/recipes/publishing/unpublish-recipe-use-case';
 import { EditRecipeUseCase } from '@application/recipes/edit/edit-recipe-use-case';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 // ─── module mocks ────────────────────────────────────────────────────────────
@@ -132,7 +131,7 @@ const noopCacheStore = <T,>(): T =>
   ({ getState: () => ({ replace: () => undefined, remove: () => undefined }) }) as unknown as T;
 
 /**
- * Real createdRecipesStore + draftsStore, with create/update wired through the
+ * Real recipeAuthoringStore + draftsStore, with create/update wired through the
  * real use cases down to a `FakeRecipeRepository` reading `config`.
  */
 const makeStores = (repo: FakeRecipeRepository): ApplicationStores => {
@@ -147,14 +146,13 @@ const makeStores = (repo: FakeRecipeRepository): ApplicationStores => {
     editRecipe: new EditRecipeUseCase(repo),
     recipeDetailStore,
   });
-  const createdRecipesStore = configureCreatedRecipesStore({
+  const recipeAuthoringStore = configureRecipeAuthoringStore({
     createRecipeUseCase: new CreateRecipeUseCase(repo),
-    listMyRecipesUseCase: unusedUseCase<ListMyRecipesUseCase>(),
+    myRecipesStore: { getState: () => ({ addLocal: jest.fn(), removeLocal: jest.fn() }) } as unknown as StoreApi<MyRecipesStore>,
     generateRecipeUseCase: unusedUseCase<GenerateRecipeUseCase>(),
     refineRecipeUseCase: unusedUseCase<RefineRecipeUseCase>(),
-    importInstagramRecipeUseCase: unusedUseCase<ImportInstagramRecipeUseCase>(),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
-    recipeListStore: noopCacheStore<BoundStore<RecipeListStoreState>>(),
+    recipeListStore: noopCacheStore<StoreApi<RecipeListStore>>(),
     recipeDetailStore,
   });
 
@@ -167,7 +165,7 @@ const makeStores = (repo: FakeRecipeRepository): ApplicationStores => {
     deleteDraftUseCase: { execute: () => Promise.resolve(ok(undefined)) } as unknown as DeleteDraftUseCase,
   });
 
-  return { createdRecipesStore, draftsStore, recipeDetailStore, recipePublishingStore } as unknown as ApplicationStores;
+  return { recipeAuthoringStore, draftsStore, recipeDetailStore, recipePublishingStore } as unknown as ApplicationStores;
 };
 
 type Save = ReturnType<typeof useRecipeSave>;

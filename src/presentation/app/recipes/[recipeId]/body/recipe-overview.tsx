@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -14,7 +15,7 @@ import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, avatarSizes, borderWidths, shadows, targetSizes } from '@presentation/base/theme';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
@@ -42,7 +43,7 @@ export interface RecipeOverviewProps {
  * Recipe header block for the mobile detail screen: title, cuisine/rating caption,
  * like/view/comment stats, author card, meta card, nutrition, and tags.
  */
-export const RecipeOverview = ({
+const RecipeOverviewComponent = ({
   recipe,
   recipeId,
   liked,
@@ -54,6 +55,7 @@ export const RecipeOverview = ({
   photos,
   portions,
 }: RecipeOverviewProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
 
@@ -84,7 +86,7 @@ export const RecipeOverview = ({
         <Pressable
           onPress={onToggleLike}
           accessibilityRole="button"
-          accessibilityLabel={liked ? t().recipes.unlike : t().recipes.like}
+          accessibilityLabel={liked ? t.recipes.unlike : t.recipes.like}
           style={styles.statItem}
         >
           <MaterialCommunityIcons
@@ -145,7 +147,7 @@ export const RecipeOverview = ({
           `spacing.sm` because it reads as a continuation of "about this
           recipe", not a new section. */}
       <ProvenanceNote
-        marks={recipe.provenanceMarks}
+        marks={recipe.provenanceMarks()}
         sourceHandle={recipe.sourceHandle}
         sourceUrl={recipe.sourceUrl}
         style={styles.provenance}
@@ -162,11 +164,11 @@ export const RecipeOverview = ({
 
       {/* Unconditional: the panel itself says when a recipe has no figures,
           and it carries no title — this header is the section's one heading. */}
-      <SectionHeader title={t().recipes.nutrition} />
+      <SectionHeader title={t.recipes.nutrition} />
       <View
         style={[styles.nutritionCard, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
       >
-        <NutritionPanel facts={recipe.nutritionFacts} isCalculating={isNutritionCalculating} source={recipe.nutritionSource} />
+        <NutritionPanel facts={recipe.nutritionFacts()} isCalculating={isNutritionCalculating} source={recipe.nutritionSource} />
       </View>
       <AddToDiaryButton recipe={recipe} inCard={false} />
       <AddToPlanButton recipe={recipe} inCard={false} />
@@ -185,6 +187,9 @@ export const RecipeOverview = ({
     </>
   );
 };
+
+/** Memoised: the recipe page re-renders on a like, a save or a step tick, and this section's props do not change with them. */
+export const RecipeOverview = memo(RecipeOverviewComponent);
 
 const styles = StyleSheet.create({
   provenance: { marginTop: spacing.sm2 },

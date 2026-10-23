@@ -14,19 +14,19 @@ import { AccessibilityInfo } from 'react-native';
  *   screen flash from still to animated one frame in.
  */
 export const useReduceMotion = (): boolean => {
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const [shouldReduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => {
-    let active = true;
-    void AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
-      if (active) setReduceMotion(enabled);
+    let isActive = true;
+    void AccessibilityInfo.isReduceMotionEnabled().then((isEnabled) => {
+      if (isActive) setReduceMotion(isEnabled);
     });
     const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
     return () => {
-      active = false;
+      isActive = false;
       subscription.remove();
     };
   }, []);
 
-  return reduceMotion;
+  return shouldReduceMotion;
 };

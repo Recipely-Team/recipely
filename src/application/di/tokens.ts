@@ -14,6 +14,8 @@
  */
 export const TOKENS = {
   AuthRepository: Symbol.for('AuthRepository'),
+  AccountRepository: Symbol.for('AccountRepository'),
+  CreatorClaimRepository: Symbol.for('CreatorClaimRepository'),
   RecipeRepository: Symbol.for('RecipeRepository'),
   TaxonomyRepository: Symbol.for('TaxonomyRepository'),
   RecipeDraftRepository: Symbol.for('RecipeDraftRepository'),
@@ -36,6 +38,7 @@ export const TOKENS = {
   DeviceRepository: Symbol.for('DeviceRepository'),
   LocaleService: Symbol.for('LocaleService'),
   NotificationService: Symbol.for('NotificationService'),
+  CrashReporter: Symbol.for('CrashReporter'),
   AlarmAudioService: Symbol.for('AlarmAudioService'),
   AdsService: Symbol.for('AdsService'),
   AssistantSession: Symbol.for('AssistantSession'),

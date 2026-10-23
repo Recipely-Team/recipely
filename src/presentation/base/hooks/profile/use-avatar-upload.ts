@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
+import { useStore } from 'zustand';
 import * as ImagePicker from 'expo-image-picker';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { failureKeyMessage } from '@presentation/base/errors/failure-lookups';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { shrinkForUpload } from '@presentation/base/utils/shrink-for-upload';
 import { AVATAR_UPLOAD_MAX_EDGE } from '@infrastructure/constants/media-upload';
 import type { AvatarUpload } from '@presentation/base/hooks/profile/avatar-upload';
@@ -32,8 +33,9 @@ const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
  * it on web. The avatar re-renders from the session the store updates.
  */
 export const useAvatarUpload = (): AvatarUpload => {
+  const t = useTranslations();
   const { authStore } = useStores();
-  const uploadAvatar = authStore((s) => s.uploadAvatar);
+  const uploadAvatar = useStore(authStore, (s) => s.uploadAvatar);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -44,7 +46,7 @@ export const useAvatarUpload = (): AvatarUpload => {
           ? await ImagePicker.requestCameraPermissionsAsync()
           : await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!perm.granted) {
-        setUploadError(t().profile.photoPermissionDenied);
+        setUploadError(t.profile.photoPermissionDenied);
         return;
       }
 
@@ -57,7 +59,7 @@ export const useAvatarUpload = (): AvatarUpload => {
 
       // Busy from the moment a photo exists: shrinking is real work.
       setIsUploading(true);
-      try {
+      const upload = async (): Promise<void> => {
         // Shrink before sending; the server renders 256 square.
         const uri = await shrinkForUpload(
           { uri: asset.uri, width: asset.width, height: asset.height },
@@ -66,25 +68,24 @@ export const useAvatarUpload = (): AvatarUpload => {
         const { fileName, mimeType } = uploadFileMeta(uri, AVATAR_FILE_PREFIX, String(Date.now()));
         const failure = await uploadAvatar(uri, fileName, mimeType);
         if (failure !== null) {
-          setUploadError(failureKeyMessage(failure) ?? t().profile.photoUploadFailed);
+          setUploadError(failureKeyMessage(t, failure) ?? t.profile.photoUploadFailed);
           return;
         }
-        showSuccessToast(t().profile.photoUploadSuccess);
-      } catch {
-        // A throw before the request (reading the photo) is a failed upload too, never silence.
-        setUploadError(t().profile.photoUploadFailed);
-      } finally {
-        setIsUploading(false);
-      }
+        showSuccessToast(t.profile.photoUploadSuccess);
+      };
+      // A throw before the request (reading the photo) is a failed upload too, never silence.
+      await upload()
+        .catch(() => setUploadError(t.profile.photoUploadFailed))
+        .finally(() => setIsUploading(false));
     },
-    [uploadAvatar],
+    [uploadAvatar, t],
   );
 
   const pickAndUpload = useCallback(async (): Promise<void> => {
     if (isUploading) return;
-    const source = await askPickSource(t().profile.changePhoto);
+    const source = await askPickSource(t.profile.changePhoto);
     if (source !== null) await launch(source);
-  }, [isUploading, launch]);
+  }, [isUploading, launch, t]);
 
   return {
     pickAndUpload,

@@ -18,7 +18,7 @@ import { t } from '@presentation/i18n';
  */
 const primaryButton = (root: RenderResult['root']) =>
   root.findAll(
-    (node) => node.props.accessibilityRole === 'button' && typeof node.props.onPress === 'function',
+    (node) => node.props['accessibilityRole'] === 'button' && typeof node.props['onPress'] === 'function',
   )[0];
 
 describe('SignInPromptSheet', () => {
@@ -53,7 +53,7 @@ describe('SignInPromptSheet', () => {
       <SignInPromptSheet visible onClose={jest.fn()} onSignIn={onSignIn} />,
     );
 
-    act(() => (primaryButton(root).props.onPress as () => void)());
+    act(() => (primaryButton(root)!.props['onPress'] as () => void)());
 
     expect(onSignIn).toHaveBeenCalledTimes(1);
   });

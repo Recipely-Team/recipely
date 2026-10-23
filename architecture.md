@@ -17,20 +17,25 @@ src/
     navigation/       Shell: route-context.js, auth guard, share-import hook, alarm overlay
     i18n/             Internationalization
     base/             Widgets (categorized), theme, utils
-    bootstrap/        DI init, stores context
-    |
-  application/        Use cases, state stores, DI registration
-    |
-  domain/             Entities, value objects, repository interfaces
-    |
-  infrastructure/     Repository implementations, DTOs, mappers, network, storage
-    |
+    bootstrap/        DI init, stores context (the composition root)
+  application/        Use cases, vanilla Zustand stores, DI registration
+  domain/             Entities, value objects, repository interfaces (ports)
+  infrastructure/     Repository implementations, DTOs, mappers, network, storage (adapters)
   core/               Framework-agnostic building blocks (Result, Failure, BaseEntity, DI)
+```
+
+Source dependencies point inward, toward the domain (Clean Architecture's dependency rule; the
+domain's ports are implemented by infrastructure, which therefore depends on the domain, not the
+other way round):
+
+```
+presentation ──► application ──► domain ◄── infrastructure
+      every layer ──► core          (bootstrap/ and */di/ wire them together)
 ```
 
 ### Dependency Rule
 
-Each layer may only depend on layers **below** it. Never import upward:
+Never import outward — away from the domain:
 
 - `src/domain/` — never imports from `src/application/`, `src/infrastructure/`, or `src/presentation/`.
 - `src/application/` — never imports from `src/infrastructure/` or `src/presentation/`.
@@ -68,7 +73,7 @@ Mandatory Coding Standard in `CLAUDE.md` (17–20) and is BLOCKING in review.
 ### Ports, not direct infrastructure (Evans p.55 — CLAUDE.md §17)
 
 Infrastructure serves upper layers as **SERVICES behind interfaces**. The repository-interface pattern
-(`src/domain/**/i-*-repository.ts` + implementation in `src/infrastructure/`) is the template: any other
+(`src/domain/**/*-repository-interface.ts` + implementation in `src/infrastructure/`) is the template: any other
 infrastructure capability a higher layer needs (key-value storage, notifications, audio, clipboard, …)
 gets the same treatment — a **port interface** in `src/domain/` (or `src/application/` for purely
 app-level services), an implementation in `src/infrastructure/`, wiring in the composition root, and
@@ -81,7 +86,7 @@ Screens that grow unbounded silently become the Smart UI anti-pattern: business 
 component and the domain model stops mattering. Hard limits:
 
 - a routed `index.tsx` composes co-located parts — target ≤ ~200 lines, **zero business rules**;
-- any `.tsx` over 300 lines is a blocking review finding (i18n dictionaries `en.ts` / `tr.ts` exempt);
+- any `.tsx` over 300 lines is a blocking review finding (the locale catalogues in `i18n/locales/` exempt);
 - a business rule discovered while editing UI is moved down (component → hook → store/use case →
   entity/VO) **in the same PR**, never left in place;
 - presentation computes nothing the application or domain layer could own: formatting for display is
@@ -166,7 +171,8 @@ Orchestrates domain logic through use cases and manages UI state.
 
 - **Use Cases** — Single-responsibility classes with an `execute(...)` method returning
   `Promise<Result<T, Failure>>`.
-- **Stores** — Zustand stores that call use cases and expose state to the presentation layer.
+- **Stores** — vanilla Zustand stores (`createStore` from `zustand/vanilla`, typed `StoreApi<XStore>`) that call
+  use cases and expose state; no React import in this layer. Presentation reads them with `useStore`.
 - **DI Registration** — `src/application/di/register.ts` wires use cases and stores into the container.
 - **Test Fixtures** — `src/application/__fixtures__/` contains fakes (e.g., `FakeAuthRepository`) for unit tests.
 
@@ -187,8 +193,15 @@ Implements domain interfaces with concrete I/O.
   (`RecipePage`: `items`, `total`, `page`, `hasMore`), not a bare array. Dropping the
   envelope is what let the app request page 1 forever. The page comes from the caller;
   the query is built by a `RequestMapper`, not by the repository method.
-- **Network** — `AxiosHttpClient` wraps Axios with typed error mapping to `Failure` subclasses.
-- **Storage** — `SecureTokenStorage`; platform-specific `kv-store.ts` / `kv-store.web.ts`.
+- **Network** — `AxiosHttpClient` wraps Axios with typed error mapping to `Failure` subclasses. Every
+  request carries `X-Request-Id`; a failed one leaves a Crashlytics breadcrumb with that id. A 401
+  outside the credential routes runs one single-flight session refresh (`SessionRefresher`) and
+  replays the request; only a refused refresh signs the user out.
+- **Storage** — `SecureTokenStorage` serves the session from memory after the first read; on native it
+  persists to SecureStore, on web it keeps tokens in memory only (the refresh token lives in the API's
+  HttpOnly cookie). Platform-specific `kv-store.ts` / `kv-store.web.ts`. `FirstPageCache` keeps the last
+  first page of the feed, the shopping list and saved recipes for offline starts; user-scoped copies are
+  wiped at sign-out.
 - **Constants** — `src/infrastructure/constants/api.ts` (URLs, limits) and `storage.ts` (storage keys).
 - **DI Registration** — `src/infrastructure/di/register.ts` wires repositories and HTTP client.
 
@@ -241,7 +254,7 @@ timers bar, splash overlay) correctly stays in `base/widgets/`.
 - **Responsive** — `src/presentation/base/responsive/`: viewport breakpoints, the `LayoutProvider` context
   and the web-shell state. Decides *layout* (which arrangement); `theme/tokens/scale.ts` decides
   *measurement* (how big within that arrangement).
-- **i18n** — `src/presentation/i18n/en.ts`, `src/presentation/i18n/tr.ts`, `src/presentation/i18n/i18n.ts`.
+- **i18n** — `src/presentation/i18n/i18n.ts` and the 14 catalogues in `src/presentation/i18n/locales/` (ar, de, en, es, fr, hi, id, it, ja, ko, pt, ru, tr, zh).
 - **Utils** — `src/presentation/base/utils/`.
 
 ---
@@ -729,6 +742,23 @@ export const RecipeCard = ({ recipe, onPress }: RecipeCardProps): React.JSX.Elem
   accept store state as props.
 - Hooks are thin adapters over application stores / use cases: view-facing glue only, no business
   rules (those belong in `src/domain/`, orchestration in `src/application/`).
+- Stores are read with `useStore(store, (s) => …)`; actions in handlers through `store.getState()`.
+- Async I/O with cleanup (`try … finally`) lives in a plain async function outside the hook, or uses
+  `.finally()`; the hook guards and orchestrates. The compiler cannot compile `try … finally`.
+- See CLAUDE.md rule 8 and its rationale below for the compiler's rules.
+
+```ts
+// ✅
+const { authStore } = useStores();
+const isSignedIn = useStore(authStore, (s) => s.state.status === StoreStatus.Authenticated);
+const t = useTranslations();
+const today = useToday();
+
+// ❌ — not a hook to the compiler; global reads cached past a change
+const isSignedIn = authStore((s) => s.state.status === StoreStatus.Authenticated);
+const label = t().common.retry;
+const today = CalendarDate.today();
+```
 
 ---
 
@@ -759,10 +789,12 @@ Every interactive element (`Pressable`, `TouchableOpacity`, button widget) must 
 ### 11. Internationalization (i18n)
 
 - All user-visible strings in `src/presentation/` must come from `t()` (never hardcoded).
-- Translation files: `src/presentation/i18n/en.ts` (English), `src/presentation/i18n/tr.ts` (Turkish).
-- Locale detection via `expo-localization` at app startup (`initLocale()`).
-- Both languages must remain in sync at all times — adding a key to `en.ts` requires the same key in
-  `tr.ts` in the same commit.
+- Translation files: the 14 catalogues in `src/presentation/i18n/locales/` (ar, de, en, es, fr, hi,
+  id, it, ja, ko, pt, ru, tr, zh); `en.ts` is the shape the others must match.
+- The active language is restored by `LocaleService` (saved choice, else the device locale via
+  `expo-localization`) and sent on every request as `Accept-Language`.
+- Every catalogue stays in sync — a key added to one is added to all 14 with a real translation in the
+  same commit; parity tests fail otherwise (`i18n-copy` skill).
 
 ---
 
@@ -871,6 +903,15 @@ To bypass in an emergency: `git commit --no-verify` (use sparingly; document why
 | `expo-web-browser` | In-app browser for external links |
 | `axios` | HTTP client |
 | `zustand` | State management |
+| `@noble/ciphers` + `expo-crypto` | AES-256-GCM API envelope; native random bytes for its IVs |
+| `@react-native-firebase/*` / `firebase` | Social sign-in, Analytics, Crashlytics (native) / web counterparts |
+| `@react-native-google-signin/google-signin`, `expo-apple-authentication` | Google and Apple sign-in |
+| `@live-assistant/core`, `gemini`, `audio` | Voice assistant library (own repo, rule 27) |
+| `react-native-audio-api` | PCM microphone and playback for the assistant |
+| `react-native-google-mobile-ads`, `expo-tracking-transparency` | Feed ads; ATT before consent on iOS |
+| `expo-notifications` | Timers, reminders and push |
+| `react-native-reanimated`, `react-native-gesture-handler` | Animation and gestures |
+| `expo-image`, `expo-image-picker`, `expo-image-manipulator` | Recipe photos |
 | `husky` | Git hooks management |
 | `lint-staged` | Run linters only on staged files |
 
@@ -900,6 +941,14 @@ what keeps traffic out of sight, and release builds harden it twice: no cleartex
 checks the live chain against the shipped pins and belongs in every release check. The Android pins
 expire on the plugin's `PIN_EXPIRATION` (fail open, not offline) — move it forward each release.
 
+**Sessions.** Sign-in returns a short-lived access JWT and an opaque refresh token. The backend stores
+only the refresh token's SHA-256, rotates it on every `POST /auth/refresh`, and revokes the whole
+sign-in family when a revoked token is presented again (a copy exists). Native apps keep the refresh
+token in SecureStore; the web client sends `X-Recipely-Session: cookie` and receives it as an
+`HttpOnly; Secure; SameSite=Strict` cookie scoped to `/api/v1/auth`. A password reset, "sign out" and
+account deletion end the refresh tokens; `users.sessions_valid_after` also refuses access tokens issued
+before a reset or a sign-out everywhere.
+
 Because the repos ship independently, a field or filter the UI wants may simply not exist yet —
 check the backend before assuming, and land the backend PR first.
 
@@ -924,9 +973,21 @@ declaration. Giving it a file of its own (`use-x-args.ts`, `x-store-deps.ts`,
 easier to find — you still had to open the consumer to learn what it was for. Declare it
 unexported, directly above its consumer. Export it the moment a second file needs it, and
 it earns its own file again.
-A factory does NOT get an alias for its own return type — `BoundStore<AuthStoreState>`
+A factory does NOT get an alias for its own return type — `BoundStore<AuthStore>`
 says what the handle is without a name to look up, so a store module exports exactly one
 thing: its factory.
+
+**A store's contract is not its state.** Three names, three jobs:
+
+| Name | File | What it is |
+|---|---|---|
+| `RecipeListStore` | `recipe-list-store-contract.ts` | The contract: `state` plus the actions (`load`, `loadMore`, `remove`) |
+| `RecipeListState` | `recipe-list-state.ts` | The union of every state the list can be in |
+| `RecipeListIdle`, `RecipeListLoading`, `RecipeListLoaded`, `RecipeListError` | `states/*.ts` | One named state each; the store sets exactly one at a time |
+
+Every backend-paged list shares `ListIdle`, `ListLoading`, `ListLoaded<T>` and `ListError`
+(`application/store/paging/states/`). A function that needs a loaded list takes
+`RecipeListLoaded`, not "the union, hoping `status` is `loaded`".
 
 ### Rule 2
 
@@ -1084,7 +1145,36 @@ placed above the component in the same file.
 
 ### Rule 8
 
-**Custom hooks** — prefix `use`, one hook per file, no store state passed as props.
+**Hooks, stores and the React Compiler.** The app runs compiled by the React Compiler (`experiments.reactCompiler`
+in `app.json`; Jest compiles app code too, through `babel.config.js`, so tests measure the shipped program).
+Measured when it was switched on, with the Profiler tests: the assistant's 50 level ticks went from ~124 ms to
+~9 ms on a phone layout and from ~82 ms to ~1 ms in the wide panel; a recipe-detail step tick from ~5 ms to ~1 ms.
+
+What the compiler needs, and why each part of the rule exists:
+
+- **Hooks are named `use…`.** The compiler recognises a hook by its name only (react.dev, Rules of Hooks). Stores
+  were called as `recipeListStore((s) => …)`; compiled, that call was treated as a plain function, cached, and
+  React reported a changed hook order. Stores are now vanilla (`createStore` from `zustand/vanilla` — Zustand's
+  documented shape for dependency-injected stores, and it keeps React out of `application/`), read with
+  `useStore(store, selector)`.
+- **No manual memoization in new code.** React's guidance (React Compiler v1.0): rely on the compiler, keep
+  `useMemo`/`useCallback` only as an escape hatch (e.g. a value an effect depends on). A hand-written
+  `useCallback` with incomplete deps hidden by an `eslint-disable` stopped the compiler on the whole hook.
+- **Rules of React are linted** (`react-hooks/refs`, `immutability`, `set-state-in-effect`, …): 224 findings were
+  fixed before the switch. A ref is not read or written during render (`useEffectEvent` inside effects,
+  `useLatestRef` for handlers and continuations); state that followed a prop through an effect is derived,
+  tagged with the input it belongs to, or adjusted during render; outside sources go through
+  `useSyncExternalStore`.
+- **Constructs the compiler cannot compile are gated** by `scripts/assert-react-compiler.mjs`: a skipped function
+  is otherwise silent. Twenty were found — `try … finally` and `try` without `catch` in hooks, `eslint-disable`
+  comments, a prop default reading another prop. `'use no memo'` with a reason is the only allowed opt-out.
+- **Reading mutable outside state during render is a bug under the compiler.** It caches the value with the
+  component: `t()` kept a mounted screen in the old language after a switch (rule 11), `CalendarDate.today()`
+  would keep yesterday as "Today" past midnight (`useToday` subscribes instead).
+- **Getters return stored values.** The compiler tracks dependencies by property path; a getter that builds a
+  new array on every read (`recipe.heroPhotos`) looked like a changed input on every render and re-drew the
+  photo viewer on each like. Such getters are methods (`recipe.heroPhotos()`), which the compiler keys on the
+  entity itself.
 
 
 ### Rule 9
@@ -1099,7 +1189,13 @@ placed above the component in the same file.
 
 ### Rule 11
 
-**i18n** — all user-visible strings via `t()` from `src/presentation/i18n/`. Minimum en + tr in sync.
+**i18n** — all user-visible strings from `src/presentation/i18n/`, every locale in sync. Components and hooks
+read `useTranslations()`; text helpers take the catalogue as their first parameter. A language switch used to
+reach mounted screens only because `AppThemeProvider` re-rendered every `useTheme` consumer on it; under the
+React Compiler that was no longer enough (a label built from the global `t()` is cached on the component's other
+inputs), and `useTranslations` makes the language an input like any other. The global `t()` remains for code
+that runs at event time only; eslint's `no-restricted-imports` names the files allowed to import it, and
+`use-translations.language-switch.test.tsx` holds a real screen to the behaviour.
 
 
 ### Rule 12

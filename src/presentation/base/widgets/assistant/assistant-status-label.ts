@@ -1,7 +1,7 @@
+import type { TranslationsType } from '@presentation/i18n';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
-import { t } from '@presentation/i18n';
 
-type AssistantCopy = ReturnType<typeof t>['assistant'];
+type AssistantCopy = TranslationsType['assistant'];
 
 // Only the entries that ARE a line — the namespace also holds the action
 // dictionary and the suggestion list, and a status pointing at either of those
@@ -31,6 +31,6 @@ const LABEL_KEYS: Record<AssistantStatusType, AssistantCopyKey> = {
   [AssistantStatus.Unavailable]: 'idle',
 };
 
-export function assistantStatusLabel(status: AssistantStatusType): string {
-  return t().assistant[LABEL_KEYS[status]];
+export function assistantStatusLabel(t: TranslationsType, status: AssistantStatusType): string {
+  return t.assistant[LABEL_KEYS[status]];
 }

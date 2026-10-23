@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { StoreStatus } from '@application/store/store-status';
+import { useStore } from 'zustand';
 import { useLeaveGuard } from '@presentation/base/hooks/navigation/use-leave-guard';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { RoutePaths } from '@presentation/base/constants';
@@ -7,7 +7,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { useAvatarUpload } from '@presentation/base/hooks/profile/use-avatar-upload';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { BIO_MAX } from '@presentation/app/edit-profile/model/edit-profile-limits';
 import type { UseEditProfileResult } from '@presentation/app/edit-profile/model/use-edit-profile-result';
 import {
@@ -16,6 +16,7 @@ import {
 } from '@presentation/app/edit-profile/model/edit-profile-save-outcome';
 import { CharConstants } from '@core/constants';
 import { isBlank } from '@core/guards/type-guards';
+import { useSignedInUser } from '@presentation/base/hooks/auth/use-signed-in-user';
 
 /**
  * Orchestrates the edit-profile form: seeds the display name / bio from the
@@ -37,14 +38,14 @@ import { isBlank } from '@core/guards/type-guards';
  *   same stale render would be wrong in the same way.
  */
 export const useEditProfile = (): UseEditProfileResult => {
+  const t = useTranslations();
   const goBack = useGoBackOrHome(RoutePaths.profile);
   const { pickAndUpload, isUploading, uploadError, onDismissUploadError } = useAvatarUpload();
 
   const { authStore } = useStores();
-  const authState = authStore((s) => s.state);
-  const updateProfile = authStore((s) => s.updateProfile);
+  const updateProfile = useStore(authStore, (s) => s.updateProfile);
 
-  const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
+  const user = useSignedInUser();
   const initialDisplayName = user?.displayName ?? CharConstants.empty;
   const initialBio = user?.bio ?? CharConstants.empty;
   const photoUri = user?.photoUrl ?? undefined;
@@ -64,19 +65,19 @@ export const useEditProfile = (): UseEditProfileResult => {
   };
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [discardVisible, setDiscardVisible] = useState(false);
+  const [isDiscardVisible, setDiscardVisible] = useState(false);
 
   const canSave = !isBlank(displayName);
-  const dirty = displayName !== initialDisplayName || bio !== initialBio;
-  const showNameError = dirty && !canSave;
+  const isDirty = displayName !== initialDisplayName || bio !== initialBio;
+  const shouldShowNameError = isDirty && !canSave;
   // The back gesture asks too; off while saving, so the save's own way back is not held.
   const heldBack = useRef(false);
-  const leaveGuard = useLeaveGuard(dirty && !isSaving, () => {
+  const leaveGuard = useLeaveGuard(isDirty && !isSaving, () => {
     heldBack.current = true;
     setDiscardVisible(true);
   });
-  const bioAtLimit = bio.length >= BIO_MAX;
-  const saveEnabled = canSave && dirty && !isSaving;
+  const isBioAtLimit = bio.length >= BIO_MAX;
+  const isSaveEnabled = canSave && isDirty && !isSaving;
 
   const onSave = async (): Promise<EditProfileSaveOutcomeType> => {
     const { displayName: name, bio: about } = latest.current;
@@ -85,18 +86,14 @@ export const useEditProfile = (): UseEditProfileResult => {
     if (name === initialDisplayName && about === initialBio) return EditProfileSaveOutcome.Unchanged;
 
     setIsSaving(true);
-    try {
-      const failure = await updateProfile({ displayName: name.trim(), bio: about.trim() });
-      if (failure !== null) {
-        setSaveError(failureKeyMessage(failure) ?? failureToastMessage(failure));
-        return EditProfileSaveOutcome.Failed;
-      }
-      showSuccessToast(t().editProfile.saved);
-      goBack();
-      return EditProfileSaveOutcome.Saved;
-    } finally {
-      setIsSaving(false);
+    const failure = await updateProfile({ displayName: name.trim(), bio: about.trim() }).finally(() => setIsSaving(false));
+    if (failure !== null) {
+      setSaveError(failureKeyMessage(t, failure) ?? failureToastMessage(t, failure));
+      return EditProfileSaveOutcome.Failed;
     }
+    showSuccessToast(t.editProfile.saved);
+    goBack();
+    return EditProfileSaveOutcome.Saved;
   };
 
   return {
@@ -107,14 +104,14 @@ export const useEditProfile = (): UseEditProfileResult => {
     photoUri,
     isUploading,
     onPickAvatar: () => void pickAndUpload(),
-    showNameError,
-    bioAtLimit,
-    saveEnabled,
-    isDirty: dirty,
+    showNameError: shouldShowNameError,
+    bioAtLimit: isBioAtLimit,
+    saveEnabled: isSaveEnabled,
+    isDirty: isDirty,
     isSaving,
     onSave,
-    onBack: () => (dirty ? setDiscardVisible(true) : goBack()),
-    discardVisible,
+    onBack: () => (isDirty ? setDiscardVisible(true) : goBack()),
+    discardVisible: isDiscardVisible,
     onConfirmDiscard: () => {
       setDiscardVisible(false);
       if (heldBack.current) leaveGuard.release();

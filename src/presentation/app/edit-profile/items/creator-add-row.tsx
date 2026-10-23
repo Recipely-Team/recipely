@@ -9,7 +9,7 @@ import { CreatorPlatformMark } from '@presentation/base/widgets/creators/creator
 import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
 import { creatorPlatformName } from '@presentation/base/widgets/creators/creator-platform-name';
 import { CreatorAccountMetrics } from '@presentation/app/edit-profile/model/creator-account-metrics';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface CreatorAddRowProps {
   platform: CreatorPlatformType;
@@ -19,8 +19,9 @@ export interface CreatorAddRowProps {
 
 /** "Link Instagram account" — a platform with no claim; opens the link form in its place. */
 export const CreatorAddRow = ({ platform, disabled, onPress }: CreatorAddRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const label = t().creators.account.linkAccount.replace('{platform}', creatorPlatformName(platform));
+  const label = t.creators.account.linkAccount.replace('{platform}', creatorPlatformName(t, platform));
   return (
     <Pressable
       onPress={() => onPress(platform)}

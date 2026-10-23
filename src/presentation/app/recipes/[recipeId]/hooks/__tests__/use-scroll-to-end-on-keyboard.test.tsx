@@ -74,9 +74,9 @@ describe('useScrollToEndOnKeyboard', () => {
 
     expect(scrollToEnd).not.toHaveBeenCalled();
     expect(listeners).toHaveLength(1);
-    expect(listeners[0].event).toBe('keyboardDidShow');
+    expect(listeners[0]!.event).toBe('keyboardDidShow');
 
-    act(() => listeners[0].cb());
+    act(() => listeners[0]!.cb());
     await flushAnimationFrames();
     expect(scrollToEnd).toHaveBeenCalledWith({ animated: true });
   });
@@ -97,7 +97,7 @@ describe('useScrollToEndOnKeyboard', () => {
     expect(listeners).toHaveLength(1);
 
     unmount();
-    expect(listeners[0].remove).toHaveBeenCalled();
+    expect(listeners[0]!.remove).toHaveBeenCalled();
   });
 
   it('replaces a stale pending listener on refocus instead of stacking', () => {
@@ -106,6 +106,6 @@ describe('useScrollToEndOnKeyboard', () => {
     focus();
 
     expect(listeners).toHaveLength(2);
-    expect(listeners[0].remove).toHaveBeenCalled();
+    expect(listeners[0]!.remove).toHaveBeenCalled();
   });
 });

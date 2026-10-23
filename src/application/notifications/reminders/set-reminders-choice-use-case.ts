@@ -20,10 +20,10 @@ export class SetRemindersChoiceUseCase {
     private readonly refresh: RefreshRemindersUseCase,
   ) {}
 
-  async execute(wantsReminders: boolean, copies: readonly ReminderCopy[], nowMs: number): Promise<boolean> {
-    const on = wantsReminders && (await this.notifications.requestPermissions());
-    await this.prefs.set(PreferenceSlot.RemindersChoice, on ? RemindersChoice.On : RemindersChoice.Off);
+  async execute(shouldRemind: boolean, copies: readonly ReminderCopy[], nowMs: number): Promise<boolean> {
+    const isOn = shouldRemind && (await this.notifications.requestPermissions());
+    await this.prefs.set(PreferenceSlot.RemindersChoice, isOn ? RemindersChoice.On : RemindersChoice.Off);
     await this.refresh.execute(copies, nowMs);
-    return on;
+    return isOn;
   }
 }

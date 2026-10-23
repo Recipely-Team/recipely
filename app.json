@@ -245,7 +245,8 @@
       "./plugins/withApiCertificatePinning"
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "reactCompiler": true
     }
   }
 }

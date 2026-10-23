@@ -5,7 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface CreateRecipeHeaderProps {
@@ -34,6 +34,7 @@ export const CreateRecipeHeader = ({
   onClose,
   onSave,
 }: CreateRecipeHeaderProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -52,7 +53,7 @@ export const CreateRecipeHeader = ({
         hitSlop={spacing.sm}
         style={styles.iconBtn}
         accessibilityRole="button"
-        accessibilityLabel={t().createRecipe.cancel}
+        accessibilityLabel={t.createRecipe.cancel}
       >
         <Ionicons name="close" size={iconSizes.lg} color={colors.text} />
       </Pressable>
@@ -64,7 +65,7 @@ export const CreateRecipeHeader = ({
           <View style={[styles.aiBadge, { backgroundColor: colors.chipBackground }]}>
             <Ionicons name="sparkles" size={fontSizes.micro} color={colors.primary} />
             <ThemedText variant="caption" style={[styles.aiBadgeLabel, { color: colors.primary }]}>
-              {t().createRecipe.aiBadge}
+              {t.createRecipe.aiBadge}
             </ThemedText>
           </View>
         ) : null}
@@ -74,7 +75,7 @@ export const CreateRecipeHeader = ({
         disabled={isSaving}
         style={[styles.saveBtn, shadows.sm, { opacity: isSaving ? opacities.disabledFaint : opacities.full }]}
         accessibilityRole="button"
-        accessibilityLabel={t().createRecipe.save}
+        accessibilityLabel={t.createRecipe.save}
       >
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}

@@ -7,7 +7,7 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { avatarSizes, borderWidths, fontSizes, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
 import { formatCompactCount } from '@presentation/base/utils/format-compact-count';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
-import { getLocale, t } from '@presentation/i18n';
+import { useTranslations, useLocale } from '@presentation/i18n';
 import { CreatorAvatar } from '@presentation/base/widgets/creators/creator-avatar';
 import { creatorItemLabel } from '@presentation/base/widgets/creators/creator-item-label';
 import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
@@ -33,11 +33,13 @@ export interface CreatorCardProps {
  * - **Lifts on hover** (web): the medium shadow and 2 up, as the recipe cards do.
  */
 const CreatorCardComponent = ({ creator, onOpen }: CreatorCardProps): React.JSX.Element => {
+  const t = useTranslations();
+  const locale = useLocale();
   const colors = useTheme().colors;
-  const [hovered, setHovered] = useState(false);
-  const caption = t()
-    .creators.cardCaption.replace('{recipes}', formatCompactCount(creator.recipeCount, getLocale()))
-    .replace('{followers}', formatCompactCount(creator.followerCount, getLocale()));
+  const [isHovered, setHovered] = useState(false);
+  const caption = t
+    .creators.cardCaption.replace('{recipes}', formatCompactCount(creator.recipeCount, locale))
+    .replace('{followers}', formatCompactCount(creator.followerCount, locale));
 
   return (
     <Pressable
@@ -45,10 +47,10 @@ const CreatorCardComponent = ({ creator, onOpen }: CreatorCardProps): React.JSX.
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
       accessibilityRole="button"
-      accessibilityLabel={creatorItemLabel(creator)}
+      accessibilityLabel={creatorItemLabel(t, creator)}
       style={({ pressed }) => [
         styles.card,
-        hovered ? [shadows.md, styles.lifted] : shadows.sm,
+        isHovered ? [shadows.md, styles.lifted] : shadows.sm,
         { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder },
         { opacity: pressed ? opacities.pressedSubtle : opacities.full },
       ]}

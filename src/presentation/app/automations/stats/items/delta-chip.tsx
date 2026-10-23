@@ -7,7 +7,7 @@ import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/us
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { StatsMetrics } from '@presentation/app/automations/stats/model/stats-metrics';
 import { borderWidths, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface DeltaChipProps {
   current: number;
@@ -22,16 +22,17 @@ export interface DeltaChipProps {
  * period had nothing to compare with.
  */
 export const DeltaChip = ({ current, previous, days }: DeltaChipProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const surfaces = useSeveritySurfaces();
   const delta = periodDelta(current, previous);
   if (delta === null) return null;
-  const copy = t().creatorStats;
-  const up = delta > ValueConstants.zero;
-  const down = delta < ValueConstants.zero;
-  const surface = up ? surfaces.success : down ? surfaces.danger : null;
+  const copy = t.creatorStats;
+  const isUp = delta > ValueConstants.zero;
+  const isDown = delta < ValueConstants.zero;
+  const surface = isUp ? surfaces.success : isDown ? surfaces.danger : null;
   const percent = `${Math.abs(delta)}%`;
-  const spoken = up ? copy.deltaUp.replace('{x}', String(Math.abs(delta))) : down ? copy.deltaDown.replace('{x}', String(Math.abs(delta))) : copy.deltaNone;
+  const spoken = isUp ? copy.deltaUp.replace('{x}', String(Math.abs(delta))) : isDown ? copy.deltaDown.replace('{x}', String(Math.abs(delta))) : copy.deltaNone;
   return (
     <View
       accessible
@@ -43,7 +44,7 @@ export const DeltaChip = ({ current, previous, days }: DeltaChipProps): React.JS
           : { backgroundColor: surface.bg, borderColor: surface.border },
       ]}
     >
-      {surface !== null ? <Ionicons name={up ? 'arrow-up' : 'arrow-down'} size={iconSizes.xs} color={surface.icon} /> : null}
+      {surface !== null ? <Ionicons name={isUp ? 'arrow-up' : 'arrow-down'} size={iconSizes.xs} color={surface.icon} /> : null}
       <SizedText size={fontSizes.micro} weight={fontWeights.bold} color={surface?.text ?? colors.textSubtle}>
         {percent}
       </SizedText>

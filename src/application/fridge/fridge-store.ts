@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import type { BoundStore } from '@application/store/bound-store';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand/vanilla';
 import { FridgeAvailability } from '@application/fridge/fridge-availability';
-import type { FridgeStoreState } from '@application/fridge/fridge-store-state';
+import type { FridgeStore } from '@application/fridge/fridge-store-contract';
 import type { ScanFridgeUseCase } from '@application/fridge/scan-fridge-use-case';
 import type { SuggestFridgeIdeasUseCase } from '@application/fridge/suggest-fridge-ideas-use-case';
 
@@ -23,15 +23,15 @@ interface FridgeStoreDeps {
  * - **Not user-scoped**: the flag is the same for every account, so sign-out
  *   leaves it alone (nothing to add to `clearSessionCaches`).
  */
-export const configureFridgeStore = (deps: FridgeStoreDeps): BoundStore<FridgeStoreState> =>
-  create<FridgeStoreState>((set, get) => {
+export const configureFridgeStore = (deps: FridgeStoreDeps): StoreApi<FridgeStore> =>
+  createStore<FridgeStore>((set, get) => {
     let asking: Promise<void> | null = null;
     return {
       availability: FridgeAvailability.Unknown,
       checkAvailability: () => {
         if (get().availability !== FridgeAvailability.Unknown) return Promise.resolve();
-        asking ??= deps.isEnabled().then((on) => {
-          set({ availability: on ? FridgeAvailability.On : FridgeAvailability.Off });
+        asking ??= deps.isEnabled().then((isOn) => {
+          set({ availability: isOn ? FridgeAvailability.On : FridgeAvailability.Off });
         });
         return asking;
       },

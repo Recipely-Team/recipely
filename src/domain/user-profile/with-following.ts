@@ -10,8 +10,8 @@ import type { ViewedUserProfile } from '@domain/user-profile/viewed-user-profile
  * - **The count never goes below zero**, however stale the number on screen
  *   (both from {@link ViewerReaction}).
  */
-export const withFollowing = (viewed: ViewedUserProfile, following: boolean): ViewedUserProfile => {
-  if (viewed.isFollowedByMe === following) return viewed;
-  const next = ViewerReaction.of(viewed.followerCount, viewed.isFollowedByMe).set(following);
+export const withFollowing = (viewed: ViewedUserProfile, isFollowing: boolean): ViewedUserProfile => {
+  if (viewed.isFollowedByMe === isFollowing) return viewed;
+  const next = ViewerReaction.of(viewed.followerCount, viewed.isFollowedByMe).set(isFollowing);
   return { ...viewed, isFollowedByMe: next.mine, followerCount: next.count };
 };

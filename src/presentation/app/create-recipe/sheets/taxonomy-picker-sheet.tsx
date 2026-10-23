@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useStore } from 'zustand';
 import { TaxonomyPickerKind } from '@presentation/app/create-recipe/model/taxonomy-picker-kind';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -6,7 +7,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
 import { CUISINE_KEY_VALUES } from '@domain/recipes/taxonomy/cuisine-key';
@@ -50,23 +51,24 @@ const localItems = (
  * so the picker is never empty before the store loads, while offline, or on error.
  */
 const useCatalog = (kind: TaxonomyPickerKind): Catalog => {
-  const tr = t();
+  const t = useTranslations();
+  const tr = t;
   const { taxonomyStore } = useStores();
-  const status = taxonomyStore((s) => s.status);
-  const cuisines = taxonomyStore((s) => s.cuisines);
-  const categories = taxonomyStore((s) => s.categories);
+  const status = useStore(taxonomyStore, (s) => s.status);
+  const cuisines = useStore(taxonomyStore, (s) => s.cuisines);
+  const categories = useStore(taxonomyStore, (s) => s.categories);
 
   return useMemo(() => {
-    const ready = status === StoreStatus.Ready;
+    const isReady = status === StoreStatus.Ready;
     if (kind === TaxonomyPickerKind.Cuisine) {
       const items =
-        ready && cuisines.length > ValueConstants.zero
+        isReady && cuisines.length > ValueConstants.zero
           ? cuisines
           : localItems(CUISINE_KEY_VALUES, CUISINE_EMOJI, tr.cuisineNames);
       return { items, title: tr.createRecipe.pickCuisineTitle };
     }
     const items =
-      ready && categories.length > ValueConstants.zero
+      isReady && categories.length > ValueConstants.zero
         ? categories
         : localItems(RECIPE_CATEGORY_VALUES, CATEGORY_EMOJI, tr.categoryNames);
     return { items, title: tr.createRecipe.pickCategoryTitle };
@@ -93,7 +95,7 @@ export const TaxonomyPickerSheet = (props: TaxonomyPickerSheetProps): React.JSX.
     <BottomSheet visible={visible} title={catalog.title} onClose={onClose} showCloseButton>
       <View style={styles.grid}>
         {catalog.items.map((item) => {
-          const active = item.key === selected;
+          const isActive = item.key === selected;
           return (
             <Pressable
               key={item.key}
@@ -103,8 +105,8 @@ export const TaxonomyPickerSheet = (props: TaxonomyPickerSheetProps): React.JSX.
               style={[
                 styles.option,
                 {
-                  backgroundColor: active ? colors.chipBackground : colors.surface,
-                  borderColor: active ? colors.primary : colors.cardBorder,
+                  backgroundColor: isActive ? colors.chipBackground : colors.surface,
+                  borderColor: isActive ? colors.primary : colors.cardBorder,
                 },
               ]}
             >
@@ -112,7 +114,7 @@ export const TaxonomyPickerSheet = (props: TaxonomyPickerSheetProps): React.JSX.
               <ThemedText
                 variant="caption"
                 numberOfLines={ValueConstants.one}
-                style={[styles.optionLabel, { color: active ? colors.primary : colors.text }]}
+                style={[styles.optionLabel, { color: isActive ? colors.primary : colors.text }]}
               >
                 {item.name}
               </ThemedText>

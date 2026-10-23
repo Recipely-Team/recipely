@@ -55,7 +55,7 @@ const storeOver = (execute: ListDraftsUseCase['execute']) =>
     deleteDraftUseCase: { execute: () => Promise.resolve(ok(undefined)) } as unknown as DeleteDraftUseCase,
   });
 
-type DraftsStore = ReturnType<typeof storeOver>;
+type DraftsHandle = ReturnType<typeof storeOver>;
 
 const storeWithPages = () => {
   const backend = server(['a', 'b', 'c']);
@@ -63,13 +63,13 @@ const storeWithPages = () => {
   return { store, requested: backend.requested, backend };
 };
 
-const loaded = (store: DraftsStore) => {
+const loaded = (store: DraftsHandle) => {
   const list = store.getState().drafts;
   if (list.status !== StoreStatus.Loaded) throw new Error('expected loaded');
   return list;
 };
 
-const ids = (store: DraftsStore): string[] => loadedItems(store.getState().drafts).map((d) => d.id);
+const ids = (store: DraftsHandle): string[] => loadedItems(store.getState().drafts).map((d) => d.id);
 
 describe('drafts beyond the first page', () => {
   it('reports that more drafts exist when the backend says so', async () => {

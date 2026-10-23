@@ -4,7 +4,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import { useDiaryTones } from '@presentation/base/theme/colors/tones/use-diary-tones';
 import { borderWidths, fontSizes, fontWeights, fridgeSizes, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface MissingChipsProps {
@@ -16,9 +16,10 @@ export interface MissingChipsProps {
  * or, with nothing missing, the diary's green "on track" pill saying so.
  */
 export const MissingChips = ({ missing }: MissingChipsProps): React.JSX.Element => {
+  const t = useTranslations();
   const warning = useSeveritySurfaces().warning;
   const on = useDiaryTones().on;
-  const copy = t().fridge;
+  const copy = t.fridge;
 
   if (missing.length === ValueConstants.zero) {
     return (

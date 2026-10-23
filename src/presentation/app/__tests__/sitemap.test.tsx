@@ -1,6 +1,9 @@
-import { Redirect } from 'expo-router';
+import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { Sitemap } from '@presentation/app/_sitemap';
 import { RoutePaths } from '@presentation/base/constants';
+
+const mockRedirect = jest.fn((_props: { href: string }) => null);
+jest.mock('expo-router', () => ({ Redirect: (props: { href: string }) => mockRedirect(props) }));
 
 describe('the app-owned _sitemap route', () => {
   // The symptom: a fatal "Cannot read property 'origin' of undefined" thrown
@@ -11,9 +14,13 @@ describe('the app-owned _sitemap route', () => {
   // worth pinning is that it renders a redirect and nothing else: the moment
   // it returns anything renderable, the crashing screen is back.
   it('sends anyone who reaches it to the feed', () => {
-    const element = Sitemap();
+    let view!: ReactTestRenderer;
+    act(() => {
+      view = create(<Sitemap />);
+    });
 
-    expect(element.type).toBe(Redirect);
-    expect(element.props).toEqual({ href: RoutePaths.recipes });
+    expect(mockRedirect).toHaveBeenCalledWith({ href: RoutePaths.recipes });
+    expect(view.toJSON()).toBeNull();
+    act(() => view.unmount());
   });
 });

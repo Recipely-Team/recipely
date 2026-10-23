@@ -1,4 +1,4 @@
-import { contrastRatio, relativeLuminance } from "@presentation/base/theme";
+import { contrastRatio, relativeLuminance } from "@presentation/base/theme/colors/contrast/contrast";
 import type { ThemeColors } from "@presentation/base/theme/colors/palette/theme-colors";
 import {
   ALL_THEMES,
@@ -264,8 +264,8 @@ describe("themes — palette-wide distinctness (regression)", () => {
         const a = ALL_THEMES[i];
         const b = ALL_THEMES[j];
         it(`${variant}: ${a} vs ${b} are visually distinct`, () => {
-          const aBg = stripAlpha(getThemeColors(a, variant).background);
-          const bBg = stripAlpha(getThemeColors(b, variant).background);
+          const aBg = stripAlpha(getThemeColors(a!, variant).background);
+          const bBg = stripAlpha(getThemeColors(b!, variant).background);
           const lumA = relativeLuminance(aBg);
           const lumB = relativeLuminance(bBg);
           const lumDelta = Math.abs(lumA - lumB);

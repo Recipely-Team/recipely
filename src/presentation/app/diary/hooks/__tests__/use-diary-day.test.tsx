@@ -29,7 +29,7 @@ const sep30 = CalendarDate.of(2026, 9, 30);
 interface FakeState {
   selectedDate: CalendarDate;
   days: Record<string, DiaryDay>;
-  errors: { day: Failure | null };
+  loads: { day: { status: string; failure?: Failure } };
   loadDay: jest.Mock;
   selectDate: jest.Mock;
   clearError: jest.Mock;
@@ -39,10 +39,10 @@ const setup = (selected: CalendarDate) => {
   const diaryStore = create<FakeState>((set) => ({
     selectedDate: selected,
     days: { [selected.value]: DiaryDay.empty(selected, NutritionGoals.defaults()) },
-    errors: { day: null },
+    loads: { day: { status: 'idle' } },
     loadDay: jest.fn().mockResolvedValue(undefined),
     selectDate: jest.fn(async (date: CalendarDate) => set({ selectedDate: date })),
-    clearError: jest.fn(() => set({ errors: { day: null } })),
+    clearError: jest.fn(() => set({ loads: { day: { status: 'idle' } } })),
   }));
   const Probe = (): null => {
     useDiaryDay();
@@ -79,7 +79,7 @@ describe('useDiaryDay', () => {
     const { diaryStore, mount } = setup(sep30);
     mount();
     const failure = new NetworkFailure('offline');
-    act(() => diaryStore.setState({ errors: { day: failure } }));
+    act(() => diaryStore.setState({ loads: { day: { status: 'error', failure } } }));
     expect(showErrorToast).toHaveBeenCalledWith(failure);
     expect(diaryStore.getState().clearError).toHaveBeenCalled();
   });

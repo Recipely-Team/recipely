@@ -26,7 +26,7 @@ export function useOpenNotificationTarget(): (target: NotificationTargetType) =>
         return;
       }
       if (target.kind === NotificationTargetKind.CreatorAccount) {
-        router.push(RoutePaths.editProfileCreatorAccount as Href);
+        router.push(RoutePaths.editProfileCreatorAccount);
         return;
       }
       router.push(

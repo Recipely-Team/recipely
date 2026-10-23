@@ -8,5 +8,3 @@ export const CreatorNotificationType = {
   Approved: 'creator_approved',
   Rejected: 'creator_rejected',
 } as const;
-
-export type CreatorNotificationTypeType = (typeof CreatorNotificationType)[keyof typeof CreatorNotificationType];

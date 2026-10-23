@@ -1,5 +1,5 @@
 import type { Result } from '@core/result/result';
-import { ValidationFailure } from '@core/failure';
+import { type ValidationFailure } from '@core/failure';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
@@ -10,7 +10,7 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
  * `totalTimeMinutes` is derived by summing `prepTimeMinutes` +
  * `cookTimeMinutes`, since detail flows only carry those two fields.
  */
-export const recipeToSummary = (recipe: RecipeEntity, likedByMe: boolean): Result<RecipeSummaryEntity, ValidationFailure> => {
+export const recipeToSummary = (recipe: RecipeEntity, isLikedByMe: boolean): Result<RecipeSummaryEntity, ValidationFailure> => {
   return RecipeSummaryEntity.create({
     id: recipe.id,
     name: recipe.name,
@@ -26,7 +26,7 @@ export const recipeToSummary = (recipe: RecipeEntity, likedByMe: boolean): Resul
     isPublished: recipe.isPublished,
     moderationStatus: recipe.moderationStatus,
     likeCount: recipe.likeCount,
-    likedByMe,
+    likedByMe: isLikedByMe,
     commentCount: recipe.commentCount,
     viewCount: recipe.viewCount,
     // Carried, so a just-published recipe shows its badge without a refresh.

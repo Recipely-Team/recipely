@@ -8,7 +8,7 @@ import { NotificationsBellButton } from '@presentation/base/widgets/navigation/n
 import { SearchBar } from '@presentation/app/recipes/items/filters/search-bar';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, iconSizes, layoutSizes, zIndices } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { HomeHeaderAnimation } from '@presentation/app/recipes/model/home-header-animation';
 
@@ -51,17 +51,18 @@ export const CollapsingHomeHeader = ({
   searchValue,
   onSearchChange,
 }: CollapsingHomeHeaderProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
 
   const bandStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: reduceMotion ? ValueConstants.zero : headerTranslateY.value }],
+    transform: [{ translateY: reduceMotion ? ValueConstants.zero : headerTranslateY.get() }],
   }));
 
   const titleStyle = useAnimatedStyle(() => {
     const scale = reduceMotion
       ? ValueConstants.one
-      : interpolate(scrollY.value, [ValueConstants.zero, layoutSizes.homeTitleShrink], HomeHeaderAnimation.titleScale, Extrapolation.CLAMP);
+      : interpolate(scrollY.get(), [ValueConstants.zero, layoutSizes.homeTitleShrink], HomeHeaderAnimation.titleScale, Extrapolation.CLAMP);
     return { transform: [{ scale }] };
   });
 
@@ -69,7 +70,7 @@ export const CollapsingHomeHeader = ({
     opacity: reduceMotion
       ? ValueConstants.one
       : interpolate(
-          scrollY.value,
+          scrollY.get(),
           [ValueConstants.zero, layoutSizes.homeTitleShrink * HomeHeaderAnimation.midpoint],
           HomeHeaderAnimation.eyebrowOpacity,
           Extrapolation.CLAMP,
@@ -80,7 +81,7 @@ export const CollapsingHomeHeader = ({
     opacity: reduceMotion
       ? ValueConstants.one
       : interpolate(
-          scrollY.value,
+          scrollY.get(),
           [layoutSizes.homeTitleShrink * HomeHeaderAnimation.midpoint, layoutSizes.homeTitleShrink],
           HomeHeaderAnimation.searchOpacity,
           Extrapolation.CLAMP,
@@ -90,7 +91,7 @@ export const CollapsingHomeHeader = ({
   return (
     <Animated.View style={[styles.band, bandStyle, { top: insets.top, backgroundColor: colors.background }]}>
       <TabAppBar
-        title={t().recipes.title}
+        title={t.recipes.title}
         titleStyle={titleStyle}
         leading={
           <Animated.View style={eyebrowStyle}>
@@ -106,7 +107,7 @@ export const CollapsingHomeHeader = ({
       />
 
       <Animated.View style={[styles.searchWrapper, searchStyle]}>
-        <SearchBar value={searchValue} onChangeText={onSearchChange} placeholder={t().recipes.searchPlaceholder} />
+        <SearchBar value={searchValue} onChangeText={onSearchChange} placeholder={t.recipes.searchPlaceholder} />
       </Animated.View>
     </Animated.View>
   );

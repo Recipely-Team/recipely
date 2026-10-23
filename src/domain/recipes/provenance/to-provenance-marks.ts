@@ -20,11 +20,11 @@ import { ProvenanceMark, type ProvenanceMarkType } from '@domain/recipes/provena
 export const toProvenanceMarks = (
   origin: RecipeOriginType,
   sourcePlatform: SourcePlatformType | null,
-  aiWritten: boolean,
+  isAiWritten: boolean,
 ): readonly ProvenanceMarkType[] => {
   if (origin === RecipeOrigin.Curated) return [ProvenanceMark.Curated];
-  const byModel = aiWritten || origin === RecipeOrigin.Ai;
+  const isByModel = isAiWritten || origin === RecipeOrigin.Ai;
   const marks: ProvenanceMarkType[] = sourcePlatform === null ? [] : [sourcePlatform];
-  if (byModel) marks.push(ProvenanceMark.Ai);
+  if (isByModel) marks.push(ProvenanceMark.Ai);
   return marks;
 };

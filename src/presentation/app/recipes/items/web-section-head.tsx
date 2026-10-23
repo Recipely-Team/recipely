@@ -7,7 +7,7 @@ import { ValueConstants } from '@core/constants';
 
 export interface WebSectionHeadProps {
   title: string;
-  sub?: string;
+  sub?: string | undefined;
   /** Trailing controls slot (e.g. difficulty segmented control + sort menu). */
   right?: ReactNode;
 }

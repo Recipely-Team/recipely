@@ -12,7 +12,7 @@ import type { PlanRecipeChoice } from '@presentation/base/widgets/meal-plan/mode
 import { formatPerServing } from '@presentation/base/utils/meal-plan/format-per-serving';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface PlanDetailsStepProps {
   recipe: PlanRecipeChoice;
@@ -32,16 +32,17 @@ export interface PlanDetailsStepProps {
 
 /** Add — details, and Move (design spec → Meal planner): the recipe, the day, the meal and — when adding — the servings. */
 export const PlanDetailsStep = (props: PlanDetailsStepProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const { recipe, servings } = props;
   return (
     <View style={styles.stack}>
       <PlanRecipeRow
         name={recipe.name}
         imageUrl={recipe.imageUrl}
-        meta={formatPerServing(recipe.caloriesPerServing, locale)}
+        meta={formatPerServing(t, recipe.caloriesPerServing, locale)}
         {...(props.onChange === null ? {} : { action: { label: strings.change, onPress: props.onChange } })}
       />
       <PlanDayPicker week={props.week} selected={props.date} today={props.today} onSelect={props.onSelectDate} onPage={props.onPageWeek} />

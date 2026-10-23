@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { useReduceMotion } from '@presentation/base/hooks/accessibility/use-reduce-motion';
@@ -31,12 +31,12 @@ export interface AssistantOrbAuraProps {
  */
 export const AssistantOrbAura = ({ isSpeaking }: AssistantOrbAuraProps): React.JSX.Element => {
   const { colors } = useTheme();
-  const reduceMotion = useReduceMotion();
-  const ring = useRef(new Animated.Value(ValueConstants.zero)).current;
-  const orbit = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const shouldReduceMotion = useReduceMotion();
+  const [ring] = useState(() => new Animated.Value(ValueConstants.zero));
+  const [orbit] = useState(() => new Animated.Value(ValueConstants.zero));
 
   useEffect(() => {
-    if (reduceMotion) return;
+    if (shouldReduceMotion) return;
     const spin = (value: Animated.Value, duration: number): Animated.CompositeAnimation =>
       Animated.loop(
         Animated.timing(value, {
@@ -55,7 +55,7 @@ export const AssistantOrbAura = ({ isSpeaking }: AssistantOrbAuraProps): React.J
       rings.stop();
       points.stop();
     };
-  }, [ring, orbit, isSpeaking, reduceMotion]);
+  }, [ring, orbit, isSpeaking, shouldReduceMotion]);
 
   const at = (value: Animated.Value, offset: number): Animated.AnimatedInterpolation<number> =>
     value.interpolate({

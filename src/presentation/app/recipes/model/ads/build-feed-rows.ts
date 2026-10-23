@@ -23,7 +23,7 @@ import type { FeedRowType } from '@presentation/app/recipes/model/ads/feed-row';
  */
 export const buildFeedRows = (
   recipes: readonly RecipeSummaryEntity[],
-  adsEnabled: boolean,
+  isAdsEnabled: boolean,
 ): readonly FeedRowType[] => {
   const rows: FeedRowType[] = [];
   let sinceLastAd = ValueConstants.zero;
@@ -32,7 +32,7 @@ export const buildFeedRows = (
   for (const recipe of recipes) {
     const gap = adsPlaced === ValueConstants.zero ? FEED_ROWS_BEFORE_FIRST_AD : FEED_ROWS_BETWEEN_ADS;
     // Checked before pushing the recipe, so an ad always sits between two recipes.
-    if (adsEnabled && sinceLastAd === gap) {
+    if (isAdsEnabled && sinceLastAd === gap) {
       rows.push({ kind: FeedRowKind.Ad, ordinal: adsPlaced });
       adsPlaced += ValueConstants.one;
       sinceLastAd = ValueConstants.zero;

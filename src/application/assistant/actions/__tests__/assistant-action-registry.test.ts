@@ -220,7 +220,7 @@ describe('AssistantActionRegistry', () => {
     registry.register(AssistantAction.Save, async () => ({ ok: true }));
     registry.register(AssistantAction.Like, async () => ({ ok: true }));
 
-    expect(registry.registeredActions).toEqual([AssistantAction.Save, AssistantAction.Like]);
+    expect(registry.registeredActions()).toEqual([AssistantAction.Save, AssistantAction.Like]);
   });
 });
 

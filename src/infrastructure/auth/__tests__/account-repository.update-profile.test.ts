@@ -1,0 +1,153 @@
+import { NetworkFailure, UnauthorizedFailure, UnknownFailure } from '@core/failure';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
+import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
+import { UserEntity } from '@domain/auth/user-entity';
+import { Email } from '@domain/common/email';
+import { AccountRepository } from '@infrastructure/auth/account-repository';
+import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
+import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
+import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
+
+const userDto: RecipelyUserDto = {
+  id: 'backend-user-1',
+  email: 'u@example.com',
+  displayName: 'New Name',
+  photoUrl: 'https://cdn.recipely.net/avatars/old.png',
+  bio: 'New bio',
+  createdAt: '2026-01-01T00:00:00.000Z',
+};
+
+// The session already in storage before the update — its token/expiry/id must be
+// reused, since the profile endpoint returns only the user (no fresh token).
+const buildCurrentSession = (): AuthSessionEntity => {
+  const email = Email.create('old@example.com');
+  if (!email.ok) throw new Error();
+  const user = UserEntity.create({
+    id: 'backend-user-1',
+    email: email.value,
+    displayName: 'Old Name',
+    bio: 'Old bio',
+  });
+  if (!user.ok) throw new Error();
+  const session = AuthSessionEntity.create({
+    id: 'session-id-123',
+    accessToken: 'reused-token',
+    expiresAt: new Date('2030-01-01T00:00:00.000Z'),
+    user: user.value,
+  });
+  if (!session.ok) throw new Error();
+  return session.value;
+};
+
+interface RequestCall {
+  method?: string | undefined;
+  url?: string | undefined;
+  data?: unknown;
+}
+
+const makeHttp = (
+  result: Result<unknown, unknown>,
+): { http: AxiosHttpClient; calls: RequestCall[] } => {
+  const calls: RequestCall[] = [];
+  const stub = withHttpVerbs(jest.fn((config: RequestCall) => {
+      calls.push({ method: config.method, url: config.url, data: config.data });
+      return Promise.resolve(result);
+    }));
+  return { http: stub, calls };
+};
+
+const makeStorage = (
+  loadResult: Result<AuthSessionEntity | null, unknown>,
+): { storage: SecureTokenStorage; saved: AuthSessionEntity[] } => {
+  const saved: AuthSessionEntity[] = [];
+  const stub = {
+    loadSession: jest.fn(() => Promise.resolve(loadResult)),
+    saveSession: jest.fn((session: AuthSessionEntity) => {
+      saved.push(session);
+      return Promise.resolve(ok(undefined));
+    }),
+  } as unknown as SecureTokenStorage;
+  return { storage: stub, saved };
+};
+
+describe('AccountRepository.updateProfile', () => {
+  it('PATCHes /me/profile, reuses the current token/id and saves the mapped user', async () => {
+    const current = buildCurrentSession();
+    const { http, calls } = makeHttp(ok({ user: userDto }));
+    const { storage, saved } = makeStorage(ok(current));
+    const repo = new AccountRepository(http, storage);
+
+    const result = await repo.updateProfile({ displayName: 'New Name', bio: 'New bio' });
+
+    expect(result.ok).toBe(true);
+    expect(calls).toEqual([
+      { method: 'PATCH', url: '/me/profile', data: { displayName: 'New Name', bio: 'New bio' } },
+    ]);
+    expect(saved).toHaveLength(1);
+    if (result.ok) {
+      expect(result.value).toBe(saved[0]);
+      // Reused from the stored session.
+      expect(result.value.id).toBe('session-id-123');
+      expect(result.value.accessToken).toBe('reused-token');
+      expect(result.value.expiresAt.toISOString()).toBe('2030-01-01T00:00:00.000Z');
+      // Refreshed from the update response.
+      expect(result.value.user.displayName).toBe('New Name');
+      expect(result.value.user.bio).toBe('New bio');
+    }
+  });
+
+  it('returns the http failure and never loads or saves a session', async () => {
+    const failure = new NetworkFailure('offline');
+    const { http } = makeHttp(fail(failure));
+    const { storage, saved } = makeStorage(ok(buildCurrentSession()));
+    const repo = new AccountRepository(http, storage);
+
+    const result = await repo.updateProfile({ displayName: 'New Name' });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.failure).toBe(failure);
+    expect(storage.loadSession).not.toHaveBeenCalled();
+    expect(saved).toHaveLength(0);
+  });
+
+  it('returns UnauthorizedFailure when there is no current session and does not save', async () => {
+    const { http } = makeHttp(ok({ user: userDto }));
+    const { storage, saved } = makeStorage(ok(null));
+    const repo = new AccountRepository(http, storage);
+
+    const result = await repo.updateProfile({ displayName: 'New Name' });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.failure).toBeInstanceOf(UnauthorizedFailure);
+    expect(saved).toHaveLength(0);
+  });
+
+  // An answer landing after a sign-out and a sign-in as someone else must not
+  // write the first user over the second user's session.
+  it('does not put the previous user into the session of whoever is signed in now', async () => {
+    const { http } = makeHttp(ok({ user: { ...userDto, id: 'someone-else' } }));
+    const { storage, saved } = makeStorage(ok(buildCurrentSession()));
+    const repo = new AccountRepository(http, storage);
+
+    const result = await repo.updateProfile({ displayName: 'New Name' });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.failure).toBeInstanceOf(UnauthorizedFailure);
+    expect(saved).toHaveLength(0);
+  });
+
+  it('propagates a storage load failure and does not save', async () => {
+    const failure = new UnknownFailure('Failed to read session');
+    const { http } = makeHttp(ok({ user: userDto }));
+    const { storage, saved } = makeStorage(fail(failure));
+    const repo = new AccountRepository(http, storage);
+
+    const result = await repo.updateProfile({ displayName: 'New Name' });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.failure).toBe(failure);
+    expect(saved).toHaveLength(0);
+  });
+});

@@ -1,4 +1,6 @@
+import { useTranslations } from '@presentation/i18n';
 import { useCallback, useRef, useState } from 'react';
+import { useStore } from 'zustand';
 import { useFocusEffect } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import type { Failure } from '@core/failure';
@@ -31,12 +33,13 @@ const PLATFORMS: readonly CreatorPlatformType[] = Object.values(CreatorPlatform)
  *   a second tap in the same frame still sees `false`.
  */
 export const useCreatorAccount = (): UseCreatorAccountResult => {
+  const t = useTranslations();
   const { authStore } = useStores();
-  const stored = authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.creatorClaims : null));
+  const stored = useStore(authStore, (s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.creatorClaims : null));
   const claims = stored ?? CreatorClaims.empty();
-  const requestCreatorTag = authStore((s) => s.requestCreatorTag);
-  const removeCreatorTag = authStore((s) => s.removeCreatorTag);
-  const refreshCreatorClaim = authStore((s) => s.refreshCreatorClaim);
+  const requestCreatorTag = useStore(authStore, (s) => s.requestCreatorTag);
+  const removeCreatorTag = useStore(authStore, (s) => s.removeCreatorTag);
+  const refreshCreatorClaim = useStore(authStore, (s) => s.refreshCreatorClaim);
 
   const [formPlatform, setFormPlatform] = useState<CreatorPlatformType | null>(null);
   const [handle, setHandle] = useState<string>(CharConstants.empty);
@@ -55,14 +58,12 @@ export const useCreatorAccount = (): UseCreatorAccountResult => {
   const run = async (action: () => Promise<Failure | null>, onFailure: (failure: Failure) => void): Promise<boolean> => {
     busyRef.current = true;
     setBusy(true);
-    try {
-      const failure = await action();
-      if (failure !== null) onFailure(failure);
-      return failure === null;
-    } finally {
+    const failure = await action().finally(() => {
       busyRef.current = false;
       setBusy(false);
-    }
+    });
+    if (failure !== null) onFailure(failure);
+    return failure === null;
   };
 
   const rowFor = (platform: CreatorPlatformType): CreatorAccountRowType => {
@@ -90,9 +91,9 @@ export const useCreatorAccount = (): UseCreatorAccountResult => {
       const input = { platform: formPlatform, handle: CreatorHandle.normalize(handle) };
       void run(
         () => requestCreatorTag(input),
-        (failure) => setError(failureKeyMessage(failure) ?? failureToastMessage(failure)),
-      ).then((sent) => {
-        if (sent) setFormPlatform(null);
+        (failure) => setError(failureKeyMessage(t, failure) ?? failureToastMessage(t, failure)),
+      ).then((wasSent) => {
+        if (wasSent) setFormPlatform(null);
       });
     },
     onCancel: () => {
@@ -105,8 +106,8 @@ export const useCreatorAccount = (): UseCreatorAccountResult => {
       void run(
         () => removeCreatorTag(platform),
         (failure) => void showErrorToast(failure),
-      ).then((removed) => {
-        if (!removed || claim === null) return;
+      ).then((wasRemoved) => {
+        if (!wasRemoved || claim === null) return;
         setDrafts((current) => ({ ...current, [platform]: claim.isPending ? claim.tag.handle : undefined }));
       });
     },

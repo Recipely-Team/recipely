@@ -82,9 +82,9 @@ export const useAssistantLogFood = ({ openRecipeFood, defaultDate, onLogged, sig
     async (args: LogFoodArgs): Promise<ResolvedFood | string> => {
       const name = args.name;
       if (name === null) return openRecipeFood === null ? DiaryArgError.MissingName : asResolved(openRecipeFood);
-      const exactOnly = args.perServing !== null;
+      const isExactOnly = args.perServing !== null;
       const pick = <T extends { name: string }>(items: readonly T[]): T | undefined =>
-        rankByName(items, (c) => c.name, name).find((c) => !exactOnly || foldForMatch(c.name) === foldForMatch(name));
+        rankByName(items, (c) => c.name, name).find((c) => !isExactOnly || foldForMatch(c.name) === foldForMatch(name));
       if (openRecipeFood !== null && pick([openRecipeFood]) !== undefined) return asResolved(openRecipeFood);
       const [found, recent] = await Promise.all([
         searchFoods.execute(name, PageSizes.foodSearch),

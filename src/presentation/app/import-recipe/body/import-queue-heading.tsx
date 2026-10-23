@@ -15,7 +15,7 @@ import {
   iconSizes,
   borderWidths,
 } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ImportStatusPill } from '@presentation/app/import-recipe/items/import-status-pill';
 import { ValueConstants } from '@core/constants';
 import type { ImportLook } from '@presentation/app/import-recipe/model/import-look';
@@ -52,8 +52,9 @@ export const ImportQueueHeading = ({
   host,
   look,
 }: ImportQueueHeadingProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().importRecipe;
+  const copy = t.importRecipe;
   const isWeb = platform === SourcePlatform.Web;
 
   const statusLabel = isDone

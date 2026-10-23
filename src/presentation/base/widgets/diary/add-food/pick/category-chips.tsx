@@ -5,7 +5,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { ListConstants } from '@presentation/base/constants/list-constants';
 import { borderWidths, diarySizes, fontSizes, fontWeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface CategoryChipsProps {
@@ -19,9 +19,10 @@ export interface CategoryChipsProps {
 
 /** The Products tab's shelves as a horizontal, paged chip row, "All" first. */
 export const CategoryChips = ({ categories, selected, onSelect, onEndReached }: CategoryChipsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { isWebShell } = useLayout();
-  const chips: readonly { key: string | null; name: string }[] = [{ key: null, name: t().diary.allShelves }, ...categories];
+  const chips: readonly { key: string | null; name: string }[] = [{ key: null, name: t.diary.allShelves }, ...categories];
   return (
     <FlatList
       // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).

@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { RoundIconButton } from '@presentation/base/widgets/buttons/round-icon-button';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { controlSizes, fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
 
 export interface PortionStepperProps {
@@ -21,7 +21,8 @@ export interface PortionStepperProps {
  * on the page follows it.
  */
 export const PortionStepper = ({ portions, inTile = false }: PortionStepperProps): React.JSX.Element => {
-  const strings = t().recipes.portions;
+  const t = useTranslations();
+  const strings = t.recipes.portions;
   const size = inTile ? controlSizes.iconBtnSm : controlSizes.touchTarget;
   return (
     <View style={[styles.row, inTile && styles.rowInTile]}>

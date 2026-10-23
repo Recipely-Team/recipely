@@ -2,6 +2,8 @@ import type { Container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import type { ApplicationStores } from '@application/di/application-stores';
 import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';
+import type { AccountRepositoryInterface } from '@domain/auth/account-repository-interface';
+import type { CreatorClaimRepositoryInterface } from '@domain/auth/creator-claim-repository-interface';
 import { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
 import { RequestRegistrationUseCase } from '@application/auth/registration/request-registration-use-case';
 import { VerifyRegistrationUseCase } from '@application/auth/registration/verify-registration-use-case';
@@ -39,6 +41,8 @@ export const registerAuth = (
   { savedRecipesStore, loadFavoritesUseCase, clearSessionCaches }: AuthCompositionDeps,
 ): ApplicationStores['authStore'] => {
   const authRepo = container.resolve<AuthRepositoryInterface>(TOKENS.AuthRepository);
+  const accountRepo = container.resolve<AccountRepositoryInterface>(TOKENS.AccountRepository);
+  const claimRepo = container.resolve<CreatorClaimRepositoryInterface>(TOKENS.CreatorClaimRepository);
   const recordDevice = new RecordDeviceUseCase(
     container.resolve<DeviceIdentityInterface>(TOKENS.DeviceIdentity),
     container.resolve<DeviceRepositoryInterface>(TOKENS.DeviceRepository),
@@ -54,12 +58,12 @@ export const registerAuth = (
     resetPassword: new ResetPasswordUseCase(authRepo),
     getSession: new GetSessionUseCase(authRepo),
     signOut: new SignOutUseCase(authRepo),
-    deleteAccount: new DeleteAccountUseCase(authRepo),
-    uploadAvatar: new UploadAvatarUseCase(authRepo),
-    updateProfile: new UpdateProfileUseCase(authRepo),
-    requestCreatorTag: new RequestCreatorTagUseCase(authRepo),
-    removeCreatorTag: new RemoveCreatorTagUseCase(authRepo),
-    refreshCreatorClaim: new RefreshCreatorClaimUseCase(authRepo),
+    deleteAccount: new DeleteAccountUseCase(accountRepo),
+    uploadAvatar: new UploadAvatarUseCase(accountRepo),
+    updateProfile: new UpdateProfileUseCase(accountRepo),
+    requestCreatorTag: new RequestCreatorTagUseCase(claimRepo),
+    removeCreatorTag: new RemoveCreatorTagUseCase(claimRepo),
+    refreshCreatorClaim: new RefreshCreatorClaimUseCase(claimRepo),
     loadFavorites: loadFavoritesUseCase,
     savedRecipesStore,
     clearSessionCaches,

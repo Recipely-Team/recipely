@@ -34,6 +34,24 @@ const setup = () => {
 };
 
 describe('RefreshRemindersUseCase', () => {
+  // Regression: a failed reschedule was dropped with `.catch(() => undefined)`,
+  // so stale reminders kept firing and nothing ever said why.
+  it('a reminder series that cannot be scheduled reaches the crash reporter, and the next run still happens', async () => {
+    const notifications = new FakeNotificationService();
+    const prefs = new FakePreferenceStore();
+    const crashes = { record: jest.fn() };
+    const refresh = new RefreshRemindersUseCase(notifications, prefs, crashes);
+    const broken = new Error('scheduler unavailable');
+    jest.spyOn(notifications, 'replaceReminders').mockRejectedValueOnce(broken);
+
+    await refresh.execute(COPIES, NOW);
+    await refresh.execute(COPIES, NOW);
+
+    expect(crashes.record).toHaveBeenCalledWith(broken, 'RefreshRemindersUseCase');
+    expect(notifications.replaceReminders).toHaveBeenCalledTimes(2);
+  });
+
+
   it('schedules nothing for a user who never said yes, and clears any old series', async () => {
     const { notifications, refresh } = setup();
     await refresh.execute(COPIES, NOW);

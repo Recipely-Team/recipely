@@ -21,7 +21,7 @@ export const listenReminderOpened = (
   const seen = new Set<string>();
   const handle = (response: NotificationsType.NotificationResponse | null): void => {
     const request = response?.notification.request;
-    const data = request?.content.data as Record<string, unknown> | undefined;
+    const data = request?.content.data;
     if (request === undefined || data?.['type'] !== ENGAGEMENT_REMINDER || seen.has(request.identifier)) return;
     seen.add(request.identifier);
     listener({

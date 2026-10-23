@@ -12,7 +12,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, fontSizes, fontWeights, letterSpacings, iconSizes, layoutSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
@@ -40,7 +40,7 @@ export interface WebRecipeDetailProps {
    * the mobile layout's, because it is the same thing handed to a second
    * surface — `index.tsx` passes one object to whichever layout renders.
    */
-  photos?: GalleryOwnerControls;
+  photos?: GalleryOwnerControls | undefined;
   authorState: RecipeAuthorState;
   liked: boolean;
   likeCount: number;
@@ -54,7 +54,7 @@ export interface WebRecipeDetailProps {
   onToggleSave: () => void;
   onCopyToDraft: () => void;
   onDelete: () => void;
-  checkedIngredients: boolean[];
+  checkedIngredients: readonly boolean[];
   portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
   completedSteps: readonly boolean[];
@@ -83,11 +83,12 @@ const stickyColumn = stickyBase as ViewStyle;
  * the photo viewer keeps which photo is in view.
  */
 export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const backLabel = useBackLabel();
   const { width } = useLayout();
   const { recipe, media } = props;
-  const twoColumn = width >= layoutSizes.webDetailTwoColMin;
+  const isTwoColumn = width >= layoutSizes.webDetailTwoColMin;
 
   return (
     <View style={styles.page}>
@@ -118,7 +119,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
         photos={props.photos}
       />
 
-      <View style={[styles.grid, twoColumn ? styles.gridRow : styles.gridColumn]}>
+      <View style={[styles.grid, isTwoColumn ? styles.gridRow : styles.gridColumn]}>
         <View style={styles.mainColumn}>
           <View style={styles.cover}>
             <RecipePhotoViewer
@@ -131,7 +132,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
 
           <View style={styles.section}>
             <ThemedText style={[styles.heading, { color: colors.text }]}>
-              {`${t().recipes.instructions} · ${String(recipe.instructions.length)}`}
+              {`${t.recipes.instructions} · ${String(recipe.instructions.length)}`}
             </ThemedText>
             <View style={styles.stepList}>
               {recipe.instructions.map((step, i) => (
@@ -158,7 +159,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
           />
         </View>
 
-        <View style={[styles.sideColumn, twoColumn ? stickyColumn : null]}>
+        <View style={[styles.sideColumn, isTwoColumn ? stickyColumn : null]}>
           <WebRecipeDetailSidebar
             recipe={recipe}
             checkedIngredients={props.checkedIngredients}

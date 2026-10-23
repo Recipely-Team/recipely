@@ -1,18 +1,18 @@
-import type { BoundStore } from '@application/store/bound-store';
-import { create } from 'zustand';
+import type { StoreApi } from 'zustand/vanilla';
+import { createStore } from 'zustand/vanilla';
 import { fail, ok } from '@core/result/result-helpers';
 import { ConflictFailure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { RecipeLikeState } from '@application/likes/recipe-like-state';
-import type { LikesStoreState } from '@application/likes/likes-store-state';
+import type { LikesStore } from '@application/likes/likes-store-contract';
 import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
-import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
+import type { LikedRecipesStore } from '@application/recipes/liked/liked-recipes-store-contract';
 import { ViewerReaction } from '@domain/common/viewer-reaction';
 import { RequestEpoch } from '@application/store/request-epoch';
 
 interface LikesStoreDeps {
   setRecipeLike: SetRecipeLikeUseCase;
-  likedRecipesStore: BoundStore<LikedRecipesStoreState>;
+  likedRecipesStore: StoreApi<LikedRecipesStore>;
 }
 
 /**
@@ -22,22 +22,22 @@ interface LikesStoreDeps {
  * - **Session guard**: `clear()` on sign-out drops a toggle answer still in
  *   flight, so the previous account's like is never written back.
  */
-export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStoreState> => {
+export const configureLikesStore = (deps: LikesStoreDeps): StoreApi<LikesStore> => {
   const session = new RequestEpoch();
-  return create<LikesStoreState>((set, get) => ({
+  return createStore<LikesStore>((set, get) => ({
     byRecipe: {},
 
-    seed: (recipeId, likeCount, likedByMe) => {
+    seed: (recipeId, likeCount, isLikedByMe) => {
       if (get().byRecipe[recipeId] !== undefined) return;
       set((s) => ({
         byRecipe: {
           ...s.byRecipe,
-          [recipeId]: { likeCount, likedByMe, isLoading: false, updatedAt: Date.now() },
+          [recipeId]: { likeCount, likedByMe: isLikedByMe, isLoading: false, updatedAt: Date.now() },
         },
       }));
     },
 
-    syncFromApi: (recipeId, likeCount, likedByMe, fetchedAt) => {
+    syncFromApi: (recipeId, likeCount, isLikedByMe, fetchedAt) => {
       // Skip while an optimistic toggle is in flight.
       const current = get().byRecipe[recipeId];
       if (current?.isLoading) return;
@@ -47,13 +47,13 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
       if (
         current !== undefined &&
         current.likeCount === likeCount &&
-        current.likedByMe === likedByMe
+        current.likedByMe === isLikedByMe
       )
         return;
       set((s) => ({
         byRecipe: {
           ...s.byRecipe,
-          [recipeId]: { likeCount, likedByMe, isLoading: false, updatedAt: fetchedAt },
+          [recipeId]: { likeCount, likedByMe: isLikedByMe, isLoading: false, updatedAt: fetchedAt },
         },
       }));
     },
@@ -94,7 +94,7 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
       return result;
     },
 
-    setLiked: async (recipeId, wanted) => {
+    setLiked: async (recipeId, isWanted) => {
       const current = get().byRecipe[recipeId];
 
       // No entry means unknown, not "done": report not-ready.
@@ -105,7 +105,7 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
         return fail(new ConflictFailure(DiagnosticMessage.assistant.likeAlreadyInFlight));
       }
       // Already the wanted outcome: the user asked for a state, and it holds.
-      if (current.likedByMe === wanted) return ok(undefined);
+      if (current.likedByMe === isWanted) return ok(undefined);
 
       return get().toggle(recipeId);
     },

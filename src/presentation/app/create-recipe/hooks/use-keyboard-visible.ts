@@ -16,7 +16,7 @@ import { Keyboard } from 'react-native';
  * Web has no software keyboard to track, so this always reports `false` there.
  */
 export const useKeyboardVisible = (): boolean => {
-  const [visible, setVisible] = useState(false);
+  const [isVisible, setVisible] = useState(false);
 
   useEffect(() => {
     if (isWeb()) return;
@@ -30,5 +30,5 @@ export const useKeyboardVisible = (): boolean => {
     };
   }, []);
 
-  return visible;
+  return isVisible;
 };

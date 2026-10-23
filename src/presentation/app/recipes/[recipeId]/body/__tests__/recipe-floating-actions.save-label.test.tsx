@@ -31,8 +31,8 @@ const labelsOf = (isSaved: boolean): string[] =>
       onToggleSave={jest.fn()}
     />,
   )
-    .root.findAll((node) => typeof node.props.accessibilityLabel === 'string')
-    .map((node) => node.props.accessibilityLabel as string);
+    .root.findAll((node) => typeof node.props['accessibilityLabel'] === 'string')
+    .map((node) => node.props['accessibilityLabel'] as string);
 
 describe('RecipeFloatingActions — save button label', () => {
   afterEach(() => setLocale(LocaleConstants.en));

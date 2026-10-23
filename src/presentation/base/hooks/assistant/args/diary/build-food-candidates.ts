@@ -26,7 +26,7 @@ const PER = 'per';
  */
 export const buildFoodCandidates = (found: FoundFoods | null, recent: readonly RecentFoodType[]): FoodCandidateType[] => {
   const recipes = (hits: readonly RecipeFoodHit[], source: FoodSourceType): FoodCandidateType[] =>
-    hits.map((hit) => ({ kind: 'food', source, name: hit.name, kcal: hit.perServing.calories, per: PER_SERVING, food: hit.food }));
+    hits.map((hit) => ({ kind: 'food', source, name: hit.name, kcal: hit.perServing.calories, per: PER_SERVING, food: hit.food() }));
   const recentCandidates = recent.map((item): FoodCandidateType => {
     if (item.kind === RecentFoodKind.Food) {
       return { kind: 'food', source: FoodSource.Recent, name: item.food.name, kcal: item.food.perServing.calories, per: PER_SERVING, food: item.food };
@@ -54,7 +54,7 @@ export const buildFoodCandidates = (found: FoundFoods | null, recent: readonly R
               name: product.displayName,
               kcal: product.per100.calories,
               per: [PER_HUNDRED, product.unit].join(CharConstants.space),
-              product: product.loggable,
+              product: product.loggable(),
             }),
           ),
           ...recipes(found.recipes, FoodSource.Recipely),

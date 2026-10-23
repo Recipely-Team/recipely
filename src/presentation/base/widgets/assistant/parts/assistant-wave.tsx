@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useStore } from 'zustand';
 import { Animated, StyleSheet, View } from 'react-native';
 import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { radii } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
+import { useStores } from '@presentation/bootstrap/use-stores';
 
 /** Bars are shortest at the edges and tallest in the middle, as a share of full height. */
 const REST_SCALE = 0.08;
@@ -11,7 +13,6 @@ const CENTRE_SHARE = 0.55;
 const REST_OPACITY = 0.28;
 
 export interface AssistantWaveProps {
-  level: number;
   active: boolean;
   color: string;
   bars: number;
@@ -33,8 +34,10 @@ export interface AssistantWaveProps {
  *   collapsing: a row that vanishes reads as a broken control, and a row still
  *   twitching after the session ends reads as a live microphone.
  */
-export const AssistantWave = ({ level, active, color, bars, height }: AssistantWaveProps): React.JSX.Element => {
-  const animated = useRef(new Animated.Value(ValueConstants.zero)).current;
+export const AssistantWave = ({ active, color, bars, height }: AssistantWaveProps): React.JSX.Element => {
+  // Read here, not passed down: the level ticks every 80 ms and only the bars draw it.
+  const level = useStore(useStores().assistantSessionStore, (s) => s.level);
+  const [animated] = useState(() => new Animated.Value(ValueConstants.zero));
 
   useEffect(() => {
     Animated.timing(animated, {

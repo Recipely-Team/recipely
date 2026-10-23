@@ -71,6 +71,6 @@ describe('EditProfileScreen — keyboard avoidance', () => {
     // The avoider's own layout already sits below the header, so any offset is
     // double-counted and becomes a blank band above the keyboard.
     const avoider = root.findByType(KeyboardAvoider);
-    expect(avoider.props.keyboardVerticalOffset).toBeUndefined();
+    expect(avoider.props['keyboardVerticalOffset']).toBeUndefined();
   });
 });

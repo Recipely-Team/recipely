@@ -75,11 +75,11 @@ describe('useFilePages', () => {
   it('moves a page, keeping its key, and ignores a move off either end', () => {
     const vm = drive();
     act(() => vm().add([photo('1.jpg'), photo('2.jpg'), photo('3.jpg')]));
-    const firstKey = vm().pages[0].key;
+    const firstKey = vm().pages[0]!.key;
 
     act(() => vm().move(0, 2));
     expect(names(vm())).toEqual(['2.jpg', '3.jpg', '1.jpg']);
-    expect(vm().pages[2].key).toBe(firstKey);
+    expect(vm().pages[2]!.key).toBe(firstKey);
 
     act(() => vm().move(0, -1));
     act(() => vm().move(2, 3));

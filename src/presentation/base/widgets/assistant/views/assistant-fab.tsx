@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assistant-mascot';
@@ -10,7 +10,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, opacities, radii } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { ValueConstants } from '@core/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AssistantFabProps {
   status: AssistantStatusType;
@@ -30,13 +30,14 @@ export interface AssistantFabProps {
  *   floor — so a ring that kept beating would be advertising nothing.
  */
 export const AssistantFab = ({ status, onOpen }: AssistantFabProps): React.JSX.Element => {
+  const t = useTranslations();
   const { colors } = useTheme();
-  const reduceMotion = useReduceMotion();
-  const ring = useRef(new Animated.Value(ValueConstants.zero)).current;
-  const idle = status === AssistantStatus.Idle;
+  const shouldReduceMotion = useReduceMotion();
+  const [ring] = useState(() => new Animated.Value(ValueConstants.zero));
+  const isIdle = status === AssistantStatus.Idle;
 
   useEffect(() => {
-    if (reduceMotion || !idle) {
+    if (shouldReduceMotion || !isIdle) {
       ring.setValue(ValueConstants.zero);
       return;
     }
@@ -50,13 +51,13 @@ export const AssistantFab = ({ status, onOpen }: AssistantFabProps): React.JSX.E
     );
     loop.start();
     return () => loop.stop();
-  }, [ring, idle, reduceMotion]);
+  }, [ring, isIdle, shouldReduceMotion]);
 
   return (
     <Pressable
       onPress={onOpen}
       accessibilityRole="button"
-      accessibilityLabel={t().assistant.open}
+      accessibilityLabel={t.assistant.open}
       style={styles.wrapper}
     >
       <Animated.View

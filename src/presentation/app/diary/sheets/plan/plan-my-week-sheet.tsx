@@ -8,8 +8,8 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { mealLabel } from '@presentation/base/utils/diary/meal-label';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, mealPlanSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
-import { ValueConstants } from '@core/constants';
+import { useTranslations } from '@presentation/i18n';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { PlanWeekStep } from '@presentation/app/diary/model/plan/plan-week-step';
 import type { UsePlanMyWeekResult } from '@presentation/app/diary/model/plan/use-plan-my-week-result';
 import { PlanProposalRow } from '@presentation/app/diary/items/plan/plan-proposal-row';
@@ -28,8 +28,9 @@ export interface PlanMyWeekSheetProps {
  * add. With no saved, liked or own recipes it explains how to start instead.
  */
 export const PlanMyWeekSheet = ({ vm, rangeLabel, onBrowseRecipes }: PlanMyWeekSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().mealPlan.planWeek;
+  const strings = t.mealPlan.planWeek;
   const chosen = Object.values(MealSlot).filter((meal) => vm.meals.has(meal));
 
   const footer = vm.emptyPool ? (
@@ -74,22 +75,22 @@ export const PlanMyWeekSheet = ({ vm, rangeLabel, onBrowseRecipes }: PlanMyWeekS
           <SizedText size={fontSizes.tiny} weight={fontWeights.bold} color={colors.textMuted}>{upperCase(strings.label)}</SizedText>
           <View style={styles.chips}>
             {Object.values(MealSlot).map((meal) => {
-              const on = vm.meals.has(meal);
+              const isOn = vm.meals.has(meal);
               return (
                 <Pressable
                   key={meal}
                   onPress={() => vm.toggleMeal(meal)}
                   accessibilityRole="checkbox"
-                  accessibilityState={{ checked: on }}
-                  accessibilityLabel={mealLabel(meal)}
+                  accessibilityState={{ checked: isOn }}
+                  accessibilityLabel={mealLabel(t, meal)}
                   style={[
                     styles.chip,
-                    on ? { backgroundColor: colors.primary, borderColor: colors.primary } : { borderColor: colors.border },
+                    isOn ? { backgroundColor: colors.primary, borderColor: colors.primary } : { borderColor: colors.border },
                   ]}
                 >
-                  {on ? <Ionicons name="checkmark" size={iconSizes.sm} color={colors.primaryText} /> : null}
-                  <SizedText size={fontSizes.body} weight={on ? fontWeights.bold : fontWeights.semibold} color={on ? colors.primaryText : colors.text}>
-                    {mealLabel(meal)}
+                  {isOn ? <Ionicons name="checkmark" size={iconSizes.sm} color={colors.primaryText} /> : null}
+                  <SizedText size={fontSizes.body} weight={isOn ? fontWeights.bold : fontWeights.semibold} color={isOn ? colors.primaryText : colors.text}>
+                    {mealLabel(t, meal)}
                   </SizedText>
                 </Pressable>
               );
@@ -100,7 +101,7 @@ export const PlanMyWeekSheet = ({ vm, rangeLabel, onBrowseRecipes }: PlanMyWeekS
         <View style={styles.stack}>
           <View style={styles.summary}>
             <SizedText size={fontSizes.caption} color={colors.textMuted} style={styles.grow}>
-              {[rangeLabel, chosen.map(mealLabel).join(', ')].join(' · ')}
+              {[rangeLabel, chosen.map((meal) => mealLabel(t, meal)).join(CharConstants.commaSpace)].join(CharConstants.middotSpaced)}
             </SizedText>
             <Pressable onPress={vm.change} accessibilityRole="button" accessibilityLabel={strings.change}>
               <SizedText size={fontSizes.body} weight={fontWeights.bold} color={colors.primary}>{strings.change}</SizedText>

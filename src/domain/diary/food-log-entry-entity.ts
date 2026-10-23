@@ -95,17 +95,17 @@ export class FoodLogEntryEntity extends BaseEntity<FoodLogEntryEntityProps> {
    * (`errors.validation.nothing_to_edit`), so an untouched "Save" just closes.
    */
   changesTo(servings: number, meal: MealSlotType): FoodLogEntryChanges | null {
-    const servingsChanged = servings !== this.props.servings;
-    const mealChanged = meal !== this.props.meal;
-    if (!servingsChanged && !mealChanged) return null;
+    const haveServingsChanged = servings !== this.props.servings;
+    const hasMealChanged = meal !== this.props.meal;
+    if (!haveServingsChanged && !hasMealChanged) return null;
     return {
-      ...(servingsChanged ? { servings } : {}),
-      ...(mealChanged ? { meal } : {}),
+      ...(haveServingsChanged ? { servings } : {}),
+      ...(hasMealChanged ? { meal } : {}),
     };
   }
 
   /** A product entry as its product at the logged unit, with the quantity the edit sheet starts on; null otherwise. */
-  get loggedProduct(): { product: LoggableProduct; quantity: FoodQuantity } | null {
+  loggedProduct(): { product: LoggableProduct; quantity: FoodQuantity } | null {
     const product = this.props.product;
     if (product === null) return null;
     const loggable = LoggableProduct.fromLogged(this.props.name, product, this.props.nutrients.scale(ValueConstants.one / this.props.servings));
@@ -114,7 +114,7 @@ export class FoodLogEntryEntity extends BaseEntity<FoodLogEntryEntityProps> {
   }
 
   /** This entry as one serving of a food — what the edit sheet's stepper multiplies. */
-  get food(): LoggableFood {
+  food(): LoggableFood {
     return LoggableFood.of({
       name: this.props.name,
       perServing: this.props.nutrients.scale(ValueConstants.one / this.props.servings),

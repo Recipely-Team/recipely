@@ -5,7 +5,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { RoundIconButton } from '@presentation/base/widgets/buttons/round-icon-button';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, controlSizes, fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 const CLOSE = 'close';
@@ -27,10 +27,11 @@ export interface AutomationsBarProps {
  * there, so the bar drops the safe-area inset and its hairline.
  */
 export const AutomationsBar = ({ title, subtitle, icon, onBack, right }: AutomationsBarProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
-  const backLabel = icon === CLOSE ? t().instagram.close : t().common.back;
+  const backLabel = icon === CLOSE ? t.instagram.close : t.common.back;
   return (
     <View
       style={[

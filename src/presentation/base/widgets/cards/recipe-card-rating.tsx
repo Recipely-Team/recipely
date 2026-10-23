@@ -21,14 +21,14 @@ export const RecipeCardRating = ({ rating }: RecipeCardRatingProps): React.JSX.E
   return (
     <View style={styles.row}>
       {Array.from({ length: STAR_COUNT }, (_, i) => {
-        const half = i === fullStars && hasHalf;
-        const iconName = i < fullStars ? 'star' : half ? 'star-half-full' : 'star-outline';
+        const isHalf = i === fullStars && hasHalf;
+        const iconName = i < fullStars ? 'star' : isHalf ? 'star-half-full' : 'star-outline';
         return (
           <MaterialCommunityIcons
             key={i}
             name={iconName}
             size={iconSizes.sm}
-            color={i < fullStars || half ? colors.starFilled : colors.starEmpty}
+            color={i < fullStars || isHalf ? colors.starFilled : colors.starEmpty}
           />
         );
       })}

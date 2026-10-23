@@ -1,3 +1,4 @@
+import { CharConstants } from '@core/constants';
 /**
  * The screen line's own punctuation and vocabulary.
  *
@@ -11,7 +12,7 @@
  *   the model never has to guess whether `saved=true` and `saved=yes` are the
  *   same fact.
  */
-export const SCREEN_PART_SEPARATOR = '; ';
+export const SCREEN_PART_SEPARATOR = CharConstants.semicolonSpace;
 
 /** How a screen line answers a yes-or-no about what is on screen. */
 export const Answer = { yes: 'yes', no: 'no' } as const;

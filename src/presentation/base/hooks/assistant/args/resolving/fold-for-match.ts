@@ -1,3 +1,4 @@
+import { CharConstants } from '@core/constants';
 /**
  * Folds a string so a spoken or typed name matches the text on screen.
  *
@@ -18,7 +19,7 @@
  *   would let two different keys collide.
  */
 export const foldForMatch = (value: string): string =>
-  value.normalize('NFD').replace(COMBINING_MARKS, '').toLowerCase().replace(DOTLESS_I, 'i').trim();
+  value.normalize('NFD').replace(COMBINING_MARKS, CharConstants.empty).toLowerCase().replace(DOTLESS_I, 'i').trim();
 
 /**
  * Local rather than in `RegexConstants`: only this file matches on folded text,

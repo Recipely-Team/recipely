@@ -12,7 +12,9 @@ describe('AdsService (web)', () => {
   const original = process.env.EXPO_PUBLIC_ADSENSE_WEB_FEED_SLOT_ID;
 
   afterEach(() => {
-    process.env.EXPO_PUBLIC_ADSENSE_WEB_FEED_SLOT_ID = original;
+    // Assigning undefined to process.env stores the string "undefined"; unset means delete.
+    if (original === undefined) delete process.env.EXPO_PUBLIC_ADSENSE_WEB_FEED_SLOT_ID;
+    else process.env.EXPO_PUBLIC_ADSENSE_WEB_FEED_SLOT_ID = original;
   });
 
   it('allows a request once a unit is configured', async () => {

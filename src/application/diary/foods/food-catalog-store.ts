@@ -1,11 +1,11 @@
-import { create } from 'zustand';
-import type { BoundStore } from '@application/store/bound-store';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
 import { ValueConstants } from '@core/constants';
 import type { FoodCategory } from '@domain/diary/foods/food-category';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
-import type { FoodCatalogStoreState } from '@application/diary/foods/food-catalog-store-state';
+import type { FoodCatalogStore } from '@application/diary/foods/food-catalog-store-contract';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
 import type { ListFoodCategoriesUseCase } from '@application/diary/foods/browse/list-food-categories-use-case';
 import type { ListFoodProductsUseCase } from '@application/diary/foods/browse/list-food-products-use-case';
@@ -31,10 +31,10 @@ interface FoodCatalogStoreDeps {
  *   answered shows the second.
  * - **User-scoped** (recent): cleared on sign-out.
  */
-export const configureFoodCatalogStore = (deps: FoodCatalogStoreDeps): BoundStore<FoodCatalogStoreState> => {
+export const configureFoodCatalogStore = (deps: FoodCatalogStoreDeps): StoreApi<FoodCatalogStore> => {
   let detailRequests = ValueConstants.zero;
 
-  return create<FoodCatalogStoreState>((set, get) => {
+  return createStore<FoodCatalogStore>((set, get) => {
     const categories = new PagedListLoader<FoodCategory>(() => get().categories, (list) => set({ categories: list }), (c) => c.key);
     const products = new PagedListLoader<FoodProduct>(() => get().products, (list) => set({ products: list }), (p) => p.key);
     const recent = new PagedListLoader<RecentFoodType>(() => get().recent, (list) => set({ recent: list }), (r) => r.key);

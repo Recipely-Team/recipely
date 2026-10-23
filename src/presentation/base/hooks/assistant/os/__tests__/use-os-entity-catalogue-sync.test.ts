@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 interface Published {
   calls: { id: string; title: string; subtitle: string | null }[][];
   isAvailable: boolean;
@@ -20,17 +21,17 @@ jest.mock('@presentation/bootstrap/use-stores', () => ({
         mockState.published.calls.push(handles as never);
       },
     },
-    savedRecipesStore: (select: (s: unknown) => unknown) => select({ savedRecipes: mockState.saved }),
-    createdRecipesStore: (select: (s: unknown) => unknown) => select({ recipes: mockState.created }),
-    authStore: (select: (s: unknown) => unknown) =>
-      select({
+    // 'loaded' spelled out: babel hoists jest.mock above the imports.
+    savedRecipesStore: mockStoreReading(() => ({ saved: { status: 'loaded', items: mockState.saved } })),
+    myRecipesStore: mockStoreReading(() => ({ mine: { status: 'loaded', items: mockState.created } })),
+    authStore: mockStoreReading(() => ({
         // The literals are spelled out rather than read from `StoreStatus`:
         // babel hoists `jest.mock` above the imports, so anything the factory
         // names from module scope is still uninitialised when it runs. If these
         // two words ever change, this test fails loudly rather than quietly
         // reporting everyone as signed out.
         state: { status: mockState.signedIn ? 'authenticated' : 'unauthenticated' },
-      }),
+      })),
   }),
 }));
 

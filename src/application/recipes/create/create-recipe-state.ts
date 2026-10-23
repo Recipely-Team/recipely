@@ -1,9 +1,10 @@
-import type { Failure } from '@core/failure';
-import type { StoreStatus } from '@application/store/store-status';
-import type { RecipeEntity } from '@domain/recipes/recipe-entity';
+import type { CreateRecipeIdle } from '@application/recipes/create/states/create-recipe-idle';
+import type { CreatingRecipe } from '@application/recipes/create/states/creating-recipe';
+import type { RecipeCreated } from '@application/recipes/create/states/recipe-created';
+import type { CreateRecipeError } from '@application/recipes/create/states/create-recipe-error';
 
 export type CreateRecipeState =
-  | { status: typeof StoreStatus.Idle }
-  | { status: typeof StoreStatus.Creating }
-  | { status: typeof StoreStatus.Success; recipe: RecipeEntity }
-  | { status: typeof StoreStatus.Error; failure: Failure };
+  | CreateRecipeIdle
+  | CreatingRecipe
+  | RecipeCreated
+  | CreateRecipeError;

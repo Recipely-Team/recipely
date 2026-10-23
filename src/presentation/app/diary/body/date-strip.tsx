@@ -8,7 +8,7 @@ import { controlSizes, diarySizes, fontSizes, fontWeights, opacities, radii, spa
 import { DayCell } from '@presentation/app/diary/items/day-cell';
 import { formatLongDate } from '@presentation/app/diary/model/format-long-date';
 import { useHorizontalSwipe } from '@presentation/base/hooks/interaction/use-horizontal-swipe';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 import type { DayLook } from '@presentation/app/diary/model/day-look';
@@ -30,9 +30,10 @@ export interface DateStripProps {
  * the strip pages no further than the current week.
  */
 export const DateStrip = ({ selected, today, canPageNext, dayLook, onSelect, onPage }: DateStripProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   const swipe = useHorizontalSwipe(onPage, diarySizes.swipeThreshold);
   const isToday = selected.equals(today);
   return (

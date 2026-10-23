@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
 jest.mock('@presentation/base/timers/timer-controls', () => ({
   startTimer: jest.fn(() => Promise.resolve()),
@@ -15,9 +16,14 @@ import { recipeEntityOf } from '@application/__fixtures__/recipe-entity-of';
 import { timerStore } from '@application/timers/timer-store';
 import { configurePortionChoiceStore } from '@application/recipes/cooking/portion-choice-store';
 import { authStoreOf } from '@presentation/base/test-support/auth-store-of';
+import { NetworkFailure } from '@core/failure';
+import { Email } from '@domain/common/email';
+import { UserEntity } from '@domain/auth/user-entity';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useRecipeDetailAssistant } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail-assistant';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
+
+const scrollViewRef = { current: null };
 
 /**
  * **"Remove this from my saved recipes" by voice.** Unsaving a curated recipe asks first: the
@@ -26,15 +32,13 @@ import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]
  */
 const selectorOf =
   <S,>(state: S) =>
-  (select: (s: S) => unknown): unknown =>
-    select(state);
+  mockStoreReading(() => (state));
 
 function harness(over: Partial<UseRecipeDetailResult> = {}, extraStores: Partial<ApplicationStores> = {}) {
   const registry = new AssistantActionRegistry();
   const vm = {
     recipeId: 'r1',
     recipe: recipeEntityOf({ id: 'r1', name: 'Soup' }),
-    scrollViewRef: { current: null },
     commentState: null,
     isOwner: false,
     checkedIngredients: [],
@@ -56,7 +60,7 @@ function harness(over: Partial<UseRecipeDetailResult> = {}, extraStores: Partial
   const view: { pending: boolean; renders: number } = { pending: false, renders: 0 };
   const Probe = (): null => {
     view.renders += 1;
-    view.pending = useRecipeDetailAssistant(vm).unsavePending;
+    view.pending = useRecipeDetailAssistant(vm, scrollViewRef).unsavePending;
     return null;
   };
   const stores = {
@@ -64,7 +68,7 @@ function harness(over: Partial<UseRecipeDetailResult> = {}, extraStores: Partial
     authStore: authStoreOf(null),
     likesStore: selectorOf({ setLiked: jest.fn(), byRecipe: {} }),
     favoritesStore: selectorOf({ addFavorite: jest.fn(), removeFavorite: jest.fn() }),
-    savedRecipesStore: selectorOf({ savedIds: new Set(['r1']), listState: { status: StoreStatus.Loaded } }),
+    savedRecipesStore: selectorOf({ savedIds: new Set(['r1']), saved: { status: StoreStatus.Loaded } }),
   } as unknown as Partial<ApplicationStores>;
   renderComponent(<Probe />, { ...stores, ...extraStores });
   const run = async (action: (typeof AssistantAction)[keyof typeof AssistantAction]): Promise<void> =>
@@ -73,6 +77,14 @@ function harness(over: Partial<UseRecipeDetailResult> = {}, extraStores: Partial
     });
   return { run, vm, view, registry };
 }
+
+const signedInViewer = (): UserEntity => {
+  const email = Email.create('cook@example.com');
+  if (!email.ok) throw new Error('fixture email');
+  const user = UserEntity.create({ id: 'u1', email: email.value, displayName: 'Cook' });
+  if (!user.ok) throw new Error('fixture user');
+  return user.value;
+};
 
 describe('useRecipeDetailAssistant', () => {
   it('unsaves only after the user confirms', async () => {
@@ -154,5 +166,22 @@ describe('useRecipeDetailAssistant', () => {
       timerStore.setState({ timers: {} });
       jest.useRealTimers();
     }
+  });
+
+  // Regression: the store's answer was ignored, so "save this" by voice was
+  // announced as done even when the server refused it.
+  it('does not announce a save the server refused', async () => {
+    const { registry } = harness({}, {
+      authStore: authStoreOf(signedInViewer()),
+      favoritesStore: selectorOf({ addFavorite: jest.fn().mockResolvedValue(new NetworkFailure('offline')), removeFavorite: jest.fn() }),
+      savedRecipesStore: selectorOf({ savedIds: new Set<string>(), saved: { status: StoreStatus.Loaded } }),
+    } as unknown as Partial<ApplicationStores>);
+
+    let answer: unknown;
+    await act(async () => {
+      answer = await registry.run(AssistantAction.Save);
+    });
+
+    expect(answer).toMatchObject({ ok: false });
   });
 });

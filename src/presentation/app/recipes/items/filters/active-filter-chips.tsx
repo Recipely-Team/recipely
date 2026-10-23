@@ -5,7 +5,7 @@ import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label
 import { formatLabel } from '@presentation/app/recipes/model/format-label';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, colorAlphas } from '@presentation/base/theme';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
@@ -30,6 +30,7 @@ export const ActiveFilterChips = ({
   onRemoveMaxTime,
   onClearAll,
 }: ActiveFilterChipsProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { categoryLabel } = useTaxonomyLabel();
 
@@ -52,7 +53,7 @@ export const ActiveFilterChips = ({
           onPress={() => onRemoveCategory(c)}
           style={[styles.activeChip, { backgroundColor: colors.primary + colorAlphas.faint, borderColor: colors.primary + colorAlphas.soft }]}
           accessibilityRole="button"
-          accessibilityLabel={t().recipes.removeFilterNamed.replace('{name}', categoryLabel(c).name)}
+          accessibilityLabel={t.recipes.removeFilterNamed.replace('{name}', categoryLabel(c).name)}
         >
           <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
             {categoryLabel(c).name}
@@ -66,7 +67,7 @@ export const ActiveFilterChips = ({
           onPress={() => onRemoveDifficulty(d)}
           style={[styles.activeChip, { backgroundColor: colors.primary + colorAlphas.faint, borderColor: colors.primary + colorAlphas.soft }]}
           accessibilityRole="button"
-          accessibilityLabel={t().recipes.removeFilterNamed.replace('{name}', formatLabel(d))}
+          accessibilityLabel={t.recipes.removeFilterNamed.replace('{name}', formatLabel(d))}
         >
           <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
             {formatLabel(d)}
@@ -79,10 +80,10 @@ export const ActiveFilterChips = ({
           onPress={onRemoveMaxTime}
           style={[styles.activeChip, { backgroundColor: colors.primary + colorAlphas.faint, borderColor: colors.primary + colorAlphas.soft }]}
           accessibilityRole="button"
-          accessibilityLabel={t().recipes.removeTimeFilter}
+          accessibilityLabel={t.recipes.removeTimeFilter}
         >
           <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
-            ≤ {filters.maxTime} {t().recipes.minutes}
+            ≤ {filters.maxTime} {t.recipes.minutes}
           </ThemedText>
           <Ionicons name="close-circle" size={iconSizes.sm} color={colors.primary} />
         </Pressable>
@@ -91,10 +92,10 @@ export const ActiveFilterChips = ({
         onPress={onClearAll}
         style={[styles.activeChip, styles.clearChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
         accessibilityRole="button"
-        accessibilityLabel={t().recipes.clearFilters}
+        accessibilityLabel={t.recipes.clearFilters}
       >
         <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.textMuted }]}>
-          {t().recipes.clearFilters}
+          {t.recipes.clearFilters}
         </ThemedText>
       </Pressable>
     </ScrollView>

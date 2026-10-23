@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, type LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { isWeb } from '@infrastructure/constants/platform';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { BrandColors, fontSizes, fontWeights, radii, spacing, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ArtCard } from '@presentation/app/onboarding/items/art-card';
 import { ArtChip } from '@presentation/app/onboarding/items/art-chip';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
@@ -29,14 +29,15 @@ const ART_WIDTH = 270;
 
 /** Slide 4, "Cook with what you have": a fridge scan finding ingredients, an idea that uses them, the meal logged. */
 export const HeroFridge = ({ active = true }: HeroProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const a = t().onboarding.art;
-  const reducedMotion = useReducedMotion();
+  const a = t.onboarding.art;
+  const shouldReduceMotion = useReducedMotion();
   const [frameHeight, setFrameHeight] = useState(ValueConstants.zero);
-  const sweep = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const [sweep] = useState(() => new Animated.Value(ValueConstants.zero));
 
   useEffect(() => {
-    if (!active || reducedMotion) return;
+    if (!active || shouldReduceMotion) return;
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(sweep, { toValue: ValueConstants.one, duration: SCAN_HALF_MS, easing: Easing.inOut(Easing.ease), useNativeDriver: !isWeb() }),
@@ -45,7 +46,7 @@ export const HeroFridge = ({ active = true }: HeroProps): React.JSX.Element => {
     );
     loop.start();
     return () => loop.stop();
-  }, [active, reducedMotion, sweep]);
+  }, [active, shouldReduceMotion, sweep]);
 
   const translateY = sweep.interpolate({
     inputRange: [ValueConstants.zero, ValueConstants.one],
@@ -59,7 +60,7 @@ export const HeroFridge = ({ active = true }: HeroProps): React.JSX.Element => {
           style={[styles.viewfinder, { backgroundColor: BrandColors.viewfinder }]}
           onLayout={(e: LayoutChangeEvent) => setFrameHeight(e.nativeEvent.layout.height)}
         >
-          {reducedMotion ? null : (
+          {shouldReduceMotion ? null : (
             <Animated.View style={[styles.scan, { backgroundColor: colors.primary, transform: [{ translateY }] }]} />
           )}
           <View style={styles.found}>

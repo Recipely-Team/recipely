@@ -6,7 +6,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { spacing, radii, fontWeights, iconSizes, borderWidths, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface FormBannerProps {
@@ -29,6 +29,7 @@ export const FormBanner = ({
   icon,
   onDismiss,
 }: FormBannerProps): React.JSX.Element => {
+  const t = useTranslations();
   const surface = useSeveritySurfaces()[severity];
   useAnnounce(message);
 
@@ -47,7 +48,7 @@ export const FormBanner = ({
           hitSlop={spacing.sm}
           style={styles.dismiss}
           accessibilityRole="button"
-          accessibilityLabel={t().errors.dismiss}
+          accessibilityLabel={t.errors.dismiss}
         >
           <Ionicons name="close" size={iconSizes.md} color={surface.text} />
         </Pressable>

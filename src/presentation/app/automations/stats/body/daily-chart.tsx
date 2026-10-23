@@ -11,7 +11,7 @@ import { chartGeometry } from '@presentation/app/automations/stats/model/chart-g
 import { formatStatsDay } from '@presentation/app/automations/stats/model/format-stats-day';
 import { StatsMetrics } from '@presentation/app/automations/stats/model/stats-metrics';
 import { borderWidths, colorAlphas, fontSizes, fontWeights, radii, shadows, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface DailyChartProps {
   days: readonly FunnelDay[];
@@ -27,9 +27,10 @@ const AXIS_LABEL_GAP = 6;
  * responder hands the gesture back to the page so vertical scrolling still works.
  */
 export const DailyChart = ({ days, wide }: DailyChartProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const copy = t().creatorStats;
+  const copy = t.creatorStats;
   const [width, setWidth] = useState<number>(ValueConstants.zero);
   const [active, setActive] = useState<number | null>(null);
   const height = wide ? StatsMetrics.chartHeightWide : StatsMetrics.chartHeight;

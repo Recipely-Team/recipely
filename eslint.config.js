@@ -3,6 +3,22 @@ const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 const oneDeclarationPerFile = require('./eslint-rules/one-declaration-per-file');
 
+// Expo inlines EXPO_PUBLIC_* variables only when read with a dot (`process.env.EXPO_PUBLIC_X`); a
+// bracket read compiles and ships undefined. They are declared in process-env.d.ts, so the dot form type-checks.
+const EXPO_PUBLIC_BRACKET_READ = {
+  selector:
+    "MemberExpression[computed=true][object.type='MemberExpression'][object.object.name='process'][object.property.name='env'][property.value=/^EXPO_PUBLIC_/]",
+  message: 'Read EXPO_PUBLIC_* with a dot (process.env.EXPO_PUBLIC_X): Expo does not inline bracket reads.',
+};
+
+/** The verbs a boolean we name ourselves starts with. */
+const BOOLEAN_PREFIXES = ['is', 'has', 'have', 'can', 'should', 'did', 'does', 'do', 'will', 'was', 'were', 'had', 'are', 'needs', 'allows', 'shows'];
+
+const VECTOR_ICONS_ROOT = {
+  name: '@expo/vector-icons',
+  message: "Import the family's own path, e.g. '@expo/vector-icons/Ionicons' — the root index bundles every icon font.",
+};
+
 module.exports = defineConfig([
   expoConfig,
   {
@@ -22,6 +38,10 @@ module.exports = defineConfig([
     },
   },
   {
+    files: ['*.ts'],
+    rules: { 'no-restricted-syntax': ['error', EXPO_PUBLIC_BRACKET_READ] },
+  },
+  {
     // An assistant action's failure reason is a vocabulary the model reads and
     // the app branches on (AssistantActionError / DiaryArgError); spelled as a
     // string at a call site, a typo was a silently different reason. Tests may
@@ -31,6 +51,7 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-syntax': [
         'error',
+        EXPO_PUBLIC_BRACKET_READ,
         {
           selector: "Property[key.name='error'] > Literal[value=/^[a-z]+(_[a-z]+)*$/]",
           message: 'Use AssistantActionError.* (or the feature vocabulary) instead of a string literal for an error reason.',
@@ -83,65 +104,97 @@ module.exports = defineConfig([
     // Import the family from its own path: `@expo/vector-icons/Ionicons`.
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
+      'no-restricted-imports': ['error', { paths: [VECTOR_ICONS_ROOT] }],
+    },
+  },
+  {
+    // The language is state. A component, hook or text helper that reads it
+    // from the global `t()` during render is cached by the React Compiler on
+    // its other inputs and keeps the old language after a switch. Components
+    // and hooks read `useTranslations()`; helpers take the catalogue as their
+    // first parameter. Only code that runs at event time — toasts, alerts, the
+    // alarm notifications, the class error boundary — reads the global.
+    files: ['src/presentation/**/*.ts', 'src/presentation/**/*.tsx'],
+    ignores: [
+      '**/__tests__/**',
+      '**/__mocks__/**',
+      'src/presentation/base/test-support/**',
+      'src/presentation/i18n/**',
+      'src/presentation/base/feedback/show-toast.ts',
+      'src/presentation/base/feedback/photo-pick-feedback.ts',
+      'src/presentation/base/hooks/recipes/owner-status-toast.ts',
+      'src/presentation/base/timers/timer-controls.ts',
+      'src/presentation/base/utils/ask-pick-source.ts',
+      'src/presentation/base/widgets/feedback/app-error-boundary.tsx',
+    ],
+    rules: {
       'no-restricted-imports': [
         'error',
         {
           paths: [
-            {
-              name: '@expo/vector-icons',
-              message: "Import the family's own path, e.g. '@expo/vector-icons/Ionicons' — the root index bundles every icon font.",
-            },
+            VECTOR_ICONS_ROOT,
+            ...['@presentation/i18n', '@presentation/i18n/i18n'].map((name) => ({
+              name,
+              importNames: ['t'],
+              message: 'Read text with useTranslations() in a component or hook, or take the catalogue as a parameter in a helper.',
+            })),
           ],
         },
       ],
     },
   },
   {
-    // The React Compiler inference rules that eslint-config-expo 57 newly turns
-    // on. They are off until the compiler itself is on (app.json `experiments`
-    // has only `typedRoutes`), because without it they report 244 findings and
-    // the two largest groups are false positives about libraries the compiler
-    // does not model:
-    //
-    // - `refs` (206) — the recipe detail view-model exposes `scrollViewRef`, so
-    //   reading `vm.scrollViewRef.current` taints `vm` and every later `vm.x`
-    //   read is reported as a ref access during render. One design decision,
-    //   eighty errors.
-    // - `immutability` (11) — `scale.value = withTiming(...)` inside an
-    //   `onPressIn` is how Reanimated shared values are written. The rule reads
-    //   them as refs and forbids the assignment the library documents.
-    //
-    // That leaves 27, all read one by one and all deliberate: 14
-    // `set-state-in-effect` (external-state syncs, each behind an early return
-    // — the SSR hydration guard in `useIsHydrated`, the per-URI reset in
-    // `RecipeImage`, and so on), 10 `preserve-manual-memoization` (which only
-    // says "Compilation Skipped" and means nothing while the compiler is off),
-    // 2 `globals` and 1 `purity` — and those last three are scoped rather than
-    // switched off, below. The enumeration is in PR #452; the COUNT is the
-    // load-bearing part, because nothing new will ever be reported under a rule
-    // that is off, so a reader can only tell whether this list has grown.
-    // Turning the compiler on is its own piece of work, and these rules are
-    // worth having then — that is when the 244 get answered rather than muted.
-    //
-    // `rules-of-hooks` and `exhaustive-deps` predate the compiler, were already
-    // enforced here, and stay on.
-    files: ['**/*.ts', '**/*.tsx'],
+    // Type-aware rules for app code. A boolean we name ourselves (a variable or
+    // a parameter) reads as a question: isLoading, hasMore, canSave,
+    // shouldReduceMotion, wasSent. Props and fields keep the names of the API
+    // they mirror (React Native's `visible`, `disabled`; the backend's
+    // `likedByMe`), so destructured names and properties are left alone, as are
+    // SCREAMING_CASE constants.
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: ['**/__tests__/**', '**/__fixtures__/**', '**/__mocks__/**', 'src/presentation/base/test-support/**'],
+    languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: __dirname } },
     rules: {
-      'react-hooks/refs': 'off',
-      'react-hooks/immutability': 'off',
-      'react-hooks/set-state-in-effect': 'off',
-      'react-hooks/preserve-manual-memoization': 'off',
+      // A promise nobody awaits or voids is a failure nobody hears about.
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/await-thenable': 'error',
+      // require-await stays off on purpose: an `async` handler with no await still turns a throw into a
+      // rejection the caller's catch sees (the assistant registry relies on that).
+      // A switch over a union handles every member, so a new one is a compile-time question.
+      '@typescript-eslint/switch-exhaustiveness-check': ['error', { considerDefaultExhaustiveForUnions: true }],
+      // App code handles the missing case instead of asserting it away (tests may assert).
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+      // `if (x === null) x = …` stays allowed: it reads as the explicit null sentinel it is.
+      '@typescript-eslint/prefer-nullish-coalescing': ['error', { ignoreIfStatements: true }],
+      '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
+      '@typescript-eslint/no-unsafe-argument': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-call': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
+      '@typescript-eslint/naming-convention': [
+        'error',
+        { selector: 'variable', types: ['boolean'], format: ['PascalCase'], prefix: BOOLEAN_PREFIXES },
+        { selector: 'parameter', types: ['boolean'], format: ['PascalCase'], prefix: BOOLEAN_PREFIXES },
+        { selector: 'variable', modifiers: ['destructured'], types: ['boolean'], format: null },
+        { selector: 'parameter', modifiers: ['destructured'], types: ['boolean'], format: null },
+        { selector: 'variable', types: ['boolean'], format: null, filter: { regex: '^[A-Z0-9_]+$', match: true } },
+      ],
     },
   },
   {
-    // `globals` and `purity` are narrower than the other four, so they are
-    // scoped rather than switched off: both findings under `globals` are test
-    // harnesses reassigning a captured `rerender`, and `purity` has exactly ONE
-    // site, carrying its own inline disable. Left on everywhere else, they still
-    // catch the next Math.random() in a render or the next module-level write.
+    // The React Compiler's rules (`refs`, `immutability`, `set-state-in-effect`,
+    // `preserve-manual-memoization`, `purity`, `globals`, …) are ON everywhere in
+    // src/: the compiler skips any component they would flag, so a finding is a
+    // component left unoptimised. Tests are the exception below — a harness that
+    // counts renders or captures `rerender` writes outside the component on purpose.
     files: ['**/__tests__/**', '**/*.test.ts', '**/*.test.tsx'],
     rules: {
       'react-hooks/globals': 'off',
+      // A render-count probe increments a counter from inside a component on purpose.
+      'react-hooks/immutability': 'off',
     },
   },
   {

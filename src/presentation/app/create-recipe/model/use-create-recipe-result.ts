@@ -1,6 +1,6 @@
 import type { EdgeInsets } from 'react-native-safe-area-context';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
-import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
+import { type PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
@@ -64,7 +64,6 @@ export interface UseCreateRecipeResult {
   onUpdateField: <K extends keyof EditableRecipe>(key: K, value: EditableRecipe[K]) => void;
   onChangeIngredient: (index: number, value: string) => void;
   onRemoveIngredient: (index: number) => void;
-  onAddIngredient: () => void;
   /** Appends a row that already has its text — the assistant's path. */
   onAppendIngredient: (value: string) => void;
   onAddIngredientAt: (index: number) => void;

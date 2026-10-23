@@ -98,20 +98,24 @@ public enum RecipelyAssistantStore {
 
   // MARK: - Credentials
 
-  /// - Note: This is a scoped assistant token, never the app's session JWT, and
-  ///   that is what makes a shared-container write acceptable: the blast radius
-  ///   of the container being read is the assistant endpoints, not the account.
+  /// - Note: A scoped assistant token, never the app's session JWT. It lives in
+  ///   the Keychain (`RecipelyAssistantKeychain`), not the shared container: a
+  ///   backup must not carry it off the phone. The language is not a secret
+  ///   and stays in the container.
   public static func setCredentials(token: String?, languageCode: String) {
-    guard let defaults else { return }
-    if let token {
-      defaults.set(token, forKey: tokenKey)
-    } else {
-      defaults.removeObject(forKey: tokenKey)
-    }
-    defaults.set(languageCode, forKey: languageKey)
+    RecipelyAssistantKeychain.write(token)
+    defaults?.removeObject(forKey: tokenKey)
+    defaults?.set(languageCode, forKey: languageKey)
   }
 
-  public static var token: String? { defaults?.string(forKey: tokenKey) }
+  /// The Keychain copy; a token an older build left in the shared container is
+  /// moved into the Keychain on first read and deleted from the container.
+  public static var token: String? {
+    if let stored = RecipelyAssistantKeychain.read() { return stored }
+    guard let legacy = defaults?.string(forKey: tokenKey) else { return nil }
+    if RecipelyAssistantKeychain.write(legacy) { defaults?.removeObject(forKey: tokenKey) }
+    return legacy
+  }
 
   public static var languageCode: String { defaults?.string(forKey: languageKey) ?? "en" }
 }

@@ -8,7 +8,7 @@ import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-n
 import { PlanServingsStepper } from '@presentation/app/diary/items/plan/plan-servings-stepper';
 import { EatenBadge } from '@presentation/app/diary/items/plan/eaten-badge';
 import { fontWeights, iconSizes, mealPlanSizes, opacities, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface PlannedMealCardProps {
@@ -24,9 +24,10 @@ export interface PlannedMealCardProps {
  * stepper (plain servings once eaten).
  */
 export const PlannedMealCard = ({ entry, onOpen, onStep, onOptions }: PlannedMealCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const { recipe } = entry;
   return (
     <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>

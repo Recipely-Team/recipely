@@ -1,6 +1,6 @@
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { useRemindersOffer } from '@presentation/app/recipes/hooks/use-reminders-offer';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface RemindersOfferSheetProps {
   /** True while another sheet or prompt owns the screen. */
@@ -15,14 +15,15 @@ export interface RemindersOfferSheetProps {
  * - **TODO(design):** the shared confirm sheet stands in until Claude Design draws this moment.
  */
 export const RemindersOfferSheet = ({ blocked }: RemindersOfferSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const offer = useRemindersOffer(blocked);
   return (
     <ConfirmSheet
       visible={offer.visible}
-      title={t().reminders.offerTitle}
-      message={t().reminders.offerMessage}
-      confirmLabel={t().reminders.offerConfirm}
-      cancelLabel={t().reminders.offerDecline}
+      title={t.reminders.offerTitle}
+      message={t.reminders.offerMessage}
+      confirmLabel={t.reminders.offerConfirm}
+      cancelLabel={t.reminders.offerDecline}
       onConfirm={offer.onAccept}
       onClose={offer.onDecline}
     />

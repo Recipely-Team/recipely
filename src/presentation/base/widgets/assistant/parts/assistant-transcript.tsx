@@ -8,7 +8,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { radii, spacing } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface AssistantTranscriptProps {
@@ -31,6 +31,7 @@ export interface AssistantTranscriptProps {
  *   line that lands below the fold is a line they never receive.
  */
 export const AssistantTranscript = ({ lines }: AssistantTranscriptProps): React.JSX.Element => {
+  const t = useTranslations();
   const { colors } = useTheme();
   const list = useRef<FlatList<AssistantTranscriptLineType>>(null);
 
@@ -42,7 +43,7 @@ export const AssistantTranscript = ({ lines }: AssistantTranscriptProps): React.
     return (
       <View style={styles.emptyRow}>
         <View style={[styles.empty, shadows.md, { backgroundColor: colors.cardBackground }]}>
-          <ThemedText variant="body">{t().assistant.empty}</ThemedText>
+          <ThemedText variant="body">{t.assistant.empty}</ThemedText>
         </View>
       </View>
     );

@@ -1,5 +1,7 @@
-import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
-import type { StoreStatus } from '@application/store/store-status';
+import type { AuthIdle } from '@application/auth/states/auth-idle';
+import type { AuthLoading } from '@application/auth/states/auth-loading';
+import type { Authenticated } from '@application/auth/states/authenticated';
+import type { Unauthenticated } from '@application/auth/states/unauthenticated';
 
 /**
  * Session lifecycle — the only auth state that is genuinely global (the auth
@@ -10,7 +12,7 @@ import type { StoreStatus } from '@application/store/store-status';
  * a per-page Cubit). See `configure-auth-store.ts`.
  */
 export type AuthStatusType =
-  | { status: typeof StoreStatus.Idle }
-  | { status: typeof StoreStatus.Loading }
-  | { status: typeof StoreStatus.Authenticated; session: AuthSessionEntity }
-  | { status: typeof StoreStatus.Unauthenticated };
+  | AuthIdle
+  | AuthLoading
+  | Authenticated
+  | Unauthenticated;

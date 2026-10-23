@@ -22,7 +22,7 @@ import { FridgeStep } from '@presentation/app/fridge/model/flow/fridge-step';
 import { FridgeProgress } from '@presentation/app/fridge/model/flow/fridge-progress';
 import { spacing } from '@presentation/base/theme';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -37,6 +37,7 @@ import { ValueConstants } from '@core/constants';
  * - **Reading width**: 560, the ideas grid 920 on a wide window.
  */
 export const FridgeScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -47,7 +48,7 @@ export const FridgeScreen = (): React.JSX.Element => {
   const { state } = flow;
   const { view } = state;
   const ideas = useFridgeIdeaActions(view.step === FridgeStep.Ideas ? view.query : null);
-  const strings = t().fridge;
+  const strings = t.fridge;
   const isClose = view.step === FridgeStep.Capture || view.step === FridgeStep.NothingFound || view.step === FridgeStep.Limit;
   const onBack = view.step === FridgeStep.Analysing ? flow.cancelScan : isClose ? close : flow.back;
   const maxWidth = view.step === FridgeStep.Ideas && isExpanded ? WEB_CONTENT_MAX_WIDTH.fridgeIdeas : WEB_CONTENT_MAX_WIDTH.fridge;
@@ -92,7 +93,7 @@ export const FridgeScreen = (): React.JSX.Element => {
                 grid={isExpanded}
                 onEdit={flow.back}
                 onCook={ideas.cook}
-                onAddMissing={(idea) => void ideas.addMissing(idea).then((added) => (added ? flow.markAdded(idea.title) : undefined))}
+                onAddMissing={(idea) => void ideas.addMissing(idea).then((wasAdded) => (wasAdded ? flow.markAdded(idea.title) : undefined))}
                 onShowMore={flow.showMore}
                 onClearFilters={flow.clearFiltersAndRetry}
               />
@@ -115,7 +116,7 @@ export const FridgeScreen = (): React.JSX.Element => {
                 body={strings.limitBody}
                 primaryLabel={strings.browseRecipes}
                 onPrimary={() => router.replace(RoutePaths.recipes)}
-                secondaryLabel={t().common.back}
+                secondaryLabel={t.common.back}
                 onSecondary={close}
               />
             ) : null}

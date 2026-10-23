@@ -41,13 +41,13 @@ const render = (signedIn: boolean, lines: readonly string[]) => {
 };
 
 const button = (root: ReactTestInstance): ReactTestInstance =>
-  root.find((node) => node.props.accessibilityRole === 'button' && typeof node.props.onPress === 'function' && node.props.accessibilityState !== undefined);
+  root.find((node) => node.props['accessibilityRole'] === 'button' && typeof node.props['onPress'] === 'function' && node.props['accessibilityState'] !== undefined);
 
 describe('Add to shopping list on a recipe', () => {
   it('sends the lines at the servings on screen, headings skipped, with the recipe', async () => {
     const doubled = IngredientList.of(['# Batter', '1 cup milk', '2 eggs', 'Salt']).present(2, UnitSystem.Original);
     const { root, repo } = render(true, doubled);
-    await act(async () => (button(root).props.onPress as () => void)());
+    await act(async () => (button(root).props['onPress'] as () => void)());
     expect(repo.add).toHaveBeenCalledWith([
       { label: 'milk', quantity: 2, unit: 'cups', recipeId: 'r1', recipeName: 'Pancakes' },
       { label: 'eggs', quantity: 4, unit: null, recipeId: 'r1', recipeName: 'Pancakes' },
@@ -57,10 +57,10 @@ describe('Add to shopping list on a recipe', () => {
 
   it('asks a guest to sign in instead of adding', async () => {
     const { root, repo } = render(false, ['1 cup milk']);
-    await act(async () => (button(root).props.onPress as () => void)());
+    await act(async () => (button(root).props['onPress'] as () => void)());
     expect(repo.add).not.toHaveBeenCalled();
     const prompt = root.findByType(SignInPromptSheet);
-    expect([prompt.props.visible, prompt.props.message]).toEqual([true, t().shopping.signInToAdd]);
+    expect([prompt.props['visible'], prompt.props['message']]).toEqual([true, t().shopping.signInToAdd]);
   });
 
   it('is not drawn for a recipe with nothing to buy', async () => {
@@ -73,7 +73,7 @@ describe('Add to shopping list on a recipe', () => {
   it('adds the recipe once when the button is tapped twice in one frame', async () => {
     const { root, repo } = render(true, ['1 cup milk']);
     await act(async () => {
-      const press = button(root).props.onPress as () => void;
+      const press = button(root).props['onPress'] as () => void;
       press();
       press();
     });
@@ -83,8 +83,8 @@ describe('Add to shopping list on a recipe', () => {
   it('sends a guest who chooses to sign in to the login page, coming back to this recipe', async () => {
     mockPush.mockClear();
     const { root } = render(false, ['1 cup milk']);
-    await act(async () => (button(root).props.onPress as () => void)());
-    await act(async () => (root.findByType(SignInPromptSheet).props.onSignIn as () => void)());
+    await act(async () => (button(root).props['onPress'] as () => void)());
+    await act(async () => (root.findByType(SignInPromptSheet).props['onSignIn'] as () => void)());
     expect(mockPush).toHaveBeenCalledWith('/login?redirect=%2Frecipes%2Fr1');
   });
 

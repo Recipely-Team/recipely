@@ -42,7 +42,7 @@ export const readDeviceProfile = (): DeviceProfileType => {
     model: readString(constants, 'Model') ?? ios?.model ?? UNKNOWN,
     appVersion: Constants.expoConfig?.version ?? UNKNOWN,
     // Build number: unique per binary, unlike the version.
-    build: ios?.buildNumber ?? android?.versionCode?.toString() ?? UNKNOWN,
+    build: ios?.buildNumber ?? (android === undefined ? UNKNOWN : String(android.versionCode)),
     locale: getLocales()[ValueConstants.zero]?.languageTag ?? UNKNOWN,
   };
 };

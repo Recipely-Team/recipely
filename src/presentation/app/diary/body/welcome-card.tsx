@@ -16,7 +16,7 @@ import {
   shadows,
   spacing,
 } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface WelcomeCardProps {
@@ -27,9 +27,10 @@ export interface WelcomeCardProps {
 
 /** The first-day card (design spec → Food Diary §8): what the diary is, the starting goal, and the two first moves. */
 export const WelcomeCard = ({ goalCalories, onLogFirstMeal, onSetGoals }: WelcomeCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   return (
     <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
       <View style={[styles.tile, { backgroundColor: colors.chipBackground }]}>

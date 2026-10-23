@@ -51,8 +51,8 @@ describe('TaxonomyRepository.listCuisines', () => {
     await repo.listCuisines();
 
     expect(calls).toHaveLength(1);
-    expect(calls[0].method).toBe('GET');
-    expect(calls[0].url).toBe(ApiRoutes.recipes.cuisines);
+    expect(calls[0]!.method).toBe('GET');
+    expect(calls[0]!.url).toBe(ApiRoutes.recipes.cuisines);
   });
 
   it('drops malformed rows before returning (mapper is applied)', async () => {
@@ -101,8 +101,8 @@ describe('TaxonomyRepository.listCategories', () => {
     await repo.listCategories();
 
     expect(calls).toHaveLength(1);
-    expect(calls[0].method).toBe('GET');
-    expect(calls[0].url).toBe(ApiRoutes.recipes.categories);
+    expect(calls[0]!.method).toBe('GET');
+    expect(calls[0]!.url).toBe(ApiRoutes.recipes.categories);
   });
 
   it('propagates the AxiosHttpClient failure unchanged', async () => {

@@ -67,8 +67,8 @@ export class CommentEntity extends BaseEntity<CommentEntityProps> {
   }
 
   /** A copy whose `likeCount` gains the viewer's like, or loses it (never below 0). */
-  withViewerLike(liked: boolean): CommentEntity {
-    const likeCount = ViewerReaction.of(this.props.likeCount, !liked).set(liked).count;
+  withViewerLike(isLiked: boolean): CommentEntity {
+    const likeCount = ViewerReaction.of(this.props.likeCount, !isLiked).set(isLiked).count;
     return new CommentEntity({ ...this.props, likeCount });
   }
 }

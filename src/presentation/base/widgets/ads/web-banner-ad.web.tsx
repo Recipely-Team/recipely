@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants } from '@core/constants';
 import { UnknownFailure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
@@ -13,7 +13,7 @@ import { AdUnitStatus } from '@presentation/base/widgets/ads/ad-unit-status';
 import type { WebBannerAdProps } from '@presentation/base/widgets/ads/web-banner-ad-props';
 
 /** Whether this session has already filed the one report it is allowed. */
-let reported = false;
+let wasReported = false;
 
 /**
  * One AdSense display unit. **Web build** — see `web-banner-ad.tsx`.
@@ -48,6 +48,7 @@ let reported = false;
  *   possible thing to print.
  */
 export const WebBannerAd = ({ slotId, accessibilityLabel }: WebBannerAdProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const hostRef = useRef<View | null>(null);
 
   const [status, setStatus] = useState<AdUnitStatus | null>(null);
@@ -57,8 +58,8 @@ export const WebBannerAd = ({ slotId, accessibilityLabel }: WebBannerAdProps): R
     if (node === null || !(node instanceof HTMLElement) || slotId === CharConstants.empty) return;
 
     void mountAdsenseUnit(node, slotId).catch((error: Error) => {
-      if (reported) return;
-      reported = true;
+      if (wasReported) return;
+      wasReported = true;
       FailureReporter.report(
         new UnknownFailure(DiagnosticMessage.ads.bannerFailed(error.message)),
         'WebBannerAd.load',
@@ -84,7 +85,7 @@ export const WebBannerAd = ({ slotId, accessibilityLabel }: WebBannerAdProps): R
     >
       {status === AdUnitStatus.Filled ? (
         <ThemedText variant="label" muted>
-          {t().createRecipe.adLabel}
+          {t.createRecipe.adLabel}
         </ThemedText>
       ) : null}
       <View ref={hostRef} />

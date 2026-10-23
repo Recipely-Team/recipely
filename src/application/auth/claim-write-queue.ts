@@ -33,7 +33,7 @@ export class ClaimWriteQueue {
 
   refresh<T>(call: (isCurrent: () => boolean) => Promise<T>): Promise<T> {
     const startedAfter = this.writes;
-    const startedIdle = this.inFlight === ValueConstants.zero;
-    return call(() => startedIdle && this.writes === startedAfter);
+    const hasStartedIdle = this.inFlight === ValueConstants.zero;
+    return call(() => hasStartedIdle && this.writes === startedAfter);
   }
 }

@@ -9,9 +9,10 @@ import { ResetPasswordSuccessView } from '@presentation/app/reset-password/body/
 import { ResetPasswordInvalidLinkView } from '@presentation/app/reset-password/body/reset-password-invalid-link-view';
 import { useResetPasswordForm } from '@presentation/app/reset-password/hooks/use-reset-password-form';
 import { RoutePaths } from '@presentation/base/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export const ResetPasswordScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const { token } = useLocalSearchParams<{ token?: string }>();
   const tokenValue = isString(token) ? token.trim() : CharConstants.empty;
@@ -44,9 +45,9 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
   return (
     <AuthHeroLayout
       icon="lock-closed-outline"
-      title={t().resetPassword.title}
-      subtitle={t().resetPassword.subtitle}
-      backLabel={t().resetPassword.backToLogin}
+      title={t.resetPassword.title}
+      subtitle={t.resetPassword.subtitle}
+      backLabel={t.resetPassword.backToLogin}
       onBack={backToLogin}
     >
       {cardBody}

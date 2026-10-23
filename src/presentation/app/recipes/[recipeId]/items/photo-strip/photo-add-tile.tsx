@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { aspectRatios, borderWidths, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface PhotoAddTileProps {
   /** The strip's thumb width; the tile matches its height. */
@@ -14,12 +14,13 @@ export interface PhotoAddTileProps {
 
 /** The owner's Add at the end of the strip — outside the scrolling list, so it is always in reach. */
 export const PhotoAddTile = ({ thumbWidth, disabled, onPress }: PhotoAddTileProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={t().photoViewer.add}
+      accessibilityLabel={t.photoViewer.add}
       disabled={disabled}
       onPress={onPress}
       style={[
@@ -28,7 +29,7 @@ export const PhotoAddTile = ({ thumbWidth, disabled, onPress }: PhotoAddTileProp
       ]}
     >
       <Ionicons name="add" size={iconSizes.md} color={colors.primary} />
-      <ThemedText style={[styles.label, { color: colors.text }]}>{t().photoViewer.add}</ThemedText>
+      <ThemedText style={[styles.label, { color: colors.text }]}>{t.photoViewer.add}</ThemedText>
     </Pressable>
   );
 };

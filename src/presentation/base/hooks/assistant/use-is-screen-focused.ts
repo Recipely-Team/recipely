@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useSyncExternalStore } from 'react';
 import { NavigationContext } from 'expo-router/react-navigation';
 
 /**
@@ -20,22 +20,24 @@ import { NavigationContext } from 'expo-router/react-navigation';
  * - **`useContext`, not `useIsFocused`.** The hook from React Navigation throws
  *   where there is no route, which is exactly where the always-mounted chrome
  *   calls it from.
+ * - **`useSyncExternalStore`, not state mirrored in an effect.** Focus lives in
+ *   the navigator; reading it through the subscription API means the first
+ *   render already has the right answer and no render is spent catching up.
  */
 export const useIsScreenFocused = (): boolean => {
   const navigation = useContext(NavigationContext);
-  const [isFocused, setIsFocused] = useState(() => navigation?.isFocused() ?? true);
-
-  useEffect(() => {
-    if (navigation === undefined) return;
-
-    setIsFocused(navigation.isFocused());
-    const stopListeningToFocus = navigation.addListener('focus', () => setIsFocused(true));
-    const stopListeningToBlur = navigation.addListener('blur', () => setIsFocused(false));
-    return () => {
-      stopListeningToFocus();
-      stopListeningToBlur();
-    };
-  }, [navigation]);
-
-  return isFocused;
+  const subscribe = useCallback(
+    (onChange: () => void): (() => void) => {
+      if (navigation === undefined) return () => undefined;
+      const stopListeningToFocus = navigation.addListener('focus', onChange);
+      const stopListeningToBlur = navigation.addListener('blur', onChange);
+      return () => {
+        stopListeningToFocus();
+        stopListeningToBlur();
+      };
+    },
+    [navigation],
+  );
+  const isFocused = (): boolean => navigation?.isFocused() ?? true;
+  return useSyncExternalStore(subscribe, isFocused, isFocused);
 };

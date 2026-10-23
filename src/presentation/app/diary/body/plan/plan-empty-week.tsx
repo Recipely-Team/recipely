@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { borderWidths, fontWeights, iconSizes, mealPlanSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { MealPlanLimits } from '@domain/meal-plan/meal-plan-limits';
 import { EMPTY_WEEK_FILLED_TILES } from '@presentation/app/diary/model/plan/empty-week-tiles';
 
@@ -23,8 +23,9 @@ export interface PlanEmptyWeekProps {
  * week.
  */
 export const PlanEmptyWeek = ({ todayIndex, onAdd, onCopyLastWeek }: PlanEmptyWeekProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   return (
     <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
       <View style={styles.tiles} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">

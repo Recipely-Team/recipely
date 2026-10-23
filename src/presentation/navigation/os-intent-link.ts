@@ -23,10 +23,10 @@ const isOsIntentId = (value: string): value is OsIntentIdType => OS_INTENT_IDS.h
  * happened to contain the phrase.
  */
 const queryOf = (path: string): string | null => {
-  const [route, ...rest] = path.split('?');
+  const [route, ...rest] = path.split(CharConstants.questionMark);
   const normalised = (route ?? CharConstants.empty).replace(/^\/+|\/+$/g, CharConstants.empty);
   if (normalised !== LINK_PATH) return null;
-  return rest.join('?');
+  return rest.join(CharConstants.questionMark);
 };
 
 /**

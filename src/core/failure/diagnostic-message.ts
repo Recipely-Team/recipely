@@ -96,6 +96,7 @@ export const DiagnosticMessage = {
     invalidEmail: 'Invalid email format',
     passwordTooShort: 'Password is shorter than the minimum length',
     noActiveSession: 'No active session to update',
+    noRefreshToken: 'The stored session has no refresh token',
     sessionUserChanged: 'The signed-in user changed before the answer arrived',
     appleUnavailableInBuild: 'Apple Sign-In is not available in this build',
     googleUnavailableInBuild: 'Google Sign-In is not available in this build',

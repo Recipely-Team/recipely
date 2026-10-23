@@ -23,7 +23,9 @@ describe('recipeWebUrl', () => {
       const { recipeWebUrl: freshFn } = require('@infrastructure/constants/api/api-hosts') as typeof import('@infrastructure/constants/api/api-hosts');
       expect(freshFn('42')).toBe('https://staging.recipely.net/recipes/42');
     } finally {
-      process.env.EXPO_PUBLIC_WEB_APP_URL = originalEnv;
+      // Assigning undefined to process.env stores the string "undefined"; unset means delete.
+      if (originalEnv === undefined) delete process.env.EXPO_PUBLIC_WEB_APP_URL;
+      else process.env.EXPO_PUBLIC_WEB_APP_URL = originalEnv;
       jest.resetModules();
     }
   });
@@ -42,7 +44,9 @@ describe('recipeWebUrl', () => {
       const { recipeWebUrl: freshFn } = require('@infrastructure/constants/api/api-hosts') as typeof import('@infrastructure/constants/api/api-hosts');
       expect(freshFn('42')).toBe('https://staging.recipely.net/recipes/42');
     } finally {
-      process.env.EXPO_PUBLIC_WEB_APP_URL = originalEnv;
+      // Assigning undefined to process.env stores the string "undefined"; unset means delete.
+      if (originalEnv === undefined) delete process.env.EXPO_PUBLIC_WEB_APP_URL;
+      else process.env.EXPO_PUBLIC_WEB_APP_URL = originalEnv;
       jest.resetModules();
     }
   });
@@ -80,7 +84,9 @@ describe('legal page URLs', () => {
       expect(fresh.PRIVACY_POLICY_URL).toBe('https://recipely.net/privacy');
       expect(fresh.TERMS_OF_USE_URL).toBe('https://recipely.net/terms');
     } finally {
-      process.env.EXPO_PUBLIC_WEB_APP_URL = originalEnv;
+      // Assigning undefined to process.env stores the string "undefined"; unset means delete.
+      if (originalEnv === undefined) delete process.env.EXPO_PUBLIC_WEB_APP_URL;
+      else process.env.EXPO_PUBLIC_WEB_APP_URL = originalEnv;
       jest.resetModules();
     }
   });

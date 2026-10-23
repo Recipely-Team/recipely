@@ -15,7 +15,7 @@ export interface SectionHeaderProps {
    * editor is right-aligned at the end of its row. Same information, two
    * placements, one screen apart.
    */
-  count?: number;
+  count?: number | undefined;
 }
 
 export const SectionHeader = ({ title, count }: SectionHeaderProps): React.JSX.Element => {

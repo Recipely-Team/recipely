@@ -9,7 +9,7 @@ import { formatPlanDay } from '@presentation/base/utils/meal-plan/format-plan-da
 import { planMealLabel } from '@presentation/base/utils/meal-plan/plan-meal-label';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { mealPlanSizes, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { CharConstants } from '@core/constants';
 
 export interface MealActionsSheetProps {
@@ -31,8 +31,9 @@ export interface MealActionsSheetProps {
  * on the day"), Move to another day, Open recipe, Remove.
  */
 export const MealActionsSheet = ({ entry, today, onClose, onStep, onToggleEaten, onMove, onOpen, onRemove }: MealActionsSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const locale = useLocale();
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const act = (run: (meal: MealPlanEntryEntity) => void) => (): void => {
     if (entry === null) return;
     onClose();
@@ -41,9 +42,9 @@ export const MealActionsSheet = ({ entry, today, onClose, onStep, onToggleEaten,
   const meta =
     entry === null
       ? CharConstants.empty
-      : [planMealLabel(entry.meal), formatPlanDay(entry.date, locale), entry.calories === null ? null : `${formatWholeNumber(entry.calories, locale)} ${strings.kcal}`]
+      : [planMealLabel(t, entry.meal), formatPlanDay(entry.date, locale), entry.calories === null ? null : `${formatWholeNumber(entry.calories, locale)} ${strings.kcal}`]
           .filter((part): part is string => part !== null)
-          .join(' · ');
+          .join(CharConstants.middotSpaced);
 
   return (
     <BottomSheet visible={entry !== null} title={strings.mealOptions} onClose={onClose}>

@@ -6,7 +6,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import { spacing, radii, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { COUNT_TOKEN, MAX_TOKEN } from '@presentation/app/import-recipe/model/file/count-token';
 import type { FilePage } from '@presentation/app/import-recipe/model/file/file-page';
@@ -32,9 +32,10 @@ const PREVIEW_HEIGHT = 260;
  * web grid is reordered by dragging, which react-native-web does not offer.
  */
 export const FilePageSheet = ({ pages, index, isPdf, onMove, onRemove, onClose }: FilePageSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const danger = useSeveritySurfaces().danger;
-  const copy = t().fileImport;
+  const copy = t.fileImport;
   const page = index === null ? undefined : pages[index];
   const at = index ?? ValueConstants.zero;
   const title =
@@ -59,16 +60,16 @@ export const FilePageSheet = ({ pages, index, isPdf, onMove, onRemove, onClose }
           {!isPdf && pages.length > ValueConstants.one ? (
             <View style={styles.moves}>
               {moves.map((move) => {
-                const off = move.to < ValueConstants.zero || move.to >= pages.length;
+                const isOff = move.to < ValueConstants.zero || move.to >= pages.length;
                 return (
                   <Pressable
                     key={move.label}
-                    disabled={off}
+                    disabled={isOff}
                     onPress={() => onMove(at, move.to)}
                     accessibilityRole="button"
                     accessibilityLabel={move.label}
-                    accessibilityState={{ disabled: off }}
-                    style={[styles.move, { borderColor: colors.border, opacity: off ? opacities.inactive : opacities.full }]}
+                    accessibilityState={{ disabled: isOff }}
+                    style={[styles.move, { borderColor: colors.border, opacity: isOff ? opacities.inactive : opacities.full }]}
                   >
                     <Ionicons name={move.icon} size={iconSizes.md} color={colors.text} />
                     <ThemedText variant="body" style={styles.moveLabel}>

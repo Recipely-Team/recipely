@@ -46,12 +46,12 @@ const render = (
 const panelStyle = (root: ReactTestInstance): ViewStyle => {
   const panel = root
     .findAll((node) => {
-      const style = StyleSheet.flatten(node.props.style as StyleProp<ViewStyle>);
+      const style = StyleSheet.flatten(node.props['style'] as StyleProp<ViewStyle>);
       return style?.borderRadius !== undefined || style?.borderTopLeftRadius !== undefined;
     })
     .at(0);
   if (panel === undefined) throw new Error('no panel rendered');
-  return StyleSheet.flatten(panel.props.style as StyleProp<ViewStyle>) ?? {};
+  return StyleSheet.flatten(panel.props['style'] as StyleProp<ViewStyle>) ?? {};
 };
 
 describe('BottomSheet — presentation per viewport', () => {
@@ -92,14 +92,14 @@ describe('BottomSheet — presentation per viewport', () => {
 
     // The grabber announces itself with the close hint; a mouse cannot drag it.
     const grabbers = web.root.findAll(
-      (node) => node.props.accessibilityHint === t().common.closeHint,
+      (node) => node.props['accessibilityHint'] === t().common.closeHint,
     );
     expect(grabbers).toHaveLength(0);
     expect(
       web.root.findAll(
         (node) =>
-          node.props.accessibilityRole === 'button' &&
-          node.props.accessibilityLabel === t().common.close,
+          node.props['accessibilityRole'] === 'button' &&
+          node.props['accessibilityLabel'] === t().common.close,
       ).length,
     ).toBeGreaterThan(0);
   });
@@ -120,7 +120,7 @@ describe('BottomSheet — presentation per viewport', () => {
     const rendered = render(false);
     renderer = rendered.renderer;
 
-    expect(rendered.root.findByType(Modal).props.animationType).toBe('none');
+    expect(rendered.root.findByType(Modal).props['animationType']).toBe('none');
   });
 
   // Which is only safe while the component still draws the distinction the
@@ -146,7 +146,7 @@ describe('BottomSheet — presentation per viewport', () => {
     renderer = mobile.renderer;
 
     expect(
-      mobile.root.findAll((node) => node.props.accessibilityHint === t().common.closeHint).length,
+      mobile.root.findAll((node) => node.props['accessibilityHint'] === t().common.closeHint).length,
     ).toBeGreaterThan(0);
   });
 });

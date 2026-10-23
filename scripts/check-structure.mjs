@@ -9,7 +9,7 @@
  *   C. Alias-only imports (`@layer/...`); `./` allowed only in barrel index.ts.
  *   D. No loose files at the base/widgets root (category folders only).
  *   E. app/ co-location convention (page code in body/items/sheets/hooks/model/).
- *   F. Smart-UI size guard (CLAUDE.md §18): no non-test .tsx over 300 lines; a routed
+ *   F. Smart-UI size guard (CLAUDE.md §18): no non-test .tsx, and no presentation hook, over 300 lines; a routed
  *      app/.../index.tsx over 200.
  *   G. Entity naming (CLAUDE.md §21): *Entity classes in *-entity.ts files.
  *   H. Responsive sizing (CLAUDE.md §6b): no absolute lineHeight, no bare
@@ -67,6 +67,12 @@
  *      Security nor sets usesCleartextTraffic (CLAUDE.md §24).
  *   AU. No Intl API Hermes lacks (PluralRules, RelativeTimeFormat, ListFormat,
  *      Segmenter, DisplayNames, Locale, DurationFormat) outside tests (§24).
+ *   AV. No bare separator or character literal ('@', ', ', '\n', '', …) where
+ *      CharConstants names it (§5).
+ *   AW. No `useStore(authStore, (s) => s.state)` in presentation — select what is used
+ *      (useSignedInUserId / useIsSignedIn / useSignedInUser, or s.state.status).
+ *   AX. Every state a store can be in is a named type in a `states/` folder;
+ *      no anonymous `| { status: typeof StoreStatus.X; … }` union members.
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -114,6 +120,9 @@ for (const l of LAYERS) if (fs.existsSync(path.join(SRC, l))) walk(path.join(SRC
 const isTest = (f) => /__tests__|\.test\.tsx?$/.test(f);
 const isBarrel = (f) => path.basename(f) === 'index.ts';
 
+/** A .tsx past this many lines is printed as a warning; 300 blocks (rule F). */
+const TSX_SOFT_LINE_LIMIT = 250;
+const nearSizeLimit = [];
 for (const file of files) {
   const src = fs.readFileSync(path.join(SRC, file), 'utf8');
   const layer = file.split(path.sep)[0];
@@ -241,8 +250,19 @@ for (const file of files) {
   // --- F: Smart-UI size guard (CLAUDE.md §18) --------------------------------
   // A .tsx over 300 lines is a blocking violation: split it into body/items/
   // sheets/hooks/model parts (or a hook) instead of growing the component.
+  // Past 250 it is a warning: files were landing at 295-299 lines, split only
+  // when the gate forced it, so the warning asks for the split while it is cheap.
+  // Hooks too: a hook is where a screen's logic goes when the screen is split, so a
+  // 495-line hook was the same smart UI with the markup removed.
+  if (file.startsWith('presentation/') && /\/use-[^/]+\.ts$/.test(file)) {
+    const lines = src.split('\n').length;
+    if (lines > 300) {
+      errors.push(`${file}: ${lines} lines — a hook stays under 300 lines too (CLAUDE.md §18); split it into the hooks it is made of`);
+    }
+  }
   if (file.endsWith('.tsx')) {
     const lines = src.split('\n').length;
+    if (lines > TSX_SOFT_LINE_LIMIT && lines <= 300) nearSizeLimit.push(`${file} (${String(lines)})`);
     if (lines > 300) {
       errors.push(`${file}: ${lines} lines — .tsx files must stay under 300 lines (CLAUDE.md §18); split into parts`);
     } else if (/^presentation\/app\/(.+\/)?index\.tsx$/.test(file) && lines > 200) {
@@ -318,6 +338,12 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       crowded.sort().map((c) => '  · ' + c).join('\n'),
   );
 }
+if (nearSizeLimit.length > 0 && process.env.CI !== 'true') {
+  console.warn(
+    `check:structure — ${String(nearSizeLimit.length)} .tsx file(s) past ${String(TSX_SOFT_LINE_LIMIT)} lines; split before 300 blocks:\n` +
+      nearSizeLimit.sort().map((c) => '  · ' + c).join('\n'),
+  );
+}
 
 // --- K: no unguarded console.* in shipped code (CLAUDE.md §22) --------------
 // Two problems with an unguarded call. In a dev build `console.error` /
@@ -333,7 +359,7 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
 // the rule stays readable. Nest deeper than that and you must repeat the
 // guard on the call's own line.
 {
-  const GUARD = /__DEV__|enableLogging/;
+  const GUARD = /__DEV__|enableLogging|isLoggingEnabled/;
   const isComment = (line) => /^\s*(\/\/|\/\*|\*)/.test(line);
 
   for (const file of files) {
@@ -904,7 +930,9 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
 // closing `\n}` (an interface or object type) or its first `;` (any other
 // alias), so a one-line alias is never judged by the block after it. The
 // notifications list (`total` + `unreadCount`, no paging fields) and `FilePage`
-// (one picked page of a document) pass.
+// (one picked page of a document) pass. A store state in a `states/` folder
+// (`ListLoaded<T>`, `RecipeListLoaded`) is not an envelope either: it is what a
+// list has reached so far, cursor included, and is built FROM a `Page<T>`.
 {
   const GENERIC = new Set(['Page', 'PageDto']);
   const DECL = /^export\s+(interface|type)\s+(\w+)/gm;
@@ -915,7 +943,7 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
     return end < 0 ? rest : rest.slice(0, end + 2);
   };
   for (const file of files) {
-    if (isTest(file) || file.includes('__fixtures__')) continue;
+    if (isTest(file) || file.includes('__fixtures__') || file.includes('/states/')) continue;
     const src = fs.readFileSync(path.join(SRC, file), 'utf8');
     for (const match of src.matchAll(DECL)) {
       const [, kind, name] = match;
@@ -1325,6 +1353,112 @@ function openingTag(src, at) {
   };
 
   if (fs.existsSync(PRESENTATION)) walk(PRESENTATION);
+}
+
+// --- AV: no bare separator literal where CharConstants names it (CLAUDE.md §5) --
+// `email.split('@')`, `join(', ')`, `{' '}`, `padStart(2, '0')` and four copies
+// of `const AT = '@'` had crept in beside a CharConstants that already named
+// most of them. The values below are read from char-constants.ts itself, so a
+// character added there is enforced everywhere at once.
+//
+// A tokenizer, not a regex: `['92%', '78%']` holds the text `', '` between two
+// literals, which a regex reads as a separator. Template literals are skipped
+// whole (their text is the template), as are comments. A `| ''` union is a
+// type, not a value.
+{
+  const charSource = fs.readFileSync(path.join(SRC, 'core/constants/char-constants.ts'), 'utf8');
+  const NAMED = new Map();
+  for (const m of charSource.matchAll(/^\s*(\w+):\s*'((?:\\.|[^'\\])*)'\s+as string,/gm)) {
+    NAMED.set(JSON.parse(`"${m[2].replace(/"/g, '\\"').replace(/\\u2212/g, '\u2212')}"`), m[1]);
+  }
+  // A digit is data far more often than a pad character (SVG offsets, stored flags).
+  NAMED.delete('0');
+
+  /** Every quoted literal in `src` with what precedes it, skipping comments and templates. */
+  const literals = function* (src) {
+    let i = 0;
+    while (i < src.length) {
+      const c = src[i];
+      if (c === '/' && src[i + 1] === '/') { i = src.indexOf('\n', i); if (i < 0) return; continue; }
+      if (c === '/' && src[i + 1] === '*') { i = src.indexOf('*/', i + 2); if (i < 0) return; i += 2; continue; }
+      if (c === '`') {
+        let depth = 0;
+        for (i += 1; i < src.length; i += 1) {
+          if (src[i] === '\\') { i += 1; continue; }
+          if (src[i] === '$' && src[i + 1] === '{') { depth += 1; i += 1; continue; }
+          if (src[i] === '}' && depth > 0) { depth -= 1; continue; }
+          if (src[i] === '`' && depth === 0) break;
+        }
+        i += 1;
+        continue;
+      }
+      if (c === "'" || c === '"') {
+        const start = i;
+        let raw = '';
+        for (i += 1; i < src.length && src[i] !== c && src[i] !== '\n'; i += 1) {
+          if (src[i] === '\\') { raw += src[i] + src[i + 1]; i += 1; continue; }
+          raw += src[i];
+        }
+        i += 1;
+        yield { raw, before: src.slice(Math.max(0, start - 3), start), at: start };
+        continue;
+      }
+      i += 1;
+    }
+  };
+
+  const decode = (raw) => { try { return JSON.parse(`"${raw.replace(/"/g, '\\"')}"`); } catch { return raw; } };
+
+  for (const file of files) {
+    if (isTest(file) || file.startsWith('core/constants/') || file.startsWith('presentation/i18n/locales/')) continue;
+    if (/__fixtures__|__mocks__/.test(file)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (/^import /m.test(src) === false && !/\.(ts|tsx)$/.test(file)) continue;
+    const found = new Set();
+    for (const { raw, before, at } of literals(src)) {
+      const value = decode(raw);
+      if (!NAMED.has(value)) continue;
+      if (/\|\s*$/.test(before)) continue;
+      const lineStart = src.lastIndexOf('\n', at) + 1;
+      if (/^\s*import\b/.test(src.slice(lineStart, at))) continue;
+      found.add(`'${raw}' → CharConstants.${NAMED.get(value)}`);
+    }
+    if (found.size > 0) {
+      errors.push(`${file}: bare character literal(s) — ${[...found].slice(0, 3).join(', ')} (CLAUDE.md §5)`);
+    }
+  }
+}
+
+// --- AW: no subscription to the whole auth state (CLAUDE.md §8) --------------
+// Zustand re-renders a subscriber when its selected value changes by
+// Object.is. Fifteen components selected `s.state` from the auth store to read
+// an id or "signed in?", so every replacement of the session (a profile edit,
+// a creator-claim refresh) re-rendered all of them, each feed row included.
+{
+  const WHOLE_AUTH_STATE = /\buseStore\(\s*authStore\s*,\s*\(s\)\s*=>\s*s\.state\s*\)/;
+  for (const file of files) {
+    if (isTest(file) || !file.startsWith('presentation/')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (WHOLE_AUTH_STATE.test(src)) {
+      errors.push(`${file}: selects the whole auth state — use useSignedInUserId / useIsSignedIn / useSignedInUser, or s.state.status (CLAUDE.md §8)`);
+    }
+  }
+}
+
+// --- AX: states have names (CLAUDE.md §1) -------------------------------------
+// Twenty-five unions held 95 states as anonymous `{ status: … }` object types,
+// so nothing could say "this takes a loaded list" — only "the union, hoping
+// status is loaded". Each state is now an interface of its own (`ListLoaded<T>`,
+// `RecipeCreated`, `Authenticated`) in a `states/` folder, and a union lists them.
+{
+  const ANONYMOUS_STATE = /\|\s*\{\s*status:\s*typeof StoreStatus\./;
+  for (const file of files) {
+    if (isTest(file) || file.includes('/states/')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (ANONYMOUS_STATE.test(src)) {
+      errors.push(`${file}: an anonymous { status } state in a union — name it in a states/ folder (CLAUDE.md §1)`);
+    }
+  }
 }
 
 // --- AJ: no accessibility props on a react-native-svg <Svg> (CLAUDE.md §24) --

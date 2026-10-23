@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useStore } from 'zustand';
 import { timerStore } from '@application/timers/timer-store';
 import { stepTimerId } from '@presentation/base/timers/step-timer-id';
 import { stepDurationMinutes } from '@presentation/app/recipes/[recipeId]/cook/model/step-duration-minutes';
@@ -17,7 +18,7 @@ export const useRunningStepTimers = (
   steps: readonly string[],
   currentIndex: number,
 ): readonly StepTimerSlot[] => {
-  const timers = timerStore((s) => s.timers);
+  const timers = useStore(timerStore, (s) => s.timers);
 
   return useMemo(
     () =>

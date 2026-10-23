@@ -18,7 +18,7 @@ const googleSigninMod: GoogleSigninMod | null = (() => { try { return require('@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const firebaseAuthMod: FirebaseAuthMod | null = (() => { try { return require('@react-native-firebase/auth') as FirebaseAuthMod; } catch { return null; } })();
 
-let googleConfigured = false;
+let isGoogleConfigured = false;
 
 /**
  * Runs the native Google Sign-In flow (Play Services check + Firebase
@@ -38,9 +38,9 @@ export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failu
   }
   const { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } = googleSigninMod;
   const { getAuth, signInWithCredential, GoogleAuthProvider } = firebaseAuthMod;
-  if (!googleConfigured) {
+  if (!isGoogleConfigured) {
     GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID });
-    googleConfigured = true;
+    isGoogleConfigured = true;
   }
   try {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
@@ -82,8 +82,8 @@ export const acquireAppleFirebaseToken = async (): Promise<Result<string, Failur
   }
   const { getAuth, signInWithCredential, AppleAuthProvider } = firebaseAuthMod;
   try {
-    const available = await AppleAuthentication.isAvailableAsync();
-    if (!available) {
+    const isAvailable = await AppleAuthentication.isAvailableAsync();
+    if (!isAvailable) {
       return fail(new UnknownFailure(DiagnosticMessage.socialAuth.appleUnavailable));
     }
     const rawNonce = generateNonce();

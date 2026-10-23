@@ -6,5 +6,5 @@
  */
 export interface PageTitleProps {
   /** The page's own name, or empty while it is still loading. */
-  subject?: string;
+  subject?: string | undefined;
 }

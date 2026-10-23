@@ -18,7 +18,7 @@ import { MealLogBackRow } from '@presentation/base/widgets/diary/add-food/meal/m
 import { MealLogBody } from '@presentation/base/widgets/diary/add-food/meal/meal-log-body';
 import { useMealLog } from '@presentation/base/hooks/diary/use-meal-log';
 import { diarySizes, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AddFoodPickStepProps {
   /** What the search field opens with; a new value replaces what was typed. */
@@ -50,8 +50,9 @@ export interface AddFoodPickStepProps {
  *   here, so peeking at another tab does not lose it.
  */
 export const AddFoodPickStep = (props: AddFoodPickStepProps): React.JSX.Element => {
+  const t = useTranslations();
   const { initialQuery, initialMealText, meal, isSubmitting } = props;
-  const strings = t().diary;
+  const strings = t.diary;
   const [query, setQuery] = useState(initialQuery);
   const [seenQuery, setSeenQuery] = useState(initialQuery);
   const [tab, setTab] = useState<PickTabType>(initialMealText === null ? PickTab.Recipes : PickTab.Meal);

@@ -1,6 +1,5 @@
 import type { FakeRecipeRepositoryConfig } from "@application/__fixtures__/fake-recipe-repository-config";
 import type { GenerateRecipeCall } from "@application/__fixtures__/generate-recipe-call";
-import type { ImportInstagramRecipeCall } from "@application/__fixtures__/import-instagram-recipe-call";
 import type { RefineRecipeCall } from "@application/__fixtures__/refine-recipe-call";
 import { ValueConstants } from "@core/constants";
 import type { MediaItem } from "@domain/recipes/media/media-item";
@@ -36,8 +35,6 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
   // Public so tests can assert on the last call without a getter ceremony.
   lastGenerateCall: GenerateRecipeCall | null = null;
   generateCallCount = ValueConstants.zero;
-  lastImportInstagramCall: ImportInstagramRecipeCall | null = null;
-  importInstagramCallCount = ValueConstants.zero;
   lastRefineCall: RefineRecipeCall | null = null;
   refineCallCount = ValueConstants.zero;
 
@@ -92,15 +89,6 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
     this.generateCallCount++;
     return Promise.resolve(
       this.config.generateRecipeResult ??
-        ok(undefined as unknown as RecipeEntity),
-    );
-  }
-
-  importInstagramRecipe(url: string): Promise<Result<RecipeEntity, Failure>> {
-    this.lastImportInstagramCall = { url };
-    this.importInstagramCallCount++;
-    return Promise.resolve(
-      this.config.importInstagramRecipeResult ??
         ok(undefined as unknown as RecipeEntity),
     );
   }

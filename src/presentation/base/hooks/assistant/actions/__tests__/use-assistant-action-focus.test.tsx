@@ -38,7 +38,7 @@ describe('a screen that is mounted but not looked at', () => {
       blur: (): void => {
         focused = false;
         act(() => {
-          for (const listener of listeners.blur ?? []) listener();
+          for (const listener of listeners['blur'] ?? []) listener();
         });
       },
     };

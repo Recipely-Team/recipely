@@ -6,7 +6,7 @@ import { AppStateStatusValue } from '@infrastructure/constants/app-state-status'
 import { isWeb } from '@infrastructure/constants/platform';
 import { analyticsService } from '@infrastructure/firebase/analytics-service';
 import { AnalyticsEvent } from '@infrastructure/constants/analytics/analytics-event';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 /**
  * Keeps the come-back reminder series pushed out to "N days after the last open".
@@ -20,19 +20,20 @@ import { t, useLocale } from '@presentation/i18n';
  * - **Lives in bootstrap:** it reports to analytics, and only the composition root reaches infrastructure.
  */
 export const useEngagementReminders = (refresh: RefreshRemindersUseCase): void => {
+  const t = useTranslations();
   const locale = useLocale();
 
   useEffect(() => {
     if (isWeb()) return undefined;
     const run = (): void => {
-      void refresh.execute(t().reminders.messages, Date.now());
+      void refresh.execute(t.reminders.messages, Date.now());
     };
     run();
     const appState = AppState.addEventListener('change', (next: AppStateStatus) => {
       if (next === AppStateStatusValue.active) run();
     });
     return () => appState.remove();
-  }, [refresh, locale]);
+  }, [refresh, locale, t]);
 
   useEffect(
     () =>

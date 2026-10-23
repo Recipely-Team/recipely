@@ -44,13 +44,13 @@ describe('shrinkForUpload', () => {
   it('caps the long edge of a landscape photo', async () => {
     await shrinkForUpload({ uri: 'file://huge.jpg', width: 4032, height: 3024 });
 
-    expect(actionsFor()[0].resize).toEqual({ width: MEDIA_UPLOAD_MAX_EDGE });
+    expect(actionsFor()[0]!.resize).toEqual({ width: MEDIA_UPLOAD_MAX_EDGE });
   });
 
   it('caps the long edge of a portrait photo', async () => {
     await shrinkForUpload({ uri: 'file://huge.jpg', width: 3024, height: 4032 });
 
-    expect(actionsFor()[0].resize).toEqual({ height: MEDIA_UPLOAD_MAX_EDGE });
+    expect(actionsFor()[0]!.resize).toEqual({ height: MEDIA_UPLOAD_MAX_EDGE });
   });
 
   // Enlarging a small photo would add bytes to fix a size problem.

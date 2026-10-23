@@ -5,7 +5,7 @@ import { getAdsService } from '@application/ads/get-ads-service';
  * Whether the session has already been told yes. Module scope, because the
  * answer is about the app, not about the slot that happened to ask.
  */
-let allowed = false;
+let isAllowed = false;
 
 /**
  * Whether an ad may be requested right now.
@@ -31,21 +31,21 @@ let allowed = false;
  *   consent gather and the SDK start happen once per session.
  */
 export const useAdsReady = (): boolean => {
-  const [ready, setReady] = useState(allowed);
+  const [isReady, setReady] = useState(isAllowed);
 
   useEffect(() => {
-    if (ready) return;
-    let cancelled = false;
+    if (isReady) return;
+    let isCancelled = false;
     void getAdsService()
       .prepare()
-      .then((result) => {
-        if (result) allowed = true;
-        if (!cancelled) setReady(result);
+      .then((isPrepared) => {
+        if (isPrepared) isAllowed = true;
+        if (!isCancelled) setReady(isPrepared);
       });
     return () => {
-      cancelled = true;
+      isCancelled = true;
     };
-  }, [ready]);
+  }, [isReady]);
 
-  return ready;
+  return isReady;
 };

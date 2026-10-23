@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -7,11 +7,11 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
 import { upperCase } from '@presentation/i18n/upper-case';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ArtCard } from '@presentation/app/onboarding/items/art-card';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
 import type { HeroProps } from '@presentation/app/onboarding/model/hero-props';
-import { TimeConstants, ValueConstants } from '@core/constants';
+import { CharConstants, TimeConstants, ValueConstants } from '@core/constants';
 
 const REPLY_DELAY_MS = 380;
 const STEP_DELAY_MS = 560;
@@ -27,21 +27,28 @@ const ORB_SIZE = 56;
 /** The timer the art counts down from, in seconds: 24:58. */
 const TIMER_START_S = 1498;
 const ART_WIDTH = 270;
-const pad = (n: number): string => String(n).padStart(ValueConstants.two, '0');
+const pad = (n: number): string => String(n).padStart(ValueConstants.two, CharConstants.zeroDigit);
 
 /** Slide 2, "Cook hands-free": a spoken "next step", the assistant's reply, the step, a live timer. */
 export const HeroCook = ({ active = true }: HeroProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const a = t().onboarding.art;
-  const reducedMotion = useReducedMotion();
-  const [left, setLeft] = useState(TIMER_START_S);
+  const a = t.onboarding.art;
+  const shouldReduceMotion = useReducedMotion();
+  const isRunning = active && !shouldReduceMotion;
+  // Starting or stopping the slide's timer winds it back to the top, in the same render.
+  const [timer, setTimer] = useState({ running: isRunning, left: TIMER_START_S });
+  if (timer.running !== isRunning) setTimer({ running: isRunning, left: TIMER_START_S });
+  const left = timer.running === isRunning ? timer.left : TIMER_START_S;
 
   useEffect(() => {
-    setLeft(TIMER_START_S);
-    if (!active || reducedMotion) return;
-    const id = setInterval(() => setLeft((s) => Math.max(ValueConstants.zero, s - ValueConstants.one)), TimeConstants.millisecondsPerSecond);
+    if (!isRunning) return;
+    const id = setInterval(
+      () => setTimer((current) => ({ ...current, left: Math.max(ValueConstants.zero, current.left - ValueConstants.one) })),
+      TimeConstants.millisecondsPerSecond,
+    );
     return () => clearInterval(id);
-  }, [active, reducedMotion]);
+  }, [isRunning]);
 
   return (
     <View style={styles.root}>
@@ -57,7 +64,7 @@ export const HeroCook = ({ active = true }: HeroProps): React.JSX.Element => {
       </ArtCard>
       <View style={styles.bottomRow}>
         <OnboardingReveal active={active} delay={ORB_DELAY_MS} style={[styles.orb, { backgroundColor: colors.primary }]}>
-          <Waveform color={colors.primaryText} running={active && !reducedMotion} />
+          <Waveform color={colors.primaryText} running={active && !shouldReduceMotion} />
         </OnboardingReveal>
         <ArtCard active={active} delay={TIMER_DELAY_MS} style={styles.timer}>
           <Ionicons name="timer-outline" size={iconSizes.md} color={colors.primary} />
@@ -75,7 +82,7 @@ export const HeroCook = ({ active = true }: HeroProps): React.JSX.Element => {
 
 /** Five bars breathing out of phase: the assistant listening. Static with reduced motion. */
 const Waveform = ({ color, running }: { color: string; running: boolean }): React.JSX.Element => {
-  const bars = useRef(Array.from({ length: BAR_COUNT }, () => new Animated.Value(ValueConstants.one))).current;
+  const [bars] = useState(() => Array.from({ length: BAR_COUNT }, () => new Animated.Value(ValueConstants.one)));
   useEffect(() => {
     if (!running) return;
     const loops = bars.map((bar, i) =>

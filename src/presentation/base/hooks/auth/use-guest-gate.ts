@@ -9,7 +9,7 @@ import type { UseGuestGateResult } from '@presentation/base/hooks/auth/use-guest
  * and render a `SignInPromptSheet` bound to `promptVisible` / `closePrompt`.
  */
 export const useGuestGate = (userId: string | null): UseGuestGateResult => {
-  const [promptVisible, setPromptVisible] = useState(false);
+  const [isPromptVisible, setPromptVisible] = useState(false);
   const [promptMessage, setPromptMessage] = useState<string | undefined>(undefined);
 
   const requestGate = useCallback(
@@ -28,5 +28,5 @@ export const useGuestGate = (userId: string | null): UseGuestGateResult => {
     setPromptVisible(false);
   }, []);
 
-  return { promptVisible, promptMessage, requestGate, closePrompt };
+  return { promptVisible: isPromptVisible, promptMessage, requestGate, closePrompt };
 };

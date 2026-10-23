@@ -12,7 +12,7 @@ import { chunkWeeks } from '@presentation/app/diary/shared/model/chunk-weeks';
 import { formatMonthYear } from '@presentation/app/diary/shared/model/format-month-year';
 import { formatWeekdayShort } from '@presentation/app/diary/shared/model/format-weekday-short';
 import { monthGridCells } from '@presentation/app/diary/shared/model/month-grid-cells';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface MonthCardProps {
@@ -34,9 +34,10 @@ export interface MonthCardProps {
  * disabled once the month holds today.
  */
 export const MonthCard = ({ month, diaryMonth, selected, today, cellHeight, cellGap, onSelect, onPrevious, onNext }: MonthCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   const rows = chunkWeeks(monthGridCells(month));
   return (
     <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>

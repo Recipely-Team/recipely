@@ -2,7 +2,7 @@ import { FailureCode } from '@core/failure/failure-code';
 import { ErrorMessageKey } from '@core/failure/error-message-key';
 import { UnknownFailure } from '@core/failure';
 import { failureContent } from '@presentation/base/errors/failure-lookups';
-import { setLocale } from '@presentation/i18n';
+import { setLocale, t } from '@presentation/i18n';
 import { LocaleConstants } from '@application/i18n/locale-constants';
 
 /**
@@ -30,14 +30,14 @@ describe.each(LOCALES)('failure copy in %s', (locale) => {
   });
 
   it.each(Object.values(FailureCode))('%s has a title and a body', (code) => {
-    const content = failureContent(failureWith(code));
+    const content = failureContent(t(), failureWith(code));
 
     expect(content.title.trim().length).toBeGreaterThan(0);
     expect(content.body.trim().length).toBeGreaterThan(0);
   });
 
   it.each(Object.values(ErrorMessageKey))('message key %s has a title and a body', (key) => {
-    const content = failureContent(failureWith(FailureCode.Unknown, key));
+    const content = failureContent(t(), failureWith(FailureCode.Unknown, key));
 
     expect(content.title.trim().length).toBeGreaterThan(0);
     expect(content.body.trim().length).toBeGreaterThan(0);

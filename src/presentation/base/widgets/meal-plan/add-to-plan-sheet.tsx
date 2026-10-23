@@ -7,7 +7,7 @@ import { PlanDetailsStep } from '@presentation/base/widgets/meal-plan/plan-detai
 import type { AddToPlanRequest } from '@presentation/base/widgets/meal-plan/model/add-to-plan-request';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { mealPlanSizes } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface AddToPlanSheetProps {
   /** What to open on; null closes the sheet. */
@@ -24,9 +24,10 @@ export interface AddToPlanSheetProps {
  * viewport is expanded — the shared `BottomSheet` decides (rule 23).
  */
 export const AddToPlanSheet = ({ request, onClose, onView }: AddToPlanSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const locale = useLocale();
   const flow = useAddToPlanSheet(request, onClose, onView);
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const { recipe } = flow;
   const pick = (hit: RecipeFoodHit): void =>
     flow.choose({ id: hit.id, name: hit.name, imageUrl: hit.imageUrl, caloriesPerServing: hit.perServing.calories, meal: null });

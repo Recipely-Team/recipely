@@ -19,7 +19,7 @@ import {
   durations,
   BrandColors,
 } from '@presentation/base/theme';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { ProvenanceMark } from '@domain/recipes/provenance/provenance-mark';
 import { ProvenanceGlyph } from '@presentation/base/widgets/badges/provenance-glyph';
 import type { ImportLook } from '@presentation/app/import-recipe/model/import-look';
@@ -73,19 +73,19 @@ const GRADIENT_END = { x: ValueConstants.one, y: ValueConstants.zero };
  */
 export const ImportProgressRing = ({ progress, done, look, dish }: ImportProgressRingProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const ringId = `import-ring-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  const ringId = `import-ring-${useId().replace(/[^a-zA-Z0-9]/g, CharConstants.empty)}`;
   const bloom = useSharedValue(ValueConstants.zero);
 
   useEffect(() => {
-    bloom.value = withRepeat(
+    bloom.set(withRepeat(
       withTiming(ValueConstants.one, { duration: durations.pulse, easing: Easing.inOut(Easing.ease) }),
       -ValueConstants.one,
       true,
-    );
+    ));
   }, [bloom]);
 
   const bloomStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: BLOOM_MIN_SCALE + bloom.value * (BLOOM_MAX_SCALE - BLOOM_MIN_SCALE) }],
+    transform: [{ scale: BLOOM_MIN_SCALE + bloom.get() * (BLOOM_MAX_SCALE - BLOOM_MIN_SCALE) }],
   }));
 
   return (

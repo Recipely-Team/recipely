@@ -1,4 +1,4 @@
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 /** One CLDR plural category — the key `pluralCount` reads from a locale's forms. */
 type PluralCategory = 'zero' | 'one' | 'two' | 'few' | 'many' | 'other';
@@ -72,4 +72,4 @@ const RULES: Readonly<Record<string, (n: number) => PluralCategory>> = {
  *   integer rules for the 14 app languages, held equal to Node's ICU by the test.
  */
 export const pluralCategory = (locale: string, n: number): PluralCategory =>
-  (RULES[locale.split('-')[zero]] ?? (() => 'other'))(n);
+  (RULES[locale.split(CharConstants.dash)[zero] ?? locale] ?? (() => 'other'))(n);

@@ -1,3 +1,5 @@
+import type { FirstPageCache } from '@infrastructure/network/paging/first-page-cache';
+import { FIRST_PAGE } from '@domain/common/first-page';
 import type { Page } from '@domain/common/page';
 import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
 import { fail, ok } from '@core/result/result-helpers';
@@ -20,9 +22,12 @@ import { ValueConstants } from '@core/constants';
  * some other screen having already loaded the same recipes.
  */
 export class FavoritesRepository implements FavoritesRepositoryInterface {
-  constructor(private readonly http: AxiosHttpClient) {}
+  constructor(
+    private readonly http: AxiosHttpClient,
+    private readonly firstPageCache?: FirstPageCache<RecipeListItemDto>,
+  ) {}
 
-  async addFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>> {
+  async addFavorite(recipeId: string): Promise<Result<void, Failure>> {
     const result = await this.http.post(ApiRoutes.recipes.favorite(recipeId), undefined);
 
     if (!result.ok) {
@@ -32,7 +37,7 @@ export class FavoritesRepository implements FavoritesRepositoryInterface {
     return ok(void ValueConstants.zero);
   }
 
-  async removeFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>> {
+  async removeFavorite(recipeId: string): Promise<Result<void, Failure>> {
     const result = await this.http.delete(ApiRoutes.recipes.favorite(recipeId));
 
     if (!result.ok) {
@@ -43,9 +48,10 @@ export class FavoritesRepository implements FavoritesRepositoryInterface {
   }
 
   async listFavorites(page?: number): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
-    const result = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.me.favorites, {
+    const fetched = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.me.favorites, {
       params: toPageQuery({ page, pageSize: FAVORITES_PAGE_SIZE }),
     });
+    const result = (await this.firstPageCache?.readThrough(String(FAVORITES_PAGE_SIZE), (page ?? FIRST_PAGE) === FIRST_PAGE, fetched)) ?? fetched;
 
     if (!result.ok) return fail(result.failure);
 

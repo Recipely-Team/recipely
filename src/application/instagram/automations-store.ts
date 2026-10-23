@@ -1,8 +1,7 @@
-import { create } from 'zustand';
-import type { BoundStore } from '@application/store/bound-store';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
 import { ok } from '@core/result/result-helpers';
-import { CharConstants } from '@core/constants';
 import { FoodSearchGroup } from '@domain/diary/foods/search/food-search-group';
 import type { DmRuleEntity } from '@domain/instagram/dm/dm-rule-entity';
 import type { DmSend } from '@domain/instagram/activity/dm-send';
@@ -13,7 +12,7 @@ import { RequestEpoch } from '@application/store/request-epoch';
 import { KeyedRequestEpoch } from '@application/store/keyed-request-epoch';
 import type { PagedList } from '@application/store/paging/paged-list';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
-import type { AutomationsStoreState } from '@application/instagram/automations-store-state';
+import type { AutomationsStore } from '@application/instagram/automations-store-contract';
 import type { ListDmRulesUseCase } from '@application/instagram/rules/list-dm-rules-use-case';
 import type { GetDmRuleUseCase } from '@application/instagram/rules/get-dm-rule-use-case';
 import type { SaveDmRuleUseCase } from '@application/instagram/rules/save-dm-rule-use-case';
@@ -53,11 +52,11 @@ const replacing = (list: PagedList<DmRuleEntity>, rule: DmRuleEntity): PagedList
  *   the shifted offset, so no rule is skipped.
  * - **User-scoped**: cleared on sign-out.
  */
-export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStore<AutomationsStoreState> => {
+export const configureAutomationsStore = (deps: AutomationsStoreDeps): StoreApi<AutomationsStore> => {
   const flips = new KeyedRequestEpoch();
   const opening = new RequestEpoch();
 
-  return create<AutomationsStoreState>((set, get) => {
+  return createStore<AutomationsStore>((set, get) => {
     const rules = new PagedListLoader<DmRuleEntity>(() => get().rules, (list) => set({ rules: list }), (r) => r.id);
     const media = new PagedListLoader<InstagramMedia>(() => get().media, (list) => set({ media: list }), (m) => m.id);
     const recipes = new PagedListLoader<RecipeFoodHit>(() => get().recipes, (list) => set({ recipes: list }), (h) => h.key);
@@ -74,17 +73,16 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
       rules: { status: StoreStatus.Idle },
       media: { status: StoreStatus.Idle },
       recipes: { status: StoreStatus.Idle },
-      recipeQuery: CharConstants.empty,
       sends: { status: StoreStatus.Idle },
       opened: { status: StoreStatus.Idle },
 
       loadRules,
       loadMoreRules: () => rules.loadMore(),
 
-      setEnabled: async (rule, enabled) => {
+      setEnabled: async (rule, isEnabled) => {
         const isLatestFlip = flips.start(rule.id);
-        show(rule.withEnabled(enabled));
-        const result = await deps.setEnabled.execute(rule.id, enabled);
+        show(rule.withEnabled(isEnabled));
+        const result = await deps.setEnabled.execute(rule.id, isEnabled);
         // A later flip overtook this one: its answer decides, and this one has nothing to report.
         if (!isLatestFlip()) return ok(undefined);
         if (result.ok) {
@@ -100,7 +98,6 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
 
       searchRecipes: (raw) => {
         const query = raw.trim();
-        set({ recipeQuery: query });
         return recipes.load((page) => deps.searchMyRecipes.execute(query, FoodSearchGroup.Mine, page, PageSizes.dmRecipes));
       },
       loadMoreRecipes: () => recipes.loadMore(),
@@ -142,7 +139,7 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
         flips.invalidate();
         opening.invalidate();
         [rules, media, recipes, sends].forEach((loader) => loader.reset());
-        set({ recipeQuery: CharConstants.empty, opened: { status: StoreStatus.Idle } });
+        set({ opened: { status: StoreStatus.Idle } });
       },
     };
   });

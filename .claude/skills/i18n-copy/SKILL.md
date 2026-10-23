@@ -5,8 +5,11 @@ description: Adding, changing or removing user-visible copy in the Recipely app 
 
 # i18n copy
 
-Rule 11: every user-visible string goes through `t()` from `src/presentation/i18n/`. No literal copy
-in components.
+Rule 11: every user-visible string comes from `src/presentation/i18n/`. No literal copy in components.
+A component or hook reads `const t = useTranslations()` and writes `t.section.key`; a text helper takes
+`t: TranslationsType` as its first parameter. The global `t()` is only for event-time code (toasts,
+alerts, notifications) — eslint blocks it elsewhere, because a screen built from it keeps the old
+language after a switch.
 
 ## Where the copy lives
 

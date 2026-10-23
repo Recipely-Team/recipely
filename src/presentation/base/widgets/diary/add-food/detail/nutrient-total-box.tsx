@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { diarySizes, fontSizes, fontWeights, lineHeights, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface NutrientTotalBoxProps {
@@ -18,9 +18,10 @@ export interface NutrientTotalBoxProps {
  * macro shows an em dash, never a 0.
  */
 export const NutrientTotalBox = ({ nutrients }: NutrientTotalBoxProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().nutrition;
+  const strings = t.nutrition;
   const macros = [
     { key: 'protein', label: strings.protein, value: nutrients.protein },
     { key: 'carbs', label: strings.carbs, value: nutrients.carbs },
@@ -52,7 +53,7 @@ export const NutrientTotalBox = ({ nutrients }: NutrientTotalBoxProps): React.JS
         </View>
       ) : (
         <SizedText size={fontSizes.caption} muted>
-          {t().diary.caloriesOnly}
+          {t.diary.caloriesOnly}
         </SizedText>
       )}
     </View>

@@ -3,7 +3,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { fontSizes, fontWeights, radii, spacing } from '@presentation/base/theme';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface KeywordChipsProps {
   keywords: readonly string[];
@@ -11,7 +11,7 @@ export interface KeywordChipsProps {
   limit: number | null;
 }
 
-const MORE = '+';
+const MORE = CharConstants.plus;
 
 /** A rule's keywords as read-only chips (spec: h24, 12/600), cut to `limit` with "+n". */
 export const KeywordChips = ({ keywords, limit }: KeywordChipsProps): React.JSX.Element => {

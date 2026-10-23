@@ -8,7 +8,7 @@ import { useTaxonomyOptions } from '@presentation/app/recipes/hooks/use-taxonomy
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { TIME_OPTIONS } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { spacing, fontSizes, fontWeights, letterSpacings, layoutSizes } from '@presentation/base/theme';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
@@ -48,26 +48,27 @@ export const WebFilterModal = ({
   onReset,
   onClose,
 }: WebFilterModalProps): React.JSX.Element => {
+  const t = useTranslations();
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
   const { cuisineKeys, categoryKeys } = useTaxonomyOptions();
 
   // No count: the one at hand was for the filters already applied, not the ones being edited.
-  const applyLabel = t().recipes.showResults;
+  const applyLabel = t.recipes.showResults;
 
   return (
     <BottomSheet
       visible={visible}
-      title={t().recipes.filter}
+      title={t.recipes.filter}
       onClose={onClose}
       showCloseButton
-      rightAction={hasActiveFilters ? { label: t().recipes.clearFilters, onPress: onReset } : undefined}
+      rightAction={hasActiveFilters ? { label: t.recipes.clearFilters, onPress: onReset } : undefined}
       dialogMaxWidth={layoutSizes.webModalMaxWidth}
       footer={<PrimaryButton label={applyLabel} onPress={onApply} />}
     >
       <View style={styles.body}>
         <View style={styles.section}>
           <ThemedText variant="caption" muted style={styles.sectionTitle}>
-            {upperCase(t().recipes.cuisine)}
+            {upperCase(t.recipes.cuisine)}
           </ThemedText>
           <View style={styles.chipsWrap}>
             {cuisineKeys.map((c) => (
@@ -83,7 +84,7 @@ export const WebFilterModal = ({
 
         <View style={styles.section}>
           <ThemedText variant="caption" muted style={styles.sectionTitle}>
-            {upperCase(t().recipes.category)}
+            {upperCase(t.recipes.category)}
           </ThemedText>
           <View style={styles.chipsWrap}>
             {categoryKeys.map((c) => (
@@ -99,13 +100,13 @@ export const WebFilterModal = ({
 
         <View style={styles.section}>
           <ThemedText variant="caption" muted style={styles.sectionTitle}>
-            {upperCase(t().recipes.difficulty)}
+            {upperCase(t.recipes.difficulty)}
           </ThemedText>
           <View style={styles.chipsRow}>
             {DIFFICULTY_VALUES.map((d) => (
               <WebFilterChip
                 key={d}
-                label={difficultyLabel(d)}
+                label={difficultyLabel(t, d)}
                 active={pending.difficulties.includes(d)}
                 onToggle={() => onToggleDifficulty(d)}
                 grow
@@ -116,13 +117,13 @@ export const WebFilterModal = ({
 
         <View style={styles.section}>
           <ThemedText variant="caption" muted style={styles.sectionTitle}>
-            {upperCase(t().recipes.maxTime)}
+            {upperCase(t.recipes.maxTime)}
           </ThemedText>
           <View style={styles.chipsWrap}>
             {TIME_OPTIONS.map((m) => (
               <WebFilterChip
                 key={m}
-                label={m === ValueConstants.zero ? t().recipes.any : `≤ ${m} ${t().recipes.minutes}`}
+                label={m === ValueConstants.zero ? t.recipes.any : `≤ ${m} ${t.recipes.minutes}`}
                 active={pending.maxTime === m}
                 onToggle={() => onSetMaxTime(m)}
               />

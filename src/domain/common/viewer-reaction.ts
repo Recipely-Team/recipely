@@ -23,9 +23,9 @@ export class ViewerReaction extends BaseValueObject<ViewerReactionValue> {
     super(value);
   }
 
-  static of(count: number, mine: boolean): ViewerReaction {
+  static of(count: number, isMine: boolean): ViewerReaction {
     const safe = Number.isFinite(count) ? Math.max(ValueConstants.zero, Math.trunc(count)) : ValueConstants.zero;
-    return new ViewerReaction({ count: safe, mine });
+    return new ViewerReaction({ count: safe, mine: isMine });
   }
 
   get count(): number {
@@ -36,10 +36,10 @@ export class ViewerReaction extends BaseValueObject<ViewerReactionValue> {
     return this._value.mine;
   }
 
-  set(mine: boolean): ViewerReaction {
-    if (mine === this.mine) return this;
-    const step = mine ? ValueConstants.one : -ValueConstants.one;
-    return ViewerReaction.of(this.count + step, mine);
+  set(isMine: boolean): ViewerReaction {
+    if (isMine === this.mine) return this;
+    const step = isMine ? ValueConstants.one : -ValueConstants.one;
+    return ViewerReaction.of(this.count + step, isMine);
   }
 
   toggled(): ViewerReaction {

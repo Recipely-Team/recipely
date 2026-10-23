@@ -7,7 +7,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useFridgeAvailability } from '@presentation/base/hooks/recipes/use-fridge-availability';
 import { RoutePaths } from '@presentation/base/constants';
 import { borderWidths, fridgeSizes, iconSizes, opacities, radii } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -16,6 +16,7 @@ import { ValueConstants } from '@core/constants';
  * stretched to the banner's height. Nothing while `fridgeToRecipe` is off.
  */
 export const FridgeCameraButton = (): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const router = useRouter();
   const availability = useFridgeAvailability();
@@ -24,7 +25,7 @@ export const FridgeCameraButton = (): React.JSX.Element | null => {
     <Pressable
       onPress={() => router.push(RoutePaths.fridge)}
       accessibilityRole="button"
-      accessibilityLabel={t().fridge.bannerA11y}
+      accessibilityLabel={t.fridge.bannerA11y}
       style={({ pressed }) => [styles.button, { opacity: pressed ? opacities.pressedSubtle : opacities.full }]}
     >
       <LinearGradient

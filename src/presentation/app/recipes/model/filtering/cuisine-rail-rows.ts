@@ -32,7 +32,7 @@ export const railChipCount = (
   viewportHeight: number,
 ): number => {
   const perRow = Math.max(ValueConstants.one, Math.floor((contentWidth + spacing.lg) / CHIP_PITCH));
-  const roomy = viewportWidth >= BREAKPOINTS.wide && viewportHeight >= BREAKPOINTS.desktop;
-  const rows = roomy ? MAX_ROWS_ROOMY : MAX_ROWS_TIGHT;
+  const isRoomy = viewportWidth >= BREAKPOINTS.wide && viewportHeight >= BREAKPOINTS.desktop;
+  const rows = isRoomy ? MAX_ROWS_ROOMY : MAX_ROWS_TIGHT;
   return Math.max(ValueConstants.one, perRow * rows - RESET_CHIP);
 };

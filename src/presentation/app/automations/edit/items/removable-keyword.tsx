@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface RemovableKeywordProps {
   word: string;
@@ -13,6 +13,7 @@ export interface RemovableKeywordProps {
 
 /** A keyword in the editor (spec: h32 chip with a 28 × button inside). */
 export const RemovableKeyword = ({ word, onRemove }: RemovableKeywordProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <View style={[styles.chip, { backgroundColor: colors.chipBackground }]}>
@@ -22,7 +23,7 @@ export const RemovableKeyword = ({ word, onRemove }: RemovableKeywordProps): Rea
       <Pressable
         onPress={() => onRemove(word)}
         accessibilityRole="button"
-        accessibilityLabel={t().instagram.removeKeyword.replace('{k}', word)}
+        accessibilityLabel={t.instagram.removeKeyword.replace('{k}', word)}
         style={styles.remove}
         hitSlop={spacing.xs}
       >

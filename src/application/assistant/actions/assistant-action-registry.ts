@@ -6,7 +6,7 @@ import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** Between the route and what is on it — "screen=/recipes; recipes=1) Baklava". */
-const SCREEN_LINE_SEPARATOR = '; ';
+const SCREEN_LINE_SEPARATOR = CharConstants.semicolonSpace;
 
 /** What a remembered failure says when the handler did not name a reason. */
 const UNNAMED_ERROR = 'failed';
@@ -149,10 +149,10 @@ export class AssistantActionRegistry {
     if (this.hasScreenHandler(action)) return true;
 
     return new Promise<boolean>((resolve) => {
-      const settle = (arrived: boolean): void => {
+      const settle = (hasArrived: boolean): void => {
         clearTimeout(timer);
         this.watchers.delete(check);
-        resolve(arrived);
+        resolve(hasArrived);
       };
       const check = (): void => {
         if (this.hasScreenHandler(action)) settle(true);
@@ -231,7 +231,7 @@ export class AssistantActionRegistry {
     }
   }
 
-  get registeredActions(): AssistantActionType[] {
+  registeredActions(): AssistantActionType[] {
     return [...this.handlers.keys()];
   }
 
@@ -243,7 +243,9 @@ export class AssistantActionRegistry {
     const stack = this.handlers.get(action) ?? [];
     for (let at = stack.length - ValueConstants.one; at >= ValueConstants.zero; at -= ValueConstants.one) {
       try {
-        const result = await stack[at]!(arg);
+        const handler = stack[at];
+        if (handler === undefined) continue;
+        const result = await handler(arg);
         if (result.notMine !== true) return this.withContext(result);
       } catch {
         return this.withContext({ ok: false, error: AssistantActionError.Failed });

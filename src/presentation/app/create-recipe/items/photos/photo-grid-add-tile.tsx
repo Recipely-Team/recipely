@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, fontSizes, fontWeights, iconSizes, lineHeightFor, lineHeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface PhotoGridAddTileProps {
   size: number;
@@ -14,17 +14,18 @@ export interface PhotoGridAddTileProps {
 
 /** The last cell of the editor's grid: pick more photos. */
 export const PhotoGridAddTile = ({ size, x, y, onPress }: PhotoGridAddTileProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={t().mediaPicker.more}
+      accessibilityLabel={t.mediaPicker.more}
       onPress={onPress}
       style={[styles.tile, { width: size, height: size, left: x, top: y, borderColor: colors.inputBorder }]}
     >
       <Ionicons name="add" size={iconSizes.xl} color={colors.primary} />
-      <ThemedText style={[styles.label, { color: colors.text }]}>{t().mediaPicker.more}</ThemedText>
+      <ThemedText style={[styles.label, { color: colors.text }]}>{t.mediaPicker.more}</ThemedText>
     </Pressable>
   );
 };

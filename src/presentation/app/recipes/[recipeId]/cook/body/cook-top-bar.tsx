@@ -5,7 +5,7 @@ import { RoundIconButton } from '@presentation/base/widgets/buttons/round-icon-b
 import { RoundIconButtonTone } from '@presentation/base/widgets/buttons/round-icon-button-tone';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface CookTopBarProps {
@@ -18,13 +18,14 @@ export interface CookTopBarProps {
 
 /** Cook mode's top row: exit, the recipe's name, and the ingredients button. */
 export const CookTopBar = ({ recipeName, onExit, onOpenIngredients, hasIngredients }: CookTopBarProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <View style={styles.row}>
       <RoundIconButton
         icon="close"
-        accessibilityLabel={t().cookMode.exit}
+        accessibilityLabel={t.cookMode.exit}
         onPress={onExit}
         size={controlSizes.pageCloseBtn}
         tone={RoundIconButtonTone.Outlined}
@@ -43,7 +44,7 @@ export const CookTopBar = ({ recipeName, onExit, onOpenIngredients, hasIngredien
         >
           <Ionicons name="list-outline" size={iconSizes.md} color={colors.text} />
           <ThemedText variant="caption" style={[styles.pillLabel, { color: colors.text }]}>
-            {t().cookMode.ingredients}
+            {t.cookMode.ingredients}
           </ThemedText>
         </Pressable>
       ) : null}

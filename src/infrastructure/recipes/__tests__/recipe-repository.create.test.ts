@@ -88,7 +88,7 @@ describe('RecipeRepository.createRecipe', () => {
 
       expect(r.ok).toBe(true);
       expect(calls).toHaveLength(1);
-      expect(calls[0].url).toBe('/recipes/with-media');
+      expect(calls[0]!.url).toBe('/recipes/with-media');
 
       const fields = new Map(appends);
       // Regression guard: servings was previously dropped on create (present on

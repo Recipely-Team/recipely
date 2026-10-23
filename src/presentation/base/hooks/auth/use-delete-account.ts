@@ -1,4 +1,6 @@
+import { useTranslations } from '@presentation/i18n';
 import { useCallback, useState } from 'react';
+import { useStore } from 'zustand';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
@@ -18,12 +20,13 @@ import { RoutePaths } from '@presentation/base/constants';
  *   nothing behind this screen to go back to.
  */
 export const useDeleteAccount = () => {
+  const t = useTranslations();
   const router = useRouter();
   const { authStore } = useStores();
-  const deleteAccount = authStore((s) => s.deleteAccount);
+  const deleteAccount = useStore(authStore, (s) => s.deleteAccount);
 
-  const [visible, setVisible] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [isVisible, setVisible] = useState(false);
+  const [isDeleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const open = useCallback(() => {
@@ -43,8 +46,8 @@ export const useDeleteAccount = () => {
       router.replace(RoutePaths.login);
       return;
     }
-    setError(failureToastMessage(failure));
-  }, [deleteAccount, router]);
+    setError(failureToastMessage(t, failure));
+  }, [deleteAccount, router, t]);
 
-  return { visible, deleting, error, open, close, confirm };
+  return { visible: isVisible, deleting: isDeleting, error, open, close, confirm };
 };

@@ -2,7 +2,7 @@ import { CharConstants } from '@core/constants';
 import { InstagramConnectionStatus } from '@domain/instagram/connect/instagram-connection-status';
 import type { InstagramConnectionProps } from '@domain/instagram/connect/instagram-connection-props';
 
-const AT = '@';
+const AT = CharConstants.at;
 
 /**
  * The viewer's Instagram professional account as Recipely holds it — a read

@@ -2,7 +2,6 @@ import { createContext, useCallback, useEffect, useMemo, useState, type ReactNod
 import { isWeb } from '@infrastructure/constants/platform';
 import { useColorScheme } from 'react-native';
 import { getKeyValueStore } from '@application/storage/get-key-value-store';
-import { useLocale } from '@presentation/i18n/use-locale';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
 import { ALL_THEMES, getThemeColors } from '@presentation/base/theme/colors/palette/themes';
 import type { ThemeIdType } from '@presentation/base/theme/context/theme-id';
@@ -39,9 +38,7 @@ const isThemePreference = (v: string): v is ThemePreference =>
 
 export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX.Element => {
   const systemScheme = useColorScheme();
-  const hydrated = useIsHydrated();
-  // Locale lives here so a language switch re-renders mounted screens (react-navigation blocks parent re-renders).
-  const locale = useLocale();
+  const isHydrated = useIsHydrated();
   const [themeId, setThemeIdState] = useState<ThemeIdType>(DEFAULT_THEME_ID);
   const [preference, setPreferenceState] = useState<ThemePreference>(ThemePreference.System);
 
@@ -71,9 +68,9 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
   }, []);
 
   // Web static export renders light; ignore the system scheme until hydrated (React #418).
-  const ignoreSystemScheme = isWeb() && !hydrated;
+  const shouldIgnoreSystemScheme = isWeb() && !isHydrated;
   const effectiveSystemScheme: ThemeVariant =
-    !ignoreSystemScheme && systemScheme === ThemeVariant.Dark ? ThemeVariant.Dark : ThemeVariant.Light;
+    !shouldIgnoreSystemScheme && systemScheme === ThemeVariant.Dark ? ThemeVariant.Dark : ThemeVariant.Light;
 
   const scheme: ThemeVariant =
     preference === ThemePreference.System ? effectiveSystemScheme : preference;
@@ -83,9 +80,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
 
   const value = useMemo(
     () => ({ themeId, preference, scheme, colors, setThemeId, setPreference }),
-    // locale is a deliberate extra dependency (see above).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [themeId, preference, scheme, colors, setThemeId, setPreference, locale],
+    [themeId, preference, scheme, colors, setThemeId, setPreference],
   );
 
   return (

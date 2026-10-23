@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { useStore } from 'zustand';
 import { useFocusEffect, useRouter } from 'expo-router';
 import type { ShoppingItemEntity } from '@domain/shopping/items/shopping-item-entity';
 import { StoreStatus } from '@application/store/store-status';
@@ -11,7 +12,7 @@ import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/sh
 import { ShoppingConfirm, type ShoppingConfirmType } from '@presentation/app/shopping-list/model/shopping-confirm';
 import { shoppingRows } from '@presentation/app/shopping-list/model/shopping-rows';
 import type { UseShoppingListResult } from '@presentation/app/shopping-list/model/use-shopping-list-result';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useLocale } from '@presentation/i18n/use-locale';
 
 /**
@@ -29,10 +30,11 @@ import { useLocale } from '@presentation/i18n/use-locale';
  *   only when their own line changes.
  */
 export const useShoppingList = (): UseShoppingListResult => {
+  const t = useTranslations();
   const router = useRouter();
   const { shoppingListStore } = useStores();
-  const list = shoppingListStore((s) => s.list);
-  const isRefreshing = shoppingListStore((s) => s.isRefreshing);
+  const list = useStore(shoppingListStore, (s) => s.list);
+  const isRefreshing = useStore(shoppingListStore, (s) => s.isRefreshing);
   const [confirm, setConfirm] = useState<ShoppingConfirmType | null>(null);
   const [isConfirming, setConfirming] = useState(false);
 
@@ -47,7 +49,7 @@ export const useShoppingList = (): UseShoppingListResult => {
   const items = loadedItems(list);
   useLocale();
   // The section labels are copy: a language switch must rebuild them, not only a list change.
-  const { toBuy, completed } = t().shopping;
+  const { toBuy, completed } = t.shopping;
   const { rows, checkedCount } = useMemo(
     () => ({ rows: shoppingRows(items, toBuy, completed), checkedCount: items.filter((item) => item.checked).length }),
     [items, toBuy, completed],
@@ -70,13 +72,13 @@ export const useShoppingList = (): UseShoppingListResult => {
     }
         toastStore.getState().show({
           severity: SeverityType.Neutral,
-          message: t().shopping.removedItem.replace('{x}', item.label),
-          actionLabel: t().common.undo,
+          message: t.shopping.removedItem.replace('{x}', item.label),
+          actionLabel: t.common.undo,
           onAction: () => void shoppingListStore.getState().addDrafts([item.toDraft()]).then((back) => (back.ok ? undefined : showErrorToast(back.failure))),
         });
       });
     },
-    [shoppingListStore],
+    [shoppingListStore, t],
   );
 
   const onConfirm = (): void => {
@@ -88,7 +90,7 @@ export const useShoppingList = (): UseShoppingListResult => {
       setConfirming(false);
       setConfirm(null);
       if (!result.ok) return void showErrorToast(result.failure);
-      showSuccessToast(t().shopping.cleared.replace('{n}', String(result.value)));
+      showSuccessToast(t.shopping.cleared.replace('{n}', String(result.value)));
     });
   };
 

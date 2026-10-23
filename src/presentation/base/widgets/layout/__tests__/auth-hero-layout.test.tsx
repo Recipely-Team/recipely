@@ -15,16 +15,16 @@ describe('AuthHeroLayout', () => {
         <Text>form</Text>
       </AuthHeroLayout>,
     );
-    const subtitle = root.findAllByType(ThemedText).find((node) => node.props.children === 'Subtitle');
+    const subtitle = root.findAllByType(ThemedText).find((node) => node.props['children'] === 'Subtitle');
     let node = subtitle?.parent ?? null;
     const boxes: Record<string, unknown>[] = [];
     while (node !== null) {
-      const style = StyleSheet.flatten(node.props.style) as Record<string, unknown> | undefined;
+      const style = StyleSheet.flatten(node.props['style']) as Record<string, unknown> | undefined;
       if (style !== undefined) boxes.push(style);
       node = node.parent;
     }
 
-    expect(boxes.some((style) => style.minHeight !== undefined)).toBe(true);
-    expect(boxes.filter((style) => typeof style.height === 'number')).toEqual([]);
+    expect(boxes.some((style) => style['minHeight'] !== undefined)).toBe(true);
+    expect(boxes.filter((style) => typeof style['height'] === 'number')).toEqual([]);
   });
 });

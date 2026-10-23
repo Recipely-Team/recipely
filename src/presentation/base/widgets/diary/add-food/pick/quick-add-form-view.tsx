@@ -8,7 +8,7 @@ import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface QuickAddFormViewProps {
@@ -21,10 +21,11 @@ export interface QuickAddFormViewProps {
 
 /** The Quick add tab: a name, kcal and optional macros, logged in one step; scrolls on its own inside the sheet. */
 export const QuickAddFormView = ({ initialMeal, initialName, isSubmitting, onSubmit }: QuickAddFormViewProps): React.JSX.Element => {
+  const t = useTranslations();
   const locale = useLocale();
   const form = useQuickAddForm(initialMeal, initialName);
-  const strings = t().diary;
-  const nutrition = t().nutrition;
+  const strings = t.diary;
+  const nutrition = t.nutrition;
   const food = form.food;
   const macroFields = [
     { key: 'protein', label: nutrition.protein, value: form.protein, onChange: form.setProtein },

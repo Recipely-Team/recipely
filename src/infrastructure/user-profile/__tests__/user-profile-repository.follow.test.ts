@@ -65,8 +65,8 @@ describe('UserProfileRepository.getViewedProfile', () => {
 
     const r = await new UserProfileRepository(http).getViewedProfile('u-1');
 
-    expect(calls[0].method).toBe('GET');
-    expect(calls[0].url).toBe('/users/u-1');
+    expect(calls[0]!.method).toBe('GET');
+    expect(calls[0]!.url).toBe('/users/u-1');
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.value.profile.displayName).toBe('Ada Lovelace');
@@ -93,9 +93,9 @@ describe('UserProfileRepository.listUserRecipes', () => {
 
     const r = await new UserProfileRepository(http).listUserRecipes('u 1', 2, 20);
 
-    expect(calls[0].method).toBe('GET');
-    expect(calls[0].url).toBe('/users/u%201/recipes');
-    expect(calls[0].params).toEqual({ page: 2, pageSize: 20 });
+    expect(calls[0]!.method).toBe('GET');
+    expect(calls[0]!.url).toBe('/users/u%201/recipes');
+    expect(calls[0]!.params).toEqual({ page: 2, pageSize: 20 });
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.value.items.map((recipe) => recipe.id)).toEqual(['r-1']);
@@ -121,8 +121,8 @@ describe('UserProfileRepository.follow / unfollow', () => {
     const r = await new UserProfileRepository(http).follow('u-1');
 
     expect(r.ok).toBe(true);
-    expect(calls[0].method).toBe('POST');
-    expect(calls[0].url).toBe('/users/u-1/follow');
+    expect(calls[0]!.method).toBe('POST');
+    expect(calls[0]!.url).toBe('/users/u-1/follow');
   });
 
   it('unfollows with DELETE /users/:id/follow', async () => {
@@ -131,8 +131,8 @@ describe('UserProfileRepository.follow / unfollow', () => {
     const r = await new UserProfileRepository(http).unfollow('u-1');
 
     expect(r.ok).toBe(true);
-    expect(calls[0].method).toBe('DELETE');
-    expect(calls[0].url).toBe('/users/u-1/follow');
+    expect(calls[0]!.method).toBe('DELETE');
+    expect(calls[0]!.url).toBe('/users/u-1/follow');
   });
 
   it('propagates a failed follow unchanged', async () => {

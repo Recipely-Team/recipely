@@ -1,3 +1,5 @@
+import { useTranslations } from '@presentation/i18n';
+import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
@@ -10,7 +12,7 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 
 export interface AssistantActionChipProps {
   action: AssistantActionType;
-  detail?: string;
+  detail?: string | undefined;
 }
 
 /**
@@ -24,7 +26,8 @@ export interface AssistantActionChipProps {
  *   assistant say it searched and still want to check later what it actually
  *   touched — this is the only place that record survives the audio.
  */
-export const AssistantActionChip = ({ action, detail }: AssistantActionChipProps): React.JSX.Element => {
+const AssistantActionChipComponent = ({ action, detail }: AssistantActionChipProps): React.JSX.Element => {
+  const t = useTranslations();
   const { colors } = useTheme();
 
   return (
@@ -38,7 +41,7 @@ export const AssistantActionChip = ({ action, detail }: AssistantActionChipProps
       >
         <Ionicons name="sparkles" size={iconSizes.xs} color={colors.chipText} />
         <ThemedText variant="caption" style={[styles.label, { color: colors.chipText }]}>
-          {assistantActionLabel(action)}
+          {assistantActionLabel(t, action)}
         </ThemedText>
         {detail !== undefined ? (
           <ThemedText variant="caption" style={{ color: colors.chipText }} numberOfLines={1}>
@@ -64,3 +67,6 @@ const styles = StyleSheet.create({
   },
   label: { fontWeight: fontWeights.bold },
 });
+
+/** Memoized: rendered once per list item, it re-renders only when its own props change. */
+export const AssistantActionChip = memo(AssistantActionChipComponent);

@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import { StatsMetrics } from '@presentation/app/automations/stats/model/stats-metrics';
 import { borderWidths, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 const FUNNEL_CELLS = 4;
 const LIST_ROWS = 3;
@@ -13,10 +13,11 @@ const VALUE = 24;
 
 /** Loading (spec state 1): the shape of every block, so nothing jumps when the numbers land. */
 export const StatsSkeleton = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const card = [styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }];
   return (
-    <View style={styles.stack} accessible accessibilityLabel={t().creatorStats.loading} accessibilityState={{ busy: true }}>
+    <View style={styles.stack} accessible accessibilityLabel={t.creatorStats.loading} accessibilityState={{ busy: true }}>
       <View style={[...card, styles.funnel]}>
         {Array.from({ length: FUNNEL_CELLS }, (_, i) => (
           <View key={`f-${i}`} style={styles.cell}>

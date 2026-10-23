@@ -13,7 +13,7 @@ import { formatPlanDay } from '@presentation/app/diary/model/plan/format-plan-da
 import { PlanWeekStep, type PlanWeekStepType } from '@presentation/app/diary/model/plan/plan-week-step';
 import type { ProposalRow } from '@presentation/app/diary/model/plan/proposal-row';
 import type { UsePlanMyWeekResult } from '@presentation/app/diary/model/plan/use-plan-my-week-result';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 /** The seed range the backend accepts; a new one is "Shuffle". */
 const SEED_MAX = 2_147_483_647;
@@ -32,16 +32,17 @@ const keyOf = (date: CalendarDate, meal: MealSlotType): string => `${date.value}
  * - **Undo removes exactly what Add wrote**, entry by entry.
  */
 export const usePlanMyWeek = (weekStart: CalendarDate, today: CalendarDate): UsePlanMyWeekResult => {
+  const t = useTranslations();
   const { mealPlanStore } = useStores();
   const locale = useLocale();
-  const [visible, setVisible] = useState(false);
+  const [isVisible, setVisible] = useState(false);
   const [step, setStep] = useState<PlanWeekStepType>(PlanWeekStep.Meals);
   const [meals, setMeals] = useState<ReadonlySet<MealSlotType>>(() => new Set([MealSlot.Dinner]));
   const [seed, setSeed] = useState(newSeed);
   const [suggestion, setSuggestion] = useState<WeekSuggestion | null>(null);
   const [swapped, setSwapped] = useState<ReadonlySet<string>>(() => new Set());
-  const [loading, setLoading] = useState(false);
-  const [adding, setAdding] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+  const [isAdding, setAdding] = useState(false);
 
   const fetchWeek = useCallback(
     async (withSeed: number) => {
@@ -79,9 +80,12 @@ export const usePlanMyWeek = (weekStart: CalendarDate, today: CalendarDate): Use
   );
 
   const days = useMemo(() => {
-    const byDay = new Map<string, ProposalRow[]>();
-    for (const row of rows) byDay.set(row.date.value, [...(byDay.get(row.date.value) ?? []), row]);
-    return [...byDay.entries()].map(([key, dayRows]) => ({ key, label: formatPlanDay(dayRows[ValueConstants.zero]!.date, locale), rows: dayRows }));
+    const byDay = new Map<string, { date: CalendarDate; rows: ProposalRow[] }>();
+    for (const row of rows) {
+      const day = byDay.get(row.date.value) ?? { date: row.date, rows: [] };
+      byDay.set(row.date.value, { date: day.date, rows: [...day.rows, row] });
+    }
+    return [...byDay.entries()].map(([key, day]) => ({ key, label: formatPlanDay(day.date, locale), rows: day.rows }));
   }, [rows, locale]);
 
   const toAdd = rows.filter((row) => row.shown !== null);
@@ -103,21 +107,21 @@ export const usePlanMyWeek = (weekStart: CalendarDate, today: CalendarDate): Use
     if (added.length === ValueConstants.zero) return;
     toastStore.getState().show({
       severity: SeverityType.Neutral,
-      message: t().mealPlan.planWeek.added.replace('{n}', String(added.length)),
-      actionLabel: t().mealPlan.undo,
+      message: t.mealPlan.planWeek.added.replace('{n}', String(added.length)),
+      actionLabel: t.mealPlan.undo,
       onAction: () => void Promise.all(added.map((entry) => mealPlanStore.getState().remove(entry))),
     });
-  }, [mealPlanStore, toAdd, today]);
+  }, [mealPlanStore, toAdd, today, t]);
 
   return {
-    visible,
+    visible: isVisible,
     step,
     meals,
-    loading,
+    loading: isLoading,
     emptyPool: suggestion !== null && suggestion.poolSize === ValueConstants.zero,
     days,
     addCount: toAdd.length,
-    adding,
+    adding: isAdding,
     open: () => {
       setStep(PlanWeekStep.Meals);
       setVisible(true);

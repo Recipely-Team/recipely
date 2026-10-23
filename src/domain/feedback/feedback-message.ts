@@ -33,11 +33,11 @@ export class FeedbackMessage extends BaseValueObject<string> {
     return mapResult(message, (m) => new FeedbackMessage(m.value, raw.subject.trim()));
   }
 
-  get submission(): FeedbackSubmission {
+  submission(): FeedbackSubmission {
     return { subject: this.subject, message: this.value };
   }
 
-  equals(other: FeedbackMessage): boolean {
+  override equals(other: FeedbackMessage): boolean {
     return super.equals(other) && this.subject === other.subject;
   }
 }

@@ -44,7 +44,7 @@ const setup = () => {
     assistantActionRegistry: registry,
     stepProgressStore,
     recipeDetailStore: create(() => ({ byId: { r1: { status: StoreStatus.Loaded, recipe, likedByMe: false, fetchedAt: 0 } }, load: jest.fn() })),
-    createdRecipesStore: create(() => ({ findById: () => undefined })),
+    recipeAuthoringStore: create(() => ({ findById: () => undefined })),
   } as unknown as Partial<ApplicationStores>;
   const { root } = renderComponent(<CookModeScreen />, stores);
   return { root, registry, stepProgressStore };
@@ -53,11 +53,11 @@ const setup = () => {
 const press = (root: ReactTestInstance, label: string): void => {
   const button = root.find(
     (node) =>
-      node.props.accessibilityRole === 'button' &&
-      typeof node.props.onPress === 'function' &&
-      node.findAllByType(ThemedText).some((text) => text.props.children === label),
+      node.props['accessibilityRole'] === 'button' &&
+      typeof node.props['onPress'] === 'function' &&
+      node.findAllByType(ThemedText).some((text) => text.props['children'] === label),
   );
-  act(() => (button.props.onPress as () => void)());
+  act(() => (button.props['onPress'] as () => void)());
 };
 
 describe('CookModeScreen finishing', () => {
@@ -69,7 +69,7 @@ describe('CookModeScreen finishing', () => {
     press(root, t().cookMode.next);
     press(root, t().cookMode.finish);
 
-    expect(stepProgressStore.getState().byRecipe.r1).toEqual([true, true]);
+    expect(stepProgressStore.getState().byRecipe['r1']).toEqual([true, true]);
     expect(mockRouter.back).toHaveBeenCalledTimes(1);
   });
 
@@ -98,7 +98,7 @@ describe('CookModeScreen finishing', () => {
     await act(async () => {
       await expect(registry.run(AssistantAction.ToggleStep, 'serve')).resolves.toMatchObject({ ok: true, n: { step: 2, done: 1 } });
     });
-    expect(stepProgressStore.getState().byRecipe.r1?.[1]).toBe(true);
+    expect(stepProgressStore.getState().byRecipe['r1']?.[1]).toBe(true);
     await act(async () => {
       await expect(registry.run(AssistantAction.ToggleStep, 'flambé')).resolves.toMatchObject({ ok: false, error: AssistantActionError.NotFound });
     });

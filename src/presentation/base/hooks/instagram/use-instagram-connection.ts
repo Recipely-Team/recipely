@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useStore } from 'zustand';
 import { useFocusEffect } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import { InstagramConnection } from '@domain/instagram/connect/instagram-connection';
@@ -15,7 +16,7 @@ const UNKNOWN = InstagramConnection.none();
  */
 export const useInstagramConnection = (): InstagramConnection => {
   const { instagramStore } = useStores();
-  const connection = instagramStore((s) => (s.connection.status === StoreStatus.Loaded ? s.connection.connection : UNKNOWN));
+  const connection = useStore(instagramStore, (s) => (s.connection.status === StoreStatus.Loaded ? s.connection.connection : UNKNOWN));
   useFocusEffect(
     useCallback(() => {
       void instagramStore.getState().load();

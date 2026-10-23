@@ -10,7 +10,8 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
-import { FeedFirstPageCache } from '@infrastructure/recipes/list/feed-first-page-cache';
+import { FirstPageCache } from '@infrastructure/network/paging/first-page-cache';
+import { FEED_FIRST_PAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 
 const memoryStore = (): KeyValueStoreInterface => {
@@ -33,7 +34,7 @@ const FIRST_PAGE = { items: [], total: 7, page: 1, pageSize: 20, hasMore: false 
 const repoAnswering = (...answers: Result<unknown, Failure>[]) => {
   const queue = [...answers];
   const http = withHttpVerbs(jest.fn(() => Promise.resolve(queue.shift())));
-  return new RecipeRepository(http, new FeedFirstPageCache(memoryStore()));
+  return new RecipeRepository(http, new FirstPageCache(memoryStore(), FEED_FIRST_PAGE_STORAGE_KEY));
 };
 
 const flush = (): Promise<void> => new Promise((resolve) => setImmediate(resolve));

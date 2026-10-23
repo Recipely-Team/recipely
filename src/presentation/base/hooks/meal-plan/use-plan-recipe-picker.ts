@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { FoodSearchGroup } from '@domain/diary/foods/search/food-search-group';
 import type { RecipeHitGroupType } from '@domain/diary/foods/search/recipe-hit-group-type';
@@ -29,7 +30,7 @@ interface PlanRecipePicker {
  */
 export const usePlanRecipePicker = (): PlanRecipePicker => {
   const { mealPlanStore } = useStores();
-  const recipes = mealPlanStore((s) => s.recipes);
+  const recipes = useStore(mealPlanStore, (s) => s.recipes);
   const [tab, setTab] = useState<RecipeHitGroupType>(FoodSearchGroup.Saved);
   const [query, setQuery] = useState(CharConstants.empty);
 

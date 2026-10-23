@@ -62,7 +62,7 @@ describe('SubmitFeedbackUseCase.execute', () => {
 
       expect(result.ok).toBe(true);
       expect(calls).toHaveLength(1);
-      expect(calls[0].input.message).toBe('My feedback');
+      expect(calls[0]!.input.message).toBe('My feedback');
     });
 
     it('calls repo with trimmed subject', async () => {
@@ -71,7 +71,7 @@ describe('SubmitFeedbackUseCase.execute', () => {
 
       await useCase.execute({ subject: '  Some title  ', message: 'Valid message' });
 
-      expect(calls[0].input.subject).toBe('Some title');
+      expect(calls[0]!.input.subject).toBe('Some title');
     });
 
     it('calls repo with empty subject when subject is blank', async () => {
@@ -80,7 +80,7 @@ describe('SubmitFeedbackUseCase.execute', () => {
 
       await useCase.execute({ subject: '   ', message: 'Valid message' });
 
-      expect(calls[0].input.subject).toBe('');
+      expect(calls[0]!.input.subject).toBe('');
     });
 
     it('returns ok(void) on success', async () => {

@@ -99,14 +99,14 @@ describe('ValidationFailure.fieldErrors', () => {
     // though the failure itself carries one via `.field`.
     const f = new ValidationFailure('Recipe id must be non-empty', 'id');
 
-    expect(f.fieldErrors).toEqual([{ message: 'Recipe id must be non-empty' }]);
+    expect(f.fieldErrors()).toEqual([{ message: 'Recipe id must be non-empty' }]);
     expect(f.field).toBe('id');
   });
 
   it('splits a multi-field message into per-field entries', () => {
     const f = new ValidationFailure('name: too short; category: invalid');
 
-    expect(f.fieldErrors).toEqual([
+    expect(f.fieldErrors()).toEqual([
       { field: 'name', message: 'too short' },
       { field: 'category', message: 'invalid' },
     ]);
@@ -115,7 +115,7 @@ describe('ValidationFailure.fieldErrors', () => {
   it('treats a segment with no field prefix as fieldless, even alongside fielded segments', () => {
     const f = new ValidationFailure('name: too short; a general problem');
 
-    expect(f.fieldErrors).toEqual([
+    expect(f.fieldErrors()).toEqual([
       { field: 'name', message: 'too short' },
       { message: 'a general problem' },
     ]);

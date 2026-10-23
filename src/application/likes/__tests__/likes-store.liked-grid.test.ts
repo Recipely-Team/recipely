@@ -1,3 +1,4 @@
+import { loadedItems } from '@application/store/paging/loaded-items';
 /**
  * Taking the heart off a recipe has to take it out of the Liked grid.
  *
@@ -11,8 +12,8 @@ import { configureLikesStore } from '@application/likes/likes-store';
 import { configureLikedRecipesStore } from '@application/recipes/liked/liked-recipes-store';
 import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
 import type { LoadLikedRecipesUseCase } from '@application/likes/load-liked-recipes-use-case';
-import type { BoundStore } from '@application/store/bound-store';
-import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
+import type { StoreApi } from 'zustand/vanilla';
+import type { LikedRecipesStore } from '@application/recipes/liked/liked-recipes-store-contract';
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
@@ -51,7 +52,7 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
   return result.value;
 };
 
-const makeLikedStore = async (): Promise<BoundStore<LikedRecipesStoreState>> => {
+const makeLikedStore = async (): Promise<StoreApi<LikedRecipesStore>> => {
   const store = configureLikedRecipesStore({
     loadLikedRecipesUseCase: {
       execute: () => Promise.resolve(ok(recipePageOf([makeRecipe(RECIPE_ID), makeRecipe('r-2')]))),
@@ -62,7 +63,7 @@ const makeLikedStore = async (): Promise<BoundStore<LikedRecipesStoreState>> => 
 };
 
 const makeLikesStore = (
-  likedRecipesStore: BoundStore<LikedRecipesStoreState>,
+  likedRecipesStore: StoreApi<LikedRecipesStore>,
   unlikeResult: Result<void, Failure> = ok(undefined),
 ) =>
   configureLikesStore({
@@ -80,7 +81,7 @@ describe('likesStore.toggle — the Liked grid', () => {
 
     await likes.getState().toggle(RECIPE_ID);
 
-    expect(likedRecipesStore.getState().likedRecipes.map((r) => r.id)).toEqual(['r-2']);
+    expect(loadedItems(likedRecipesStore.getState().liked).map((r) => r.id)).toEqual(['r-2']);
   });
 
   it('keeps the row when the unlike request fails and the toggle rolls back', async () => {
@@ -90,7 +91,7 @@ describe('likesStore.toggle — the Liked grid', () => {
 
     await likes.getState().toggle(RECIPE_ID);
 
-    expect(likedRecipesStore.getState().likedRecipes.map((r) => r.id)).toEqual([RECIPE_ID, 'r-2']);
+    expect(loadedItems(likedRecipesStore.getState().liked).map((r) => r.id)).toEqual([RECIPE_ID, 'r-2']);
     expect(likes.getState().byRecipe[RECIPE_ID]?.likedByMe).toBe(true);
   });
 
@@ -101,6 +102,6 @@ describe('likesStore.toggle — the Liked grid', () => {
 
     await likes.getState().toggle('r-3');
 
-    expect(likedRecipesStore.getState().likedRecipes.map((r) => r.id)).toEqual([RECIPE_ID, 'r-2']);
+    expect(loadedItems(likedRecipesStore.getState().liked).map((r) => r.id)).toEqual([RECIPE_ID, 'r-2']);
   });
 });

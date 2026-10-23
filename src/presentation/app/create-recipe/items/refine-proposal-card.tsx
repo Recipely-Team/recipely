@@ -14,7 +14,7 @@ import {
   layoutSizes,
   controlSizes,
 } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { RecipeChangeKind } from '@presentation/app/create-recipe/model/refine/recipe-change-kind';
 import { ValueConstants } from '@core/constants';
 
@@ -45,15 +45,16 @@ export const RefineProposalCard = ({
   onAccept,
   onReject,
 }: RefineProposalCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
 
-  const fieldLabel = (field: CreateRecipeFieldKeyType): string => t().createRecipe.changeFields[field];
+  const fieldLabel = (field: CreateRecipeFieldKeyType): string => t.createRecipe.changeFields[field];
 
   const valueLabel = (field: CreateRecipeFieldKeyType, value: string): string => {
-    if (value.length === ValueConstants.zero) return t().createRecipe.changeEmptyValue;
-    if (field === 'cuisine') return cuisineLabel(value)?.name ?? value;
-    if (field === 'category') return categoryLabel(value)?.name ?? value;
+    if (value.length === ValueConstants.zero) return t.createRecipe.changeEmptyValue;
+    if (field === 'cuisine') return cuisineLabel(value).name;
+    if (field === 'category') return categoryLabel(value).name;
     return value;
   };
 
@@ -62,7 +63,7 @@ export const RefineProposalCard = ({
       <View style={styles.header}>
         <Ionicons name="git-compare-outline" size={iconSizes.md} color={colors.primary} />
         <ThemedText style={[styles.title, { color: colors.text }]}>
-          {t().createRecipe.proposalTitle}
+          {t.createRecipe.proposalTitle}
         </ThemedText>
       </View>
 
@@ -102,20 +103,20 @@ export const RefineProposalCard = ({
           onPress={onReject}
           style={[styles.button, { borderColor: colors.border, borderWidth: borderWidths.hairline }]}
           accessibilityRole="button"
-          accessibilityLabel={t().createRecipe.proposalReject}
+          accessibilityLabel={t.createRecipe.proposalReject}
         >
           <ThemedText style={[styles.buttonText, { color: colors.textMuted }]}>
-            {t().createRecipe.proposalReject}
+            {t.createRecipe.proposalReject}
           </ThemedText>
         </Pressable>
         <Pressable
           onPress={onAccept}
           style={[styles.button, { backgroundColor: colors.primary }]}
           accessibilityRole="button"
-          accessibilityLabel={t().createRecipe.proposalAccept}
+          accessibilityLabel={t.createRecipe.proposalAccept}
         >
           <ThemedText style={[styles.buttonText, { color: colors.primaryText }]}>
-            {t().createRecipe.proposalAccept}
+            {t.createRecipe.proposalAccept}
           </ThemedText>
         </Pressable>
       </View>

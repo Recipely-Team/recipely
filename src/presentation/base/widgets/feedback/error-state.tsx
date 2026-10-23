@@ -14,13 +14,13 @@ export interface ErrorStateProps {
   severity?: SeverityType;
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
-  body?: string;
-  primaryLabel?: string;
-  onPrimary?: () => void;
-  secondaryLabel?: string;
-  onSecondary?: () => void;
+  body?: string | undefined;
+  primaryLabel?: string | undefined;
+  onPrimary?: (() => void) | undefined;
+  secondaryLabel?: string | undefined;
+  onSecondary?: (() => void) | undefined;
   /** Small, optional monospace diagnostic code shown under the actions. */
-  code?: string;
+  code?: string | undefined;
 }
 
 /**

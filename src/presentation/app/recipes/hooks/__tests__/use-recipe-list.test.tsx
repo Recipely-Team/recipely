@@ -1,4 +1,4 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 /**
  * Regression tests for `useRecipeList`'s `isPullRefreshing` flag.
  *
@@ -37,13 +37,12 @@ import type { ApplicationStores } from '@application/di/application-stores';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
 import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
 import { FEED_STALE_AFTER_MS } from '@presentation/app/recipes/model/feed-stale-after-ms';
-import { useFocusEffect } from 'expo-router';
 import { configureRecipeListStore } from '@application/recipes/list/recipe-list-store';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
-import type { AuthStoreState } from '@application/auth/auth-store-state';
-import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
-import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import type { AuthStore } from '@application/auth/auth-store-contract';
+import type { NotificationsStore } from '@application/notifications/notifications-store-contract';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
@@ -52,7 +51,7 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 import type { Page } from '@domain/common/page';
@@ -63,12 +62,24 @@ jest.mock('expo-router', () => ({
   // No `?q=`: these cover the ordinary feed. Arriving with a query — how the
   // assistant searches — is covered in its own test below.
   useLocalSearchParams: jest.fn(() => ({})),
-  // The real hook runs its callback whenever the screen gains focus; an effect
-  // is close enough here (the hook skips the mount focus via its own ref).
-  useFocusEffect: jest.fn((callback: () => void) => {
-    jest.requireActual<typeof import('react')>('react').useEffect(callback, [callback]);
-  }),
 }));
+
+// Focus the test can flip, as the navigator does on a tab switch or a pop.
+const mockFocus = { focused: true, listeners: new Set<() => void>() };
+jest.mock('@presentation/base/hooks/assistant/use-is-screen-focused', () => ({
+  useIsScreenFocused: () =>
+    jest.requireActual<typeof import('react')>('react').useSyncExternalStore(
+      (onChange: () => void) => {
+        mockFocus.listeners.add(onChange);
+        return () => mockFocus.listeners.delete(onChange);
+      },
+      () => mockFocus.focused,
+    ),
+}));
+const setFocused = (focused: boolean): void => {
+  mockFocus.focused = focused;
+  mockFocus.listeners.forEach((onChange) => onChange());
+};
 
 // The feed reads its query from ITS OWN state on a phone and from the shared
 // header field on the web, so a `?q=` that lands in only one of them does
@@ -150,35 +161,35 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
 };
 
 const makeAuthStore = () =>
-  create<AuthStoreState>(() => ({
+  create<AuthStore>(() => ({
     state: { status: 'unauthenticated' },
-  }) as unknown as AuthStoreState);
+  }) as unknown as AuthStore);
 
 const makeNotificationsStore = () =>
-  create<NotificationsStoreState>(() => ({
-  }) as unknown as NotificationsStoreState);
+  create<NotificationsStore>(() => ({
+  }) as unknown as NotificationsStore);
 
 const makeSavedRecipesStore = () =>
-  create<SavedRecipesStoreState>(() => ({
+  create<SavedRecipesStore>(() => ({
     savedIds: new Set<string>(),
     setSavedIds: jest.fn(),
-  }) as unknown as SavedRecipesStoreState);
+  }) as unknown as SavedRecipesStore);
 
 /** The user's own recipes; a change to it means the feed may be missing a just-published recipe. */
 const ownRecipes = create<{ version: number }>(() => ({ version: 0 }));
 
 /** The viewer the feed hook reads; a test signs in by setting it. Reset before each test. */
 const viewer = makeAuthStore();
-beforeEach(() => viewer.setState({ state: { status: 'unauthenticated' } } as unknown as AuthStoreState));
+beforeEach(() => viewer.setState({ state: { status: 'unauthenticated' } } as unknown as AuthStore));
 
-const makeStores = (recipeListStore: BoundStore<RecipeListStoreState>): ApplicationStores =>
+const makeStores = (recipeListStore: StoreApi<RecipeListStore>): ApplicationStores =>
   ({
     recipeListStore,
     authStore: viewer,
     notificationsStore: makeNotificationsStore(),
     savedRecipesStore: makeSavedRecipesStore(),
     loadFavoritesUseCase: { execute: jest.fn().mockResolvedValue(ok([])) },
-    createdRecipesStore: ownRecipes,
+    myRecipesStore: ownRecipes,
   }) as unknown as ApplicationStores;
 
 /** One render of the hook: the spinner flag next to what the store reports. */
@@ -780,16 +791,15 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     }
   });
 
-  /** Re-runs the screen's focus callback, as returning to the feed tab would. */
+  /** Blurs and re-focuses the screen, as leaving and returning to the feed tab would. */
   const refocus = async (): Promise<void> => {
-    const calls = (useFocusEffect as jest.Mock).mock.calls;
-    const onFocus = calls[calls.length - 1][0] as () => void;
     // Let the first load settle completely — its success is what stamps the feed fresh.
     await act(async () => {
       await new Promise((resolve) => setImmediate(resolve));
     });
+    act(() => setFocused(false));
     await act(async () => {
-      onFocus();
+      setFocused(true);
       await Promise.resolve();
     });
   };
@@ -836,7 +846,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     await mountLoaded(execute);
     execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('r1')]))));
     act(() =>
-      viewer.setState({ state: { status: 'authenticated', session: { user: { id: 'u1' } } } } as unknown as AuthStoreState),
+      viewer.setState({ state: { status: 'authenticated', session: { user: { id: 'u1' } } } } as unknown as AuthStore),
     );
     now.mockReturnValue(loadedAt + 1_000);
 

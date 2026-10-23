@@ -1,3 +1,5 @@
+import { NetworkFailure, UnauthorizedFailure } from '@core/failure';
+import { fail, ok } from '@core/result/result-helpers';
 import { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-http-client-options';
 
@@ -140,5 +142,81 @@ describe('AxiosHttpClient read retry', () => {
     await settle(client.post('/recipes', {}));
 
     expect(mockRequest).toHaveBeenCalledTimes(1);
+  });
+});
+
+// Regression: an expired access token used to end the session on the first
+// 401 — every user was signed out when their JWT lapsed, though a refresh
+// token could have renewed it.
+describe('AxiosHttpClient session refresh', () => {
+  beforeEach(() => {
+    mockRequest.mockReset();
+  });
+
+  const unauthorized = { status: 401, data: { error: { code: 'unauthorized', message: 'expired' } } };
+
+  it('an expired access token is renewed and the request sent again, without signing out', async () => {
+    mockRequest.mockResolvedValueOnce(unauthorized).mockResolvedValueOnce({ status: 200, data: { data: { id: 'r1' } } });
+    const refreshSession = jest.fn(() => Promise.resolve(ok(undefined)));
+    const { client, onUnauthorized } = buildClient({ refreshSession });
+
+    const result = await client.get('/me/favorites');
+
+    expect(result).toEqual({ ok: true, value: { id: 'r1' } });
+    expect(refreshSession).toHaveBeenCalledTimes(1);
+    expect(mockRequest).toHaveBeenCalledTimes(2);
+    expect(onUnauthorized).not.toHaveBeenCalled();
+  });
+
+  it('signs out when the renewal is refused', async () => {
+    mockRequest.mockResolvedValue(unauthorized);
+    const { client, onUnauthorized } = buildClient({ refreshSession: () => Promise.resolve(fail(new UnauthorizedFailure('refused'))) });
+
+    const result = await client.get('/me/favorites');
+
+    expect(result.ok).toBe(false);
+    expect(mockRequest).toHaveBeenCalledTimes(1);
+    expect(onUnauthorized).toHaveBeenCalledTimes(1);
+  });
+
+  it('a renewal that cannot reach the API keeps the user signed in and reports the network failure', async () => {
+    mockRequest.mockResolvedValue(unauthorized);
+    const { client, onUnauthorized } = buildClient({ refreshSession: () => Promise.resolve(fail(new NetworkFailure('offline'))) });
+
+    const result = await client.get('/me/favorites');
+
+    expect(!result.ok && result.failure).toBeInstanceOf(NetworkFailure);
+    expect(onUnauthorized).not.toHaveBeenCalled();
+  });
+
+  it('a wrong password does not try to refresh', async () => {
+    mockRequest.mockResolvedValue(unauthorized);
+    const refreshSession = jest.fn(() => Promise.resolve(ok(undefined)));
+    const { client } = buildClient({ refreshSession });
+
+    await client.post('/auth/login', { email: 'a@b.c', password: 'x' });
+    await client.post('/auth/refresh', {});
+
+    expect(refreshSession).not.toHaveBeenCalled();
+  });
+});
+
+describe('AxiosHttpClient failure breadcrumbs', () => {
+  beforeEach(() => {
+    mockRequest.mockReset();
+  });
+
+  it('notes a failed request with the id it was sent under', async () => {
+    mockRequest.mockResolvedValue({
+      status: 404,
+      data: { error: { code: 'not_found', message: 'gone' } },
+      config: { headers: { 'X-Request-Id': 'rid-7' } },
+    });
+    const onRequestFailed = jest.fn();
+    const { client } = buildClient({ onRequestFailed });
+
+    await client.post('/recipes/r1/favorite');
+
+    expect(onRequestFailed).toHaveBeenCalledWith(expect.stringMatching(/^POST \/recipes\/r1\/favorite → .+ \(request rid-7\)$/));
   });
 });

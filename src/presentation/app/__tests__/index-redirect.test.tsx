@@ -16,6 +16,7 @@
  * providers' async storage hydration would outlive the test environment.
  */
 
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { act, create } from 'react-test-renderer';
 import { Platform } from 'react-native';
 import { IndexRedirect } from '@presentation/app';
@@ -34,17 +35,12 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: jest.fn(() => ({
-    authStore: jest.fn((selector: (state: { state: { status: string } }) => unknown) =>
-      selector({ state: { status: mockStatus } }),
-    ),
+    authStore: mockStoreReading(() => ({ state: { status: mockStatus } })),
   })),
 }));
 
 jest.mock('@application/onboarding/onboarding-store', () => ({
-  onboardingStore: jest.fn(
-    (selector: (state: { hydrated: boolean; dismissed: boolean }) => unknown) =>
-      selector(mockOnboarding),
-  ),
+  onboardingStore: mockStoreReading(() => (mockOnboarding)),
 }));
 
 const render = (): void => {

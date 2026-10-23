@@ -8,7 +8,7 @@ import { AutomationMetrics } from '@presentation/base/widgets/instagram/automati
 import { RoutePaths } from '@presentation/base/constants';
 import { useCreatorStatsLine } from '@presentation/app/profile/hooks/use-creator-stats-line';
 import { borderWidths, fontSizes, fontWeights, iconSizes, opacities, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * The automations card's second row (creator stats spec "Entry points"):
@@ -16,6 +16,7 @@ import { t } from '@presentation/i18n';
  * account; draws nothing until there is at least one automation.
  */
 export const CreatorStatsRow = (): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const router = useRouter();
   const line = useCreatorStatsLine();
@@ -31,7 +32,7 @@ export const CreatorStatsRow = (): React.JSX.Element | null => {
         <Ionicons name="bar-chart-outline" size={iconSizes.md} color={colors.primary} style={styles.mark} />
         <View style={styles.text}>
           <SizedText size={fontSizes.medium} weight={fontWeights.bold}>
-            {t().creatorStats.profileTitle}
+            {t.creatorStats.profileTitle}
           </SizedText>
           <SizedText size={fontSizes.small} color={colors.textSubtle} numberOfLines={ValueConstants.one}>
             {line}

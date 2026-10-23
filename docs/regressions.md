@@ -89,7 +89,7 @@ decided to drop the answer, so a cold start restored it. *Guard:* on screen,
 `configureAuthStore` drops a refresh when a request / remove was in flight as it
 started or started while it ran ("a focus refresh that started before a request…" and
 "…started while a request was in flight…", `auth-store.test.ts`); on disk,
-`AuthRepository.refreshCreatorClaim` writes only if the stored claim is still the one
+`CreatorClaimRepository.refreshCreatorClaim` writes only if the stored claim is still the one
 it read before the GET ("a cold start after the race restores the request's claim",
 `auth-repository.creator.test.ts`). **Dropping an answer in the store does not undo a
 write the layer below already made.**
@@ -2088,6 +2088,7 @@ only following it to a rendered pixel proves the user learns anything.
 | Akışın ortasında, mutfak rayı ile ızgara arasında 296px'lik boş bir blok duruyordu | `WebBannerAd`'in doküman bloğu "the space is not reserved. No `minHeight`" diyordu ve doğruydu — bileşen kendi adına hiçbir yükseklik ayırmıyor. Ayıran AdSense'ti: ünite istendiği anda kendi `<ins>`'ine **inline `height: 280px`** yazıyor ve `unfilled` cevabını verdikten sonra da orada bırakıyor. Yani bileşenin niyeti ile sayfanın hâli, kimse yanlış bir şey yazmadan ayrışmıştı; kod yalnızca kendi ayırmadığı yeri hesaba katıyordu. Üstelik bu, boşluğu tam da incelemesi süren sayfada, "içeriği olmayan ekran" ihbarının konusu olan yerde bırakıyordu. | `readAdUnitStatus` artık iki değil **üç** durum ayırt ediyor — `filled`, `unfilled` ve *henüz karar yok* (`null`) — çünkü çökertme kararı ile etiketleme kararı ters yönlerde hata yapar: karardan önce çökertmek üniteyi AdSense genişliğini ölçemeden gizler ve hiç dolmaz. `unfilled` gelince sarmalayıcı `display: none` ile layout'tan çıkıyor (yükseklik `<ins>`'in üzerinde olduğu için sıfırlamak yetmez); `<ins>` mount'ta kalıyor, sökmek AdSense'in bu sayfa görüntülemesi için zaten reddettiği bir reklamı yeniden istemek olurdu. Test react-dom + jsdom ile gerçek yolu sürüyor ve **hesaplanmış** stili okuyor — react-native-web stilleri atomik CSS sınıfına derlediği için `style.display` her hâlde boştur, yani inline özelliğe bakan bir assertion çökme olsa da olmasa da geçerdi. **Kural: bir bileşenin "yer ayırmıyorum" demesi, yeri bir başkasının ayırmadığı anlamına gelmez — üçüncü taraf senin düğünde kendi ölçüsünü yazar.** |
 | Yeni yayınlanan tarif "Bu tarif için besin değeri bilgisi henüz yok." diyordu, değerler biraz sonra kendiliğinden geliyordu | İki ayrı kusur üst üste binmişti. (1) Yayınlama isteği besin değeri **göndermiyor** — `CreateRecipeInput`'ta böyle bir alan yok — çünkü hesabı backend, tarif kaydedildikten *sonra* yapıyor; detay uç noktası o iş bitmeden cevap veriyor. Yani ekran, tarif hakkında kesin bir cümle kuruyordu ("bilgi yok") oysa doğru olan saat hakkında bir cümleydi ("henüz hesaplanmadı"). (2) Ekran bir daha bakmıyordu: değerler sunucuya düşüyor, açık sayfa "yok" demeye devam ediyordu. Kullanıcı bunu "yenileyince geliyor" diye bildirdi, ki bu eksik verinin değil **bayat state'in** imzasıdır. | `useNutritionRecheck` bir kez daha soruyor: gecikme sonunda tek bir istek, yalnızca o süre boyunca ekranda kalmış bir okuyucu için (efektin cleanup'ı gidenler için iptal ediyor) ve tarif başına **yalnızca bir kez** — hiç gelmeyecek bir şey için yapılan poll, yanlış bir kopyadan kötüdür. Bekleme bayrağı timer'ı değil **isteği** kapsıyor: timer'da temizlense kopya önce "yok"a, bir an sonra gerçek sayılara dönerdi. Beraberinde üçüncü bir kusur da kapandı: "besin değeri var mı" sorusunun **iki** tanımı vardı ve anlaşmıyorlardı — mobil kart lifi sayıyordu, web kenar çubuğu saymıyordu, yani yalnızca lif taşıyan bir tarif telefonda dolu, tarayıcıda boş görünüyordu. Tek `hasReportedNutrition` kaldı. **Kural: "yok" ile "daha bilmiyorum" aynı cümle değildir; ve bir ekran bir yokluğu ilan ediyorsa, o yokluğun değişip değişmediğine bakmak zorundadır.** |
 | `dev`'e yapılan sıradan bir merge'de CI düştü — hiçbir build istemeyen bir commit'te, 2 saniyede | Dev dağıtım kapısı commit'in konu satırını `subject="$(printf '%s' "$COMMIT_MESSAGE" \| head -n 1)"` ile alıyordu. `head` ilk satırı alır almaz çıkar ve boruyu kapatır; squash mesajı boru tamponunun (Linux'ta 64 KB) taşıyacağından uzun olduğunda `printf` hâlâ yazıyor oluyor, `EPIPE` alıyor ve `set -o pipefail` adımı düşürüyor. Değişiklikte yanlış bir şey yoktu, **commit mesajı uzundu** — ki bu CI'ın hakkında fikri olabileceği bir şey değil. Boyuta bağlı olduğu için de aralıklı görünüyordu: bir önceki uzun mesajlı merge geçmişti, bu geçmedi. | Konu satırı kabuğun kendisinde kesiliyor: `subject="${COMMIT_MESSAGE%%$'\n'*}"` — boru yok, alt kabuk yok, dolayısıyla SIGPIPE de yok. Guard, kaynağı okuyarak bulunamayacak bir hata olduğu için **davranışsal**: `scripts/__tests__/dev-distribution-gate.test.js` adımın gerçek betiğini `ci.yml`'den (satır numarasıyla değil, `id: decide` ile) çıkarıp bash'te çalıştırıyor. Guard'ın **iki yarısı** var, çünkü boyut testi taşınabilir değil: iki sınır neredeyse çakışıyor — hata boru tamponundan (Linux'ta 64 KB) büyük bir mesaj ister, tavan ise `MAX_ARG_STRLEN`, yani **tek** bir ortam değişkeni için 128 KB (`ARG_MAX` ne derse desin). İlk yazdığım 400 KB'lık mesaj bu yüzden runner'da `execve`'yi E2BIG ile düşürdü ve suite'i, test ettiği şeyle hiç ilgisi olmayan bir sebeple kırmızıya çevirdi; macOS'ta ise per-string sınır olmadığı için yeşildi. macOS EPIPE'tan önce 128 KB'tan fazlasını tamponladığı için de bir ortam değişkenine sığan hiçbir boyut orada hatayı üretmiyor. O yüzden boyut testi yalnızca **Linux'ta** ısırıyor — kapının koştuğu ve hatanın tek gerçekleştiği yer — ve yanına, `$COMMIT_MESSAGE`'ın bir boruya girmediğini metinden doğrulayan platformdan bağımsız bir kontrol kondu (yorumlar ayıklanarak: adımın kendi yorumu yasaklanan ifadeyi *açıklamak için* alıntılıyor, ham eşleştirme düzeltmeyi hata sanıyordu). Aynı testte kapının anlamı da sabitlendi — konu satırındaki işaret sayılır, gövdedeki sayılmaz — ki düzeltme onu sessizce değiştirmesin. **Kural: `\| head` bir boruyu erken kapatır; `pipefail` altında bu, girdinin BOYUTUNA bağlı bir hatadır ve küçük girdiyle yazılıp büyük girdiyle patlar.** |
+| Web skeleton cards looked frozen: the shimmer band sat still while a page loaded | The static export wrote `animation: recipely-shimmer …` onto every placeholder, but the `@keyframes` rule was only injected by `WebShimmer.ensureKeyframes()`, which needs `document` and so never runs during the export. An animation whose keyframes do not exist is not an error to a browser — it just does not run — so every prerendered skeleton (feed, recipe, diary, My Recipes, creator stats) stayed still until the bundle hydrated, which on a slow connection is the whole time they are on screen. Measured with Playwright: 0 running animations at first paint in Chromium and WebKit. | `+html.tsx` renders the keyframes into the static `<head>` under the id `ensureKeyframes` already checks, so the client never adds a second copy. Guard for the class: `scripts/assert-css-animations.mjs` (in `npm run build:web`) fails when any prerendered app page uses an animation name it does not define; it failed on 5 pages before the fix. |
 
 ## A cipher at parity, speaking the wrong protocol
 
@@ -3063,3 +3064,84 @@ pad by `useScrollEndPadding()`; `useKeyboardHeight` measures from the keyboard's
 `npm run maestro:largest-text` and `npm run maestro:small-screen`. *The class:* **test at
 the largest text and the smallest screen, and look at the screenshots — a cut label still
 holds its full string, so no text assertion fails.**
+
+## A reply nobody could decrypt, reported as a success (2026-10-22)
+
+The response interceptor caught `EnvelopeDecryptError`, logged it in dev, and left the raw
+`{ payload, iv }` in place. `AxiosHttpClient.request` then saw a 2xx body with no `data` key
+and returned `ok(envelope)`, so a write answered by a backend on another key looked like it
+had worked; the raw-XHR uploader did the same. The `EnvelopeDecryptError` branch in
+`mapAxiosError` was unreachable. *Guard:* both paths now fail with a `ValidationFailure`
+(`build-response-interceptor.test.ts`, `upload-multipart.test.ts`, each sealing a reply with
+the wrong key). *The class:* **a catch that only logs turns a failure into whatever the next
+line assumes; a `catch` in a transport path either returns a `Failure` or rethrows.**
+
+## Every user signed out when their access token expired (2026-10-22)
+
+The backend issued one 7-day JWT and no refresh token; the app stored a `refreshToken`
+field nothing filled, and its first 401 ended the session. Web kept the JWT in
+`localStorage`, where any script on the page could read it. *Now:* sign-in also returns a
+rotating refresh token (backend `refresh-session-use-case.test.ts`: reuse revokes the
+family, a two-tab race does not), the HTTP client renews once on a 401 and replays
+(`axios-http-client.test.ts`, single-flight in `session-refresher.test.ts`), a cold start
+with an expired token renews (`auth-repository.refresh.test.ts`), and web keeps tokens in
+memory with the refresh token in an HttpOnly cookie (`session-token-storage.test.ts`).
+Rebuilding the session for a profile edit used to drop the refresh token; it goes through
+`AuthSessionEntity.withUser` now. *The class:* **a field the model carries that nothing
+writes is a feature that was never built; and a session rebuilt field by field loses the
+field added next.**
+
+## One shared error field, read after an await (2026-10-22)
+
+`favoritesStore` kept a single `error`; each caller awaited its save and then read that
+field. With two saves in flight one recipe's failure was toasted for the other, and the
+assistant's "save this" never read it at all, so it announced saves the server had refused.
+The feed's `loadMore` also appended pages without de-duplicating, so a recipe published
+between two scrolls appeared twice. *Now:* save and unsave return their own
+`Failure | null` (`favorites-store.test.ts`, `use-recipe-detail-assistant.test.tsx`), and the
+feed appends through `appendById` (`recipe-list-store.test.ts`). A failed reminder
+reschedule now reaches Crashlytics through `CrashReporterInterface` instead of
+`.catch(() => undefined)`. *The class:* **an action's outcome belongs to the caller that
+started it, returned, never parked in shared state for whoever reads next; and offset
+paging over a live table repeats rows unless the append de-duplicates.**
+
+## A credential in a backup (2026-10-22)
+
+`allowBackup` was on with no rules, so Android Auto Backup copied the assistant's intent token,
+in plain text, to the user's Google Drive backup and to device-to-device transfers. On iOS it
+sat in the App Group `UserDefaults` plist, which device backups include. *Now:* the assistant
+kit plugin writes backup and data-extraction rules that exclude `recipely.assistant.xml` and
+`SecureStore.xml` (`withAssistantKit.test.js`, and the build fails if another plugin already
+claimed those attributes); iOS keeps the token in the Keychain with
+`AfterFirstUnlockThisDeviceOnly` and moves an older build's copy on first read. Verified with a
+local Android `assembleDebug` and an iOS simulator build (after `pod install`, which a new Swift
+file needs). *The class:* **a secret is stored where backups cannot take it: Keychain with a
+ThisDeviceOnly class on iOS, an explicit backup exclusion on Android.**
+
+## Screens that re-rendered for changes they never showed (2026-10-23)
+
+Fifteen components selected the whole auth `state` to read an id or "signed in?", every
+feed row among them, so replacing the session re-rendered all of them. `useAuthGuard` ran
+inside `RootStack` and subscribes to the pathname and every URL parameter, so each
+navigation re-rendered the Stack with a new inline `screenOptions` and, through it, every
+mounted screen. Nine list rows were not memoized (the assistant transcript re-rendered
+every bubble on each new line), and three parents passed fresh arrows that would have
+defeated `memo` anyway. *Now:* `useSignedInUserId` / `useIsSignedIn` / `useSignedInUser`
+select only what is read (`use-signed-in-selectors.test.tsx` counts renders), the
+navigation hooks live in a `RootEffects` sibling that renders nothing, `screenOptions` is
+memoized, and the rows are `memo` with stable callbacks. `check:structure` rule AW blocks
+`authStore((s) => s.state)`. *The class:* **select the value you render, not the object
+that holds it; and anything that listens to navigation renders nothing under it.**
+
+## A native-only prop handed to the web DOM (2026-10-23)
+
+`RecipeShareCard` set `collapsable={false}` unconditionally. It keeps a native view
+un-flattened for capture; on the web React writes unknown props to the DOM and warned
+"Received `false` for a non-boolean attribute `collapsable`". *Now:* it is passed on native
+only (`recipe-share-card.test.tsx` renders as web and as iOS). The same warning still comes
+from dependencies (react-native-screens, gesture-handler pass it on web), which is theirs to
+fix. *The class:* **a prop that means something only to native views is gated by platform
+when the component also renders on the web.**
+| With the React Compiler switched on, a screen on show during a language switch kept the old language (caught by the shopping-list test before it shipped) | Text was read from the global `t()` during render. The language is outside React, so to the compiler a label built from `t()` depends only on the component's other inputs, and it caches it; the screen re-rendered (the theme context re-rendered every consumer on a switch) but returned the cached English. The same class: anything read from mutable outside state during render — the clock (`CalendarDate.today()`), `getLocale()`, a getter that allocates (`recipe.heroPhotos` re-drew the photo viewer on every like, because the compiler re-read it as a changed input). | Text comes from `useTranslations()`, which subscribes to the language; helpers take the catalogue as a parameter; the date comes from `useToday()`; allocating getters are methods. Guards: eslint `no-restricted-imports` blocks the global `t` outside event-time code; `scripts/assert-react-compiler.mjs` (in `check:structure`) fails on any component or hook the compiler skips; `use-translations.language-switch.test.tsx` renders a real compiled screen and switches language (it fails on the old code); `react-compiler-in-tests.test.ts` proves Jest runs the compiled program. **Rule: under the compiler, a value read during render from anywhere but props, state, context or a subscription is a value that will go stale.** |
+| A web reload, or an app opened with an expired token, could sign the user out when its first request also got a 401 (found in review before it shipped) | Two paths renewed the session: start-up restore (`getCurrentSession`) and the HTTP client's 401 handler, which had its own single-flight wrapper. They raced with the same single-use refresh token; the loser was refused and `getCurrentSession` then cleared the session the winner had just saved. A renewal that could not reach the API was also reported to the client as a refusal, so a network blip signed people out. *Now:* the single flight lives in `AuthRepository.refreshSession` itself, so every caller shares one request, and the client gets the renewal's `Result`: only a refusal signs out. `auth-repository.refresh.test.ts` (start-up restore plus a concurrent 401 send one request and stay signed in; it fails on the old code) and `axios-http-client.test.ts` (an unreachable renewal keeps the session). **Rule: a single-use credential is renewed in exactly one place; a guard wrapped around one caller does not protect the others.** |
+| Lint passed on a developer's machine and failed in CI with 37 "unnecessary type assertion" errors | `typedRoutes` makes `Href` a union of the real routes, but Expo writes `.expo/types/router.d.ts` only while a dev server or export runs. A machine that had run the app had the file; a fresh CI checkout did not, so `Href` there was a plain string and type-aware lint judged every `as Href` differently. *Now:* `scripts/generate-typed-routes.mjs` writes the declarations with the same generator `@expo/cli` uses, as `prelint` and in the pre-commit hook, so every lint run sees the same types. Deleting the file and running `npx eslint` reproduces the CI failure; `npm run lint` passes. **Rule: a type-aware check must not depend on a generated file only some machines have; generate it as part of the check.** |

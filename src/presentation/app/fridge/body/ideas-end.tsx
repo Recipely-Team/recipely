@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { GhostButton } from '@presentation/app/fridge/items/buttons/ghost-button';
 import { IdeasLoad, type IdeasLoadType } from '@presentation/app/fridge/model/ideas/ideas-load';
 
@@ -22,8 +22,9 @@ export interface IdeasEndProps {
  * no-match card, with "Clear filters" when a filter is what narrowed it.
  */
 export const IdeasEnd = ({ load, empty, canClearFilters, onShowMore, onClearFilters }: IdeasEndProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().fridge;
+  const copy = t.fridge;
   if (load === IdeasLoad.Idle) return <GhostButton icon="add" label={copy.showMore} onPress={onShowMore} />;
   if (load !== IdeasLoad.Exhausted) return null;
   if (!empty) {

@@ -20,7 +20,7 @@ describe('AuthTextField autofill', () => {
     );
     const input = root.findByType(TextInput);
 
-    expect(input.props.autoComplete).toBe(autofill);
-    expect(input.props.textContentType).toBe(textContentType);
+    expect(input.props['autoComplete']).toBe(autofill);
+    expect(input.props['textContentType']).toBe(textContentType);
   });
 });

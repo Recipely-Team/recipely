@@ -61,9 +61,9 @@ describe('RecipeRepository.listTrendingRecipes', () => {
     await repo.listTrendingRecipes();
 
     expect(calls).toHaveLength(1);
-    expect(calls[0].method).toBe('GET');
-    expect(calls[0].url).toBe('/recipes/trending');
-    expect(calls[0].params).toEqual({ limit: 10 });
+    expect(calls[0]!.method).toBe('GET');
+    expect(calls[0]!.url).toBe('/recipes/trending');
+    expect(calls[0]!.params).toEqual({ limit: 10 });
   });
 
   it('forwards an explicit limit as the limit query param', async () => {
@@ -72,7 +72,7 @@ describe('RecipeRepository.listTrendingRecipes', () => {
 
     await repo.listTrendingRecipes(3);
 
-    expect(calls[0].params).toEqual({ limit: 3 });
+    expect(calls[0]!.params).toEqual({ limit: 3 });
   });
 
   it('maps every item in the list envelope into a RecipeSummaryEntity[]', async () => {
@@ -86,10 +86,10 @@ describe('RecipeRepository.listTrendingRecipes', () => {
     if (r.ok) {
       expect(r.value).toHaveLength(2);
       expect(r.value[0]).toBeInstanceOf(RecipeSummaryEntity);
-      expect(r.value[0].id).toBe(validDto.id);
-      expect(r.value[0].name).toBe('Trending Spicy Pasta');
-      expect(r.value[1].id).toBe('second-id');
-      expect(r.value[1].name).toBe('Trending Tacos');
+      expect(r.value[0]!.id).toBe(validDto.id);
+      expect(r.value[0]!.name).toBe('Trending Spicy Pasta');
+      expect(r.value[1]!.id).toBe('second-id');
+      expect(r.value[1]!.name).toBe('Trending Tacos');
     }
   });
 

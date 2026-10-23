@@ -4,6 +4,8 @@
  * from) — the card must render fine without ever trying to fetch or show one.
  */
 
+import { create } from 'zustand';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { WebHeroFeaturedCard } from '@presentation/app/recipes/items/hero/web-hero-featured-card';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
@@ -46,6 +48,7 @@ describe('WebHeroFeaturedCard — author row removed', () => {
     if (!recipe.ok) throw new Error('fixture invalid');
     const { root } = renderComponent(
       <WebHeroFeaturedCard recipe={recipe.value} onPress={jest.fn()} />,
+      { savedRecipesStore: create(() => ({ savedIds: new Set<string>() })) } as unknown as Partial<ApplicationStores>,
     );
 
     const texts = textContent(root);

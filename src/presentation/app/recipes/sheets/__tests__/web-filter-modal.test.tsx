@@ -25,7 +25,7 @@ import type { ApplicationStores } from '@application/di/application-stores';
 import { WebFilterModal } from '@presentation/app/recipes/sheets/web-filter-modal';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { emptyFilters } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';
-import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
+import type { TaxonomyStore } from '@application/recipes/taxonomy/taxonomy-store-contract';
 import { CUISINE_KEY_VALUES } from '@domain/recipes/taxonomy/cuisine-key';
 import { DIFFICULTY_VALUES } from '@domain/recipes/difficulty';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
@@ -49,7 +49,7 @@ jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
  * category names — exactly the "store not ready" path the modal must survive.
  */
 const makeTaxonomyStore = () =>
-  create<TaxonomyStoreState>(() => ({
+  create<TaxonomyStore>(() => ({
     cuisines: [],
     categories: [],
     status: 'idle',
@@ -113,15 +113,15 @@ const renderModal = (
 const buttonsByLabel = (root: RenderResult['root'], label: string) =>
   root.findAll(
     (node) =>
-      node.props.accessibilityRole === 'button' &&
-      node.props.accessibilityLabel === label &&
-      typeof node.props.onPress === 'function',
+      node.props['accessibilityRole'] === 'button' &&
+      node.props['accessibilityLabel'] === label &&
+      typeof node.props['onPress'] === 'function',
   );
 
 /** Fires the first button with the given accessibility label. */
 const pressByLabel = (root: RenderResult['root'], label: string): void => {
   const button = buttonsByLabel(root, label)[0];
-  act(() => (button.props.onPress as () => void)());
+  act(() => (button!.props['onPress'] as () => void)());
 };
 
 describe('WebFilterModal', () => {
@@ -153,8 +153,8 @@ describe('WebFilterModal', () => {
     const { root, handlers } = renderModal({ visible: true });
 
     // Resolve the visible label the same way the component does (i18n fallback).
-    const label = (t().cuisineNames as Record<string, string>)[firstCuisine] ?? firstCuisine;
-    pressByLabel(root, label);
+    const label = (t().cuisineNames as Record<string, string>)[firstCuisine!] ?? firstCuisine;
+    pressByLabel(root, label!);
 
     expect(handlers.onToggleCuisine).toHaveBeenCalledTimes(1);
     expect(handlers.onToggleCuisine).toHaveBeenCalledWith(firstCuisine);
@@ -170,11 +170,11 @@ describe('WebFilterModal', () => {
     const applyButtons = root
       .findAll(
         (node) =>
-          node.props.accessibilityRole === 'button' && typeof node.props.onPress === 'function',
+          node.props['accessibilityRole'] === 'button' && typeof node.props['onPress'] === 'function',
       )
       .filter((node) => textContent(node).includes(applyLabel));
     const applyButton = applyButtons[applyButtons.length - 1];
-    act(() => (applyButton.props.onPress as () => void)());
+    act(() => (applyButton!.props['onPress'] as () => void)());
 
     expect(handlers.onApply).toHaveBeenCalledTimes(1);
   });
@@ -201,7 +201,7 @@ describe('WebFilterModal', () => {
     const texts = textContent(root);
 
     for (const value of DIFFICULTY_VALUES) {
-      expect(texts).toContain(difficultyLabel(value));
+      expect(texts).toContain(difficultyLabel(t(), value));
     }
   });
 });

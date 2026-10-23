@@ -11,7 +11,7 @@ import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-n
 import { formatStatsDay } from '@presentation/app/automations/stats/model/format-stats-day';
 import { StatsMetrics } from '@presentation/app/automations/stats/model/stats-metrics';
 import { borderWidths, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface FollowersCardProps {
   stats: CreatorStats;
@@ -28,14 +28,15 @@ const EDGES = 2;
  * tracking began inside the range the line starts there, after a dashed run.
  */
 export const FollowersCard = ({ stats, wide }: FollowersCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const surfaces = useSeveritySurfaces();
   const locale = useLocale();
-  const copy = t().creatorStats;
+  const copy = t.creatorStats;
   const [width, setWidth] = useState<number>(ValueConstants.zero);
   const height = wide ? StatsMetrics.sparkHeightWide : StatsMetrics.sparkHeight;
   const { current, change, trackingSince, points } = stats.followers;
-  const startsInside = trackingSince !== null && trackingSince > stats.from;
+  const doesStartInside = trackingSince !== null && trackingSince > stats.from;
 
   const slots = stats.daily.map((d) => d.day);
   const span = Math.max(ValueConstants.one, slots.length - ValueConstants.one);
@@ -44,12 +45,12 @@ export const FollowersCard = ({ stats, wide }: FollowersCardProps): React.JSX.El
   const hi = Math.max(...values);
   const xOf = (day: string): number => PAD + ((width - PAD * EDGES) * Math.max(ValueConstants.zero, slots.indexOf(day))) / span;
   const yOf = (v: number): number => (hi === lo ? height / HALF : PAD + (height - PAD * EDGES) * (ValueConstants.one - (v - lo) / (hi - lo)));
-  const line = points.map((p, i) => `${i === ValueConstants.zero ? 'M' : 'L'}${xOf(p.day).toFixed(ValueConstants.one)} ${yOf(p.followers).toFixed(ValueConstants.one)}`).join(' ');
+  const line = points.map((p, i) => `${i === ValueConstants.zero ? 'M' : 'L'}${xOf(p.day).toFixed(ValueConstants.one)} ${yOf(p.followers).toFixed(ValueConstants.one)}`).join(CharConstants.space);
   const first = points[ValueConstants.zero];
   const lastPoint = points[points.length - ValueConstants.one];
   const area = first !== undefined && lastPoint !== undefined ? `${line} L${xOf(lastPoint.day).toFixed(ValueConstants.one)} ${height} L${xOf(first.day).toFixed(ValueConstants.one)} ${height} Z` : CharConstants.empty;
   const changeColor = change !== null && change < ValueConstants.zero ? surfaces.danger.text : surfaces.success.text;
-  const sign = change !== null && change > ValueConstants.zero ? '+' : change !== null && change < ValueConstants.zero ? '−' : '';
+  const sign = change !== null && change > ValueConstants.zero ? CharConstants.plus : change !== null && change < ValueConstants.zero ? CharConstants.minus : CharConstants.empty;
 
   return (
     <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
@@ -65,7 +66,7 @@ export const FollowersCard = ({ stats, wide }: FollowersCardProps): React.JSX.El
             {`${sign}${formatWholeNumber(Math.abs(change), locale)}`}
           </SizedText>
         ) : null}
-        {!startsInside ? (
+        {!doesStartInside ? (
           <SizedText size={fontSizes.small} color={colors.textSubtle}>
             {`· ${copy.lastDays.replace('{n}', String(stats.days))}`}
           </SizedText>
@@ -74,17 +75,17 @@ export const FollowersCard = ({ stats, wide }: FollowersCardProps): React.JSX.El
       <View style={{ height }} onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         {width > ValueConstants.zero && first !== undefined ? (
           <Svg width={width} height={height}>
-            {startsInside ? (
+            {doesStartInside ? (
               <Line x1={PAD} x2={xOf(first.day)} y1={yOf(first.followers)} y2={yOf(first.followers)} stroke={colors.textMuted} strokeWidth={borderWidths.thin} strokeDasharray={StatsMetrics.dashArray} />
             ) : null}
             <Path d={area} fill={colors.chipBackground} />
             <Path d={line} stroke={colors.primary} strokeWidth={StatsMetrics.openedStroke} fill="none" />
-            {startsInside ? <Circle cx={xOf(first.day)} cy={yOf(first.followers)} r={StatsMetrics.endDot} fill={colors.primary} /> : null}
+            {doesStartInside ? <Circle cx={xOf(first.day)} cy={yOf(first.followers)} r={StatsMetrics.endDot} fill={colors.primary} /> : null}
             {lastPoint !== undefined ? <Circle cx={xOf(lastPoint.day)} cy={yOf(lastPoint.followers)} r={StatsMetrics.endDot} fill={colors.primary} /> : null}
           </Svg>
         ) : null}
       </View>
-      {startsInside && trackingSince !== null ? (
+      {doesStartInside ? (
         <View style={styles.note}>
           <Ionicons name="information-circle-outline" size={iconSizes.sm} color={colors.text} />
           <SizedText size={fontSizes.small} weight={fontWeights.semibold}>

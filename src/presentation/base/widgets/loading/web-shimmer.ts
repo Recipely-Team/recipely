@@ -10,11 +10,15 @@ const KEYFRAMES = `@keyframes ${KEYFRAMES_ID}{0%{background-position:200% 0}100%
  * builds, timed by the same `durations.shimmer` the native sweep uses.
  *
  * @remarks
- * - **`ensureKeyframes`** injects the keyframes into the document head once;
- *   a no-op outside a browser (SSR export).
+ * - **The keyframes ship in the static HTML** (`+html.tsx` renders `keyframesId`
+ *   / `keyframesCss`), so a prerendered skeleton moves before the bundle runs.
+ * - **`ensureKeyframes`** finds that tag and does nothing; it injects one only
+ *   where the shell did not (dev server pages); a no-op outside a browser.
  * - **`style`** is the gradient sweep for one placeholder block.
  */
 export const WebShimmer = {
+  keyframesId: KEYFRAMES_ID,
+  keyframesCss: KEYFRAMES,
   ensureKeyframes: (): void => {
     if (typeof document === 'undefined') return;
     if (document.getElementById(KEYFRAMES_ID)) return;

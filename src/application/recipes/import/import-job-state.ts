@@ -1,6 +1,7 @@
-import type { Failure } from '@core/failure';
-import type { StoreStatus } from '@application/store/store-status';
-import type { ImportJob } from '@domain/recipes/import/import-job';
+import type { ImportJobIdle } from '@application/recipes/import/states/import-job-idle';
+import type { ImportJobLoading } from '@application/recipes/import/states/import-job-loading';
+import type { ImportJobLoaded } from '@application/recipes/import/states/import-job-loaded';
+import type { ImportJobError } from '@application/recipes/import/states/import-job-error';
 
 /**
  * The screen's view of one queued Instagram import.
@@ -13,7 +14,7 @@ import type { ImportJob } from '@domain/recipes/import/import-job';
  * on its own (no network) while the job it would have created cannot.
  */
 export type ImportJobState =
-  | { status: typeof StoreStatus.Idle }
-  | { status: typeof StoreStatus.Loading }
-  | { status: typeof StoreStatus.Loaded; job: ImportJob }
-  | { status: typeof StoreStatus.Error; failure: Failure };
+  | ImportJobIdle
+  | ImportJobLoading
+  | ImportJobLoaded
+  | ImportJobError;

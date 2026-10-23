@@ -5,7 +5,7 @@ import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, fontSizes, fontWeights, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 const AVATAR_FRAME = avatarSizes.editFrame;
@@ -26,6 +26,7 @@ export const EditProfileAvatar = ({
   isUploading,
   onPick,
 }: EditProfileAvatarProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -55,7 +56,7 @@ export const EditProfileAvatar = ({
             isUploading ? styles.disabled : null,
           ]}
           accessibilityRole="button"
-          accessibilityLabel={t().profile.changePhoto}
+          accessibilityLabel={t.profile.changePhoto}
         >
           <Ionicons name="camera" size={iconSizes.md - ValueConstants.two} color={colors.primaryText} />
         </Pressable>
@@ -65,10 +66,10 @@ export const EditProfileAvatar = ({
         disabled={isUploading}
         style={isUploading ? styles.disabled : null}
         accessibilityRole="button"
-        accessibilityLabel={t().profile.changePhoto}
+        accessibilityLabel={t.profile.changePhoto}
       >
         <ThemedText style={[styles.changePhoto, { color: colors.primary }]}>
-          {t().profile.changePhoto}
+          {t.profile.changePhoto}
         </ThemedText>
       </Pressable>
     </View>

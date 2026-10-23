@@ -144,7 +144,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     slug: config.slug ?? 'recipely',
     version,
     scheme,
-    plugins: withRealAdMobAppIds(withVariantGoogleUrlScheme(config.plugins)),
+    plugins: withRealAdMobAppIds(withVariantGoogleUrlScheme(config.plugins)) ?? [],
     ios: {
       ...config.ios,
       bundleIdentifier: iosBundleId,
@@ -160,7 +160,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ...config.extra,
       variant,
       eas: {
-        ...(config.extra?.eas ?? {}),
+        ...(config.extra?.['eas'] ?? {}),
       },
     },
   };

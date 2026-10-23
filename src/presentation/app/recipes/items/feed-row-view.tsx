@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ValueConstants } from '@core/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { AdSlot } from '@presentation/base/widgets/ads/ad-slot';
 import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
 import { FeedRowKind } from '@presentation/app/recipes/model/ads/feed-row-kind';
@@ -37,8 +37,9 @@ const FeedRowViewComponent = ({
   adWidth,
   onOpenRecipe,
 }: FeedRowViewProps): React.JSX.Element => {
+  const t = useTranslations();
   if (row.kind === FeedRowKind.Ad) {
-    return <AdSlot unitId={adUnitId} width={adWidth} accessibilityLabel={t().createRecipe.adLabel} />;
+    return <AdSlot unitId={adUnitId} width={adWidth} accessibilityLabel={t.createRecipe.adLabel} />;
   }
   const card = <RecipeListItem recipe={row.recipe} onOpen={onOpenRecipe} />;
   if (gridColumns > ValueConstants.one) {

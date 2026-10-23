@@ -1,3 +1,6 @@
+import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
+import { useCallback, useMemo } from 'react';
+import { useStore } from 'zustand';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useFoodSearchQuery } from '@presentation/base/hooks/diary/use-food-search-query';
 import { FoodSearchGroup, type FoodSearchGroupType } from '@domain/diary/foods/search/food-search-group';
@@ -10,7 +13,7 @@ import { searchRows, SEARCH_GROUP_ORDER } from '@presentation/base/widgets/diary
 import { phaseOfLists } from '@presentation/base/widgets/diary/add-food/list/phase-of-lists';
 import { nextListToLoad } from '@presentation/base/widgets/diary/add-food/list/next-list-to-load';
 import { PickPhase } from '@presentation/base/widgets/diary/add-food/list/pick-phase';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface SearchResultsBodyProps {
@@ -30,20 +33,37 @@ const isSearchGroup = (key: string): key is FoodSearchGroupType => (SEARCH_GROUP
  * spec §3, §4): skeleton, no-results and failed faces first.
  */
 export const SearchResultsBody = ({ rawQuery, onChoose, onChooseProduct, onQuickAdd }: SearchResultsBodyProps): React.JSX.Element => {
+  const t = useTranslations();
   const { foodSearchStore } = useStores();
   useFoodSearchQuery(rawQuery);
   const query = rawQuery.trim();
-  const saved = foodSearchStore((s) => s.saved);
-  const mine = foodSearchStore((s) => s.mine);
-  const products = foodSearchStore((s) => s.products);
-  const recipes = foodSearchStore((s) => s.recipes);
-  const strings = t().diary;
+  const saved = useStore(foodSearchStore, (s) => s.saved);
+  const mine = useStore(foodSearchStore, (s) => s.mine);
+  const products = useStore(foodSearchStore, (s) => s.products);
+  const recipes = useStore(foodSearchStore, (s) => s.recipes);
+  const strings = t.diary;
   const isTab = query.length === ValueConstants.zero;
-  const lists = { saved, mine, products, recipes };
+  const lists = useMemo(() => ({ saved, mine, products, recipes }), [saved, mine, products, recipes]);
   const phase = phaseOfLists(isTab ? [saved, mine, recipes] : [saved, mine, products, recipes]);
-  const loadMore = (key: string): void => {
+  const loadMore = useCallback((key: string): void => {
     if (isSearchGroup(key)) void foodSearchStore.getState().loadMore(key);
-  };
+  }, [foodSearchStore]);
+  // Rows and handlers stay the same objects until their inputs change, so the memoized rows skip re-rendering.
+  const rows = useMemo(
+    () =>
+      searchRows(lists, {
+        [FoodSearchGroup.Saved]: strings.groupSaved,
+        [FoodSearchGroup.Mine]: strings.groupMine,
+        [FoodSearchGroup.Products]: strings.groupProducts,
+        [FoodSearchGroup.Recipes]: isTab ? strings.groupFeed : strings.groupRecipes,
+      }),
+    [lists, strings, isTab],
+  );
+  const onPickRecipe = useCallback((hit: RecipeFoodHit) => onChoose(hit.food()), [onChoose]);
+  const onEndReached = useCallback(() => {
+    const next = nextListToLoad(SEARCH_GROUP_ORDER.map((key) => ({ key, list: lists[key] })));
+    if (next !== null) loadMore(next);
+  }, [lists, loadMore]);
 
   switch (phase.phase) {
     case PickPhase.Loading:
@@ -69,17 +89,9 @@ export const SearchResultsBody = ({ rawQuery, onChoose, onChooseProduct, onQuick
     case PickPhase.Ready:
       return (
         <FoodPickList
-          rows={searchRows(lists, {
-            [FoodSearchGroup.Saved]: strings.groupSaved,
-            [FoodSearchGroup.Mine]: strings.groupMine,
-            [FoodSearchGroup.Products]: strings.groupProducts,
-            [FoodSearchGroup.Recipes]: isTab ? strings.groupFeed : strings.groupRecipes,
-          })}
-          onEndReached={() => {
-            const next = nextListToLoad(SEARCH_GROUP_ORDER.map((key) => ({ key, list: lists[key] })));
-            if (next !== null) loadMore(next);
-          }}
-          onPickRecipe={(hit) => onChoose(hit.food)}
+          rows={rows}
+          onEndReached={onEndReached}
+          onPickRecipe={onPickRecipe}
           onPickProduct={onChooseProduct}
           onRetryMore={loadMore}
         />

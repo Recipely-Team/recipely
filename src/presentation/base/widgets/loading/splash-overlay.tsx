@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { isWeb } from '@infrastructure/constants/platform';
 import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,7 +7,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, fontSizes, fontWeights, letterSpacings, zIndices, opacities, BrandColors, radii } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 const VISIBLE_MS = 1400;
@@ -37,10 +37,11 @@ const LOGO_SIZE = 96;
  *   fallback delay if the animation never reports back.
  */
 export const SplashOverlay = (): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const [visible, setVisible] = useState(!isWeb());
-  const [leaving, setLeaving] = useState(false);
-  const opacity = useRef(new Animated.Value(ValueConstants.one)).current;
+  const [isVisible, setVisible] = useState(!isWeb());
+  const [isLeaving, setLeaving] = useState(false);
+  const [opacity] = useState(() => new Animated.Value(ValueConstants.one));
 
   const dismiss = useCallback((): void => {
     setLeaving(true);
@@ -62,18 +63,18 @@ export const SplashOverlay = (): React.JSX.Element | null => {
     };
   }, [dismiss]);
 
-  if (!visible) return null;
+  if (!isVisible) return null;
 
   return (
     <Animated.View
       style={[styles.root, { opacity }]}
-      pointerEvents={leaving ? 'none' : 'auto'}
+      pointerEvents={isLeaving ? 'none' : 'auto'}
     >
       <Pressable
         style={StyleSheet.absoluteFill}
         onPress={dismiss}
         accessibilityRole="button"
-        accessibilityLabel={t().splash.dismiss}
+        accessibilityLabel={t.splash.dismiss}
       >
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
@@ -95,7 +96,7 @@ export const SplashOverlay = (): React.JSX.Element | null => {
               variant="caption"
               style={[styles.tagline, { color: colors.onOverlay }]}
             >
-              {t().splash.tagline}
+              {t.splash.tagline}
             </ThemedText>
           </View>
         </LinearGradient>

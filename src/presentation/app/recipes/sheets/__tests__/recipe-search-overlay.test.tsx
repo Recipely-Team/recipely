@@ -103,9 +103,9 @@ describe('RecipeSearchOverlay', () => {
     );
 
     const row = root.find(
-      (node) => node.props.accessibilityRole === 'button' && node.props.accessibilityLabel === 'Search Pasta',
+      (node) => node.props['accessibilityRole'] === 'button' && node.props['accessibilityLabel'] === 'Search Pasta',
     );
-    (row.props.onPress as () => void)();
+    (row.props['onPress'] as () => void)();
 
     expect(onOpenRecipe).toHaveBeenCalledWith('r1');
   });
@@ -183,12 +183,12 @@ describe('RecipeSearchOverlay — a search that found nothing', () => {
     const { root } = renderComponent(
       <RecipeSearchOverlay recipes={[]} isLoading={false} onOpenRecipe={jest.fn()} assistantScroll={scrollProps()} query="lahmacun" onCreateWithAi={onCreateWithAi} />,
     );
-    const button = root.findAll((n) => n.props.accessibilityRole === 'button' && typeof n.props.onPress === 'function').find((n) =>
+    const button = root.findAll((n) => n.props['accessibilityRole'] === 'button' && typeof n.props['onPress'] === 'function').find((n) =>
       textContent(n).some((line) => line.includes('lahmacun')),
     );
 
     expect(button).toBeDefined();
-    (button?.props.onPress as () => void)();
+    (button?.props['onPress'] as () => void)();
 
     expect(onCreateWithAi).toHaveBeenCalledWith('lahmacun');
   });

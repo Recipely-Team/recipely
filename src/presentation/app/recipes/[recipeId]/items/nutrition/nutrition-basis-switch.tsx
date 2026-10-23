@@ -3,7 +3,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { borderWidths, controlSizes, fontSizes, fontWeights, lineHeights, shadows, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { NutritionBasis, type NutritionBasisType } from '@domain/recipes/nutrition/nutrition-basis';
 import { formatNutritionNumber } from '@presentation/app/recipes/[recipeId]/model/nutrition/format-nutrition-number';
 import { nutritionPanelSizes } from '@presentation/app/recipes/[recipeId]/model/nutrition/nutrition-panel-sizes';
@@ -26,8 +26,9 @@ export interface NutritionBasisSwitchProps {
  *   translation wraps inside its own pill instead of squeezing the other.
  */
 export const NutritionBasisSwitch = ({ weightGrams, basis, onChange }: NutritionBasisSwitchProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().nutrition;
+  const strings = t.nutrition;
   const locale = useLocale();
   const lineHeight = useTextLineHeight(fontSizes.caption, lineHeights.snug);
 
@@ -47,21 +48,21 @@ export const NutritionBasisSwitch = ({ weightGrams, basis, onChange }: Nutrition
       style={[styles.track, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
     >
       {options.map((option) => {
-        const checked = option.value === basis;
+        const isChecked = option.value === basis;
         return (
           <Pressable
             key={option.value}
             accessibilityRole="radio"
-            accessibilityState={{ checked }}
+            accessibilityState={{ checked: isChecked }}
             accessibilityLabel={option.label}
             onPress={() => onChange(option.value)}
-            style={[styles.option, option.flex, checked ? [styles.on, { backgroundColor: colors.cardBackground }] : null]}
+            style={[styles.option, option.flex, isChecked ? [styles.on, { backgroundColor: colors.cardBackground }] : null]}
           >
             <ThemedText
               style={[
                 styles.label,
-                checked ? styles.labelOn : styles.labelOff,
-                { lineHeight, color: checked ? colors.text : colors.textMuted },
+                isChecked ? styles.labelOn : styles.labelOff,
+                { lineHeight, color: isChecked ? colors.text : colors.textMuted },
               ]}
             >
               {option.label}

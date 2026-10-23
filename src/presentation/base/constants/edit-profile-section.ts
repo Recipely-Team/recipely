@@ -5,5 +5,3 @@
 export const EditProfileSection = {
   CreatorAccount: 'creator',
 } as const;
-
-export type EditProfileSectionType = (typeof EditProfileSection)[keyof typeof EditProfileSection];

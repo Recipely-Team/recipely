@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, fontSizes, fontWeights, iconSizes, mealPlanSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface PlanMyWeekButtonProps {
   wide: boolean;
@@ -16,8 +16,9 @@ export interface PlanMyWeekButtonProps {
  * with a `primary` sparkle, aligned to the end of the row.
  */
 export const PlanMyWeekButton = ({ wide, onPress }: PlanMyWeekButtonProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const label = t().mealPlan.planWeek.title;
+  const label = t.mealPlan.planWeek.title;
   return (
     <Pressable
       onPress={onPress}

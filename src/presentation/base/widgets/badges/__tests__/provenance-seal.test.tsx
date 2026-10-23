@@ -41,7 +41,7 @@ const textOf = (root: Root): string => {
 };
 
 const glyphsOf = (root: Root): unknown[] =>
-  root.findAllByType(ProvenanceGlyph).map((n) => n.props.mark);
+  root.findAllByType(ProvenanceGlyph).map((n) => n.props['mark']);
 
 describe('ProvenanceSeal', () => {
   it('draws nothing at all for a hand-written recipe', () => {

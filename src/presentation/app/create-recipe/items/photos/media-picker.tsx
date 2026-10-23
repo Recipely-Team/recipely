@@ -3,7 +3,7 @@ import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { lineHeightFor, lineHeights, fontSizes, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { useMediaPick } from '@presentation/app/create-recipe/hooks/use-media-pick';
@@ -30,6 +30,7 @@ export interface MediaPickerProps {
  *   a first frame at width zero would draw every tile on top of the next.
  */
 export const MediaPicker = ({ media, onAdd, onRemove, onSetCover }: MediaPickerProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const [width, setWidth] = useState(ValueConstants.zero);
   const [skipped, setSkipped] = useState(ValueConstants.zero);
@@ -73,7 +74,7 @@ export const MediaPicker = ({ media, onAdd, onRemove, onSetCover }: MediaPickerP
       )}
       {skipped > ValueConstants.zero ? (
         <ThemedText variant="caption" style={[styles.error, { color: colors.danger }]}>
-          {t().mediaPicker.rejected}
+          {t.mediaPicker.rejected}
         </ThemedText>
       ) : null}
     </View>

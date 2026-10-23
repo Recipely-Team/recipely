@@ -3,7 +3,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, lineHeights, opacities, radii, shadows, spacing } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface CreatorApplyCardProps {
   onApply: () => void;
@@ -11,8 +11,9 @@ export interface CreatorApplyCardProps {
 
 /** "Are you a food creator?" with a primary "Apply as a creator" — the Chefs placeholder's one action. */
 export const CreatorApplyCard = ({ onApply }: CreatorApplyCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().creators.comingSoon;
+  const strings = t.creators.comingSoon;
   return (
     <View style={[styles.card, shadows.md, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
       <SizedText size={fontSizes.body} weight={fontWeights.bold} ratio={lineHeights.normal}>

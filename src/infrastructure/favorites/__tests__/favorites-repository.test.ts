@@ -12,8 +12,8 @@ const httpAnswering = (answer: unknown) => {
 describe('FavoritesRepository', () => {
   it('posts and deletes the recipe\'s favorite route', async () => {
     const { repo, http } = httpAnswering(ok(undefined));
-    expect((await repo.addFavorite('u1', 'r 1')).ok).toBe(true);
-    expect((await repo.removeFavorite('u1', 'r 1')).ok).toBe(true);
+    expect((await repo.addFavorite('r 1')).ok).toBe(true);
+    expect((await repo.removeFavorite('r 1')).ok).toBe(true);
     expect(http.post).toHaveBeenCalledWith(ApiRoutes.recipes.favorite('r 1'), undefined);
     expect(http.delete).toHaveBeenCalledWith(ApiRoutes.recipes.favorite('r 1'));
   });
@@ -28,8 +28,8 @@ describe('FavoritesRepository', () => {
   it('passes HTTP failures through', async () => {
     const failure = new NetworkFailure('offline');
     const { repo } = httpAnswering(fail(failure));
-    expect(await repo.addFavorite('u1', 'r1')).toEqual(fail(failure));
-    expect(await repo.removeFavorite('u1', 'r1')).toEqual(fail(failure));
+    expect(await repo.addFavorite('r1')).toEqual(fail(failure));
+    expect(await repo.removeFavorite('r1')).toEqual(fail(failure));
     expect(await repo.listFavorites()).toEqual(fail(failure));
   });
 });

@@ -9,7 +9,7 @@ import { AutomationMetrics } from '@presentation/base/widgets/instagram/automati
 import { upperCase } from '@presentation/i18n/upper-case';
 import { dmPreviewParts } from '@presentation/app/automations/edit/model/dm-preview-parts';
 import { borderWidths, fontSizes, fontWeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface DmPreviewProps {
   handle: string;
@@ -26,8 +26,9 @@ export interface DmPreviewProps {
  * card under it, and the public reply below a dashed rule.
  */
 export const DmPreview = ({ handle, dmText, recipeName, recipeImage, publicReply }: DmPreviewProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().instagram;
+  const copy = t.instagram;
   const parts = dmPreviewParts(dmText, copy.previewName, copy.previewLink);
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>

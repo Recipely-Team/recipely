@@ -3,5 +3,3 @@ export const TabIconFamily = {
   Ionicons: 'ionicons',
   Material: 'material',
 } as const;
-
-export type TabIconFamilyType = (typeof TabIconFamily)[keyof typeof TabIconFamily];

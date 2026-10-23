@@ -10,8 +10,8 @@ export class SetCommentLikeUseCase {
     private readonly unlikeComment: UnlikeCommentUseCase,
   ) {}
 
-  execute(recipeId: string, commentId: string, like: boolean): Promise<Result<void, Failure>> {
-    return like
+  execute(recipeId: string, commentId: string, shouldLike: boolean): Promise<Result<void, Failure>> {
+    return shouldLike
       ? this.likeComment.execute(recipeId, commentId)
       : this.unlikeComment.execute(recipeId, commentId);
   }

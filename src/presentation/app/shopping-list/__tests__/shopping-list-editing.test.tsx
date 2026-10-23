@@ -37,19 +37,19 @@ const render = async () => {
 };
 
 const byLabel = (root: ReactTestInstance, label: string): ReactTestInstance =>
-  root.find((node) => node.props.accessibilityLabel === label && (typeof node.props.onPress === 'function' || typeof node.props.onChangeText === 'function'));
+  root.find((node) => node.props['accessibilityLabel'] === label && (typeof node.props['onPress'] === 'function' || typeof node.props['onChangeText'] === 'function'));
 
 const pressText = async (root: ReactTestInstance, label: string): Promise<void> => {
-  const target = root.findAll((node) => typeof node.props.onPress === 'function' && textContent(node).includes(label)).at(-1);
+  const target = root.findAll((node) => typeof node.props['onPress'] === 'function' && textContent(node).includes(label)).at(-1);
   if (target === undefined) throw new Error(`no pressable with "${label}"`);
-  await act(async () => (target.props.onPress as () => void)());
+  await act(async () => (target.props['onPress'] as () => void)());
 };
 
 const sheetOpen = (root: ReactTestInstance): boolean => 
-  root.findAllByType(BottomSheet).find((sheet) => sheet.props.title === t().shopping.editTitle)?.props.visible === true;
+  root.findAllByType(BottomSheet).find((sheet) => sheet.props['title'] === t().shopping.editTitle)?.props['visible'] === true;
 
-const press = async (node: ReactTestInstance): Promise<void> => act(async () => (node.props.onPress as () => void)());
-const type = async (node: ReactTestInstance, text: string): Promise<void> => act(async () => (node.props.onChangeText as (v: string) => void)(text));
+const press = async (node: ReactTestInstance): Promise<void> => act(async () => (node.props['onPress'] as () => void)());
+const type = async (node: ReactTestInstance, text: string): Promise<void> => act(async () => (node.props['onChangeText'] as (v: string) => void)(text));
 
 describe('ShoppingListScreen editing', () => {
   it('opens the edit sheet filled with the line, and saves the changed fields', async () => {
@@ -59,8 +59,8 @@ describe('ShoppingListScreen editing', () => {
 
     await press(byLabel(root, copy.edit.replace('{name}', 'Milk')));
     expect(sheetOpen(root)).toBe(true);
-    expect(byLabel(root, copy.labelField).props.value).toBe('Milk');
-    expect(byLabel(root, copy.unitField).props.value).toBe('l');
+    expect(byLabel(root, copy.labelField).props['value']).toBe('Milk');
+    expect(byLabel(root, copy.unitField).props['value']).toBe('l');
     await type(byLabel(root, copy.labelField), 'Oat milk');
     await type(byLabel(root, copy.quantityField), '2');
     await pressText(root, copy.save);
@@ -79,8 +79,8 @@ describe('ShoppingListScreen editing', () => {
 
     expect(repo.update).not.toHaveBeenCalled();
     expect(sheetOpen(root)).toBe(true);
-    expect(textContent(root)).toContain(failureContent(new ValidationFailure('x', 'quantity', ErrorMessageKey.shoppingQuantityInvalid)).body);
-    expect(byLabel(root, copy.labelField).props.value).toBe('Milk');
+    expect(textContent(root)).toContain(failureContent(t(), new ValidationFailure('x', 'quantity', ErrorMessageKey.shoppingQuantityInvalid)).body);
+    expect(byLabel(root, copy.labelField).props['value']).toBe('Milk');
   });
 
   it('sends a typed line and empties the field once it is added', async () => {
@@ -91,7 +91,7 @@ describe('ShoppingListScreen editing', () => {
     await press(byLabel(root, copy.add));
 
     expect(repo.add).toHaveBeenCalledTimes(1);
-    expect(byLabel(root, copy.addPlaceholder).props.value).toBe('');
+    expect(byLabel(root, copy.addPlaceholder).props['value']).toBe('');
   });
 
   it('keeps the typed line when adding it fails, so nothing is lost', async () => {
@@ -102,7 +102,7 @@ describe('ShoppingListScreen editing', () => {
     await type(byLabel(root, copy.addPlaceholder), '2 kg potatoes');
     await press(byLabel(root, copy.add));
 
-    expect(byLabel(root, copy.addPlaceholder).props.value).toBe('2 kg potatoes');
+    expect(byLabel(root, copy.addPlaceholder).props['value']).toBe('2 kg potatoes');
   });
 
   it('removes a line from its trash button', async () => {

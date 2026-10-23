@@ -16,7 +16,7 @@ import { ShoppingConfirm } from '@presentation/app/shopping-list/model/shopping-
 import { ShoppingListBar } from '@presentation/app/shopping-list/body/shopping-list-bar';
 import { ShoppingListBody } from '@presentation/app/shopping-list/body/shopping-list-body';
 import { ShoppingItemEditSheet } from '@presentation/app/shopping-list/sheets/shopping-item-edit-sheet';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * The viewer's shopping list: what is left to buy, then what is done; add,
@@ -25,12 +25,13 @@ import { t } from '@presentation/i18n';
  * the auth guard.
  */
 export const ShoppingListScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const vm = useShoppingList();
   const editor = useShoppingItemEditor();
   const list = vm.list;
   const scrollable = useAssistantScrollable(list.status !== StoreStatus.Error);
-  const copy = t().shopping;
+  const copy = t.shopping;
   useAssistantShoppingActions({
     items: vm.items,
     listState: list.status === StoreStatus.Loaded ? ListState.Ready : list.status === StoreStatus.Error ? ListState.Failed : ListState.Loading,
@@ -40,7 +41,7 @@ export const ShoppingListScreen = (): React.JSX.Element => {
 
   const body = (): React.JSX.Element => {
     if (list.status === StoreStatus.Error) {
-      const content = failureContent(list.failure);
+      const content = failureContent(t, list.failure);
       return (
         <ErrorState icon={failureIcon(list.failure)} severity={failureSeverity(list.failure)} title={content.title} body={content.body} primaryLabel={copy.tryAgain} onPrimary={vm.onRetry} />
       );

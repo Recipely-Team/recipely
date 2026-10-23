@@ -9,7 +9,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, borderWidths } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
 
@@ -51,10 +51,11 @@ export const RecipeMetaCard = ({
   recipeId,
   recipeName,
 }: RecipeMetaCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const [cardWidth, setCardWidth] = useState<number>(ValueConstants.zero);
   const { fontScale } = useWindowDimensions();
-  const strings = t().recipes;
+  const strings = t.recipes;
 
   const tiles: { key: string; node: React.JSX.Element }[] = [];
   if (prepTimeMinutes > ValueConstants.zero) {
@@ -82,7 +83,7 @@ export const RecipeMetaCard = ({
   });
   tiles.push({
     key: 'level',
-    node: <InfoStat icon="speedometer-outline" value={difficultyLabel(difficulty)} label={strings.difficulty} />,
+    node: <InfoStat icon="speedometer-outline" value={difficultyLabel(t, difficulty)} label={strings.difficulty} />,
   });
 
   const widths = statCellWidths(cardWidth, tiles.length, FRAME, fontScale);

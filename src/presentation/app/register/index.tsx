@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
@@ -18,11 +19,12 @@ import { spacing, radii, iconSizes, controlSizes, decorSizes, layoutSizes, borde
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const RegisterScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const goBack = useGoBackOrHome(RoutePaths.login);
@@ -32,14 +34,14 @@ export const RegisterScreen = (): React.JSX.Element => {
   const isLandscapeShell = split.isSplit;
 
   const { authStore } = useStores();
-  const state = authStore((s) => s.state);
+  const authStatus = useStore(authStore, (s) => s.state.status);
 
   useEffect(() => {
-    if (state.status === StoreStatus.Authenticated) {
+    if (authStatus === StoreStatus.Authenticated) {
     // One-way: the form and login must not stay behind a back gesture.
       enterApp(router, resolveRedirect(redirect) as Href);
     }
-  }, [state.status, router, redirect]);
+  }, [authStatus, router, redirect]);
 
   if (isLandscapeShell) {
     return (
@@ -89,7 +91,7 @@ export const RegisterScreen = (): React.JSX.Element => {
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t().common.back}
+          accessibilityLabel={t.common.back}
           onPress={goBack}
           style={[styles.backButton, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}
         >

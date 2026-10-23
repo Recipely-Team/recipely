@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { spacing, radii, fontSizes, fontWeights, lineHeightFor, controlSizes, opacities } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
@@ -26,16 +26,17 @@ export const DeleteRecipeSheet = ({
   onClose,
   onConfirm,
 }: DeleteRecipeSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <BottomSheet
       visible={visible}
-      title={t().myRecipes.deleteConfirmTitle}
+      title={t.myRecipes.deleteConfirmTitle}
       onClose={onClose}
     >
       <ThemedText variant="body" muted style={styles.deleteSheetBody}>
-        {t().myRecipes.deleteConfirm}
+        {t.myRecipes.deleteConfirm}
       </ThemedText>
       {deleteError !== null ? (
         <ThemedText variant="caption" style={[styles.deleteSheetError, { color: colors.danger }]}>
@@ -52,7 +53,7 @@ export const DeleteRecipeSheet = ({
           ]}
         >
           <ThemedText variant="body" style={styles.semiBold}>
-            {t().common.cancel}
+            {t.common.cancel}
           </ThemedText>
         </Pressable>
         <Pressable
@@ -67,7 +68,7 @@ export const DeleteRecipeSheet = ({
           ]}
         >
           <ThemedText variant="body" style={[styles.deleteSheetBtnDangerLabel, styles.semiBold, { color: colors.danger }]}>
-            {isDeleting ? t().common.loading : t().myRecipes.deleteRecipe}
+            {isDeleting ? t.common.loading : t.myRecipes.deleteRecipe}
           </ThemedText>
         </Pressable>
       </View>

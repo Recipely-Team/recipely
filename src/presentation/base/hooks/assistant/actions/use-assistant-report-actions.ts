@@ -15,7 +15,7 @@ import { AssistantActionError } from '@domain/assistant/actions/assistant-action
 const REPORT_SUBJECT = 'Voice assistant report';
 /** Separates the user's own words from the facts the app attached. */
 const DIAGNOSTIC_RULE = '\n\n--- diagnostics ---\n';
-const LINE_BREAK = '\n';
+const LINE_BREAK = CharConstants.newline;
 /** Where the crash report files this, next to the other `Assistant.*` contexts. */
 const CRASH_CONTEXT = 'Assistant.reportProblem';
 /** Said in place of the user's words when they only pointed at the failure. */
@@ -65,11 +65,11 @@ export const useAssistantReportActions = (): void => {
         // Also to Crashlytics, in case the network refuses the form.
         FailureReporter.report(new UnknownFailure(message), CRASH_CONTEXT);
 
-        const sent = await feedbackStore.getState().submit({
+        const failure = await feedbackStore.getState().submit({
           subject: REPORT_SUBJECT,
           message,
         });
-        return sent ? { ok: true } : { ok: false, error: AssistantActionError.ReportNotSent };
+        return failure === null ? { ok: true } : { ok: false, error: AssistantActionError.ReportNotSent };
       },
       [registry, feedbackStore],
     ),

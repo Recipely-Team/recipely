@@ -1,10 +1,10 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { AppStateStatusValue } from '@infrastructure/constants/app-state-status';
 import { StoreStatus } from '@application/store/store-status';
 import { useEffect } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
-import type { AuthStoreState } from '@application/auth/auth-store-state';
-import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
+import type { AuthStore } from '@application/auth/auth-store-contract';
+import type { NotificationsStore } from '@application/notifications/notifications-store-contract';
 
 // How often to re-poll the unread count while the app is in the foreground.
 // System pushes (Android/web) alert the user, but nothing feeds them back into
@@ -26,8 +26,8 @@ const POLL_INTERVAL_MS = 30_000;
  * `document.visibilityState` — and the return to `active` catches up at once.
  */
 export const useUnreadNotificationsSync = (
-  notificationsStore: BoundStore<NotificationsStoreState>,
-  authStore: BoundStore<AuthStoreState>,
+  notificationsStore: StoreApi<NotificationsStore>,
+  authStore: StoreApi<AuthStore>,
 ): void => {
   useEffect(() => {
     const tick = (): void => {

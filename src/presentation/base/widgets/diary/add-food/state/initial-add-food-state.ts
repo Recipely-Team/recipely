@@ -18,7 +18,7 @@ export const initialAddFoodState = (request: AddFoodRequestType, now: Date): Add
   switch (request.kind) {
     case AddFoodRequestKind.Edit: {
       const { entry } = request;
-      const logged = entry.loggedProduct;
+      const logged = entry.loggedProduct();
       if (logged !== null) {
         return {
           date,
@@ -30,7 +30,7 @@ export const initialAddFoodState = (request: AddFoodRequestType, now: Date): Add
           quantity: null,
         };
       }
-      return { date, meal: entry.meal, canGoBack: false, step: AddFoodStep.Detail, food: entry.food, servings: Servings.nearest(entry.servings) };
+      return { date, meal: entry.meal, canGoBack: false, step: AddFoodStep.Detail, food: entry.food(), servings: Servings.nearest(entry.servings) };
     }
     case AddFoodRequestKind.Food:
       return {

@@ -14,7 +14,7 @@ jest.mock('@infrastructure/auth/social/social-auth-provider', () => ({
 }));
 
 interface RequestCall {
-  url?: string;
+  url?: string | undefined;
   data?: unknown;
 }
 

@@ -1,3 +1,4 @@
+import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 /**
  * Assembles the assistant bubble shown after a successful refine: the AI's
  * `summary` of what changed, plus its `suggestion` on a blank-line-separated
@@ -7,7 +8,7 @@
 import { ValueConstants } from '@core/constants';
 
 export const buildRefineReply = (
-  refined: { summary?: string; suggestion?: string },
+  refined: Pick<RefinedRecipe, 'summary' | 'suggestion'>,
   fallback: string,
 ): string => {
   const summary = refined.summary?.trim();

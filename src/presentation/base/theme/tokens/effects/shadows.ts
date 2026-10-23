@@ -38,7 +38,7 @@ const cast = ({
  * cheaper to render than a drawn shadow — while iOS and web get the real cast.
  */
 export const shadows = {
-  sm: Platform.select<ViewStyle>({ android: { elevation: ELEVATION.sm }, default: cast(CAST.sm) }) ?? {},
-  md: Platform.select<ViewStyle>({ android: { elevation: ELEVATION.md }, default: cast(CAST.md) }) ?? {},
-  lg: Platform.select<ViewStyle>({ android: { elevation: ELEVATION.lg }, default: cast(CAST.lg) }) ?? {},
+  sm: Platform.select<ViewStyle>({ android: { elevation: ELEVATION.sm }, default: cast(CAST.sm) }),
+  md: Platform.select<ViewStyle>({ android: { elevation: ELEVATION.md }, default: cast(CAST.md) }),
+  lg: Platform.select<ViewStyle>({ android: { elevation: ELEVATION.lg }, default: cast(CAST.lg) }),
 } as const;

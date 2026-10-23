@@ -105,8 +105,8 @@ export const useAddFoodFlow = (request: AddFoodRequestType | null, onClose: () =
     setVariant: (index) =>
       update((s) => {
         if (s.step !== AddFoodStep.Product) return s;
-        const keeps = s.quantity !== null && (ready?.variants[index]?.unitKeys.includes(s.quantity.unit.key) ?? false);
-        return { ...s, variantIndex: index, quantity: keeps ? s.quantity : null };
+        const doesKeepUnit = s.quantity !== null && (ready?.variants[index]?.unitKeys.includes(s.quantity.unit.key) ?? false);
+        return { ...s, variantIndex: index, quantity: doesKeepUnit ? s.quantity : null };
       }),
     setUnit: (unit) =>
       update((s) => (s.step === AddFoodStep.Product && ready !== null ? { ...s, quantity: ready.quantity.inUnit(unit) } : s)),

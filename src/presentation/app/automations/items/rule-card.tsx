@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { DmRuleEntity } from "@domain/instagram/dm/dm-rule-entity";
-import { ValueConstants } from "@core/constants";
+import { CharConstants, ValueConstants } from "@core/constants";
 import { useTheme } from "@presentation/base/theme/context/use-theme";
 import { useLayout } from "@presentation/base/responsive/use-layout";
 import { SizedText } from "@presentation/base/widgets/text/sized-text";
@@ -21,7 +22,7 @@ import {
   radii,
   spacing,
 } from "@presentation/base/theme";
-import { t, useLocale } from "@presentation/i18n";
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface RuleCardProps {
   rule: DmRuleEntity;
@@ -33,13 +34,14 @@ export interface RuleCardProps {
 }
 
 /** One automation (spec §2 → Rule card): the post, its keywords, the recipe, "124 sent · Off", and its switch. Tap opens Activity. */
-export const RuleCard = ({
+const RuleCardComponent = ({
   rule,
   isPaused,
   onOpen,
   onToggle,
   onDelete,
 }: RuleCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
   const { isExpanded } = useLayout();
@@ -52,7 +54,7 @@ export const RuleCard = ({
         ...rule.keywords,
       ]
         .filter((part) => part !== null)
-        .join(", ")}
+        .join(CharConstants.commaSpace)}
       style={({ pressed }) => [
         styles.card,
         {
@@ -95,19 +97,19 @@ export const RuleCard = ({
           color={isPaused ? colors.danger : colors.textSubtle}
           numberOfLines={ValueConstants.one}
         >
-          {ruleMeta(rule, isPaused, (n) => formatWholeNumber(n, locale))}
+          {ruleMeta(t, rule, isPaused, (n) => formatWholeNumber(n, locale))}
         </SizedText>
       </View>
       <View style={styles.actions}>
         <AutomationSwitch
           value={rule.enabled}
           disabled={isPaused}
-          onChange={(enabled) => onToggle(rule, enabled)}
+          onChange={(isEnabled) => onToggle(rule, isEnabled)}
         />
         <Pressable
           onPress={() => onDelete(rule)}
           accessibilityRole="button"
-          accessibilityLabel={t().instagram.deleteRule}
+          accessibilityLabel={t.instagram.deleteRule}
           hitSlop={spacing.sm}
           style={({ pressed }) => [
             styles.delete,
@@ -153,3 +155,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
+
+/** Memoized: rendered once per list item, it re-renders only when its own props change. */
+export const RuleCard = memo(RuleCardComponent);

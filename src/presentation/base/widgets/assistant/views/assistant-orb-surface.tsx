@@ -1,3 +1,5 @@
+import type { AssistantOrbMenuItem } from '@presentation/base/widgets/assistant/views/assistant-orb-menu-item';
+import type { TranslationsType } from '@presentation/i18n';
 import { useState } from 'react';
 import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
@@ -12,11 +14,10 @@ import { assistantIsLive } from '@application/assistant/session/assistant-is-liv
 import { assistantSheetGeometry } from '@presentation/base/widgets/assistant/assistant-sheet-geometry';
 import { useKeyboardHeight } from '@presentation/base/hooks/interaction/use-keyboard-height';
 import { spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AssistantOrbSurfaceProps {
   status: AssistantStatusType;
-  level: number;
   isMuted: boolean;
   transcript: AssistantTranscriptLineType[];
   notice: string | null;
@@ -48,7 +49,6 @@ export interface AssistantOrbSurfaceProps {
  */
 export const AssistantOrbSurface = ({
   status,
-  level,
   isMuted,
   transcript,
   notice,
@@ -59,10 +59,11 @@ export const AssistantOrbSurface = ({
   onClose,
   restingBottom,
 }: AssistantOrbSurfaceProps): React.JSX.Element => {
+  const t = useTranslations();
   const { height } = useWindowDimensions();
   const [isTyping, setIsTyping] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const live = assistantIsLive(status);
+  const isLive = assistantIsLive(status);
 
   // The sheet is pinned to the bottom, so move it by the keyboard height.
   const keyboardHeight = useKeyboardHeight();
@@ -72,32 +73,32 @@ export const AssistantOrbSurface = ({
     ? sheet.bottom + sheet.height + spacing.lg
     : Math.max(height * ORB_RESTING_SHARE, restingBottom);
 
-  const items = [
+  const items: AssistantOrbMenuItem[] = [
     {
       key: 'voice',
-      icon: (live && isMuted ? 'mic-off' : 'mic') as 'mic' | 'mic-off',
-      label: !live ? t().assistant.start : isMuted ? t().assistant.unmute : t().assistant.mute,
-      isOn: live && isMuted,
+      icon: isLive && isMuted ? 'mic-off' : 'mic',
+      label: !isLive ? t.assistant.start : isMuted ? t.assistant.unmute : t.assistant.mute,
+      isOn: isLive && isMuted,
       onPress: () => {
         setIsMenuOpen(false);
-        if (!live) onToggleVoice();
+        if (!isLive) onToggleVoice();
         else onToggleMute();
       },
     },
     {
       key: 'text',
       icon: 'chatbubble-ellipses-outline' as const,
-      label: isTyping ? t().assistant.voice : t().assistant.keyboard,
+      label: isTyping ? t.assistant.voice : t.assistant.keyboard,
       isOn: isTyping,
       onPress: () => {
         setIsMenuOpen(false);
-        setIsTyping((typing) => !typing);
+        setIsTyping((isTyping) => !isTyping);
       },
     },
     {
       key: 'end',
       icon: 'close' as const,
-      label: t().assistant.close,
+      label: t.assistant.close,
       isDanger: true,
       onPress: () => {
         setIsMenuOpen(false);
@@ -113,7 +114,7 @@ export const AssistantOrbSurface = ({
           style={StyleSheet.absoluteFill}
           onPress={() => setIsMenuOpen(false)}
           accessibilityRole="button"
-          accessibilityLabel={t().assistant.close}
+          accessibilityLabel={t.assistant.close}
         />
       ) : null}
 
@@ -136,12 +137,12 @@ export const AssistantOrbSurface = ({
         <AssistantWaitingLine status={status} isMuted={isMuted} />
 
         <Pressable
-          onPress={() => setIsMenuOpen((open) => !open)}
+          onPress={() => setIsMenuOpen((isOpen) => !isOpen)}
           accessibilityRole="button"
-          accessibilityLabel={t().assistant.title}
-          accessibilityValue={{ text: assistantStatusValue(status, isMuted) }}
+          accessibilityLabel={t.assistant.title}
+          accessibilityValue={{ text: assistantStatusValue(t, status, isMuted) }}
         >
-          <AssistantOrb status={status} level={level} isMuted={isMuted} />
+          <AssistantOrb status={status} isMuted={isMuted} />
         </Pressable>
       </View>
     </>
@@ -151,9 +152,9 @@ export const AssistantOrbSurface = ({
 /** Roughly an eighth up the screen — clear of the tab bar, under the thumb. */
 const ORB_RESTING_SHARE = 0.13;
 
-function assistantStatusValue(status: AssistantStatusType, isMuted: boolean): string {
-  if (isMuted) return t().assistant.unmute;
-  return status === AssistantStatus.Idle ? t().assistant.idle : t().assistant.listening;
+function assistantStatusValue(t: TranslationsType, status: AssistantStatusType, isMuted: boolean): string {
+  if (isMuted) return t.assistant.unmute;
+  return status === AssistantStatus.Idle ? t.assistant.idle : t.assistant.listening;
 }
 
 const styles = StyleSheet.create({

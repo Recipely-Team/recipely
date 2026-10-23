@@ -3,7 +3,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { fontSizes, fontWeights, lineHeights, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import type { NutritionReading } from '@domain/recipes/nutrition/nutrition-reading';
 import { NutritionBasis } from '@domain/recipes/nutrition/nutrition-basis';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -17,12 +17,13 @@ export interface CalorieSummaryProps {
 
 /** The calorie row: the ring, then "Calories per …" and the serving/total caption beside it. */
 export const CalorieSummary = ({ reading, compact }: CalorieSummaryProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().nutrition;
+  const strings = t.nutrition;
   const locale = useLocale();
   const titleLineHeight = useTextLineHeight(fontSizes.body, lineHeights.snug);
   const captionLineHeight = useTextLineHeight(fontSizes.small, lineHeights.snug);
-  const caption = calorieCaption(reading, locale);
+  const caption = calorieCaption(t, reading, locale);
 
   return (
     <View style={[styles.row, compact ? styles.rowCompact : null]}>

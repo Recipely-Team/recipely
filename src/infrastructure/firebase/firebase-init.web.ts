@@ -2,7 +2,6 @@ import { PROD_WEB_APP_DOMAIN } from '@infrastructure/constants/api/api-hosts';
 import { LogTag, LogMessage } from '@infrastructure/constants/log-tag';
 import { type FirebaseApp, getApps, initializeApp } from 'firebase/app';
 import { analyticsService } from '@infrastructure/firebase/analytics-service';
-import { ValueConstants } from '@core/constants';
 import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 
 /**
@@ -61,9 +60,8 @@ export const getFirebaseApp = (): FirebaseApp | null => {
     return null;
   }
   const existing = getApps();
-  appInstance = existing.length > ValueConstants.zero
-    ? existing[ValueConstants.zero]!
-    : initializeApp(firebaseConfig as Record<string, string>);
+  const [first] = existing;
+  appInstance = first ?? initializeApp(firebaseConfig as Record<string, string>);
   return appInstance;
 };
 

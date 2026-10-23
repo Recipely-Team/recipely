@@ -7,7 +7,7 @@ import { isWeb } from '@infrastructure/constants/platform';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { opacities, spacing, radii } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AssistantNoticeBlockProps {
   /** The line to show, or `null` when voice is working and there is no news. */
@@ -43,6 +43,7 @@ export const AssistantNoticeBlock = ({
   deniedReason,
   hasError,
 }: AssistantNoticeBlockProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   if (notice === null) return null;
@@ -69,7 +70,7 @@ export const AssistantNoticeBlock = ({
       {showsSettingsAction ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t().common.openSettings}
+          accessibilityLabel={t.common.openSettings}
           onPress={() => void Linking.openSettings().catch(() => undefined)}
           style={({ pressed }) => [
             styles.settingsAction,
@@ -77,7 +78,7 @@ export const AssistantNoticeBlock = ({
           ]}
         >
           <ThemedText variant="caption" style={{ color: colors.primary }}>
-            {t().common.openSettings}
+            {t.common.openSettings}
           </ThemedText>
         </Pressable>
       ) : null}

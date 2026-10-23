@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { act } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
@@ -16,11 +17,10 @@ jest.mock('@presentation/base/hooks/profile/use-avatar-upload', () => ({
 }));
 
 const mount = (): { latest: () => UseEditProfileResult } => {
-  const authStore = ((selector: (state: unknown) => unknown) =>
-    selector({
+  const authStore = (mockStoreReading(() => ({
       state: { status: StoreStatus.Authenticated, session: { user: { displayName: 'Ali', bio: 'eski', photoUrl: null } } },
       updateProfile: jest.fn(async () => null),
-    })) as unknown as ApplicationStores['authStore'];
+    }))) as unknown as ApplicationStores['authStore'];
   const box: { vm: UseEditProfileResult | null } = { vm: null };
   const Probe = (): null => {
     box.vm = useEditProfile();

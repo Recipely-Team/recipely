@@ -6,7 +6,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer';
 import { formatTimer } from '@presentation/base/utils/format-timer';
 import { spacing, radii, iconSizes, decorSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { cookTimerId } from '@presentation/app/recipes/[recipeId]/model/cook-timer-slot';
 
@@ -33,6 +33,7 @@ export const TimeCard = ({
   recipeId,
   recipeName,
 }: TimeCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const timer = useRecipeTimer({
     timerId: cookTimerId(recipeId),
@@ -47,10 +48,10 @@ export const TimeCard = ({
   const iconTint = isDone ? colors.success : isCounting ? colors.onOverlay : colors.primary;
 
   const valueText = isDone
-    ? t().timer.done
+    ? t.timer.done
     : isActive
       ? formatTimer(remainingSeconds)
-      : `${String(minutes)} ${t().recipes.minutes}`;
+      : `${String(minutes)} ${t.recipes.minutes}`;
 
   const controls = (
     <View style={styles.controls}>
@@ -59,7 +60,7 @@ export const TimeCard = ({
           icon="play"
           bg={colors.primary}
           iconColor={colors.onOverlay}
-          label={t().timer.start}
+          label={t.timer.start}
           onPress={() => void timer.start()}
           disabled={minutes <= ValueConstants.zero}
         />
@@ -68,7 +69,7 @@ export const TimeCard = ({
           icon="checkmark-done"
           bg={colors.successLight}
           iconColor={colors.success}
-          label={t().timer.done}
+          label={t.timer.done}
           onPress={() => void timer.stop()}
         />
       ) : (
@@ -77,14 +78,14 @@ export const TimeCard = ({
             icon={isPaused ? 'play' : 'pause'}
             bg={isPaused ? colors.primary : colors.warning}
             iconColor={colors.onOverlay}
-            label={t().timer.start}
+            label={t.timer.start}
             onPress={() => void (isPaused ? timer.resume() : timer.pause())}
           />
           <ControlButton
             icon="close"
             bg={colors.chipBackground}
             iconColor={colors.textMuted}
-            label={t().common.cancel}
+            label={t.common.cancel}
             onPress={() => void timer.stop()}
           />
         </>

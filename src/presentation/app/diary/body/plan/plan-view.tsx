@@ -29,14 +29,14 @@ import { PlanViewKind } from '@presentation/app/diary/model/plan/plan-view-kind'
 import { PlanSheetKind } from '@presentation/app/diary/model/plan/plan-sheet-kind';
 import type { PlanView as PlanViewState } from '@presentation/app/diary/model/plan/plan-view';
 import { spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { usePlanMyWeek } from '@presentation/app/diary/hooks/plan/use-plan-my-week';
 import { PlanMyWeekButton } from '@presentation/app/diary/body/plan/plan-my-week-button';
 import { PlanMyWeekSheet } from '@presentation/app/diary/sheets/plan/plan-my-week-sheet';
 import { formatWeekRange } from '@presentation/base/utils/meal-plan/format-week-range';
 import { RoutePaths } from '@presentation/base/constants/route-paths';
-import { type Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 export interface PlanViewProps {
   view: PlanViewState;
@@ -66,9 +66,10 @@ export interface PlanViewProps {
  * their own state; an empty week shows the "Plan your week" card.
  */
 export const PlanView = (props: PlanViewProps): React.JSX.Element => {
+  const t = useTranslations();
   const { view, weekStart, today, selected, isCurrentWeek, goal, wide } = props;
   const locale = useLocale();
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const sheets = usePlanSheets();
   const entryActions = usePlanEntryActions(today);
   const weekActions = usePlanWeekActions(weekStart);
@@ -120,7 +121,7 @@ export const PlanView = (props: PlanViewProps): React.JSX.Element => {
               {view.kind === PlanViewKind.Loading ? <PlanSkeleton wide={wide} /> : null}
               {view.kind === PlanViewKind.Error ? (
                 <View style={styles.stack}>
-                  <FormBanner message={failureContent(view.failure).body} severity={SeverityType.Danger} />
+                  <FormBanner message={failureContent(t, view.failure).body} severity={SeverityType.Danger} />
                   <PrimaryButton label={strings.tryAgain} onPress={props.onRetry} />
                 </View>
               ) : null}
@@ -189,7 +190,7 @@ export const PlanView = (props: PlanViewProps): React.JSX.Element => {
         rangeLabel={formatWeekRange(weekStart, locale)}
         onBrowseRecipes={() => {
           planWeek.close();
-          router.push(RoutePaths.recipes as Href);
+          router.push(RoutePaths.recipes);
         }}
       />
       {week === null ? null : <PlanShoppingSheet visible={sheets.sheet.kind === PlanSheetKind.Shopping} week={week} onClose={sheets.close} />}

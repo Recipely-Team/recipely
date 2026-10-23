@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useEffectEvent, useRef } from 'react';
 import { FlatList, View, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { scrollThrottleMs } from '@presentation/base/constants';
 import { SmartPhoto } from '@presentation/app/recipes/[recipeId]/items/media/smart-photo';
 import { fillPhotoPosition } from '@presentation/app/recipes/[recipeId]/model/photos/fill-photo-position';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { photoKey } from '@presentation/app/recipes/[recipeId]/model/photos/photo-key';
@@ -38,6 +38,7 @@ export interface PhotoPagerProps {
  *   remount every later photo when an earlier one is removed.
  */
 export const PhotoPager = ({ media, width, height, current, onSwipe }: PhotoPagerProps): React.JSX.Element => {
+  const t = useTranslations();
   const listRef = useRef<FlatList<MediaItem>>(null);
   const swiped = useRef(false);
   const shown = useRef<number>(ValueConstants.zero);
@@ -53,10 +54,10 @@ export const PhotoPager = ({ media, width, height, current, onSwipe }: PhotoPage
     listRef.current?.scrollToOffset({ offset: current * width, animated: true });
   }, [current, width]);
 
+  // Only a width change re-pins; `current` is followed by the effect above.
+  const repin = useEffectEvent(() => listRef.current?.scrollToOffset({ offset: current * width, animated: false }));
   useEffect(() => {
-    listRef.current?.scrollToOffset({ offset: current * width, animated: false });
-    // Only a width change re-pins; `current` is followed by the effect above.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    repin();
   }, [width]);
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
@@ -78,16 +79,16 @@ export const PhotoPager = ({ media, width, height, current, onSwipe }: PhotoPage
       // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
       removeClippedSubviews={false}
       ref={listRef}
-      data={media as MediaItem[]}
+      data={media}
       extraData={width}
       keyExtractor={photoKey}
       renderItem={({ item, index }) => (
         <View
           style={{ width, height }}
           accessible
-          accessibilityLabel={fillPhotoPosition(t().photoViewer.position, index, total)}
+          accessibilityLabel={fillPhotoPosition(t.photoViewer.position, index, total)}
         >
-          <SmartPhoto url={item.url} focus={item.focus} accessibilityLabel={fillPhotoPosition(t().photoViewer.position, index, total)} />
+          <SmartPhoto url={item.url} focus={item.focus} accessibilityLabel={fillPhotoPosition(t.photoViewer.position, index, total)} />
         </View>
       )}
       getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}

@@ -15,8 +15,8 @@ type ReturnParams = Readonly<Record<string, string | undefined>>;
  * usable status or code is a failed login, never a silent success.
  */
 export const readInstagramReturn = (params: ReturnParams): InstagramReturnType => {
-  const code = params.code?.trim() ?? CharConstants.empty;
-  if (params.status === STATUS_AUTHORIZED && code.length > ValueConstants.zero) return { kind: InstagramReturnKind.Authorized, code };
-  if (params.status === STATUS_ERROR && params.reason === REASON_DENIED) return { kind: InstagramReturnKind.Denied };
+  const code = params['code']?.trim() ?? CharConstants.empty;
+  if (params['status'] === STATUS_AUTHORIZED && code.length > ValueConstants.zero) return { kind: InstagramReturnKind.Authorized, code };
+  if (params['status'] === STATUS_ERROR && params['reason'] === REASON_DENIED) return { kind: InstagramReturnKind.Denied };
   return { kind: InstagramReturnKind.Failed };
 };

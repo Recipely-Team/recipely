@@ -1,6 +1,7 @@
+import type { TranslationsType } from '@presentation/i18n';
 import { Linking, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { ProvenanceMark, type ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
-import { CharConstants, ValueConstants } from '@core/constants';
+import { CharConstants, UrlConstants, ValueConstants } from '@core/constants';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { instagramProfileUrl, tiktokProfileUrl } from '@presentation/base/constants';
@@ -8,66 +9,66 @@ import { spacing, radii, fontSizes, fontWeights, lineHeightFor } from '@presenta
 import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
 import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provenance-seal-metrics';
 import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /** The `{handle}` slot the import copy leaves for the account name. */
 const HANDLE_SLOT = '{handle}';
 /** Handles are shown the way the platforms write them, not the way we store them. */
-const HANDLE_PREFIX = '@';
-const WEB_SCHEME = 'https://';
+const HANDLE_PREFIX = CharConstants.at;
+const WEB_SCHEME = UrlConstants.httpsScheme;
 
 /** The marks that name an outside source; the AI mark qualifies one and Recipely Kitchen is ours. */
 type SourceMarkType = Exclude<ProvenanceMarkType, typeof ProvenanceMark.Ai | typeof ProvenanceMark.Curated>;
 
 const SOURCE_WORDS: Record<SourceMarkType, {
-  sentence: () => string;
-  fallback: () => string;
-  open: () => string;
+  sentence: (t: TranslationsType) => string;
+  fallback: (t: TranslationsType) => string;
+  open: (t: TranslationsType) => string;
   prefix: string;
   /** Where the name links, or `null` when there is nowhere honest to send it. */
   href: (handle: string, sourceUrl: string | undefined) => string | null;
 }> = {
   [ProvenanceMark.Instagram]: {
-    sentence: () => t().recipes.originInstagramDetailLabel,
-    fallback: () => t().recipes.originInstagramA11y,
-    open: () => t().recipes.originInstagramHandleA11y,
+    sentence: (t) => t.recipes.originInstagramDetailLabel,
+    fallback: (t) => t.recipes.originInstagramA11y,
+    open: (t) => t.recipes.originInstagramHandleA11y,
     prefix: HANDLE_PREFIX,
     href: (handle, sourceUrl) => sourceUrl ?? instagramProfileUrl(handle),
   },
   [ProvenanceMark.TikTok]: {
-    sentence: () => t().recipes.originTiktokDetailLabel,
-    fallback: () => t().recipes.originTiktokA11y,
-    open: () => t().recipes.originTiktokHandleA11y,
+    sentence: (t) => t.recipes.originTiktokDetailLabel,
+    fallback: (t) => t.recipes.originTiktokA11y,
+    open: (t) => t.recipes.originTiktokHandleA11y,
     prefix: HANDLE_PREFIX,
     href: (handle, sourceUrl) => sourceUrl ?? tiktokProfileUrl(handle),
   },
   // Pages and channels are named without @.
   [ProvenanceMark.Facebook]: {
-    sentence: () => t().recipes.originFacebookDetailLabel,
-    fallback: () => t().recipes.originFacebookA11y,
-    open: () => t().recipes.originFacebookHandleA11y,
+    sentence: (t) => t.recipes.originFacebookDetailLabel,
+    fallback: (t) => t.recipes.originFacebookA11y,
+    open: (t) => t.recipes.originFacebookHandleA11y,
     prefix: CharConstants.empty,
     href: (_page, sourceUrl) => sourceUrl ?? null,
   },
   [ProvenanceMark.YouTube]: {
-    sentence: () => t().recipes.originYoutubeDetailLabel,
-    fallback: () => t().recipes.originYoutubeA11y,
-    open: () => t().recipes.originYoutubeHandleA11y,
+    sentence: (t) => t.recipes.originYoutubeDetailLabel,
+    fallback: (t) => t.recipes.originYoutubeA11y,
+    open: (t) => t.recipes.originYoutubeHandleA11y,
     prefix: CharConstants.empty,
     href: (_channel, sourceUrl) => sourceUrl ?? null,
   },
   [ProvenanceMark.Pinterest]: {
-    sentence: () => t().recipes.originPinterestDetailLabel,
-    fallback: () => t().recipes.originPinterestA11y,
-    open: () => t().recipes.originPinterestHandleA11y,
+    sentence: (t) => t.recipes.originPinterestDetailLabel,
+    fallback: (t) => t.recipes.originPinterestA11y,
+    open: (t) => t.recipes.originPinterestHandleA11y,
     prefix: CharConstants.empty,
     href: (_account, sourceUrl) => sourceUrl ?? null,
   },
   // A site is named as a site, and its link is the page the recipe came from.
   [ProvenanceMark.Web]: {
-    sentence: () => t().recipes.originWebDetailLabel,
-    fallback: () => t().recipes.originWebA11y,
-    open: () => t().recipes.originWebHandleA11y,
+    sentence: (t) => t.recipes.originWebDetailLabel,
+    fallback: (t) => t.recipes.originWebA11y,
+    open: (t) => t.recipes.originWebHandleA11y,
     prefix: CharConstants.empty,
     href: (host, sourceUrl) => sourceUrl ?? `${WEB_SCHEME}${host}`,
   },
@@ -76,9 +77,9 @@ const SOURCE_WORDS: Record<SourceMarkType, {
 export interface ProvenanceNoteProps {
   marks: readonly ProvenanceMarkType[];
   /** The account an imported recipe was lifted from, or the site for a web page. */
-  sourceHandle?: string;
+  sourceHandle?: string | undefined;
   /** The page a web import was read from; the site's link goes there. */
-  sourceUrl?: string;
+  sourceUrl?: string | undefined;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -111,22 +112,23 @@ export interface ProvenanceNoteProps {
  *   recipe is the same chip, with the logo and "Recipely Kitchen".
  */
 export const ProvenanceNote = ({ marks, sourceHandle, sourceUrl, style }: ProvenanceNoteProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   if (marks.length === ValueConstants.zero) return null;
 
   const seal = <ProvenanceSeal marks={marks} surface={SealSurface.Page} size={provenanceSealMetrics.pageSize} />;
-  const curated = marks.includes(ProvenanceMark.Curated);
+  const isCurated = marks.includes(ProvenanceMark.Curated);
   const platform = marks.find(
     (mark): mark is SourceMarkType => mark !== ProvenanceMark.Ai && mark !== ProvenanceMark.Curated,
   );
 
-  if (curated || platform === undefined) {
+  if (isCurated || platform === undefined) {
     return (
       <View style={style}>
         <View style={[styles.aiChip, { backgroundColor: colors.chipBackground }]}>
           {seal}
           <ThemedText style={[styles.aiLabel, { color: colors.chipText }]}>
-            {curated ? t().recipes.originCuratedDetailLabel : t().recipes.originAiDetailLabel}
+            {isCurated ? t.recipes.originCuratedDetailLabel : t.recipes.originAiDetailLabel}
           </ThemedText>
         </View>
       </View>
@@ -134,11 +136,11 @@ export const ProvenanceNote = ({ marks, sourceHandle, sourceUrl, style }: Proven
   }
 
   const words = SOURCE_WORDS[platform];
-  const tail = marks.includes(ProvenanceMark.Ai) ? t().recipes.originEditedByAiSuffix : '';
+  const tail = marks.includes(ProvenanceMark.Ai) ? t.recipes.originEditedByAiSuffix : CharConstants.empty;
   // No handle: still say where it came from.
   const [before, after] =
-    sourceHandle === undefined ? [words.fallback(), ''] : words.sentence().split(HANDLE_SLOT);
-  const shownHandle = `${words.prefix}${sourceHandle ?? ''}`;
+    sourceHandle === undefined ? [words.fallback(t), CharConstants.empty] : words.sentence(t).split(HANDLE_SLOT);
+  const shownHandle = `${words.prefix}${sourceHandle ?? CharConstants.empty}`;
   const href = sourceHandle === undefined ? null : words.href(sourceHandle, sourceUrl);
 
   return (
@@ -150,7 +152,7 @@ export const ProvenanceNote = ({ marks, sourceHandle, sourceUrl, style }: Proven
         {href !== null ? (
           <Text
             accessibilityRole="link"
-            accessibilityLabel={words.open().replace(HANDLE_SLOT, shownHandle)}
+            accessibilityLabel={words.open(t).replace(HANDLE_SLOT, shownHandle)}
             onPress={() => void Linking.openURL(href).catch(() => undefined)}
             style={[styles.handle, { color: colors.chipText }]}
           >

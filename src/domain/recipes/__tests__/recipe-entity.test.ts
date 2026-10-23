@@ -124,7 +124,7 @@ describe('RecipeEntity.heroPhotos / photoCount', () => {
 
   it('pages through the gallery images when there are any', () => {
     const recipe = make({});
-    expect(recipe.heroPhotos.map((m) => m.url)).toEqual([validProps.image]);
+    expect(recipe.heroPhotos().map((m) => m.url)).toEqual([validProps.image]);
     expect(recipe.photoCount).toBe(1);
   });
 
@@ -132,12 +132,12 @@ describe('RecipeEntity.heroPhotos / photoCount', () => {
     const focus = FocalPoint.create(0.2, 0.8);
     if (!focus.ok) throw new Error('invalid focus');
     const recipe = make({ media: [], imageFocus: focus.value });
-    expect(recipe.heroPhotos).toEqual([{ type: 'image', url: validProps.image, focus: focus.value }]);
+    expect(recipe.heroPhotos()).toEqual([{ type: 'image', url: validProps.image, focus: focus.value }]);
   });
 
   it.each(['', '   '])('has no photo at all for a blank cover %p with an empty gallery', (image) => {
     const recipe = make({ media: [], image });
-    expect(recipe.heroPhotos).toEqual([]);
+    expect(recipe.heroPhotos()).toEqual([]);
     expect(recipe.photoCount).toBe(0);
   });
 });

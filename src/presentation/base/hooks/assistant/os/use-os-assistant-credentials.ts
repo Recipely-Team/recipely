@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { useLocale } from '@presentation/i18n/use-locale';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -29,7 +30,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 export const useOsAssistantCredentials = (): void => {
   const { osAssistant, authStore, assistantTokens } = useStores();
   const locale = useLocale();
-  const isSignedIn = authStore((state) => state.state.status === StoreStatus.Authenticated);
+  const isSignedIn = useStore(authStore, (state) => state.state.status === StoreStatus.Authenticated);
 
   useEffect(() => {
     if (!osAssistant.isAvailable) return;
@@ -39,15 +40,16 @@ export const useOsAssistantCredentials = (): void => {
       return;
     }
 
-    let isCurrent = true;
+    // An object, not a let: the cleanup flips it after the await, which a narrowed let cannot show.
+    const run = { isCurrent: true };
     void (async () => {
       const minted = await assistantTokens.mintIntentToken();
-      if (!isCurrent || !minted.ok) return;
+      if (!run.isCurrent || !minted.ok) return;
       await osAssistant.publishCredentials(minted.value.token, locale);
     })();
 
     return () => {
-      isCurrent = false;
+      run.isCurrent = false;
     };
   }, [osAssistant, authStore, assistantTokens, isSignedIn, locale]);
 };

@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, iconSizes, avatarSizes, mediaSizes, layoutSizes, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface VerifyHeroProps {
@@ -13,6 +13,7 @@ export interface VerifyHeroProps {
 
 /** Mail badge + title/subtitle (and target email) atop the verify screen. */
 export const VerifyHero = ({ isLandscapeShell, email }: VerifyHeroProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -21,11 +22,11 @@ export const VerifyHero = ({ isLandscapeShell, email }: VerifyHeroProps): React.
         <Ionicons name="mail-unread-outline" size={iconSizes.xxl} color={colors.onOverlay} />
       </View>
       <ThemedText variant="subtitle" style={[styles.heroTitle, { color: colors.onOverlay }]}>
-        {t().verify.title}
+        {t.verify.title}
       </ThemedText>
       <View style={styles.heroSubtitleWrap}>
         <ThemedText variant="body" style={[styles.heroSubtitle, { color: colors.onOverlay }]}>
-          {t().verify.subtitle}
+          {t.verify.subtitle}
         </ThemedText>
         {email.length > ValueConstants.zero ? (
           <ThemedText variant="body" style={[styles.heroEmail, { color: colors.onOverlay }]}>

@@ -1,26 +1,28 @@
 import { useState } from 'react';
-import { useRouter, type Href } from 'expo-router';
+import { useStore } from 'zustand';
+import { useRouter} from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { AuthHeroLayout } from '@presentation/base/widgets/layout/auth-hero-layout';
 import { ForgotPasswordInputView } from '@presentation/app/forgot-password/body/forgot-password-input-view';
 import { ForgotPasswordSuccessView } from '@presentation/app/forgot-password/body/forgot-password-success-view';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { RoutePaths } from '@presentation/base/constants';
 import { CharConstants } from '@core/constants';
 import { isBlank } from '@core/guards/type-guards';
 
 export const ForgotPasswordScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const { authStore } = useStores();
-  const requestPasswordReset = authStore((s) => s.requestPasswordReset);
+  const requestPasswordReset = useStore(authStore, (s) => s.requestPasswordReset);
 
   const [email, setEmail] = useState(CharConstants.empty);
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+  const [wasSent, setSent] = useState(false);
   const [sendError, setSendError] = useState<string | undefined>(undefined);
 
   // A reload or a direct visit leaves no history on the web: go to login instead of nowhere.
-  const goBack = (): void => (router.canGoBack() ? router.back() : router.replace(RoutePaths.login as Href));
+  const goBack = (): void => (router.canGoBack() ? router.back() : router.replace(RoutePaths.login));
 
   const handleSend = async (): Promise<void> => {
     if (isBlank(email)) return;
@@ -31,19 +33,19 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
     if (failure === null) {
       setSent(true);
     } else {
-      setSendError(t().forgotPassword.sendError);
+      setSendError(t.forgotPassword.sendError);
     }
   };
 
   return (
     <AuthHeroLayout
       icon="key-outline"
-      title={t().forgotPassword.title}
-      subtitle={t().forgotPassword.subtitle}
-      backLabel={t().forgotPassword.backToLogin}
+      title={t.forgotPassword.title}
+      subtitle={t.forgotPassword.subtitle}
+      backLabel={t.forgotPassword.backToLogin}
       onBack={goBack}
     >
-      {sent ? (
+      {wasSent ? (
         <ForgotPasswordSuccessView
           email={email}
           onBack={goBack}
@@ -53,7 +55,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
         <ForgotPasswordInputView
           email={email}
           onChangeEmail={setEmail}
-          loading={loading}
+          loading={isLoading}
           onSend={() => { void handleSend(); }}
           onBack={goBack}
           error={sendError}

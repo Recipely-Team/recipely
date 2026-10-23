@@ -20,7 +20,7 @@ export const showErrorToast = (failure: Failure, retry?: ToastRetry): string => 
   FailureReporter.report(failure, 'showErrorToast');
   return toastStore.getState().show({
     severity: failureSeverity(failure),
-    message: failureToastMessage(failure),
+    message: failureToastMessage(t(), failure),
     actionLabel: retry ? (retry.label ?? t().errors.retry) : undefined,
     onAction: retry?.onRetry,
   });

@@ -26,19 +26,19 @@ export const splitIngredientText = (trimmed: string): IngredientTextParts | null
   const unitStart = amount.length + afterAmount.length - afterAmount.trimStart().length;
   const matched = matchUnit(trimmed.slice(unitStart));
   const unitEnd = matched === null ? amount.length : unitStart + matched.length;
-  const keepsUnit = matched !== null && trimmed.slice(unitEnd).trim().length > ValueConstants.zero;
-  const qtyEnd = keepsUnit ? unitEnd : amount.length;
+  const shouldKeepUnit = matched !== null && trimmed.slice(unitEnd).trim().length > ValueConstants.zero;
+  const qtyEnd = shouldKeepUnit ? unitEnd : amount.length;
 
   const name = trimmed.slice(qtyEnd).trim();
   if (name.length === ValueConstants.zero) return null;
 
-  const quantity = Quantity.create(amount.amount, keepsUnit ? matched.unit : null, amount.upTo);
+  const quantity = Quantity.create(amount.amount, shouldKeepUnit ? matched.unit : null, amount.upTo);
   if (!quantity.ok) return null;
 
   return {
     quantity: quantity.value,
     qtyText: trimmed.slice(ValueConstants.zero, qtyEnd).trim(),
-    unitToken: keepsUnit ? trimmed.slice(unitStart, unitEnd) : CharConstants.empty,
+    unitToken: shouldKeepUnit ? trimmed.slice(unitStart, unitEnd) : CharConstants.empty,
     name,
     decimalMark: trimmed.slice(ValueConstants.zero, amount.length).match(DECIMAL)?.[ValueConstants.one] ?? null,
   };

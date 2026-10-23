@@ -8,7 +8,7 @@ import { BaseValueObject } from '@core/value-object/base-value-object';
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const YEAR_WIDTH = 4;
 const PART_WIDTH = 2;
-const PAD = '0';
+const PAD = CharConstants.zeroDigit;
 const DAYS_PER_WEEK = 7;
 /** `getUTCDay()` counts from Sunday; the diary's week starts on Monday. */
 const SUNDAY_TO_MONDAY_SHIFT = 6;

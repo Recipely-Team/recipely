@@ -8,7 +8,7 @@ import { TabAppBar } from '@presentation/base/widgets/navigation/tab-app-bar';
 import { ShoppingCartButton } from '@presentation/base/widgets/navigation/shopping-cart-button';
 import { NotificationsBellButton } from '@presentation/base/widgets/navigation/notifications-bell-button';
 import { CreatorsGridMetrics } from '@presentation/app/creators/model/creators-grid-metrics';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface ChefsHeadingProps {
   /** The subtitle describes the grid, so it hides while there are no chefs yet. */
@@ -24,6 +24,7 @@ export interface ChefsHeadingProps {
  * - **Web:** a 36/800 h1 40 below the header, subtitle 15 (design spec → Chefs tab §5).
  */
 export const ChefsHeading = ({ showSubtitle }: ChefsHeadingProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
@@ -32,7 +33,7 @@ export const ChefsHeading = ({ showSubtitle }: ChefsHeadingProps): React.JSX.Ele
     return (
       <View style={{ paddingTop: insets.top }}>
         <TabAppBar
-          title={t().creators.title}
+          title={t.creators.title}
           actions={
             <>
               <ShoppingCartButton />
@@ -42,7 +43,7 @@ export const ChefsHeading = ({ showSubtitle }: ChefsHeadingProps): React.JSX.Ele
         />
         {showSubtitle ? (
           <SizedText size={fontSizes.caption} ratio={lineHeights.normal} color={colors.textSubtle} style={styles.subtitle}>
-            {t().creators.listSubtitle}
+            {t.creators.listSubtitle}
           </SizedText>
         ) : null}
       </View>
@@ -52,11 +53,11 @@ export const ChefsHeading = ({ showSubtitle }: ChefsHeadingProps): React.JSX.Ele
   return (
     <View style={[styles.heading, { paddingTop: CreatorsGridMetrics.webTopPadding }]}>
       <SizedText size={fontSizes.pageHeading} weight={fontWeights.heavy} accessibilityRole="header" style={styles.h1}>
-        {t().creators.title}
+        {t.creators.title}
       </SizedText>
       {showSubtitle ? (
         <SizedText size={fontSizes.body} ratio={lineHeights.normal} color={colors.textSubtle} style={styles.subtitleWeb}>
-          {t().creators.listSubtitle}
+          {t.creators.listSubtitle}
         </SizedText>
       ) : null}
     </View>

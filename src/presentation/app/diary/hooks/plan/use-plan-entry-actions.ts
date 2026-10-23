@@ -11,7 +11,7 @@ import { toastStore } from '@presentation/base/feedback/toast-store';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { formatPlanDay } from '@presentation/base/utils/meal-plan/format-plan-day';
 import { planMealLabel } from '@presentation/base/utils/meal-plan/plan-meal-label';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 interface PlanEntryActions {
   /** +1 or −1 servings (half steps); an eaten meal or a bound does nothing. */
@@ -32,6 +32,7 @@ interface PlanEntryActions {
  * - Every refusal is a toast; the store has already put the old state back.
  */
 export const usePlanEntryActions = (today: CalendarDate): PlanEntryActions => {
+  const t = useTranslations();
   const router = useRouter();
   const locale = useLocale();
   const { mealPlanStore, diaryStore } = useStores();
@@ -49,17 +50,17 @@ export const usePlanEntryActions = (today: CalendarDate): PlanEntryActions => {
 
   const toggleEaten = useCallback(
     async (entry: MealPlanEntryEntity) => {
-      const eaten = !entry.eaten;
-      const result = await mealPlanStore.getState().setEaten(entry, eaten, today);
+      const isEaten = !entry.eaten;
+      const result = await mealPlanStore.getState().setEaten(entry, isEaten, today);
       if (!result.ok) {
         showErrorToast(result.failure);
         return;
       }
       void diaryStore.getState().loadDay(entry.date);
-      const strings = t().mealPlan;
-      showSuccessToast(eaten ? strings.loggedToDiary.replace('{day}', formatPlanDay(entry.date, locale)) : strings.removedFromDiary);
+      const strings = t.mealPlan;
+      showSuccessToast(isEaten ? strings.loggedToDiary.replace('{day}', formatPlanDay(entry.date, locale)) : strings.removedFromDiary);
     },
-    [diaryStore, locale, mealPlanStore, today],
+    [diaryStore, locale, mealPlanStore, today, t],
   );
 
   const remove = useCallback(
@@ -71,12 +72,12 @@ export const usePlanEntryActions = (today: CalendarDate): PlanEntryActions => {
       }
       toastStore.getState().show({
         severity: SeverityType.Neutral,
-        message: t().mealPlan.removed,
-        actionLabel: t().mealPlan.undo,
+        message: t.mealPlan.removed,
+        actionLabel: t.mealPlan.undo,
         onAction: () => void mealPlanStore.getState().restore([entry]).then((restored) => (restored.ok ? undefined : showErrorToast(restored.failure))),
       });
     },
-    [mealPlanStore],
+    [mealPlanStore, t],
   );
 
   const move = useCallback(
@@ -86,9 +87,9 @@ export const usePlanEntryActions = (today: CalendarDate): PlanEntryActions => {
         showErrorToast(result.failure);
         return;
       }
-      showSuccessToast(t().mealPlan.movedTo.replace('{slot}', planMealLabel(meal)).replace('{day}', formatPlanDay(date, locale)));
+      showSuccessToast(t.mealPlan.movedTo.replace('{slot}', planMealLabel(t, meal)).replace('{day}', formatPlanDay(date, locale)));
     },
-    [locale, mealPlanStore],
+    [locale, mealPlanStore, t],
   );
 
   return {

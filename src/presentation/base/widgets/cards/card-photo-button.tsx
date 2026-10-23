@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { BrandColors } from '@presentation/base/theme/colors/palette/brand-colors';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { borderWidths, controlSizes, iconSizes, radii } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface CardPhotoButtonProps {
   onPress: () => void;
@@ -15,16 +15,19 @@ export interface CardPhotoButtonProps {
  * White with a hairline so it holds on any picture, and a full touch target —
  * it sits in the corner the likes chip takes on the feed.
  */
-export const CardPhotoButton = ({ onPress }: CardPhotoButtonProps): React.JSX.Element => (
+export const CardPhotoButton = ({ onPress }: CardPhotoButtonProps): React.JSX.Element => {
+  const t = useTranslations();
+  return (
   <Pressable
     accessibilityRole="button"
-    accessibilityLabel={t().photoViewer.editPhotos}
+    accessibilityLabel={t.photoViewer.editPhotos}
     onPress={onPress}
     style={[styles.button, shadows.md]}
   >
     <Ionicons name="camera" size={iconSizes.lg} color={BrandColors.photoControlInk} />
   </Pressable>
 );
+};
 
 const styles = StyleSheet.create({
   // Pinned: a circle, not a text box.

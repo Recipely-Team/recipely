@@ -1,11 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { assistantStatusLabel } from '@presentation/base/widgets/assistant/assistant-status-label';
 import { useReduceMotion } from '@presentation/base/hooks/accessibility/use-reduce-motion';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { durations, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
@@ -48,15 +48,16 @@ export const AssistantWaitingLine = ({
   status,
   isMuted = false,
 }: AssistantWaitingLineProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const { colors } = useTheme();
-  const reduceMotion = useReduceMotion();
-  const pulse = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const shouldReduceMotion = useReduceMotion();
+  const [pulse] = useState(() => new Animated.Value(ValueConstants.zero));
   // Muted outranks the other states.
   const isMutedLive = isMuted && status !== AssistantStatus.Idle;
   const isWaiting = WAITING.includes(status) || isMutedLive;
 
   useEffect(() => {
-    if (reduceMotion || !isWaiting) return;
+    if (shouldReduceMotion || !isWaiting) return;
     const loop = Animated.loop(
       Animated.timing(pulse, {
         toValue: ValueConstants.one,
@@ -67,14 +68,14 @@ export const AssistantWaitingLine = ({
     );
     loop.start();
     return () => loop.stop();
-  }, [pulse, isWaiting, reduceMotion]);
+  }, [pulse, isWaiting, shouldReduceMotion]);
 
   if (!isWaiting) return null;
 
   return (
     <View style={[styles.line, { backgroundColor: colors.cardBackground }]}>
       <ThemedText variant="caption" muted style={styles.label}>
-        {isMutedLive ? t().assistant.muted : assistantStatusLabel(status)}
+        {isMutedLive ? t.assistant.muted : assistantStatusLabel(t, status)}
       </ThemedText>
 
       {isMutedLive ? null : (
@@ -86,7 +87,7 @@ export const AssistantWaitingLine = ({
               styles.dot,
               {
                 backgroundColor: colors.primary,
-                opacity: reduceMotion
+                opacity: shouldReduceMotion
                   ? opacities.inactive
                   : pulse.interpolate({
                       inputRange: [ValueConstants.zero, ValueConstants.one],

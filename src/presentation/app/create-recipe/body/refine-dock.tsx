@@ -14,7 +14,7 @@ import { RefinePendingRow } from '@presentation/app/create-recipe/items/refine-p
 import { RefineProposalCard } from '@presentation/app/create-recipe/items/refine-proposal-card';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { RefineProposal } from '@presentation/app/create-recipe/model/refine/refine-proposal';
 import { useKeyboardVisible } from '@presentation/app/create-recipe/hooks/use-keyboard-visible';
@@ -61,11 +61,12 @@ export const RefineDock = ({
   onRejectProposal,
   bottomInset,
 }: RefineDockProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const canSend = !isBlank(chatInput) && !refining;
   // The keyboard already covers the home indicator, so drop the bottom inset while it is up.
-  const keyboardVisible = useKeyboardVisible();
-  const resolvedBottomInset = keyboardVisible ? ValueConstants.zero : bottomInset;
+  const isKeyboardVisible = useKeyboardVisible();
+  const resolvedBottomInset = isKeyboardVisible ? ValueConstants.zero : bottomInset;
 
   // Only free text clears the field; a chip sends its own instruction.
   const submitFreeText = (): void => {
@@ -82,7 +83,7 @@ export const RefineDock = ({
 
   const closeAssistant = (): void => {
     pendingClose.current?.();
-    if (!keyboardVisible) {
+    if (!isKeyboardVisible) {
       onCollapse();
       return;
     }
@@ -139,15 +140,15 @@ export const RefineDock = ({
             { borderColor: colors.primary, opacity: canRegenerate && !refining ? opacities.full : opacities.disabledStrong },
           ]}
           accessibilityRole="button"
-          accessibilityLabel={t().createRecipe.regenerate}
+          accessibilityLabel={t.createRecipe.regenerate}
         >
           <Ionicons name="refresh" size={iconSizes.md} color={colors.primary} />
           <ThemedText variant="caption" style={[styles.regenLabel, { color: colors.primary }]}>
-            {t().createRecipe.regenerate}
+            {t.createRecipe.regenerate}
           </ThemedText>
         </Pressable>
         {QUICK_CHIP_KEYS.map((key) => {
-          const label = t().createRecipe[key];
+          const label = t.createRecipe[key];
           return (
             <Pressable
               key={key}
@@ -175,7 +176,7 @@ export const RefineDock = ({
             value={chatInput}
             onChangeText={onChangeChatInput}
             onFocus={onExpand}
-            placeholder={t().createRecipe.refinePlaceholder}
+            placeholder={t.createRecipe.refinePlaceholder}
             placeholderTextColor={colors.textMuted}
             onSubmitEditing={submitFreeText}
             returnKeyType="send"
@@ -186,7 +187,7 @@ export const RefineDock = ({
             disabled={!canSend}
             style={[styles.sendBtn, { backgroundColor: canSend ? colors.primary : colors.border }]}
             accessibilityRole="button"
-            accessibilityLabel={t().createRecipe.refinePlaceholder}
+            accessibilityLabel={t.createRecipe.refinePlaceholder}
           >
             <Ionicons name="arrow-up" size={iconSizes.md} color={colors.primaryText} />
           </Pressable>

@@ -1,4 +1,4 @@
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import type { FunnelDay } from '@domain/instagram/stats/funnel-day';
 import { niceCeiling } from '@presentation/app/automations/stats/model/nice-ceiling';
 import { StatsMetrics } from '@presentation/app/automations/stats/model/stats-metrics';
@@ -30,7 +30,7 @@ export const chartGeometry = (days: readonly FunnelDay[], width: number, height:
   const yOf = (value: number): number => TOP_PAD + plotHeight * (ValueConstants.one - value / max);
   const centreOf = (index: number): number => left + slot * index + slot / HALF;
   const line = (pick: (d: FunnelDay) => number): string =>
-    days.map((d, i) => `${i === ValueConstants.zero ? 'M' : 'L'}${centreOf(i).toFixed(ValueConstants.one)} ${yOf(pick(d)).toFixed(ValueConstants.one)}`).join(' ');
+    days.map((d, i) => `${i === ValueConstants.zero ? 'M' : 'L'}${centreOf(i).toFixed(ValueConstants.one)} ${yOf(pick(d)).toFixed(ValueConstants.one)}`).join(CharConstants.space);
   const bars: ChartBar[] = days.map((d, i) => ({
     x: centreOf(i) - barWidth / HALF,
     y: yOf(d.sent),

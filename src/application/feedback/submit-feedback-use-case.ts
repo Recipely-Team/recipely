@@ -14,6 +14,6 @@ export class SubmitFeedbackUseCase {
 
   async execute(input: FeedbackSubmission): Promise<Result<void, Failure>> {
     const feedback = FeedbackMessage.create(input);
-    return feedback.ok ? this.repo.submitFeedback(feedback.value.submission) : fail(feedback.failure);
+    return feedback.ok ? this.repo.submitFeedback(feedback.value.submission()) : fail(feedback.failure);
   }
 }

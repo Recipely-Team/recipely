@@ -1,108 +1,60 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
-import { RequestEpoch } from '@application/store/request-epoch';
+import { createStore } from 'zustand/vanilla';
+import { ok } from '@core/result/result-helpers';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
-import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
-import { pagingOf } from '@application/store/paging/list-paging/paging-of';
-import { NO_PAGING } from '@application/store/paging/list-paging/no-paging';
-import { loadMorePaging } from '@application/store/paging/list-paging/load-more-paging';
-import { pagingAfterRemoval } from '@application/store/paging/list-paging/paging-after-removal';
-import { appendById } from '@application/store/paging/append-by-id';
-
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
+import { PagedListLoader } from '@application/store/paging/paged-list-loader';
+import type { PagedList } from '@application/store/paging/paged-list';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
 interface SavedRecipesStoreDeps {
   loadFavoritesUseCase: LoadFavoritesUseCase;
 }
 
-export const configureSavedRecipesStore = (
-  deps: SavedRecipesStoreDeps,
-): BoundStore<SavedRecipesStoreState> => {
-  /**
-   * Invalidated by `clear()`; a newer load also wins. A load that started under
-   * an earlier session must not publish its answer: signing out while a
-   * favourites request was in flight
-   * repopulated the previous account's rows — and `savedIds` drives the
-   * bookmark on every recipe card in the app.
-   */
-  const epoch = new RequestEpoch();
+/**
+ * The viewer's saved recipes, and which recipes are saved.
+ *
+ * @remarks
+ * - **One `PagedList`, driven by `PagedListLoader`.** Rows, status and cursor
+ *   used to sit in three fields kept in step by hand; the loader owns them now,
+ *   with the newest load winning and removals shifting the next page's offset.
+ * - **`savedIds` follows the rows that land** and local saves in between, so
+ *   every bookmark in the app reads one set.
+ * - **`clear()` resets the loader**, dropping any answer still in flight: a
+ *   load started under the previous account must not put its rows back.
+ */
+export const configureSavedRecipesStore = (deps: SavedRecipesStoreDeps): StoreApi<SavedRecipesStore> =>
+  createStore<SavedRecipesStore>((set, get) => {
+    const write = (saved: PagedList<RecipeSummaryEntity>): void =>
+      set(saved.status === StoreStatus.Loaded ? { saved, savedIds: new Set(saved.items.map((r) => r.id)) } : { saved });
+    const loader = new PagedListLoader<RecipeSummaryEntity>(() => get().saved, write, (r) => r.id);
+    const fetchPage = (page: number) => deps.loadFavoritesUseCase.execute(page);
+    const forget = (id: string): void => {
+      const next = new Set(get().savedIds);
+      next.delete(id);
+      set({ savedIds: next });
+      loader.removeItem(id);
+    };
 
-  return create<SavedRecipesStoreState>((set, get) => ({
-    savedRecipes: [],
-    savedIds: new Set<string>(),
-    listState: { status: StoreStatus.Idle },
-    paging: NO_PAGING,
-    has: (id) => get().savedIds.has(id),
-    toggle: (id) =>
-      set((s) => {
-        const next = new Set(s.savedIds);
-        if (next.has(id)) {
-          next.delete(id);
-          // Unsaving removes the card from the saved grid.
-          return { savedIds: next, savedRecipes: s.savedRecipes.filter((r) => r.id !== id), paging: pagingAfterRemoval(s.paging) };
-        }
-        next.add(id);
-        return { savedIds: next };
-      }),
-    addLocal: (id) =>
-      set((s) => {
-        if (s.savedIds.has(id)) return s;
-        const next = new Set(s.savedIds);
-        next.add(id);
-        return { savedIds: next };
-      }),
-    removeLocal: (id) =>
-      set((s) => {
-        if (!s.savedIds.has(id)) return s;
-        const next = new Set(s.savedIds);
-        next.delete(id);
-        return { savedIds: next, savedRecipes: s.savedRecipes.filter((r) => r.id !== id), paging: pagingAfterRemoval(s.paging) };
-      }),
-    setSaved: (page) =>
-      set({
-        savedRecipes: page.items,
-        savedIds: new Set(page.items.map((r) => r.id)),
-        listState: { status: StoreStatus.Loaded },
-        paging: pagingOf(page),
-      }),
-    loadMoreSaved: () => {
-      const isCurrent = epoch.current();
-      return loadMorePaging({
-        read: () => get().paging,
-        write: (paging) => set({ paging }),
-        fetch: (page) => deps.loadFavoritesUseCase.execute(page),
-        isCurrent,
-        append: (items) =>
-          set((s) => {
-            const savedRecipes = appendById(s.savedRecipes, items);
-            return { savedRecipes, savedIds: new Set(savedRecipes.map((r) => r.id)) };
-          }),
-      });
-    },
-    loadSaved: async () => {
-      const isCurrent = epoch.start();
-      // Only the first load shows a skeleton.
-      if (get().listState.status !== StoreStatus.Loaded) {
-        set({ listState: { status: StoreStatus.Loading } });
-      }
-      const result = await deps.loadFavoritesUseCase.execute();
-      if (!isCurrent()) return result;
-      if (!result.ok) {
-        // A failed reload keeps the rows; a next page it superseded is no longer on its way.
-        set((s) => ({ listState: { status: StoreStatus.Error, failure: result.failure }, paging: { ...s.paging, isLoadingMore: false } }));
-        return result;
-      }
-      get().setSaved(result.value);
-      return result;
-    },
-    clear: () => {
-      epoch.invalidate();
-      set({
-        savedRecipes: [],
-        savedIds: new Set<string>(),
-        listState: { status: StoreStatus.Idle },
-        paging: NO_PAGING,
-      });
-    },
-  }));
-};
+    return {
+      saved: { status: StoreStatus.Idle },
+      savedIds: new Set<string>(),
+      has: (id) => get().savedIds.has(id),
+      toggle: (id) => (get().savedIds.has(id) ? forget(id) : get().addLocal(id)),
+      addLocal: (id) => {
+        if (get().savedIds.has(id)) return;
+        set({ savedIds: new Set(get().savedIds).add(id) });
+      },
+      removeLocal: (id) => {
+        if (get().savedIds.has(id)) forget(id);
+      },
+      setSaved: (page) => loader.settle(loader.begin(fetchPage), ok(page)),
+      loadSaved: () => loader.refresh(fetchPage),
+      loadMoreSaved: () => loader.loadMore(),
+      clear: () => {
+        loader.reset();
+        set({ savedIds: new Set<string>() });
+      },
+    };
+  });

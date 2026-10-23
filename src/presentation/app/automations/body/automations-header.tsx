@@ -9,7 +9,7 @@ import type { InstagramConnectPhaseType } from '@presentation/base/widgets/insta
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AutomationsHeaderProps {
   handle: string;
@@ -20,8 +20,9 @@ export interface AutomationsHeaderProps {
 
 /** Above the rules: what automations do, the account they run on, and — once the link expired — Paused with Reconnect. */
 export const AutomationsHeader = ({ handle, isPaused, phase, onReconnect }: AutomationsHeaderProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().instagram;
+  const copy = t.instagram;
   return (
     <View style={styles.header}>
       <SizedText size={fontSizes.caption} color={colors.textSubtle}>

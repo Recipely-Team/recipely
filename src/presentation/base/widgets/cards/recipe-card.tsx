@@ -18,7 +18,7 @@ import {
   durations,
 } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { ValueConstants } from '@core/constants';
 import { CARD_HOVER_LIFT } from '@presentation/base/widgets/cards/card-hover-lift';
@@ -42,7 +42,7 @@ export interface RecipeCardProps {
   name: string;
   image: string;
   /** Where the dish sits in the cover; the crop centres on it. */
-  imageFocus?: FocalPoint;
+  imageFocus?: FocalPoint | undefined;
   cuisine: string;
   difficulty: string;
   rating: number;
@@ -51,9 +51,9 @@ export interface RecipeCardProps {
   likeCount?: number;
   likedByMe?: boolean;
   onPress: () => void;
-  onLike?: () => void;
+  onLike?: (() => void) | undefined;
   /** Web-only: lift the card slightly on mouse hover (used by the web grid). */
-  hoverEffect?: boolean;
+  hoverEffect?: boolean | undefined;
   /** Where the recipe came from. A hand-written one carries none and draws no seal. */
   provenance?: readonly ProvenanceMarkType[];
   /** The owner's view of the recipe (Created tab): a status badge on the photo's bottom-left. */
@@ -78,14 +78,15 @@ export const RecipeCard = ({
   likeCount = ValueConstants.zero, likedByMe = false,
   onPress, onLike, hoverEffect = false, provenance = [], ownerStatus, photoCount = ValueConstants.zero, onEditPhotos,
 }: RecipeCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const scale = useSharedValue(ValueConstants.one);
   const opacity = useSharedValue(ValueConstants.one);
   const heartScale = useSharedValue(ValueConstants.one);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
+    transform: [{ scale: scale.get() }],
+    opacity: opacity.get(),
   }));
 
   // Web-only hover lift: scale up slightly when the pointer enters the card.
@@ -93,22 +94,22 @@ export const RecipeCard = ({
     hoverEffect && isWeb()
       ? {
           onMouseEnter: () => {
-            scale.value = withTiming(CARD_HOVER_LIFT, { duration: durations.hover });
+            scale.set(withTiming(CARD_HOVER_LIFT, { duration: durations.hover }));
           },
           onMouseLeave: () => {
-            scale.value = withTiming(ValueConstants.one, { duration: durations.hover });
+            scale.set(withTiming(ValueConstants.one, { duration: durations.hover }));
           },
         }
       : {};
 
   const heartStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: heartScale.value }],
+    transform: [{ scale: heartScale.get() }],
   }));
 
   const handleLike = () => {
-    heartScale.value = withSpring(HEART_POP.scale, { damping: HEART_POP.damping }, () => {
-      heartScale.value = withSpring(ValueConstants.one);
-    });
+    heartScale.set(withSpring(HEART_POP.scale, { damping: HEART_POP.damping }, () => {
+      heartScale.set(withSpring(ValueConstants.one));
+    }));
     onLike?.();
   };
 
@@ -118,12 +119,12 @@ export const RecipeCard = ({
       {...hoverProps}
       onPress={onPress}
       onPressIn={() => {
-        scale.value = withTiming(PRESS_SCALE, { duration: PRESS_IN_MS });
-        opacity.value = withTiming(opacities.pressedFaint, { duration: PRESS_IN_MS });
+        scale.set(withTiming(PRESS_SCALE, { duration: PRESS_IN_MS }));
+        opacity.set(withTiming(opacities.pressedFaint, { duration: PRESS_IN_MS }));
       }}
       onPressOut={() => {
-        scale.value = withTiming(ValueConstants.one, { duration: PRESS_OUT_MS });
-        opacity.value = withTiming(opacities.full, { duration: PRESS_OUT_MS });
+        scale.set(withTiming(ValueConstants.one, { duration: PRESS_OUT_MS }));
+        opacity.set(withTiming(opacities.full, { duration: PRESS_OUT_MS }));
       }}
       style={[
         styles.card,
@@ -160,7 +161,7 @@ export const RecipeCard = ({
               <Pressable
                 onPress={handleLike}
                 accessibilityRole="button"
-                accessibilityLabel={likedByMe ? t().recipes.unlike : t().recipes.like}
+                accessibilityLabel={likedByMe ? t.recipes.unlike : t.recipes.like}
                 hitSlop={spacing.sm}
                 style={styles.likeBtn}
               >

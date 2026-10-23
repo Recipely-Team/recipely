@@ -6,12 +6,15 @@
  * feed's filter button — the one control that screen exists to offer.
  */
 
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
+import { createElement } from 'react';
+import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { RoutePaths } from '@presentation/base/constants';
 import { useAssistantFloatingClearance } from '@presentation/base/hooks/assistant/use-assistant-floating-clearance';
 import { useAssistantIsOffered } from '@presentation/base/hooks/assistant/use-assistant-is-offered';
 
-// Both hooks are pure functions of the path — they hold no state and call no
-// other hook — so they are called directly rather than through a renderer.
+// A hook runs only while a component renders (the compiled hooks read React's
+// memo cache), so each assertion renders a probe and reads what it returned.
 jest.mock('expo-router', () => ({
   usePathname: () => (globalThis as never as { __pathname: string }).__pathname,
 }));
@@ -20,10 +23,23 @@ jest.mock('expo-router', () => ({
 // assistant does belongs to the signed-in user.
 jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: () => ({
-    authStore: (select: (s: { state: { status: string } }) => unknown) =>
-      select({ state: { status: (globalThis as never as { __auth: string }).__auth } }),
+    authStore: mockStoreReading(() => ({ state: { status: (globalThis as never as { __auth: string }).__auth } })),
   }),
 }));
+
+const valueOf = <T>(hook: () => T): T => {
+  const seen: { value?: T } = {};
+  const Probe = (): null => {
+    seen.value = hook();
+    return null;
+  };
+  let view!: ReactTestRenderer;
+  act(() => {
+    view = create(createElement(Probe));
+  });
+  act(() => view.unmount());
+  return seen.value as T;
+};
 
 const at = (path: string): void => {
   (globalThis as never as { __pathname: string }).__pathname = path;
@@ -44,7 +60,7 @@ describe('where the assistant is offered', () => {
     (route) => {
       at(route);
 
-      expect(useAssistantIsOffered()).toBe(false);
+      expect(valueOf(useAssistantIsOffered)).toBe(false);
     },
   );
 
@@ -54,29 +70,29 @@ describe('where the assistant is offered', () => {
   it('is not offered at all without a signed-in session', () => {
     signedIn(false);
 
-    expect(useAssistantIsOffered()).toBe(false);
+    expect(valueOf(useAssistantIsOffered)).toBe(false);
   });
 
   it('is offered on the feed', () => {
-    expect(useAssistantIsOffered()).toBe(true);
+    expect(valueOf(useAssistantIsOffered)).toBe(true);
   });
 
   it('stays away from the screen where a new password is typed', () => {
     at(RoutePaths.resetPassword);
 
-    expect(useAssistantIsOffered()).toBe(false);
+    expect(valueOf(useAssistantIsOffered)).toBe(false);
   });
 
   it('is offered on a signed-out route that is not an auth screen', () => {
     at(RoutePaths.recipes + '/42');
 
-    expect(useAssistantIsOffered()).toBe(true);
+    expect(valueOf(useAssistantIsOffered)).toBe(true);
   });
 });
 
 describe('clearing the screen own floating control', () => {
   it('lifts above the feed filter button', () => {
-    expect(useAssistantFloatingClearance()).toBeGreaterThan(0);
+    expect(valueOf(useAssistantFloatingClearance)).toBeGreaterThan(0);
   });
 
   // `/recipes/42` is a detail screen with no filter button. Matched by prefix,
@@ -85,12 +101,12 @@ describe('clearing the screen own floating control', () => {
   it('does not lift on a recipe detail screen, which has no filter button', () => {
     at(RoutePaths.recipes + '/42');
 
-    expect(useAssistantFloatingClearance()).toBe(0);
+    expect(valueOf(useAssistantFloatingClearance)).toBe(0);
   });
 
   it('sits at the edge where nothing else is docked', () => {
     at(RoutePaths.myRecipes);
 
-    expect(useAssistantFloatingClearance()).toBe(0);
+    expect(valueOf(useAssistantFloatingClearance)).toBe(0);
   });
 });

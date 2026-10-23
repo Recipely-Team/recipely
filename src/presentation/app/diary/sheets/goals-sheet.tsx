@@ -13,7 +13,7 @@ import { GoalMacroRow } from '@presentation/app/diary/items/goal-macro-row';
 import { StatusMarker } from '@presentation/app/diary/shared/items/status-marker';
 import { StatusMarkerKind } from '@presentation/app/diary/shared/model/status-marker-kind';
 import { useGoalsForm } from '@presentation/app/diary/hooks/use-goals-form';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import type { AtwaterFactors } from '@domain/diary/nutrition/atwater-factors';
 import { NutritionMacro } from '@domain/recipes/nutrition/nutrition-macro';
@@ -31,11 +31,12 @@ export interface GoalsSheetProps {
  * whole diary at once — the store re-derives every cached day and month.
  */
 export const GoalsSheet = ({ visible, onClose }: GoalsSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const locale = useLocale();
   const tones = useDiaryTones();
   const form = useGoalsForm(visible, onClose);
-  const strings = t().diary;
-  const nutrition = t().nutrition;
+  const strings = t.diary;
+  const nutrition = t.nutrition;
   const { candidate } = form;
   const share = (macro: keyof typeof AtwaterFactors): string | null =>
     candidate === null ? null : strings.calorieShare.replace('{n}', formatWholeNumber(candidate.calorieShare(macro) * ValueConstants.percent, locale));

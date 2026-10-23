@@ -1,6 +1,6 @@
 import { type InternalAxiosRequestConfig, AxiosHeaders } from 'axios';
 import { isFormData } from '@core/guards/type-guards';
-import { HttpMethod, METHODS_WITH_BODY } from '@infrastructure/network/http/http-method';
+import { type HttpMethod, METHODS_WITH_BODY } from '@infrastructure/network/http/http-method';
 import { LogTag } from '@infrastructure/constants/log-tag';
 import { HttpHeader, HttpMediaType } from '@infrastructure/network/http/http-header';
 import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
@@ -26,8 +26,7 @@ export const buildRequestInterceptor = (
   aesKey: Uint8Array,
 ) => {
   return async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
-    const headers = config.headers ?? new AxiosHeaders();
-    config.headers = headers;
+    const { headers } = config;
     const common = await buildCommonHeaders(options);
     for (const [name, value] of Object.entries(common)) {
       // set(): AxiosHeaders has its own normalised storage.
@@ -43,7 +42,7 @@ export const buildRequestInterceptor = (
         config.headers.delete(HttpHeader.contentType);
       }
       // Identity transform: send RN's FormData untouched.
-      config.transformRequest = [(data) => data];
+      config.transformRequest = [(data: unknown): unknown => data];
       // Uploads get the longer upload budget.
       config.timeout = MULTIPART_UPLOAD_TIMEOUT_MS;
       return config;
@@ -53,7 +52,7 @@ export const buildRequestInterceptor = (
 
     // Bodied methods are always encrypted (an empty envelope when there is no data).
     if (METHODS_WITH_BODY.includes((config.method?.toUpperCase() ?? CharConstants.empty) as HttpMethod)) {
-      const bodyData = config.data ?? {};
+      const bodyData: unknown = config.data ?? {};
       // Wrapped as { data } to mirror the response envelope.
       config.data = encryptEnvelope({ data: bodyData }, aesKey);
     }

@@ -50,17 +50,17 @@ describe('RecipeDraftRepository.listDrafts', () => {
     const r = await repo.listDrafts(2, 20);
 
     expect(calls).toHaveLength(1);
-    expect(calls[0].method).toBe('GET');
-    expect(calls[0].url).toBe('/recipes/drafts');
-    expect(calls[0].params).toEqual({ page: 2, pageSize: 20 });
+    expect(calls[0]!.method).toBe('GET');
+    expect(calls[0]!.url).toBe('/recipes/drafts');
+    expect(calls[0]!.params).toEqual({ page: 2, pageSize: 20 });
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.value.total).toBe(1);
       expect(r.value.page).toBe(2);
       expect(r.value.pageSize).toBe(20);
       expect(r.value.items).toHaveLength(1);
-      expect(r.value.items[0].id).toBe(draftDto.id);
-      expect(r.value.items[0].createdAt).toBeInstanceOf(Date);
+      expect(r.value.items[0]!.id).toBe(draftDto.id);
+      expect(r.value.items[0]!.createdAt).toBeInstanceOf(Date);
     }
   });
 
@@ -83,8 +83,8 @@ describe('RecipeDraftRepository.getLatestDraft', () => {
 
     const r = await repo.getLatestDraft();
 
-    expect(calls[0].method).toBe('GET');
-    expect(calls[0].url).toBe('/recipes/drafts/latest');
+    expect(calls[0]!.method).toBe('GET');
+    expect(calls[0]!.url).toBe('/recipes/drafts/latest');
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.value?.id).toBe(draftDto.id);
@@ -121,8 +121,8 @@ describe('RecipeDraftRepository.getDraft', () => {
 
     const r = await repo.getDraft('a b/c');
 
-    expect(calls[0].method).toBe('GET');
-    expect(calls[0].url).toBe('/recipes/drafts/a%20b%2Fc');
+    expect(calls[0]!.method).toBe('GET');
+    expect(calls[0]!.url).toBe('/recipes/drafts/a%20b%2Fc');
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value.id).toBe(draftDto.id);
   });
@@ -152,14 +152,14 @@ describe('RecipeDraftRepository.upsertDraft', () => {
     };
     const r = await repo.upsertDraft(input);
 
-    expect(calls[0].method).toBe('PUT');
-    expect(calls[0].url).toBe('/recipes/drafts/d1e2f3a4-5678-4901-bcde-f01234567890');
-    expect(calls[0].data).toEqual({
+    expect(calls[0]!.method).toBe('PUT');
+    expect(calls[0]!.url).toBe('/recipes/drafts/d1e2f3a4-5678-4901-bcde-f01234567890');
+    expect(calls[0]!.data).toEqual({
       prompt: 'spicy ramen',
       snapshot: { name: 'Spicy Ramen', ingredients: ['Noodles'] },
       chatHistory: [{ role: 'user', content: 'spicier please' }],
     });
-    expect(JSON.stringify(calls[0].data)).not.toContain('"id"');
+    expect(JSON.stringify(calls[0]!.data)).not.toContain('"id"');
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value.id).toBe(draftDto.id);
   });
@@ -188,8 +188,8 @@ describe('RecipeDraftRepository.deleteDraft', () => {
 
     const r = await repo.deleteDraft('id with space');
 
-    expect(calls[0].method).toBe('DELETE');
-    expect(calls[0].url).toBe('/recipes/drafts/id%20with%20space');
+    expect(calls[0]!.method).toBe('DELETE');
+    expect(calls[0]!.url).toBe('/recipes/drafts/id%20with%20space');
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value).toBeUndefined();
   });

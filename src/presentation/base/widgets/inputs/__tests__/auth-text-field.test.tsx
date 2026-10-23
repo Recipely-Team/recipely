@@ -12,10 +12,10 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { AuthTextField } from '@presentation/base/widgets/inputs/auth-text-field';
 
 const buttons = (root: ReactTestInstance): ReactTestInstance[] =>
-  root.findAll((node) => node.props.accessibilityRole === 'button' && typeof node.props.onPress === 'function');
+  root.findAll((node) => node.props['accessibilityRole'] === 'button' && typeof node.props['onPress'] === 'function');
 
 const iconNames = (root: ReturnType<typeof renderComponent>['root']): string[] =>
-  root.findAllByType(Ionicons).map((icon) => String(icon.props.name));
+  root.findAllByType(Ionicons).map((icon) => String(icon.props['name']));
 
 describe('AuthTextField', () => {
   it('hides a password until the eye toggle is pressed', () => {
@@ -23,11 +23,11 @@ describe('AuthTextField', () => {
       <AuthTextField iconName="lock-closed-outline" placeholder="p" value="secret" onChangeText={jest.fn()} password />,
     );
 
-    expect(root.findByType(TextInput).props.secureTextEntry).toBe(true);
+    expect(root.findByType(TextInput).props['secureTextEntry']).toBe(true);
     act(() => {
-      (buttons(root)[0].props.onPress as () => void)();
+      (buttons(root)[0]!.props['onPress'] as () => void)();
     });
-    expect(root.findByType(TextInput).props.secureTextEntry).toBe(false);
+    expect(root.findByType(TextInput).props['secureTextEntry']).toBe(false);
     expect(iconNames(root)).toContain('eye-off-outline');
   });
 
@@ -36,7 +36,7 @@ describe('AuthTextField', () => {
       <AuthTextField iconName="mail-outline" placeholder="e" value="" onChangeText={jest.fn()} />,
     );
 
-    expect(root.findByType(TextInput).props.secureTextEntry).toBe(false);
+    expect(root.findByType(TextInput).props['secureTextEntry']).toBe(false);
     expect(buttons(root)).toHaveLength(0);
     expect(iconNames(root)).toEqual(['mail-outline']);
   });

@@ -15,10 +15,10 @@ describe('AvatarImage', () => {
   it('draws the person mark when there is nobody to name', () => {
     const tree = renderComponent(<AvatarImage name="" size={AVATAR_SIZE} />);
 
-    expect(tree.root.findByType(Ionicons).props.name).toBe('person');
+    expect(tree.root.findByType(Ionicons).props['name']).toBe('person');
     // The icon font draws through a Text of its own, so what matters is that
     // no letters are written into one.
-    const written = tree.root.findAllByType(Text).map((node) => node.props.children);
+    const written = tree.root.findAllByType(Text).map((node) => node.props['children']);
     expect(written.filter((child) => typeof child === 'string')).toEqual([]);
   });
 
@@ -26,6 +26,6 @@ describe('AvatarImage', () => {
     const tree = renderComponent(<AvatarImage name="Recep Tayyip" size={AVATAR_SIZE} />);
 
     expect(tree.root.findAllByType(Ionicons)).toHaveLength(0);
-    expect(tree.root.findByType(Text).props.children).toBe('RT');
+    expect(tree.root.findByType(Text).props['children']).toBe('RT');
   });
 });

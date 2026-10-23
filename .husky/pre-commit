@@ -1,4 +1,5 @@
 node scripts/guard-secrets.mjs --staged
+npm run --silent typegen
 npx lint-staged
 npx tsc --noEmit
 npm run --silent check:structure

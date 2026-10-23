@@ -1,11 +1,11 @@
-import { create } from 'zustand';
-import type { BoundStore } from '@application/store/bound-store';
-import type { StepProgressStoreState } from '@application/recipes/cooking/step-progress-store-state';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand/vanilla';
+import type { StepProgressStore } from '@application/recipes/cooking/step-progress-store-contract';
 
 /** A copy of `flags` with `index` set to `done`; holes stay unticked. */
-const withFlag = (flags: readonly boolean[] | undefined, index: number, done: boolean): readonly boolean[] => {
+const withFlag = (flags: readonly boolean[] | undefined, index: number, isDone: boolean): readonly boolean[] => {
   const next = [...(flags ?? [])];
-  next[index] = done;
+  next[index] = isDone;
   return next;
 };
 
@@ -16,8 +16,8 @@ const withFlag = (flags: readonly boolean[] | undefined, index: number, done: bo
  * - **Keyed by recipe id**, so the recipe page and cook mode — two routes, two
  *   screens — read and write one list instead of each holding its own.
  */
-export const configureStepProgressStore = (): BoundStore<StepProgressStoreState> =>
-  create<StepProgressStoreState>((set, get) => ({
+export const configureStepProgressStore = (): StoreApi<StepProgressStore> =>
+  createStore<StepProgressStore>((set, get) => ({
     byRecipe: {},
 
     toggleStep: (recipeId, index) => {
@@ -25,9 +25,9 @@ export const configureStepProgressStore = (): BoundStore<StepProgressStoreState>
       set({ byRecipe: { ...get().byRecipe, [recipeId]: withFlag(flags, index, flags?.[index] !== true) } });
     },
 
-    setStepDone: (recipeId, index, done) => {
-      if ((get().byRecipe[recipeId]?.[index] === true) === done) return;
-      set({ byRecipe: { ...get().byRecipe, [recipeId]: withFlag(get().byRecipe[recipeId], index, done) } });
+    setStepDone: (recipeId, index, isDone) => {
+      if ((get().byRecipe[recipeId]?.[index] === true) === isDone) return;
+      set({ byRecipe: { ...get().byRecipe, [recipeId]: withFlag(get().byRecipe[recipeId], index, isDone) } });
     },
 
     clear: () => set({ byRecipe: {} }),

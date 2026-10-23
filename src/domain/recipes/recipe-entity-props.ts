@@ -21,7 +21,7 @@ export interface RecipeEntityProps {
   cookTimeMinutes: number;
   servings: number;
   caloriesPerServing: number;
-  nutrition?: RecipeNutrition;
+  nutrition?: RecipeNutrition | undefined;
   /** Where the nutrition figures were looked up; absent when they were estimated. */
   nutritionSource?: NutritionSourceType;
   image: string;

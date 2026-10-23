@@ -58,8 +58,8 @@ export class ImportFileBatch extends BaseValueObject<readonly ImportFile[]> {
 
     const pdfs = files.filter(isPdf).length;
     const images = files.length - pdfs;
-    const mixed = pdfs > ValueConstants.zero && images > ValueConstants.zero;
-    if (mixed || pdfs > ImportFileLimits.maxPdfs || images > ImportFileLimits.maxImages) {
+    const isMixed = pdfs > ValueConstants.zero && images > ValueConstants.zero;
+    if (isMixed || pdfs > ImportFileLimits.maxPdfs || images > ImportFileLimits.maxImages) {
       return fail(tooMany());
     }
     return ok(new ImportFileBatch(files));
@@ -75,10 +75,10 @@ export class ImportFileBatch extends BaseValueObject<readonly ImportFile[]> {
     if (sized.length === ValueConstants.zero) return { files: current, failure };
 
     const pdfs = sized.filter(isPdf);
-    const holdsPdf = current.some(isPdf);
-    if (pdfs.length > ValueConstants.zero || holdsPdf) {
-      const alone = current.length === ValueConstants.zero && sized.length === ValueConstants.one;
-      return alone ? { files: sized, failure } : { files: current, failure: tooMany() };
+    const hasPdf = current.some(isPdf);
+    if (pdfs.length > ValueConstants.zero || hasPdf) {
+      const isAlone = current.length === ValueConstants.zero && sized.length === ValueConstants.one;
+      return isAlone ? { files: sized, failure } : { files: current, failure: tooMany() };
     }
 
     const room = Math.max(ValueConstants.zero, ImportFileLimits.maxImages - current.length);

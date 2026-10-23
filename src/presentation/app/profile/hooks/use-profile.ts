@@ -1,4 +1,6 @@
+import { useTranslations } from '@presentation/i18n';
 import { useCallback, useEffect } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -7,6 +9,7 @@ import { useAvatarUpload } from '@presentation/base/hooks/profile/use-avatar-upl
 import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { useSignedInUser } from '@presentation/base/hooks/auth/use-signed-in-user';
 
 /** View model returned by {@link useProfile} for the profile screen. */
 interface UseProfileResult {
@@ -36,22 +39,22 @@ interface UseProfileResult {
  *   admin's approval puts the verified chip here without a visit there.
  */
 export const useProfile = (): UseProfileResult => {
+  const t = useTranslations();
   const router = useRouter();
   const { pickAndUpload, isUploading, uploadError, onDismissUploadError } = useAvatarUpload();
 
   const { authStore, userProfileStore, savedRecipesStore } = useStores();
-  const authState = authStore((s) => s.state);
-  const profileState = userProfileStore((s) => s.state);
-  const loadProfile = userProfileStore((s) => s.load);
-  const refreshCreatorClaim = authStore((s) => s.refreshCreatorClaim);
-  const savedCount = savedRecipesStore((s) => s.savedIds.size);
+  const profileState = useStore(userProfileStore, (s) => s.state);
+  const loadProfile = useStore(userProfileStore, (s) => s.load);
+  const refreshCreatorClaim = useStore(authStore, (s) => s.refreshCreatorClaim);
+  const savedCount = useStore(savedRecipesStore, (s) => s.savedIds.size);
 
-  const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
+  const user = useSignedInUser();
   const userId = user?.id;
   const displayName = user?.displayName ?? CharConstants.empty;
   const email = user?.email.value ?? CharConstants.empty;
   const photoUri = user?.photoUrl ?? undefined;
-  const handle = email.split('@')[ValueConstants.zero];
+  const handle = email.split(CharConstants.at)[ValueConstants.zero] ?? CharConstants.empty;
   const bio = user?.bio?.trim() ?? CharConstants.empty;
   const isCreator = user?.creatorClaims.isCreator ?? false;
 
@@ -78,7 +81,7 @@ export const useProfile = (): UseProfileResult => {
       case StoreStatus.Error:
         return {
           status: StoreStatus.Error,
-          message: failureToastMessage(profileState.failure),
+          message: failureToastMessage(t, profileState.failure),
           onRetry: retry,
         };
       case StoreStatus.Loaded:

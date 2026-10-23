@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
+import { useStore } from 'zustand';
 import type { Failure } from '@core/failure';
 import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
-import type { AssistantStatusType } from '@application/assistant/session/assistant-status';
+import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
 import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import type { AssistantViewType } from '@application/assistant/session/assistant-view';
@@ -11,8 +12,6 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 interface AssistantSessionView {
   status: AssistantStatusType;
   view: AssistantViewType;
-  /** 0..1, already scaled for a bar — see the store. Scaling it again pins a whisper at the top. */
-  level: number;
   isMuted: boolean;
   transcript: AssistantTranscriptLineType[];
   remainingSeconds: number;
@@ -44,21 +43,20 @@ export const useAssistantSession = (): AssistantSessionView => {
   const { assistantSessionStore } = useStores();
   const locale = useLocale();
 
-  const status = assistantSessionStore((s) => s.status);
-  const view = assistantSessionStore((s) => s.view);
-  const level = assistantSessionStore((s) => s.level);
-  const isMuted = assistantSessionStore((s) => s.isMuted);
-  const transcript = assistantSessionStore((s) => s.transcript);
-  const remainingSeconds = assistantSessionStore((s) => s.remainingSeconds);
-  const isUnlimited = assistantSessionStore((s) => s.isUnlimited);
-  const deniedReason = assistantSessionStore((s) => s.deniedReason);
-  const error = assistantSessionStore((s) => s.error);
-  const clearError = assistantSessionStore((s) => s.clearError);
-  const setView = assistantSessionStore((s) => s.setView);
-  const toggleMute = assistantSessionStore((s) => s.toggleMute);
-  const startVoice = assistantSessionStore((s) => s.startVoice);
-  const stopVoice = assistantSessionStore((s) => s.stopVoice);
-  const send = assistantSessionStore((s) => s.sendText);
+  const status = useStore(assistantSessionStore, (s) => s.session.status);
+  const view = useStore(assistantSessionStore, (s) => s.view);
+  const isMuted = useStore(assistantSessionStore, (s) => s.isMuted);
+  const transcript = useStore(assistantSessionStore, (s) => s.transcript);
+  const remainingSeconds = useStore(assistantSessionStore, (s) => s.remainingSeconds);
+  const isUnlimited = useStore(assistantSessionStore, (s) => s.isUnlimited);
+  const deniedReason = useStore(assistantSessionStore, (s) => (s.session.status === AssistantStatus.Unavailable ? s.session.deniedReason : null));
+  const error = useStore(assistantSessionStore, (s) => s.error);
+  const clearError = useStore(assistantSessionStore, (s) => s.clearError);
+  const setView = useStore(assistantSessionStore, (s) => s.setView);
+  const toggleMute = useStore(assistantSessionStore, (s) => s.toggleMute);
+  const startVoice = useStore(assistantSessionStore, (s) => s.startVoice);
+  const stopVoice = useStore(assistantSessionStore, (s) => s.stopVoice);
+  const send = useStore(assistantSessionStore, (s) => s.sendText);
   const sendText = useCallback((text: string) => send(text, locale), [send, locale]);
 
   const toggleVoice = useCallback(() => {
@@ -73,7 +71,6 @@ export const useAssistantSession = (): AssistantSessionView => {
   return {
     status,
     view,
-    level,
     isMuted,
     transcript,
     remainingSeconds,

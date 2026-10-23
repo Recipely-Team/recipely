@@ -6,7 +6,7 @@ import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provena
 import { ACCEPTED_IMPORT_MARKS } from '@presentation/base/widgets/badges/accepted-import-marks';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * The card that opens the paste screen: the five sources as one capsule, and
@@ -19,6 +19,7 @@ import { t } from '@presentation/i18n';
  *   they squeezed it into a narrow ragged column on a phone.
  */
 export const ImportPasteLead = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -30,7 +31,7 @@ export const ImportPasteLead = (): React.JSX.Element => {
         decorative
       />
       <ThemedText variant="body" style={{ color: colors.text }}>
-        {t().importRecipe.pasteLead}
+        {t.importRecipe.pasteLead}
       </ThemedText>
     </View>
   );

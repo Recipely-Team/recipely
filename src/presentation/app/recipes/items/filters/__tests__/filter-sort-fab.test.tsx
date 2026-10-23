@@ -38,9 +38,9 @@ const flattenStyle = (style: unknown): Record<string, unknown> => {
 /** The animated wrapper host node around the label text (the overflow-hidden box). */
 const labelWrapper = (root: RenderResult['root']): Record<string, unknown> => {
   const node = root.findAll(
-    (n) => flattenStyle(n.props.style).overflow === 'hidden' && 'marginLeft' in flattenStyle(n.props.style),
+    (n) => flattenStyle(n.props['style'])['overflow'] === 'hidden' && 'marginLeft' in flattenStyle(n.props['style']),
   )[0];
-  return flattenStyle(node?.props.style);
+  return flattenStyle(node?.props['style']);
 };
 
 const renderFab = (props: FabCase): { onPress: jest.Mock; root: RenderResult['root'] } => {
@@ -74,14 +74,14 @@ describe('FilterSortFab', () => {
 
     const btn = byRole(root, 'button');
 
-    expect(btn.props.accessibilityRole).toBe('button');
-    expect(btn.props.accessibilityLabel).toBe(t().recipes.filtersAndSort);
+    expect(btn.props['accessibilityRole']).toBe('button');
+    expect(btn.props['accessibilityLabel']).toBe(t().recipes.filtersAndSort);
   });
 
   it('fires onPress when the FAB is pressed', () => {
     const { root, onPress } = renderFab({ activeCount: 0 });
 
-    act(() => (byRole(root, 'button').props.onPress as () => void)());
+    act(() => (byRole(root, 'button').props['onPress'] as () => void)());
 
     expect(onPress).toHaveBeenCalledTimes(1);
   });
@@ -103,7 +103,7 @@ describe('FilterSortFab', () => {
   it('folds the count into the accessibility label when filters are applied', () => {
     const { root } = renderFab({ activeCount: 3 });
 
-    expect(byRole(root, 'button').props.accessibilityLabel).toBe(`${t().recipes.filtersAndSort}, 3`);
+    expect(byRole(root, 'button').props['accessibilityLabel']).toBe(`${t().recipes.filtersAndSort}, 3`);
   });
 
   it('caps the badge text at "9+" for large counts', () => {
@@ -117,7 +117,7 @@ describe('FilterSortFab', () => {
   it('keeps the real count (not the capped badge) in the accessibility label', () => {
     const { root } = renderFab({ activeCount: 12 });
 
-    expect(byRole(root, 'button').props.accessibilityLabel).toBe(`${t().recipes.filtersAndSort}, 12`);
+    expect(byRole(root, 'button').props['accessibilityLabel']).toBe(`${t().recipes.filtersAndSort}, 12`);
   });
 
   it('always renders the funnel icon so the collapsed circle is never blank', () => {
@@ -129,19 +129,19 @@ describe('FilterSortFab', () => {
   it('wraps the label in an overflow-hidden box so its width can collapse to 0', () => {
     const { root } = renderFab({ activeCount: 0, reduceMotion: false });
 
-    expect(labelWrapper(root).overflow).toBe('hidden');
+    expect(labelWrapper(root)['overflow']).toBe('hidden');
   });
 
   it('centers the row and drives icon/label spacing via the collapsible margin, not a flex gap', () => {
     const { root } = renderFab({ activeCount: 0, reduceMotion: false });
 
-    const rowStyle = flattenStyle(byRole(root, 'button').props.style);
+    const rowStyle = flattenStyle(byRole(root, 'button').props['style']);
 
     // justifyContent: center keeps the lone icon centered once the label width
     // collapses; the gap must be gone or it would offset the icon by gap/2.
-    expect(rowStyle.justifyContent).toBe('center');
-    expect(rowStyle.gap).toBeUndefined();
+    expect(rowStyle['justifyContent']).toBe('center');
+    expect(rowStyle['gap']).toBeUndefined();
     // Spacing now lives on the label wrapper's animatable marginLeft instead.
-    expect(labelWrapper(root).marginLeft).toBeGreaterThan(0);
+    expect(labelWrapper(root)['marginLeft']).toBeGreaterThan(0);
   });
 });

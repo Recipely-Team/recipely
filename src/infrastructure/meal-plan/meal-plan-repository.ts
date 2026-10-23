@@ -56,9 +56,9 @@ export class MealPlanRepository implements MealPlanRepositoryInterface {
     return result.ok ? ok(undefined) : result;
   }
 
-  async setEaten(id: string, eaten: boolean): Promise<Result<MealPlanEntryEntity, Failure>> {
+  async setEaten(id: string, isEaten: boolean): Promise<Result<MealPlanEntryEntity, Failure>> {
     const url = ApiRoutes.mealPlan.entryEaten(id);
-    const result = eaten ? await this.http.post<MealPlanEntryDto>(url) : await this.http.delete<MealPlanEntryDto>(url);
+    const result = isEaten ? await this.http.post<MealPlanEntryDto>(url) : await this.http.delete<MealPlanEntryDto>(url);
     return result.ok ? toMealPlanEntry(result.value) : result;
   }
 

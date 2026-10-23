@@ -5,7 +5,7 @@ import { SegmentedTabs } from '@presentation/base/widgets/diary/segmented-tabs';
 import type { VariantOption } from '@presentation/base/widgets/diary/add-food/state/product/variant-option';
 import { formatPerHundred } from '@presentation/base/utils/diary/units/format-per-hundred';
 import { borderWidths, diarySizes, fontSizes, fontWeights, radii, spacing } from '@presentation/base/theme';
-import { useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface VariantPickerProps {
@@ -21,6 +21,7 @@ export interface VariantPickerProps {
  * 100 for more (bread's five).
  */
 export const VariantPicker = ({ variants, selected, baseUnit, onSelect }: VariantPickerProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
   if (variants.length <= diarySizes.variantSegmentsMax) {
@@ -51,7 +52,7 @@ export const VariantPicker = ({ variants, selected, baseUnit, onSelect }: Varian
               {variant.name}
             </SizedText>
             <SizedText size={fontSizes.small} muted>
-              {formatPerHundred(variant.per100, baseUnit, locale)}
+              {formatPerHundred(t, variant.per100, baseUnit, locale)}
             </SizedText>
           </Pressable>
         );

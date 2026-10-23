@@ -1,5 +1,5 @@
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
-import { isString } from '@core/guards/type-guards';
+import { isList, isString } from '@core/guards/type-guards';
 import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy/dtos/taxonomy-item-dto';
 import { CharConstants, ValueConstants } from '@core/constants';
 
@@ -28,7 +28,7 @@ export function toTaxonomyItem(dto: TaxonomyItemDto | null | undefined): Taxonom
 export function toTaxonomyItems(
   dtos: readonly (TaxonomyItemDto | null | undefined)[] | null | undefined,
 ): TaxonomyItem[] {
-  if (!Array.isArray(dtos)) {
+  if (!isList(dtos)) {
     return [];
   }
   const items: TaxonomyItem[] = [];

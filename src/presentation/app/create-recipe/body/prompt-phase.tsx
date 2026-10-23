@@ -7,7 +7,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ResumeDraftCard } from '@presentation/app/create-recipe/items/prompt/resume-draft-card';
 import { ImportEntryCard } from '@presentation/app/create-recipe/items/prompt/import-entry-card';
 import { FileImportEntryCard } from '@presentation/app/create-recipe/items/prompt/file-import-entry-card';
@@ -51,10 +51,11 @@ export const PromptPhase = ({
   latestDraft,
   onResumeDraft,
 }: PromptPhaseProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
   const canGenerate = !isBlank(prompt);
-  const ideaChips = t().createRecipe.ideaChips;
+  const ideaChips = t.createRecipe.ideaChips;
   const draftName = latestDraft?.snapshot.name?.trim();
 
   return (
@@ -65,12 +66,12 @@ export const PromptPhase = ({
           hitSlop={spacing.sm}
           style={[styles.iconBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}
           accessibilityRole="button"
-          accessibilityLabel={t().createRecipe.cancel}
+          accessibilityLabel={t.createRecipe.cancel}
         >
           <Ionicons name="close" size={iconSizes.lg} color={colors.text} />
         </Pressable>
         <ThemedText variant="subtitle" style={styles.headerTitle}>
-          {t().createRecipe.promptTitle}
+          {t.createRecipe.promptTitle}
         </ThemedText>
         <View style={styles.headerSpacer} />
       </View>
@@ -91,10 +92,10 @@ export const PromptPhase = ({
             <Ionicons name="restaurant" size={iconSizes.xxl} color={colors.onOverlay} />
           </View>
           <ThemedText variant="title" style={[styles.heroTitle, { color: colors.onOverlay }]}>
-            {t().createRecipe.promptHeadline}
+            {t.createRecipe.promptHeadline}
           </ThemedText>
           <ThemedText variant="body" style={[styles.heroSub, { color: colors.onOverlay }]}>
-            {t().createRecipe.promptSub}
+            {t.createRecipe.promptSub}
           </ThemedText>
         </LinearGradient>
 
@@ -120,7 +121,7 @@ export const PromptPhase = ({
           <AutoGrowTextInput
             value={prompt}
             onChangeText={onChangePrompt}
-            placeholder={t().createRecipe.promptPlaceholder}
+            placeholder={t.createRecipe.promptPlaceholder}
             placeholderTextColor={colors.textMuted}
             minHeight={controlSizes.promptInput}
             style={[styles.promptInput, { color: colors.text }]}
@@ -148,7 +149,7 @@ export const PromptPhase = ({
           disabled={!canGenerate}
           style={[styles.cta, shadows.md, { opacity: canGenerate ? opacities.full : opacities.disabled }]}
           accessibilityRole="button"
-          accessibilityLabel={t().createRecipe.generate}
+          accessibilityLabel={t.createRecipe.generate}
         >
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
@@ -158,7 +159,7 @@ export const PromptPhase = ({
           >
             <Ionicons name="sparkles" size={iconSizes.md} color={colors.primaryText} />
             <ThemedText variant="body" style={[styles.ctaLabel, { color: colors.primaryText }]}>
-              {t().createRecipe.generate}
+              {t.createRecipe.generate}
             </ThemedText>
           </LinearGradient>
         </Pressable>

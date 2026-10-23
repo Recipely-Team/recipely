@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import { aspectRatios, controlSizes, fontSizes, radii, spacing } from '@presentation/base/theme';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -12,9 +12,10 @@ import { ValueConstants } from '@core/constants';
  * instead of a bare spinner. Announced once as busy.
  */
 export const DetailSkeleton = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
-    <View accessible accessibilityState={{ busy: true }} accessibilityLabel={t().common.loading} style={styles.root}>
+    <View accessible accessibilityState={{ busy: true }} accessibilityLabel={t.common.loading} style={styles.root}>
       <View style={[styles.hero, { backgroundColor: colors.skeleton }]} />
       <View style={styles.body}>
         <SkeletonLoader width="80%" height={fontSizes.title} borderRadius={radii.sm} />

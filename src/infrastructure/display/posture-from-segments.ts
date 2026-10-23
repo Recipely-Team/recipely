@@ -25,6 +25,7 @@ export const postureFromSegments = (
 ): WindowPosture | null => {
   if (segments === null || segments.length !== SPANNED_SEGMENT_COUNT) return null;
   const [first, second] = segments;
+  if (first === undefined || second === undefined) return null;
   const state = isFolded ? FoldState.HalfOpened : FoldState.Flat;
   const firstRight = first.x + first.width;
   const firstBottom = first.y + first.height;

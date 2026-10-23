@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useStore } from 'zustand';
 import { usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -11,7 +12,7 @@ import { timerStore } from '@application/timers/timer-store';
 import { timersBarStore } from '@presentation/base/timers/timers-bar-store';
 import { spacing, radii, fontWeights, iconSizes, controlSizes, borderWidths, zIndices, maxFontScales } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { stepTimerPrefix } from '@presentation/base/timers/step-timer-prefix';
@@ -51,15 +52,16 @@ const RECIPE_COOK_PATH = RoutePaths.recipeCookPattern;
  * bar parked to reach the content underneath stays parked across launches.
  */
 export const ActiveTimersBar = (): React.JSX.Element | null => {
+  const t = useTranslations();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const { isWebShell } = useLayout();
   // Clear the tab bar only on routes that have one.
   const hasTabBar = useTabBarState() !== null && !isWebShell;
-  const timers = timerStore((s) => s.timers);
-  const collapsed = timersBarStore((s) => s.collapsed);
-  const setCollapsed = timersBarStore((s) => s.setCollapsed);
+  const timers = useStore(timerStore, (s) => s.timers);
+  const isCollapsed = useStore(timersBarStore, (s) => s.collapsed);
+  const setCollapsed = useStore(timersBarStore, (s) => s.setCollapsed);
   const currentRecipeId = RECIPE_DETAIL_PATH.exec(pathname)?.[ValueConstants.one] ?? null;
   const cookingRecipeId = RECIPE_COOK_PATH.exec(pathname)?.[ValueConstants.one] ?? null;
   const entries = Object.values(timers).filter(
@@ -73,18 +75,18 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
   const bottom =
     insets.bottom + (hasTabBar ? controlSizes.tabBar : ValueConstants.zero) + spacing.sm;
 
-  if (collapsed) {
+  if (isCollapsed) {
     return (
       <View pointerEvents="box-none" style={[styles.bar, { bottom }]}>
         <Pressable
           onPress={() => void setCollapsed(false)}
           accessibilityRole="button"
-          accessibilityLabel={t().timer.expand}
+          accessibilityLabel={t.timer.expand}
           hitSlop={spacing.sm}
           style={[
             styles.collapsedPill,
             { backgroundColor: colors.surface, borderColor: colors.border },
-            shadows.md as object,
+            shadows.md,
           ]}
         >
           <Ionicons name="timer-outline" size={iconSizes.xl} color={colors.primary} />
@@ -106,7 +108,7 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
         style={[
           styles.barInner,
           { backgroundColor: colors.surface, borderColor: colors.border },
-          shadows.md as object,
+          shadows.md,
         ]}
       >
         <ScrollView
@@ -123,7 +125,7 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
         <Pressable
           onPress={() => void setCollapsed(true)}
           accessibilityRole="button"
-          accessibilityLabel={t().timer.collapse}
+          accessibilityLabel={t.timer.collapse}
           hitSlop={spacing.sm}
           style={[styles.hideBtn, { backgroundColor: colors.chipBackground }]}
         >

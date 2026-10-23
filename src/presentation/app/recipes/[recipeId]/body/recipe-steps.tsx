@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -6,7 +7,7 @@ import { IngredientCard } from '@presentation/app/recipes/[recipeId]/items/steps
 import { IngredientGroupHeading } from '@presentation/app/recipes/[recipeId]/items/steps/ingredient-group-heading';
 import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/steps/instruction-card';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
@@ -20,7 +21,7 @@ export interface RecipeStepsProps {
   recipeId: string;
   isOwner: boolean;
   isExpanded: boolean;
-  checkedIngredients: boolean[];
+  checkedIngredients: readonly boolean[];
   portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
   completedSteps: readonly boolean[];
@@ -32,7 +33,7 @@ export interface RecipeStepsProps {
  * Ingredients + instructions checklists for the mobile detail screen, plus the
  * owner-only edit/delete actions below them.
  */
-export const RecipeSteps = ({
+const RecipeStepsComponent = ({
   recipe,
   recipeId,
   isOwner,
@@ -44,12 +45,13 @@ export const RecipeSteps = ({
   onToggleStep,
   onDelete,
 }: RecipeStepsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const ingredients = IngredientList.of(portions.ingredients);
 
   return (
     <>
-      <SectionHeader title={t().recipes.ingredients} count={ingredients.filledCount} />
+      <SectionHeader title={t.recipes.ingredients} count={ingredients.filledCount} />
       <View style={styles.cardsList}>
         <UnitSystemToggle portions={portions} />
         {ingredients.lines.map((line, i) =>
@@ -71,7 +73,7 @@ export const RecipeSteps = ({
         <AddToShoppingButton source={{ recipeId, recipeName: recipe.name, lines: portions.ingredients }} inCard={false} />
       </View>
 
-      <SectionHeader title={t().recipes.instructions} count={recipe.instructions.length} />
+      <SectionHeader title={t.recipes.instructions} count={recipe.instructions.length} />
       <View style={styles.cardsList}>
         {recipe.instructions.map((step, i) => (
           <InstructionCard
@@ -90,7 +92,7 @@ export const RecipeSteps = ({
           <View style={styles.ownerActionsWeb}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t().myRecipes.deleteRecipe}
+              accessibilityLabel={t.myRecipes.deleteRecipe}
               onPress={onDelete}
               style={({ pressed }) => [
                 styles.ghostPill,
@@ -99,7 +101,7 @@ export const RecipeSteps = ({
             >
               <Ionicons name="trash-outline" size={iconSizes.md} color={colors.danger} />
               <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
-                {t().myRecipes.deleteRecipe}
+                {t.myRecipes.deleteRecipe}
               </ThemedText>
             </Pressable>
           </View>
@@ -108,7 +110,7 @@ export const RecipeSteps = ({
           <View style={styles.ownerActions}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t().myRecipes.deleteRecipe}
+              accessibilityLabel={t.myRecipes.deleteRecipe}
               onPress={onDelete}
               style={({ pressed }) => [
                 styles.ownerBtn,
@@ -117,7 +119,7 @@ export const RecipeSteps = ({
             >
               <Ionicons name="trash-outline" size={iconSizes.md} color={colors.danger} />
               <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
-                {t().myRecipes.deleteRecipe}
+                {t.myRecipes.deleteRecipe}
               </ThemedText>
             </Pressable>
           </View>
@@ -126,6 +128,9 @@ export const RecipeSteps = ({
     </>
   );
 };
+
+/** Memoised: the recipe page re-renders on a like, a save or a step tick, and this section's props do not change with them. */
+export const RecipeSteps = memo(RecipeStepsComponent);
 
 const styles = StyleSheet.create({
   cardsList: {

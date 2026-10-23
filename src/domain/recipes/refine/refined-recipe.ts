@@ -9,7 +9,7 @@ import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 export interface RefinedRecipe {
   recipe: RecipeEntity;
   /** 1-2 sentence description of what changed, in the user's language. */
-  summary?: string;
+  summary?: string | undefined;
   /** One short extra tip related to the refinement. */
-  suggestion?: string;
+  suggestion?: string | undefined;
 }

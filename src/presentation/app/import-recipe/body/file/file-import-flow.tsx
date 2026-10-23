@@ -3,7 +3,7 @@ import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsiv
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
 import { useReportFailure } from '@presentation/base/errors/use-report-failure';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useFileImport } from '@presentation/app/import-recipe/hooks/file/use-file-import';
 import { readingSubject } from '@presentation/app/import-recipe/model/file/reading-subject';
 import { FilePickerView } from '@presentation/app/import-recipe/body/file/file-picker-view';
@@ -20,13 +20,14 @@ import { FilePageSheet } from '@presentation/app/import-recipe/sheets/file-page-
  *   user.
  */
 export const FileImportFlow = (): React.JSX.Element => {
+  const t = useTranslations();
   const vm = useFileImport();
-  const copy = t().fileImport;
+  const copy = t.fileImport;
 
   useReportFailure(vm.failure, 'FileImportScreen');
 
   if (vm.failure !== null) {
-    const content = failureContent(vm.failure);
+    const content = failureContent(t, vm.failure);
     return (
       <ScreenContainer scrollable={false}>
         <ErrorState
@@ -36,7 +37,7 @@ export const FileImportFlow = (): React.JSX.Element => {
           body={content.body}
           primaryLabel={copy.retry}
           onPrimary={vm.onChoosePages}
-          secondaryLabel={t().common.close}
+          secondaryLabel={t.common.close}
           onSecondary={vm.onClose}
         />
       </ScreenContainer>

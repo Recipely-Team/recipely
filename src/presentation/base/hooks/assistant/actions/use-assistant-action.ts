@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 import type { AssistantActionHandlerType } from '@domain/assistant/actions/assistant-action-handler';
 import type { AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
 import { useIsScreenFocused } from '@presentation/base/hooks/assistant/use-is-screen-focused';
@@ -12,11 +12,12 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  *   action list — navigate, focus a field, open the photo picker, confirm a
  *   deletion — is something only a rendered screen can do, and the application
  *   layer cannot call into presentation. So screens hand their capability down.
- * - **The handler is read through a ref, not captured.** A voice session spans
- *   many renders and the handler closes over current props; registering the
- *   function itself would re-register on every render, and a re-register that
- *   races an unmount is how the action ends up dead on a screen that
- *   implements it.
+ * - **The handler is an Effect Event, not a dependency.** A voice session
+ *   spans many renders and the handler closes over current props; registering
+ *   the function itself would re-register on every render, and a re-register
+ *   that races an unmount is how the action ends up dead on a screen that
+ *   implements it. `useEffectEvent` registers once and always runs the latest
+ *   render's handler, so callers pass a plain closure — no `useCallback`.
  * - **Registration is scoped to FOCUS, not to mount.** An action the current
  *   screen cannot perform is answered `unavailable_here`, which the model can
  *   work with — better than a handler outliving its screen and acting on a
@@ -44,12 +45,10 @@ export const useAssistantAction = (
 ): void => {
   const { assistantActionRegistry } = useStores();
   const isFocused = useIsScreenFocused();
-  const handlerRef = useRef(handler);
-  handlerRef.current = handler;
+  const run = useEffectEvent(handler);
 
   useEffect(() => {
     if (!isEnabled || !isFocused) return;
-    // Register a stable wrapper once per mount; it forwards to the latest handler.
-    return assistantActionRegistry.register(action, (arg) => handlerRef.current(arg));
+    return assistantActionRegistry.register(action, (arg) => run(arg));
   }, [action, assistantActionRegistry, isEnabled, isFocused]);
 };

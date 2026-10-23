@@ -1,6 +1,6 @@
 import { ValueConstants } from "@core/constants";
 import { MAX_VISIBLE_TOASTS } from "@presentation/base/feedback/toast-model";
-import type { ToastStoreState } from "@presentation/base/feedback/toast-store-state";
+import type { ToastStore } from "@presentation/base/feedback/toast-store-contract";
 import { create } from "zustand";
 
 let counter = ValueConstants.zero;
@@ -14,7 +14,7 @@ const nextId = (): string => {
  * so any layer can surface feedback via the `showToast` / `showErrorToast`
  * helpers without prop-drilling. Rendered once by `ToastHost` at the root.
  */
-export const toastStore = create<ToastStoreState>((set) => ({
+export const toastStore = create<ToastStore>((set) => ({
   toasts: [],
   show: (input) => {
     const id = nextId();

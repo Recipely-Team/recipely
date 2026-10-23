@@ -21,6 +21,44 @@ const CAMERA_OPTIONS: ImagePicker.ImagePickerOptions = { mediaTypes: 'images' };
 const PAGE_FILE_PREFIX = 'page-';
 const JPEG_EXTENSION = '.jpg';
 
+/** A PDF, or photos from the camera or library shrunk for upload; a throw is reported and picks nothing. */
+const pickImportFiles = async (source: PickSource): Promise<ImportFile[]> => {
+  try {
+    if (source === PickSource.File) {
+      const doc = await DocumentPicker.getDocumentAsync({ type: ImportFileMimeType.Pdf, copyToCacheDirectory: true, multiple: false });
+      const asset = doc.canceled ? undefined : doc.assets[ValueConstants.zero];
+      if (asset === undefined) return [];
+      return [{ uri: asset.uri, fileName: asset.name, mimeType: ImportFileMimeType.Pdf, sizeBytes: asset.size ?? null }];
+    }
+    const isCamera = source === PickSource.Camera;
+    const permission = isCamera
+      ? await ImagePicker.requestCameraPermissionsAsync()
+      : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      PhotoPickFeedback.permissionDenied();
+      return [];
+    }
+    const result = isCamera
+      ? await ImagePicker.launchCameraAsync(CAMERA_OPTIONS)
+      : await ImagePicker.launchImageLibraryAsync(LIBRARY_OPTIONS);
+    if (result.canceled) return [];
+
+    const stamp = Date.now();
+    const uris = await Promise.all(
+      result.assets.map((a) => shrinkForUpload({ uri: a.uri, width: a.width, height: a.height })),
+    );
+    return uris.map((uri, index) => ({
+      uri,
+      fileName: `${PAGE_FILE_PREFIX}${stamp}-${index}${JPEG_EXTENSION}`,
+      mimeType: ImportFileMimeType.Jpeg,
+      sizeBytes: null,
+    }));
+  } catch {
+    PhotoPickFeedback.failed();
+    return [];
+  }
+};
+
 /**
  * The phone's page picker: the camera, or photos from the library in the
  * order they were tapped.
@@ -40,41 +78,8 @@ export const usePickImportFiles = (): PickImportFilesCallback => {
   return useCallback(async (source: PickSource): Promise<ImportFile[]> => {
     if (busy.current) return [];
     busy.current = true;
-    try {
-      if (source === PickSource.File) {
-        const doc = await DocumentPicker.getDocumentAsync({ type: ImportFileMimeType.Pdf, copyToCacheDirectory: true, multiple: false });
-        const asset = doc.canceled ? undefined : doc.assets[ValueConstants.zero];
-        if (asset === undefined) return [];
-        return [{ uri: asset.uri, fileName: asset.name, mimeType: ImportFileMimeType.Pdf, sizeBytes: asset.size ?? null }];
-      }
-      const isCamera = source === PickSource.Camera;
-      const permission = isCamera
-        ? await ImagePicker.requestCameraPermissionsAsync()
-        : await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        PhotoPickFeedback.permissionDenied();
-        return [];
-      }
-      const result = isCamera
-        ? await ImagePicker.launchCameraAsync(CAMERA_OPTIONS)
-        : await ImagePicker.launchImageLibraryAsync(LIBRARY_OPTIONS);
-      if (result.canceled) return [];
-
-      const stamp = Date.now();
-      const uris = await Promise.all(
-        result.assets.map((a) => shrinkForUpload({ uri: a.uri, width: a.width, height: a.height })),
-      );
-      return uris.map((uri, index) => ({
-        uri,
-        fileName: `${PAGE_FILE_PREFIX}${stamp}-${index}${JPEG_EXTENSION}`,
-        mimeType: ImportFileMimeType.Jpeg,
-        sizeBytes: null,
-      }));
-    } catch {
-      PhotoPickFeedback.failed();
-      return [];
-    } finally {
+    return pickImportFiles(source).finally(() => {
       busy.current = false;
-    }
+    });
   }, []);
 };

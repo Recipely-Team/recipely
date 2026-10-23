@@ -1,10 +1,12 @@
+import type { TranslationsType } from '@presentation/i18n';
 import { useCallback, useState } from 'react';
+import { useStore } from 'zustand';
 import { type Href, useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import type { SignInPromptSheetProps } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { RoutePaths } from '@presentation/base/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 interface GuestRouteGate {
   /**
@@ -17,18 +19,18 @@ interface GuestRouteGate {
 }
 
 /** Why a guest would sign in for each account page a tab, the bell or the web header opens. */
-const guestReasonFor = (path: string): string | undefined => {
+const guestReasonFor = (t: TranslationsType, path: string): string | undefined => {
   switch (path) {
     case RoutePaths.myRecipes:
-      return t().signInPrompt.myRecipes;
+      return t.signInPrompt.myRecipes;
     case RoutePaths.diary:
-      return t().signInPrompt.diary;
+      return t.signInPrompt.diary;
     case RoutePaths.profile:
-      return t().signInPrompt.profile;
+      return t.signInPrompt.profile;
     case RoutePaths.notifications:
-      return t().signInPrompt.notifications;
+      return t.signInPrompt.notifications;
     case RoutePaths.shoppingList:
-      return t().signInPrompt.shoppingList;
+      return t.signInPrompt.shoppingList;
     default:
       return undefined;
   }
@@ -50,20 +52,21 @@ const guestReasonFor = (path: string): string | undefined => {
  *   press navigates as before, so a signed-in user is never shown the sheet.
  */
 export const useGuestRouteGate = (): GuestRouteGate => {
+  const t = useTranslations();
   const router = useRouter();
   const { authStore } = useStores();
-  const isGuest = authStore((s) => s.state.status === StoreStatus.Unauthenticated);
+  const isGuest = useStore(authStore, (s) => s.state.status === StoreStatus.Unauthenticated);
   const [pending, setPending] = useState<string | null>(null);
 
   const open = useCallback(
     (path: string, navigate: (path: string) => void): void => {
-      if (isGuest && guestReasonFor(path) !== undefined) {
+      if (isGuest && guestReasonFor(t, path) !== undefined) {
         setPending(path);
         return;
       }
       navigate(path);
     },
-    [isGuest],
+    [isGuest, t],
   );
 
   const onClose = useCallback((): void => setPending(null), []);
@@ -78,7 +81,7 @@ export const useGuestRouteGate = (): GuestRouteGate => {
     open,
     prompt: {
       visible: pending !== null,
-      message: pending !== null ? guestReasonFor(pending) : undefined,
+      message: pending !== null ? guestReasonFor(t, pending) : undefined,
       onClose,
       onSignIn,
     },

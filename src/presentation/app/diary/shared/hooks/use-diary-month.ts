@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useStore } from 'zustand';
 import { useFocusEffect } from 'expo-router';
 import { CalendarMonth } from '@domain/diary/calendar/calendar-month';
 import type { DiaryMonth } from '@domain/diary/month/diary-month';
@@ -18,7 +19,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 export const useDiaryMonth = (month: CalendarMonth): DiaryMonth | undefined => {
   const { diaryStore } = useStores();
   const key = month.value;
-  const cached = diaryStore((s) => s.months[key]);
+  const cached = useStore(diaryStore, (s) => s.months[key]);
   useFocusEffect(
     useCallback(() => {
       const parsed = CalendarMonth.create(key);
