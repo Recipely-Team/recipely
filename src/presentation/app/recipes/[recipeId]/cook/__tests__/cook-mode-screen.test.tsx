@@ -50,7 +50,7 @@ const setup = (over: Partial<{ servings: number; ingredients: string[] }> = {}, 
       byId: { r1: { status: StoreStatus.Loaded, recipe, likedByMe: false, fetchedAt: 0 } },
       load: jest.fn(),
     })),
-    createdRecipesStore: create(() => ({ findById: () => undefined })),
+    recipeAuthoringStore: create(() => ({ findById: () => undefined })),
     ...extra,
   } as unknown as Partial<ApplicationStores>;
 

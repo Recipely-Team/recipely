@@ -60,12 +60,12 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = isString(params.recipeId) ? params.recipeId : CharConstants.empty;
 
-  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, favoritesStore, commentsStore, likesStore, userProfileStore, stepProgressStore, dmArrivalStore } = useStores();
+  const { recipeDetailStore, savedRecipesStore, recipeAuthoringStore, favoritesStore, commentsStore, likesStore, userProfileStore, stepProgressStore, dmArrivalStore } = useStores();
   useDmArrival(recipeId);
   const { cuisineLabel } = useTaxonomyLabel();
   const networkState = recipeDetailStore((s) => s.byId[recipeId]);
   const load = recipeDetailStore((s) => s.load);
-  const localRecipe = createdRecipesStore((s) => s.findById(recipeId));
+  const localRecipe = recipeAuthoringStore((s) => s.findById(recipeId));
   const isSaved = savedRecipesStore((s) => s.savedIds.has(recipeId));
   const isLoading = favoritesStore((s) => s.pending.has(recipeId));
   const signedInUser = useSignedInUser();
@@ -106,7 +106,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
 
   const likeState = likesStore((s) => s.byRecipe[recipeId]);
   const commentState = commentsStore((s) => s.byRecipe[recipeId]);
-  const deleteState = createdRecipesStore((s) => s.deleteState);
+  const deleteState = recipeAuthoringStore((s) => s.deleteState);
   const isDeleting = deleteState.status === StoreStatus.Deleting;
   const [shareOpen, setShareOpen] = useState(false);
   const [showDeleteSheet, setShowDeleteSheet] = useState(false);
@@ -117,18 +117,18 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
 
   const onConfirmDelete = useCallback(async () => {
     setDeleteError(null);
-    await createdRecipesStore.getState().deleteRecipe(recipeId);
-    const { deleteState: s } = createdRecipesStore.getState();
+    await recipeAuthoringStore.getState().deleteRecipe(recipeId);
+    const { deleteState: s } = recipeAuthoringStore.getState();
     if (s.status === StoreStatus.Success) {
-      createdRecipesStore.getState().resetDeleteState();
+      recipeAuthoringStore.getState().resetDeleteState();
       setShowDeleteSheet(false);
       // Wait for the modal dismiss animation to complete before navigating.
       setTimeout(goBackOrHome, durations.sheetDismiss);
     } else if (s.status === StoreStatus.Error) {
-      createdRecipesStore.getState().resetDeleteState();
+      recipeAuthoringStore.getState().resetDeleteState();
       setDeleteError(t().myRecipes.deleteError);
     }
-  }, [recipeId, goBackOrHome, createdRecipesStore]);
+  }, [recipeId, goBackOrHome, recipeAuthoringStore]);
 
   const handleDeleteComment = useCallback(
     async (commentId: string): Promise<void> => {

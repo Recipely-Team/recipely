@@ -126,9 +126,8 @@ const makeUserProfileStore = () =>
 
 const makeSavedRecipesStore = () =>
   create<SavedRecipesStore>(() => ({
-    savedRecipes: [],
+    saved: { status: 'idle' },
     savedIds: new Set<string>(),
-    listState: { status: 'idle' },
     has: () => false,
     toggle: jest.fn(),
     addLocal: jest.fn(),
@@ -136,7 +135,6 @@ const makeSavedRecipesStore = () =>
     setSaved: jest.fn(),
     loadSaved: jest.fn(),
     loadMoreSaved: jest.fn(),
-    paging: { page: 0, total: 0, pageSize: 20, hasMore: false, isLoadingMore: false, removed: 0, moreFailure: null },
     clear: jest.fn(),
   }));
 

@@ -16,10 +16,10 @@ import { ValueConstants } from '@core/constants';
  *   read from their own list, never fetched.
  */
 export const useCookRecipe = (recipeId: string): CookRecipeState => {
-  const { recipeDetailStore, createdRecipesStore } = useStores();
+  const { recipeDetailStore, recipeAuthoringStore } = useStores();
   const networkState = recipeDetailStore((s) => s.byId[recipeId]);
   const load = recipeDetailStore((s) => s.load);
-  const localRecipe = createdRecipesStore((s) => s.findById(recipeId));
+  const localRecipe = recipeAuthoringStore((s) => s.findById(recipeId));
 
   const needsLoad = localRecipe === undefined && networkState === undefined && recipeId.length > ValueConstants.zero;
   useEffect(() => {

@@ -1,3 +1,4 @@
+import { loadedItems } from '@application/store/paging/loaded-items';
 /**
  * Taking the heart off a recipe has to take it out of the Liked grid.
  *
@@ -80,7 +81,7 @@ describe('likesStore.toggle — the Liked grid', () => {
 
     await likes.getState().toggle(RECIPE_ID);
 
-    expect(likedRecipesStore.getState().likedRecipes.map((r) => r.id)).toEqual(['r-2']);
+    expect(loadedItems(likedRecipesStore.getState().liked).map((r) => r.id)).toEqual(['r-2']);
   });
 
   it('keeps the row when the unlike request fails and the toggle rolls back', async () => {
@@ -90,7 +91,7 @@ describe('likesStore.toggle — the Liked grid', () => {
 
     await likes.getState().toggle(RECIPE_ID);
 
-    expect(likedRecipesStore.getState().likedRecipes.map((r) => r.id)).toEqual([RECIPE_ID, 'r-2']);
+    expect(loadedItems(likedRecipesStore.getState().liked).map((r) => r.id)).toEqual([RECIPE_ID, 'r-2']);
     expect(likes.getState().byRecipe[RECIPE_ID]?.likedByMe).toBe(true);
   });
 
@@ -101,6 +102,6 @@ describe('likesStore.toggle — the Liked grid', () => {
 
     await likes.getState().toggle('r-3');
 
-    expect(likedRecipesStore.getState().likedRecipes.map((r) => r.id)).toEqual([RECIPE_ID, 'r-2']);
+    expect(loadedItems(likedRecipesStore.getState().liked).map((r) => r.id)).toEqual([RECIPE_ID, 'r-2']);
   });
 });

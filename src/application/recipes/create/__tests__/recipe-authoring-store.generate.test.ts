@@ -1,12 +1,12 @@
 import type { BoundStore } from '@application/store/bound-store';
-import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
+import { configureRecipeAuthoringStore } from '@application/recipes/create/recipe-authoring-store';
 import type {
   CreateRecipeUseCase,
 } from '@application/recipes/create/create-recipe-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import type { GenerateRecipeInput } from '@application/recipes/generate/generate-recipe-input';
 import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
-import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
+import type { MyRecipesStore } from '@application/recipes/my-recipes/my-recipes-store-contract';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
@@ -60,9 +60,10 @@ const fakeCreateUseCase = {
   execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
 } as unknown as CreateRecipeUseCase;
 
-const fakeListMyUseCase = {
-  execute: () => Promise.resolve(ok([])),
-} as unknown as ListMyRecipesUseCase;
+// The Created list: a preview must never be added to it.
+const mineAdded = jest.fn();
+const fakeMine = { getState: () => ({ addLocal: mineAdded, removeLocal: jest.fn() }) } as unknown as BoundStore<MyRecipesStore>;
+beforeEach(() => mineAdded.mockClear());
 
 const fakeDeleteUseCase = {
   execute: () => Promise.resolve(ok(undefined)),
@@ -113,9 +114,9 @@ const makeStoreWithGenerateResult = (result: Result<RecipeEntity, Failure>) => {
     execute: (_input: GenerateRecipeInput) => Promise.resolve(result),
   } as unknown as GenerateRecipeUseCase;
 
-  return configureCreatedRecipesStore({
+  return configureRecipeAuthoringStore({
     createRecipeUseCase: fakeCreateUseCase,
-    listMyRecipesUseCase: fakeListMyUseCase,
+    myRecipesStore: fakeMine,
     generateRecipeUseCase: generateUseCase,
     refineRecipeUseCase: fakeRefineUseCase,
     deleteRecipeUseCase: fakeDeleteUseCase,
@@ -124,19 +125,19 @@ const makeStoreWithGenerateResult = (result: Result<RecipeEntity, Failure>) => {
   });
 };
 
-describe('createdRecipesStore.generateRecipe', () => {
+describe('recipeAuthoringStore.generateRecipe', () => {
   it('starts with generateState idle', () => {
     const store = makeStoreWithGenerateResult(ok(makeRecipe()));
 
     expect(store.getState().generateState).toEqual({ status: 'idle' });
-    expect(store.getState().recipes).toEqual([]);
+    expect(store.getState().localRecipes).toEqual([]);
   });
 
   it('transitions to generating synchronously before the promise resolves', async () => {
     const deferred = makeDeferredGenerateUseCase();
-    const store = configureCreatedRecipesStore({
+    const store = configureRecipeAuthoringStore({
       createRecipeUseCase: fakeCreateUseCase,
-      listMyRecipesUseCase: fakeListMyUseCase,
+      myRecipesStore: fakeMine,
       generateRecipeUseCase: deferred.useCase,
       refineRecipeUseCase: fakeRefineUseCase,
       deleteRecipeUseCase: fakeDeleteUseCase,
@@ -167,7 +168,7 @@ describe('createdRecipesStore.generateRecipe', () => {
     // WHY: `/recipes/generate` does not persist the recipe — it returns a
     // preview with a throwaway id. Prepending it to `recipes` would show a
     // phantom entry in "My Recipes" that does not exist on the server.
-    expect(s.recipes).toEqual([]);
+    expect(s.localRecipes).toEqual([]);
   });
 
   it('leaves existing recipes untouched when a recipe is generated', async () => {
@@ -179,7 +180,7 @@ describe('createdRecipesStore.generateRecipe', () => {
     await store.getState().generateRecipe('pasta');
 
     const s = store.getState();
-    expect(s.recipes.map((r) => r.id)).toEqual(['existing']);
+    expect(s.localRecipes.map((r) => r.id)).toEqual(['existing']);
   });
 
   it('on failure, sets generateState.error and leaves recipes untouched', async () => {
@@ -193,7 +194,7 @@ describe('createdRecipesStore.generateRecipe', () => {
     if (s.generateState.status === 'error') {
       expect(s.generateState.failure).toBe(failure);
     }
-    expect(s.recipes).toEqual([]);
+    expect(s.localRecipes).toEqual([]);
   });
 
   it('resetGenerateState returns generateState to idle', async () => {

@@ -1,10 +1,10 @@
 import type { BoundStore } from '@application/store/bound-store';
-import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
+import { configureRecipeAuthoringStore } from '@application/recipes/create/recipe-authoring-store';
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import type { RefineRecipeInput } from '@application/recipes/refine/refine-recipe-input';
-import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
+import type { MyRecipesStore } from '@application/recipes/my-recipes/my-recipes-store-contract';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
@@ -60,9 +60,10 @@ const fakeCreateUseCase = {
   execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
 } as unknown as CreateRecipeUseCase;
 
-const fakeListMyUseCase = {
-  execute: () => Promise.resolve(ok([])),
-} as unknown as ListMyRecipesUseCase;
+// The Created list: a preview must never be added to it.
+const mineAdded = jest.fn();
+const fakeMine = { getState: () => ({ addLocal: mineAdded, removeLocal: jest.fn() }) } as unknown as BoundStore<MyRecipesStore>;
+beforeEach(() => mineAdded.mockClear());
 
 const fakeGenerateUseCase = {
   execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
@@ -110,9 +111,9 @@ const makeStoreWithRefineResult = (result: Result<RefinedRecipe, Failure>) => {
     execute: (_input: RefineRecipeInput) => Promise.resolve(result),
   } as unknown as RefineRecipeUseCase;
 
-  return configureCreatedRecipesStore({
+  return configureRecipeAuthoringStore({
     createRecipeUseCase: fakeCreateUseCase,
-    listMyRecipesUseCase: fakeListMyUseCase,
+    myRecipesStore: fakeMine,
     generateRecipeUseCase: fakeGenerateUseCase,
     refineRecipeUseCase: refineUseCase,
     deleteRecipeUseCase: fakeDeleteUseCase,
@@ -121,7 +122,7 @@ const makeStoreWithRefineResult = (result: Result<RefinedRecipe, Failure>) => {
   });
 };
 
-describe('createdRecipesStore.refineRecipe', () => {
+describe('recipeAuthoringStore.refineRecipe', () => {
   it('starts with refineState idle', () => {
     const store = makeStoreWithRefineResult(ok({ recipe: makeRecipe() }));
 
@@ -130,9 +131,9 @@ describe('createdRecipesStore.refineRecipe', () => {
 
   it('transitions to refining synchronously before the promise resolves', async () => {
     const deferred = makeDeferredRefineUseCase();
-    const store = configureCreatedRecipesStore({
+    const store = configureRecipeAuthoringStore({
       createRecipeUseCase: fakeCreateUseCase,
-      listMyRecipesUseCase: fakeListMyUseCase,
+      myRecipesStore: fakeMine,
       generateRecipeUseCase: fakeGenerateUseCase,
       refineRecipeUseCase: deferred.useCase,
       deleteRecipeUseCase: fakeDeleteUseCase,
@@ -163,7 +164,7 @@ describe('createdRecipesStore.refineRecipe', () => {
     expect(returned).toBe(refined);
     // WHY: refine returns a NOT-persisted preview; prepending it to `recipes`
     // would surface a phantom "My Recipes" entry that does not exist on the server.
-    expect(s.recipes).toEqual([]);
+    expect(s.localRecipes).toEqual([]);
   });
 
   it('leaves existing recipes untouched when a recipe is refined', async () => {
@@ -174,7 +175,7 @@ describe('createdRecipesStore.refineRecipe', () => {
 
     await store.getState().refineRecipe(snapshot, 'add garlic', []);
 
-    expect(store.getState().recipes.map((r) => r.id)).toEqual(['existing']);
+    expect(store.getState().localRecipes.map((r) => r.id)).toEqual(['existing']);
   });
 
   it('on failure sets refineState.error and returns null', async () => {
@@ -189,7 +190,7 @@ describe('createdRecipesStore.refineRecipe', () => {
       expect(s.refineState.failure).toBe(failure);
     }
     expect(returned).toBeNull();
-    expect(s.recipes).toEqual([]);
+    expect(s.localRecipes).toEqual([]);
   });
 
   it('resetRefineState returns refineState to idle', async () => {

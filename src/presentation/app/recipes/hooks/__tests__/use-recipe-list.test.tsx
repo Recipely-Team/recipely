@@ -178,7 +178,7 @@ const makeStores = (recipeListStore: BoundStore<RecipeListStore>): ApplicationSt
     notificationsStore: makeNotificationsStore(),
     savedRecipesStore: makeSavedRecipesStore(),
     loadFavoritesUseCase: { execute: jest.fn().mockResolvedValue(ok([])) },
-    createdRecipesStore: ownRecipes,
+    myRecipesStore: ownRecipes,
   }) as unknown as ApplicationStores;
 
 /** One render of the hook: the spinner flag next to what the store reports. */

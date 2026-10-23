@@ -35,21 +35,21 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const { isWebShell, isExpanded, width } = useLayout();
-  const { savedRecipesStore, likedRecipesStore, createdRecipesStore, draftsStore } = useStores();
+  const { savedRecipesStore, likedRecipesStore, myRecipesStore, draftsStore } = useStores();
   const { isSaved, toggleSave } = useSaveRecipe();
 
-  const savedRecipes = savedRecipesStore((s) => s.savedRecipes);
-  const savedListState = savedRecipesStore((s) => s.listState);
-  const likedRecipes = likedRecipesStore((s) => s.likedRecipes);
-  const likedListState = likedRecipesStore((s) => s.listState);
-  const createdRecipes = createdRecipesStore((s) => s.recipes);
-  const createdListState = createdRecipesStore((s) => s.myRecipesState);
+  const savedListState = savedRecipesStore((s) => s.saved);
+  const likedListState = likedRecipesStore((s) => s.liked);
+  const createdListState = myRecipesStore((s) => s.mine);
+  const savedRecipes = useMemo(() => loadedItems(savedListState), [savedListState]);
+  const likedRecipes = useMemo(() => loadedItems(likedListState), [likedListState]);
+  const createdRecipes = useMemo(() => loadedItems(createdListState), [createdListState]);
   const draftsListState = draftsStore((s) => s.drafts);
   const drafts = useMemo(() => loadedItems(draftsListState), [draftsListState]);
   const loadMoreDrafts = draftsStore((s) => s.loadMoreDrafts);
 
   const [tab, setTab] = useMyRecipesTab();
-  const { savedPaging, likedPaging, createdPaging, itemsFooter, onItemsEndReached } = useMyRecipesPaging(tab);
+  const { totals, itemsFooter, onItemsEndReached } = useMyRecipesPaging(tab);
   const { isRefreshing, onRefresh } = useMyRecipesRefresh(tab);
 
   const gridColumns = useMemo(() => gridColumnsFor(isExpanded, width), [isExpanded, width]);
@@ -59,9 +59,9 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     useCallback(() => {
       void savedRecipesStore.getState().loadSaved();
       void likedRecipesStore.getState().loadLiked();
-      void createdRecipesStore.getState().loadMyRecipes();
+      void myRecipesStore.getState().loadMine();
       void draftsStore.getState().loadDrafts();
-    }, [savedRecipesStore, likedRecipesStore, createdRecipesStore, draftsStore]),
+    }, [savedRecipesStore, likedRecipesStore, myRecipesStore, draftsStore]),
   );
 
   const items =
@@ -92,7 +92,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
 
   const draftsTotal = draftsListState.status === StoreStatus.Loaded ? draftsListState.total : drafts.length;
   const loadedCounts = { saved: savedRecipes.length, liked: likedRecipes.length, created: createdRecipes.length };
-  const tabDefs = useMyRecipesTabDefs(loadedCounts, draftsTotal, { savedPaging, likedPaging, createdPaging });
+  const tabDefs = useMyRecipesTabDefs(loadedCounts, draftsTotal, totals);
 
   // Stable handlers, so the list's memoised rows and `renderItem` hold across renders.
   const openRecipe = useCallback((id: string): void => router.push(RoutePaths.recipeDetail(id) as Href), [router]);

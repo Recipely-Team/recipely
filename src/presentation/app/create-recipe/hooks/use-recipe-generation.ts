@@ -91,7 +91,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   const promptParam = params.prompt;
   const fromRecipeId = params.fromRecipeId;
 
-  const { createdRecipesStore, draftsStore, recipeDetailStore } = useStores();
+  const { recipeAuthoringStore, draftsStore, recipeDetailStore } = useStores();
   const loadRecipeDetail = recipeDetailStore((st) => st.load);
   const copiedFrom = recipeDetailStore((st) =>
     fromRecipeIdOf(st.byId, fromRecipeId),
@@ -100,7 +100,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   const editState = recipeDetailStore((st) =>
     editRecipeId === undefined ? undefined : st.byId[editRecipeId],
   );
-  const refineState = createdRecipesStore((s) => s.refineState);
+  const refineState = recipeAuthoringStore((s) => s.refineState);
   const latestDraft = draftsStore((s) => s.latestDraft);
   const loadLatestDraft = draftsStore((s) => s.loadLatestDraft);
   const upsertDraft = draftsStore((s) => s.upsertDraft);
@@ -249,9 +249,9 @@ const GEN_STEP_INTERVAL_MS = 620;
   const generation = useRef<number>(ValueConstants.zero);
   const onCancelGenerate = useCallback((): void => {
     generation.current += ValueConstants.one;
-    createdRecipesStore.getState().resetGenerateState();
+    recipeAuthoringStore.getState().resetGenerateState();
     setPhase(PhaseType.Prompt);
-  }, [createdRecipesStore]);
+  }, [recipeAuthoringStore]);
 
   const runGenerate = useCallback(
     async (text: string): Promise<void> => {
@@ -262,17 +262,17 @@ const GEN_STEP_INTERVAL_MS = 620;
       setPhase(PhaseType.Generating);
       generation.current += ValueConstants.one;
       const mine = generation.current;
-      await createdRecipesStore.getState().generateRecipe(trimmed);
+      await recipeAuthoringStore.getState().generateRecipe(trimmed);
       // Cancelled while waiting: the answer is dropped, the prompt screen stays.
       if (mine !== generation.current) return;
-      const state = createdRecipesStore.getState().generateState;
+      const state = recipeAuthoringStore.getState().generateState;
       if (state.status === StoreStatus.Success) {
         setRecipe((prev) => recipeToEditable(state.recipe, prev.media));
         setChatHistory([
           { role: ChatRole.User, content: trimmed },
           { role: ChatRole.Assistant, content: t().createRecipe.aiFirstReply },
         ]);
-        createdRecipesStore.getState().resetGenerateState();
+        recipeAuthoringStore.getState().resetGenerateState();
         setPhase(PhaseType.Preview);
         return;
       }
@@ -287,10 +287,10 @@ const GEN_STEP_INTERVAL_MS = 620;
         else showErrorToast(failure);
         setGenerateError(message);
       }
-      createdRecipesStore.getState().resetGenerateState();
+      recipeAuthoringStore.getState().resetGenerateState();
       setPhase(PhaseType.Prompt);
     },
-    [createdRecipesStore, setRecipe],
+    [recipeAuthoringStore, setRecipe],
   );
 
   // Any prompt edit clears the stale error.

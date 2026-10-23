@@ -57,8 +57,8 @@ export const useRecipeSave = ({
   stopAutosave,
 }: UseRecipeSaveArgs) => {
   const router = useRouter();
-  const { createdRecipesStore, draftsStore, recipePublishingStore } = useStores();
-  const createState = createdRecipesStore((s) => s.createState);
+  const { recipeAuthoringStore, draftsStore, recipePublishingStore } = useStores();
+  const createState = recipeAuthoringStore((s) => s.createState);
   const isEditing = recipePublishingStore((s) => s.isBusy);
   const { publish } = usePublishRecipe();
 
@@ -118,25 +118,25 @@ export const useRecipeSave = ({
     // The server reads the draft behind `fromDraftId` for provenance; it has to exist first.
     await flushDraft();
     // A photo is not required: a recipe written out in full saves without one.
-    await createdRecipesStore
+    await recipeAuthoringStore
       .getState()
       .createRecipe(buildCreateInput(recipe, getLocale(), activeDraftId));
-    const state = createdRecipesStore.getState().createState;
+    const state = recipeAuthoringStore.getState().createState;
     if (state.status === StoreStatus.Success) {
       const newRecipeId = state.recipe.id;
       stopAutosave();
-      createdRecipesStore.getState().resetCreateState();
+      recipeAuthoringStore.getState().resetCreateState();
       // Fallback for an older backend; the server retires the draft itself (fromDraftId).
       await draftsStore.getState().deleteDraft(activeDraftId);
       return newRecipeId;
     }
     if (state.status === StoreStatus.Error) {
       surfaceSaveFailure(state.failure);
-      createdRecipesStore.getState().resetCreateState();
+      recipeAuthoringStore.getState().resetCreateState();
     }
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recipe, createdRecipesStore, draftsStore, recipePublishingStore, activeDraftId, editRecipeId, surfaceSaveFailure, flushDraft, stopAutosave]);
+  }, [recipe, recipeAuthoringStore, draftsStore, recipePublishingStore, activeDraftId, editRecipeId, surfaceSaveFailure, flushDraft, stopAutosave]);
 
   const openSaved = useCallback(
     (recipeId: string): void => {

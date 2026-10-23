@@ -47,10 +47,10 @@ import { Difficulty } from '@domain/recipes/difficulty';
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import type { FakeRecipeRepositoryConfig } from '@application/__fixtures__/fake-recipe-repository-config';
 import { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
-import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
+import { configureRecipeAuthoringStore } from '@application/recipes/create/recipe-authoring-store';
 import { configureDraftsStore } from '@application/drafts/drafts-store';
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
-import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
+import type { MyRecipesStore } from '@application/recipes/my-recipes/my-recipes-store-contract';
 import { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
@@ -225,7 +225,7 @@ const noopCacheStore = <T,>(): T =>
   ({ getState: () => ({ replace: () => undefined, remove: () => undefined }) }) as unknown as T;
 
 /**
- * Real createdRecipesStore + draftsStore, with the generate path wired through
+ * Real recipeAuthoringStore + draftsStore, with the generate path wired through
  * the real `GenerateRecipeUseCase` down to a `FakeRecipeRepository` reading
  * `config` on every call.
  */
@@ -235,9 +235,9 @@ const makeStores = (
   hold?: Promise<void>,
   draftFailure?: Failure,
 ): ApplicationStores => {
-  const createdRecipesStore = configureCreatedRecipesStore({
+  const recipeAuthoringStore = configureRecipeAuthoringStore({
     createRecipeUseCase: unusedUseCase<CreateRecipeUseCase>(),
-    listMyRecipesUseCase: unusedUseCase<ListMyRecipesUseCase>(),
+    myRecipesStore: { getState: () => ({ addLocal: jest.fn(), removeLocal: jest.fn() }) } as unknown as BoundStore<MyRecipesStore>,
     generateRecipeUseCase: new GenerateRecipeUseCase(new FakeRecipeRepository(config)),
     refineRecipeUseCase: new RefineRecipeUseCase(new FakeRecipeRepository(config)),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
@@ -268,7 +268,7 @@ const makeStores = (
   const recipeDetailStore = ((select: (st: unknown) => unknown) =>
     select({ byId: {}, load: async () => undefined })) as unknown as ApplicationStores['recipeDetailStore'];
 
-  return { createdRecipesStore, draftsStore, recipeDetailStore } as unknown as ApplicationStores;
+  return { recipeAuthoringStore, draftsStore, recipeDetailStore } as unknown as ApplicationStores;
 };
 
 type Generation = ReturnType<typeof useRecipeGeneration>;

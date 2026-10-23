@@ -236,7 +236,7 @@ const makeStores = (commentsStore: BoundStore<CommentsStore>, overrides: StoreOv
 
   const savedRecipesStore = create(() => ({ savedIds: new Set<string>() }));
   const favoritesStore = create(() => ({ isLoading: false, pending: new Set<string>(), error: null }));
-  const createdRecipesStore = create(() => ({
+  const recipeAuthoringStore = create(() => ({
     findById: () => undefined,
     deleteState: { status: 'idle' as const },
     loadMyRecipes: jest.fn(),
@@ -251,7 +251,7 @@ const makeStores = (commentsStore: BoundStore<CommentsStore>, overrides: StoreOv
   return {
     recipeDetailStore,
     savedRecipesStore,
-    createdRecipesStore,
+    recipeAuthoringStore,
     authStore,
     favoritesStore,
     commentsStore,

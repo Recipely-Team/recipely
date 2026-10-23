@@ -7,6 +7,7 @@
  * of a saved recipe has none.
  */
 
+import type { MyRecipesStore } from '@application/recipes/my-recipes/my-recipes-store-contract';
 import { useState } from 'react';
 import { act } from 'react-test-renderer';
 import { UnknownFailure } from '@core/failure';
@@ -20,7 +21,7 @@ import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-ph
 import { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
 import { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
 import { RemoveRecipeMediaUseCase } from '@application/recipes/photos/remove-recipe-media-use-case';
-import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
+import { configureRecipeAuthoringStore } from '@application/recipes/create/recipe-authoring-store';
 import { configureDraftsStore } from '@application/drafts/drafts-store';
 import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import type { ApplicationStores } from '@application/di/application-stores';
@@ -67,16 +68,16 @@ const mount = () => {
     upsertDraftUseCase: unused(),
     deleteDraftUseCase: { execute: deleteDraft } as never,
   });
-  const createdRecipesStore = configureCreatedRecipesStore({
+  const recipeAuthoringStore = configureRecipeAuthoringStore({
     createRecipeUseCase: unused(),
-    listMyRecipesUseCase: unused(),
+    myRecipesStore: { getState: () => ({ addLocal: jest.fn(), removeLocal: jest.fn() }) } as unknown as BoundStore<MyRecipesStore>,
     generateRecipeUseCase: unused(),
     refineRecipeUseCase: unused(),
     deleteRecipeUseCase: unused(),
     recipeListStore: unused<BoundStore<RecipeListStore>>(),
     recipeDetailStore,
   });
-  const stores = { recipeDetailStore, draftsStore, createdRecipesStore } as unknown as ApplicationStores;
+  const stores = { recipeDetailStore, draftsStore, recipeAuthoringStore } as unknown as ApplicationStores;
 
   let latest!: ReturnType<typeof useRecipeGeneration>;
   let setRecipe!: (update: (prev: EditableRecipe) => EditableRecipe) => void;

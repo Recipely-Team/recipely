@@ -20,8 +20,9 @@ jest.mock('@presentation/bootstrap/use-stores', () => ({
         mockState.published.calls.push(handles as never);
       },
     },
-    savedRecipesStore: (select: (s: unknown) => unknown) => select({ savedRecipes: mockState.saved }),
-    createdRecipesStore: (select: (s: unknown) => unknown) => select({ recipes: mockState.created }),
+    // 'loaded' spelled out: babel hoists jest.mock above the imports.
+    savedRecipesStore: (select: (s: unknown) => unknown) => select({ saved: { status: 'loaded', items: mockState.saved } }),
+    myRecipesStore: (select: (s: unknown) => unknown) => select({ mine: { status: 'loaded', items: mockState.created } }),
     authStore: (select: (s: unknown) => unknown) =>
       select({
         // The literals are spelled out rather than read from `StoreStatus`:

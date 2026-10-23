@@ -44,7 +44,7 @@ const setup = () => {
     assistantActionRegistry: registry,
     stepProgressStore,
     recipeDetailStore: create(() => ({ byId: { r1: { status: StoreStatus.Loaded, recipe, likedByMe: false, fetchedAt: 0 } }, load: jest.fn() })),
-    createdRecipesStore: create(() => ({ findById: () => undefined })),
+    recipeAuthoringStore: create(() => ({ findById: () => undefined })),
   } as unknown as Partial<ApplicationStores>;
   const { root } = renderComponent(<CookModeScreen />, stores);
   return { root, registry, stepProgressStore };

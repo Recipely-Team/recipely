@@ -2,41 +2,35 @@ import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import type { Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
-import { RequestEpoch } from '@application/store/request-epoch';
-import { pagingOf } from '@application/store/paging/list-paging/paging-of';
-import { NO_PAGING } from '@application/store/paging/list-paging/no-paging';
-import { loadMorePaging } from '@application/store/paging/list-paging/load-more-paging';
-import { pagingAfterRemoval } from '@application/store/paging/list-paging/paging-after-removal';
-import { appendById } from '@application/store/paging/append-by-id';
 import { create } from 'zustand';
 import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
-import type { CreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store-contract';
+import type { RecipeAuthoringStore } from '@application/recipes/create/recipe-authoring-store-contract';
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
-import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store-contract';
 import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
+import type { MyRecipesStore } from '@application/recipes/my-recipes/my-recipes-store-contract';
 import type { CreateRecipeState } from '@application/recipes/create/create-recipe-state';
 import type { GenerateRecipeState } from '@application/recipes/generate/generate-recipe-state';
 import type { RefineRecipeState } from '@application/recipes/refine/refine-recipe-state';
 import type { DeleteRecipeState } from '@application/recipes/delete/delete-recipe-state';
-import { ValueConstants } from '@core/constants';
 import type { CreateRecipeError } from '@application/recipes/create/states/create-recipe-error';
 import type { GenerateRecipeError } from '@application/recipes/generate/states/generate-recipe-error';
 import type { RefineRecipeError } from '@application/recipes/refine/states/refine-recipe-error';
 import type { DeleteRecipeError } from '@application/recipes/delete/states/delete-recipe-error';
 
-interface CreatedRecipesStoreDeps {
+interface RecipeAuthoringStoreDeps {
   createRecipeUseCase: CreateRecipeUseCase;
-  listMyRecipesUseCase: ListMyRecipesUseCase;
   generateRecipeUseCase: GenerateRecipeUseCase;
   refineRecipeUseCase: RefineRecipeUseCase;
   deleteRecipeUseCase: DeleteRecipeUseCase;
   // Owner mutations keep the public feed and detail cache in sync.
   recipeListStore: BoundStore<RecipeListStore>;
   recipeDetailStore: BoundStore<RecipeDetailStore>;
+  // The Created list; a recipe made or deleted here is added to or removed from it.
+  myRecipesStore: BoundStore<MyRecipesStore>;
 }
 
 /** The failed state of any operation this store runs; the four share one shape. */
@@ -62,38 +56,23 @@ const runOperation = async <S, T>(
   return result.value;
 };
 
-export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): BoundStore<CreatedRecipesStore> => {
-  // `clear()` invalidates it: a list load from an earlier session must not put that account's recipes back.
-  const listEpoch = new RequestEpoch();
-
-
-  return create<CreatedRecipesStore>((set, get) => ({
-    recipes: [],
-    myRecipesState: { status: StoreStatus.Idle },
-    myRecipesPaging: NO_PAGING,
+export const configureRecipeAuthoringStore = (deps: RecipeAuthoringStoreDeps): BoundStore<RecipeAuthoringStore> => {
+  return create<RecipeAuthoringStore>((set, get) => ({
     localRecipes: [],
     createState: { status: StoreStatus.Idle },
     generateState: { status: StoreStatus.Idle },
     deleteState: { status: StoreStatus.Idle },
     refineState: { status: StoreStatus.Idle },
-    // localRecipes backs findById; the lean grid list is kept in sync alongside it.
-    add: (recipe) =>
-      set((s) => {
-        const summary = recipeToSummary(recipe, false);
-        return {
-          localRecipes: [recipe, ...s.localRecipes],
-          recipes: summary.ok ? [summary.value, ...s.recipes] : s.recipes,
-          myRecipesPaging: summary.ok ? { ...s.myRecipesPaging, total: s.myRecipesPaging.total + ValueConstants.one } : s.myRecipesPaging,
-        };
-      }),
-    remove: (id) =>
-      set((s) => ({
-        localRecipes: s.localRecipes.filter((r) => r.id !== id),
-        recipes: s.recipes.filter((r) => r.id !== id),
-        myRecipesPaging: s.recipes.some((r) => r.id === id)
-          ? pagingAfterRemoval(s.myRecipesPaging)
-          : s.myRecipesPaging,
-      })),
+    // localRecipes backs findById; the Created list is told about every recipe made or deleted here.
+    add: (recipe) => {
+      set((s) => ({ localRecipes: [recipe, ...s.localRecipes] }));
+      const summary = recipeToSummary(recipe, false);
+      if (summary.ok) deps.myRecipesStore.getState().addLocal(summary.value);
+    },
+    remove: (id) => {
+      set((s) => ({ localRecipes: s.localRecipes.filter((r) => r.id !== id) }));
+      deps.myRecipesStore.getState().removeLocal(id);
+    },
     findById: (id) => get().localRecipes.find((r) => r.id === id),
     createRecipe: async (input, onProgress) => {
       await runOperation(
@@ -107,31 +86,6 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
           return { status: StoreStatus.Success, recipe };
         },
       );
-    },
-    loadMyRecipes: async () => {
-      const isCurrent = listEpoch.start();
-      // Only the first load shows a skeleton; reloads keep the rows.
-      if (get().myRecipesState.status !== StoreStatus.Loaded) {
-        set({ myRecipesState: { status: StoreStatus.Loading } });
-      }
-      const result = await deps.listMyRecipesUseCase.execute();
-      if (!isCurrent()) return;
-      if (!result.ok) {
-        // A next page this reload superseded is no longer on its way.
-        set((s) => ({ myRecipesState: { status: StoreStatus.Error, failure: result.failure }, myRecipesPaging: { ...s.myRecipesPaging, isLoadingMore: false } }));
-        return;
-      }
-      set({ recipes: result.value.items, myRecipesState: { status: StoreStatus.Loaded }, myRecipesPaging: pagingOf(result.value) });
-    },
-    loadMoreMyRecipes: () => {
-      const isCurrent = listEpoch.current();
-      return loadMorePaging({
-        read: () => get().myRecipesPaging,
-        write: (myRecipesPaging) => set({ myRecipesPaging }),
-        fetch: (page) => deps.listMyRecipesUseCase.execute(page),
-        isCurrent,
-        append: (items) => set((s) => ({ recipes: appendById(s.recipes, items) })),
-      });
     },
     // A generated recipe is a preview (not persisted): it lives in generateState, never in the list.
     generateRecipe: async (prompt) => {
@@ -167,14 +121,6 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
     resetGenerateState: () => set({ generateState: { status: StoreStatus.Idle } }),
     resetRefineState: () => set({ refineState: { status: StoreStatus.Idle } }),
     resetDeleteState: () => set({ deleteState: { status: StoreStatus.Idle } }),
-    clear: () => {
-      listEpoch.invalidate();
-      set({
-        recipes: [],
-        myRecipesState: { status: StoreStatus.Idle },
-        myRecipesPaging: NO_PAGING,
-        localRecipes: [],
-      });
-    },
+    clear: () => set({ localRecipes: [] }),
   }));
 };

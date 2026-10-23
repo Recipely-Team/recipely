@@ -40,14 +40,15 @@ import { t } from '@presentation/i18n';
  */
 const renderScreen = () => {
   const deleteDraft = jest.fn().mockResolvedValue({ ok: true, value: undefined });
-  const idle = { status: StoreStatus.Loaded };
+  // A loaded, empty list: ListLoaded carries its rows and cursor, so an empty one says so.
+  const idle = { status: StoreStatus.Loaded, items: [], page: 1, total: 0, hasMore: false, isLoadingMore: false, moreFailure: null };
   const stores = {
     authStore: authStoreOf(null),
     likesStore: create(() => ({ byRecipe: {}, setLiked: jest.fn() })),
     favoritesStore: create(() => ({ addFavorite: jest.fn(), removeFavorite: jest.fn() })),
-    savedRecipesStore: create(() => ({ savedRecipes: [], listState: idle, savedIds: new Set<string>(), paging: { page: 0, total: 0, hasMore: false, isLoadingMore: false }, loadSaved: jest.fn() })),
-    likedRecipesStore: create(() => ({ likedRecipes: [], listState: idle, paging: { page: 0, total: 0, hasMore: false, isLoadingMore: false }, loadLiked: jest.fn() })),
-    createdRecipesStore: create(() => ({ recipes: [], myRecipesState: idle, myRecipesPaging: { page: 0, total: 0, hasMore: false, isLoadingMore: false }, loadMyRecipes: jest.fn() })),
+    savedRecipesStore: create(() => ({ saved: idle, savedIds: new Set<string>(), loadSaved: jest.fn() })),
+    likedRecipesStore: create(() => ({ liked: idle, loadLiked: jest.fn() })),
+    myRecipesStore: create(() => ({ mine: idle, loadMine: jest.fn() })),
     draftsStore: create(() => ({
       drafts: { status: StoreStatus.Loaded, items: [], page: 1, total: 0, hasMore: false, isLoadingMore: false, moreFailure: null },
       loadDrafts: jest.fn(),

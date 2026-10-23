@@ -58,7 +58,7 @@ export const useRefineProposal = ({
   chatExpanded,
   refining,
 }: UseRefineProposalArgs) => {
-  const { createdRecipesStore } = useStores();
+  const { recipeAuthoringStore } = useStores();
   const [proposal, setProposal] = useState<RefineProposal | null>(null);
   // A refine outlives the screen; no toast after unmount.
   const mounted = useRef(true);
@@ -89,7 +89,7 @@ export const useRefineProposal = ({
       const priorTurns = [...chatHistory];
       setChatHistory((h) => [...h, { role: ChatRole.User, content: trimmed }]);
 
-      const refined = await createdRecipesStore
+      const refined = await recipeAuthoringStore
         .getState()
         .refineRecipe(editableToSnapshot(recipe), trimmed, priorTurns);
 
@@ -103,21 +103,21 @@ export const useRefineProposal = ({
           // The answer landed behind a closed panel: say so.
           if (!chatExpanded && mounted.current) showSuccessToast(t().createRecipe.proposalWaiting);
         }
-        createdRecipesStore.getState().resetRefineState();
+        recipeAuthoringStore.getState().resetRefineState();
         return;
       }
 
       // refineRecipe collapses failures to null, so read the reason from the store.
-      const state = createdRecipesStore.getState().refineState;
+      const state = recipeAuthoringStore.getState().refineState;
       if (state.status === StoreStatus.Error) showErrorToast(state.failure);
       const reason = state.status === StoreStatus.Error ? failureKeyMessage(state.failure) : undefined;
       setChatHistory((h) => [
         ...h,
         { role: ChatRole.Assistant, content: reason ?? t().createRecipe.aiError, error: true },
       ]);
-      createdRecipesStore.getState().resetRefineState();
+      recipeAuthoringStore.getState().resetRefineState();
     },
-    [createdRecipesStore, recipe, refining, chatExpanded, chatHistory, proposal, markLastAssistantRejected, setChatHistory],
+    [recipeAuthoringStore, recipe, refining, chatExpanded, chatHistory, proposal, markLastAssistantRejected, setChatHistory],
   );
 
   const onAccept = useCallback((): void => {

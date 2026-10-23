@@ -19,7 +19,6 @@ import type { AuthStore } from "@application/auth/auth-store-contract";
 import type { FavoritesStore } from "@application/favorites/favorites-store-contract";
 import type { SavedRecipesStore } from "@application/recipes/saved/saved-recipes-store-contract";
 import { UnknownFailure } from "@core/failure";
-import { ok } from "@core/result/result-helpers";
 import { AuthSessionEntity } from "@domain/auth/auth-session-entity";
 import { UserEntity } from "@domain/auth/user-entity";
 import { Email } from "@domain/common/email";
@@ -31,7 +30,6 @@ import type { ApplicationStores } from "@application/di/application-stores";
 import { StoresProvider } from "@presentation/bootstrap/stores-context";
 import { act } from "react-test-renderer";
 import { create } from "zustand";
-import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 
 // ─── module mock — keep toast side-effects out of these unit tests ────────────
 jest.mock("@presentation/base/feedback/show-toast", () => ({
@@ -43,9 +41,8 @@ jest.mock("@presentation/base/feedback/show-toast", () => ({
 /** Builds a savedRecipesStore whose savedIds can be seeded and mutated. */
 const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
   create<SavedRecipesStore>((set, get) => ({
-    savedRecipes: [],
+    saved: { status: 'idle' },
     savedIds: initial,
-    listState: { status: "idle" },
     has: (id) => get().savedIds.has(id),
     toggle: (id) =>
       set((s) => {
@@ -67,9 +64,8 @@ const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
         return { savedIds: next };
       }),
     setSaved: (): void => undefined,
-    loadSaved: () => Promise.resolve(ok(recipePageOf([]))),
+    loadSaved: () => Promise.resolve(null),
     loadMoreSaved: () => Promise.resolve(),
-    paging: { page: 0, total: 0, pageSize: 20, hasMore: false, isLoadingMore: false, removed: 0, moreFailure: null },
     clear: (): void => undefined,
   }));
 

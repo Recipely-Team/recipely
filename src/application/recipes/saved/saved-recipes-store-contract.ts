@@ -1,36 +1,31 @@
 import type { Page } from '@domain/common/page';
-import type { ListPaging } from '@application/store/paging/list-paging/list-paging';
-import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
-import type { SavedRecipesListState } from '@application/recipes/saved/saved-recipes-list-state';
+import type { PagedList } from '@application/store/paging/paged-list';
 
 export interface SavedRecipesStore {
   /**
-   * The saved recipes themselves, in favourite order — what the My Recipes
-   * saved grid renders. Held here rather than derived from the discover feed's
-   * loaded page, which is scoped by that screen's search, filters and sort.
+   * The saved recipes, in favourite order and paged on scroll. `ListLoaded`
+   * holds the rows, the server's total (what the tab count shows) and the
+   * next-page state together, so they cannot disagree.
    */
-  savedRecipes: readonly RecipeSummaryEntity[];
+  saved: PagedList<RecipeSummaryEntity>;
+  /** Which recipes are saved: drives the bookmark on every card in the app. */
   savedIds: ReadonlySet<string>;
-  /** Load status of `savedRecipes` — what the saved grid shows a skeleton for. */
-  listState: SavedRecipesListState;
   has: (id: string) => boolean;
   toggle: (id: string) => void;
   addLocal: (id: string) => void;
   removeLocal: (id: string) => void;
-  /** Replaces both the rows and the id set from one favourites response. */
+  /** Adopts a first page someone else fetched (the sign-in pre-load). */
   setSaved: (page: Page<RecipeSummaryEntity>) => void;
   /**
-   * Fetches the favourites, folds the outcome into `listState`, and hands the
-   * same outcome back — a caller that pulled to refresh needs to know how ITS
-   * load ended, which a shared field cannot say once two loads overlap.
+   * The first page again: a skeleton the first time, otherwise in place. A
+   * failed reload keeps the rows and answers its `Failure` to the caller (a
+   * pull to refresh shows it); `null` when it landed.
    */
-  loadSaved: () => Promise<Result<Page<RecipeSummaryEntity>, Failure>>;
-  /** The next page of saved recipes, appended; a no-op once the server's total is reached. */
+  loadSaved: () => Promise<Failure | null>;
+  /** The next page, appended; a no-op once the server's total is reached. */
   loadMoreSaved: () => Promise<void>;
-  /** The server's total and whether more pages exist — the tab count reads `total`, not the array. */
-  paging: ListPaging;
   /** Drops the signed-in user's saved recipes. Called when the session ends. */
   clear: () => void;
 }

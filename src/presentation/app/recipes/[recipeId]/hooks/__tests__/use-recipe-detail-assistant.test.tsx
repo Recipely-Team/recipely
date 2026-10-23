@@ -67,7 +67,7 @@ function harness(over: Partial<UseRecipeDetailResult> = {}, extraStores: Partial
     authStore: authStoreOf(null),
     likesStore: selectorOf({ setLiked: jest.fn(), byRecipe: {} }),
     favoritesStore: selectorOf({ addFavorite: jest.fn(), removeFavorite: jest.fn() }),
-    savedRecipesStore: selectorOf({ savedIds: new Set(['r1']), listState: { status: StoreStatus.Loaded } }),
+    savedRecipesStore: selectorOf({ savedIds: new Set(['r1']), saved: { status: StoreStatus.Loaded } }),
   } as unknown as Partial<ApplicationStores>;
   renderComponent(<Probe />, { ...stores, ...extraStores });
   const run = async (action: (typeof AssistantAction)[keyof typeof AssistantAction]): Promise<void> =>
@@ -173,7 +173,7 @@ describe('useRecipeDetailAssistant', () => {
     const { registry } = harness({}, {
       authStore: authStoreOf(signedInViewer()),
       favoritesStore: selectorOf({ addFavorite: jest.fn().mockResolvedValue(new NetworkFailure('offline')), removeFavorite: jest.fn() }),
-      savedRecipesStore: selectorOf({ savedIds: new Set<string>(), listState: { status: StoreStatus.Loaded } }),
+      savedRecipesStore: selectorOf({ savedIds: new Set<string>(), saved: { status: StoreStatus.Loaded } }),
     } as unknown as Partial<ApplicationStores>);
 
     let answer: unknown;

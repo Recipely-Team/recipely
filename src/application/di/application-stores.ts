@@ -4,7 +4,8 @@ import type { BoundStore } from '@application/store/bound-store';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import type { AuthStore } from '@application/auth/auth-store-contract';
 import type { CommentsStore } from '@application/comments/comments-store-contract';
-import type { CreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store-contract';
+import type { MyRecipesStore } from '@application/recipes/my-recipes/my-recipes-store-contract';
+import type { RecipeAuthoringStore } from '@application/recipes/create/recipe-authoring-store-contract';
 import type { DraftsStore } from '@application/drafts/drafts-store-contract';
 import type { DiaryStore } from '@application/diary/diary-store-contract';
 import type { BuildLoggableFoodFromRecipeUseCase } from '@application/diary/entries/build-loggable-food-from-recipe-use-case';
@@ -64,7 +65,9 @@ export interface ApplicationStores {
   recipePublishingStore: BoundStore<RecipePublishingStore>;
   savedRecipesStore: BoundStore<SavedRecipesStore>;
   likedRecipesStore: BoundStore<LikedRecipesStore>;
-  createdRecipesStore: BoundStore<CreatedRecipesStore>;
+  recipeAuthoringStore: BoundStore<RecipeAuthoringStore>;
+  /** The viewer's own recipes, the Created tab. */
+  myRecipesStore: BoundStore<MyRecipesStore>;
   draftsStore: BoundStore<DraftsStore>;
   importJobStore: BoundStore<ImportJobStore>;
   /** One synchronous reading of photos or a PDF into a draft. */

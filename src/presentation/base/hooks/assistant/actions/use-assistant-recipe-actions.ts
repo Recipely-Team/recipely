@@ -112,7 +112,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   const removeFavorite = favoritesStore((s) => s.removeFavorite);
   const setLikedInStore = likesStore((s) => s.setLiked);
   const isSaved = savedRecipesStore((s) => s.savedIds.has(recipeId));
-  const savedListState = savedRecipesStore((s) => s.listState);
+  const savedListState = savedRecipesStore((s) => s.saved);
   const likeState = likesStore((s) => s.byRecipe[recipeId]);
 
   const setSaved = useCallback(

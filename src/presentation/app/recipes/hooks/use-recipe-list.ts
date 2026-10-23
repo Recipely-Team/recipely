@@ -95,7 +95,7 @@ type AssistantScrollHandleType = Parameters<AssistantScrollableProps['ref']>[0];
 export const useRecipeList = (): UseRecipeListResult => {
   const router = useRouter();
   const pathname = usePathname();
-  const { recipeListStore, savedRecipesStore, loadFavoritesUseCase, createdRecipesStore } = useStores();
+  const { recipeListStore, savedRecipesStore, loadFavoritesUseCase, myRecipesStore } = useStores();
   const { isSaved, toggleSave } = useSaveRecipe();
   const userId = useSignedInUserId();
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
@@ -301,10 +301,11 @@ export const useRecipeList = (): UseRecipeListResult => {
   const ownRecipesChangedRef = useRef(false);
   useEffect(
     () =>
-      createdRecipesStore.subscribe(() => {
+      // The Created list, not the authoring store: a generation's progress is not a change to my recipes.
+      myRecipesStore.subscribe(() => {
         ownRecipesChangedRef.current = true;
       }),
-    [createdRecipesStore],
+    [myRecipesStore],
   );
   useFocusEffect(
     useCallback(() => {

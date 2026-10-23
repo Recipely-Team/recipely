@@ -20,20 +20,20 @@ interface UseMyRecipesRefreshResult {
  * tab's runs — pulling on Drafts must not re-request the saved and liked grids.
  */
 export const useMyRecipesRefresh = (tab: TabType): UseMyRecipesRefreshResult => {
-  const { savedRecipesStore, likedRecipesStore, createdRecipesStore, draftsStore } = useStores();
+  const { savedRecipesStore, likedRecipesStore, myRecipesStore, draftsStore } = useStores();
 
   // Only a user pull drives RefreshControl (a programmatic refreshing jumps the iOS scroll).
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // The saved grid renders /me/favorites; the store returns its own outcome.
   const refreshSaved = useCallback(async (): Promise<void> => {
-    const result = await savedRecipesStore.getState().loadSaved();
-    if (!result.ok) showErrorToast(result.failure);
+    const failure = await savedRecipesStore.getState().loadSaved();
+    if (failure !== null) showErrorToast(failure);
   }, [savedRecipesStore]);
 
   const refreshLiked = useCallback(async (): Promise<void> => {
-    const result = await likedRecipesStore.getState().loadLiked();
-    if (!result.ok) showErrorToast(result.failure);
+    const failure = await likedRecipesStore.getState().loadLiked();
+    if (failure !== null) showErrorToast(failure);
   }, [likedRecipesStore]);
 
   const onRefresh = useCallback((): void => {
@@ -45,7 +45,8 @@ export const useMyRecipesRefresh = (tab: TabType): UseMyRecipesRefreshResult => 
         } else if (tab === TabType.Liked) {
           await refreshLiked();
         } else if (tab === TabType.Created) {
-          await createdRecipesStore.getState().loadMyRecipes();
+          const failure = await myRecipesStore.getState().loadMine();
+          if (failure !== null) showErrorToast(failure);
         } else {
           const failure = await draftsStore.getState().loadDrafts();
           if (failure !== null) showErrorToast(failure);
@@ -56,7 +57,7 @@ export const useMyRecipesRefresh = (tab: TabType): UseMyRecipesRefreshResult => 
         setIsRefreshing(false);
       }
     })();
-  }, [tab, refreshSaved, refreshLiked, createdRecipesStore, draftsStore]);
+  }, [tab, refreshSaved, refreshLiked, myRecipesStore, draftsStore]);
 
   return { isRefreshing, onRefresh };
 };

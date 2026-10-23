@@ -23,10 +23,10 @@ import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
-import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
+import { configureRecipeAuthoringStore } from '@application/recipes/create/recipe-authoring-store';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
-import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
+import type { MyRecipesStore } from '@application/recipes/my-recipes/my-recipes-store-contract';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store-contract';
 import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
@@ -100,16 +100,16 @@ const noopCacheStore = <T,>(): T =>
   ({ getState: () => ({ replace: () => undefined, remove: () => undefined }) }) as unknown as T;
 
 const makeStores = (repo: FakeRecipeRepository): ApplicationStores => {
-  const createdRecipesStore = configureCreatedRecipesStore({
+  const recipeAuthoringStore = configureRecipeAuthoringStore({
     createRecipeUseCase: unusedUseCase<CreateRecipeUseCase>(),
-    listMyRecipesUseCase: unusedUseCase<ListMyRecipesUseCase>(),
+    myRecipesStore: { getState: () => ({ addLocal: jest.fn(), removeLocal: jest.fn() }) } as unknown as BoundStore<MyRecipesStore>,
     generateRecipeUseCase: unusedUseCase<GenerateRecipeUseCase>(),
     refineRecipeUseCase: new RefineRecipeUseCase(repo),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
     recipeListStore: noopCacheStore<BoundStore<RecipeListStore>>(),
     recipeDetailStore: noopCacheStore<BoundStore<RecipeDetailStore>>(),
   });
-  return { createdRecipesStore } as unknown as ApplicationStores;
+  return { recipeAuthoringStore } as unknown as ApplicationStores;
 };
 
 // ─── probe ───────────────────────────────────────────────────────────────────

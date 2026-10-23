@@ -1,39 +1,43 @@
 import { useCallback } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import type { Failure } from '@core/failure';
-import type { ListPaging } from '@application/store/paging/list-paging/list-paging';
+import { StoreStatus } from '@application/store/store-status';
+import { ValueConstants } from '@core/constants';
+import type { PagedList } from '@application/store/paging/paged-list';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
+
+const totalOf = (list: PagedList<RecipeSummaryEntity>): number =>
+  list.status === StoreStatus.Loaded ? list.total : ValueConstants.zero;
 
 /**
  * The paging of the Saved, Liked and Created lists: each tab's server total
  * (what its count shows) and the next-page loader the shown list calls at its
- * end. Drafts pages through its own store.
+ * end. Every list is a `PagedList`, so total and next-page state come from its
+ * `ListLoaded` state. Drafts pages through its own store.
  */
 export const useMyRecipesPaging = (
   tab: TabType,
 ): {
-  savedPaging: ListPaging;
-  likedPaging: ListPaging;
-  createdPaging: ListPaging;
-  activePaging: ListPaging | null;
+  totals: { saved: number; liked: number; created: number };
   /** The shown list's footer: the next-page spinner and why the last next page failed. */
   itemsFooter: { isLoadingMoreItems: boolean; itemsMoreFailure: Failure | null };
   onItemsEndReached: () => void;
 } => {
-  const { savedRecipesStore, likedRecipesStore, createdRecipesStore } = useStores();
-  const savedPaging = savedRecipesStore((s) => s.paging);
-  const likedPaging = likedRecipesStore((s) => s.paging);
-  const createdPaging = createdRecipesStore((s) => s.myRecipesPaging);
-  const activePaging =
-    tab === TabType.Saved ? savedPaging : tab === TabType.Liked ? likedPaging : tab === TabType.Created ? createdPaging : null;
+  const { savedRecipesStore, likedRecipesStore, myRecipesStore } = useStores();
+  const saved = savedRecipesStore((s) => s.saved);
+  const liked = likedRecipesStore((s) => s.liked);
+  const mine = myRecipesStore((s) => s.mine);
+  const active = tab === TabType.Saved ? saved : tab === TabType.Liked ? liked : tab === TabType.Created ? mine : null;
 
   const onItemsEndReached = useCallback((): void => {
     if (tab === TabType.Saved) void savedRecipesStore.getState().loadMoreSaved();
     else if (tab === TabType.Liked) void likedRecipesStore.getState().loadMoreLiked();
-    else if (tab === TabType.Created) void createdRecipesStore.getState().loadMoreMyRecipes();
-  }, [tab, savedRecipesStore, likedRecipesStore, createdRecipesStore]);
+    else if (tab === TabType.Created) void myRecipesStore.getState().loadMoreMine();
+  }, [tab, savedRecipesStore, likedRecipesStore, myRecipesStore]);
 
-  const itemsFooter = { isLoadingMoreItems: activePaging?.isLoadingMore === true, itemsMoreFailure: activePaging?.moreFailure ?? null };
+  const loaded = active?.status === StoreStatus.Loaded ? active : null;
+  const itemsFooter = { isLoadingMoreItems: loaded?.isLoadingMore === true, itemsMoreFailure: loaded?.moreFailure ?? null };
 
-  return { savedPaging, likedPaging, createdPaging, activePaging, itemsFooter, onItemsEndReached };
+  return { totals: { saved: totalOf(saved), liked: totalOf(liked), created: totalOf(mine) }, itemsFooter, onItemsEndReached };
 };
