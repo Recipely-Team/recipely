@@ -18,7 +18,7 @@ export interface EditableItemsSectionProps {
   icon: React.ComponentProps<typeof Ionicons>['name'];
   title: string;
   count: number;
-  error?: string;
+  error?: string | undefined;
   /** Vertical gap between rows — ingredients render tighter than steps. */
   listGap: number;
   onAdd: () => void;

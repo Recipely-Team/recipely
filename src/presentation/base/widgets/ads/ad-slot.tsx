@@ -71,7 +71,7 @@ export const AdSlot = ({ unitId, accessibilityLabel, width }: AdSlotProps): Reac
       <BannerAd
         unitId={unitId}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-        width={width}
+        {...(width === undefined ? {} : { width })}
         onAdLoaded={() => setLoaded(true)}
         onAdFailedToLoad={onFailed}
       />

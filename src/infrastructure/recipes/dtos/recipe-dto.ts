@@ -23,7 +23,7 @@ export interface RecipeDto {
   /** The cover's focal point; absent until the backend's focus sweep has found it. */
   imageFocus?: FocusDto;
   /** The cover photo's credit; `null` (or absent, from an older server) when it needs none. */
-  imageCredit?: ImageCreditDto | null;
+  imageCredit?: ImageCreditDto | null | undefined;
   /** Where the nutrition figures were looked up: `USDA_FDC`, or `null` when estimated. */
   nutritionSource?: string | null;
   rating: number;
@@ -33,7 +33,7 @@ export interface RecipeDto {
   likeCount: number;
   likedByMe: boolean;
   commentCount: number;
-  media?: MediaDto[];
+  media?: MediaDto[] | undefined;
   createdAt: string;
   updatedAt: string;
   viewCount: number;

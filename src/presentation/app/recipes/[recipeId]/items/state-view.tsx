@@ -15,8 +15,8 @@ import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-
 
 export interface StateViewProps {
   status: StateViewStatus;
-  failure?: Failure;
-  onRetry?: () => void;
+  failure?: Failure | undefined;
+  onRetry?: (() => void) | undefined;
   retryLabel?: string;
   /**
    * Optional way out on the error state (e.g. "Browse recipes"). For a NotFound

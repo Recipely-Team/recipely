@@ -33,7 +33,7 @@ export interface CommentCardProps {
   /** When true the card flashes a primary tint once, then settles back. */
   highlighted?: boolean;
   /** Registers the card's root node so a deep link can scroll to it. */
-  nodeRef?: (node: CommentNodeType | null) => void;
+  nodeRef?: ((node: CommentNodeType | null) => void) | undefined;
 }
 
 const AVATAR_SIZE = avatarSizes.sm;
@@ -83,7 +83,7 @@ export const CommentCard = ({
   }));
 
   return (
-    <Animated.View ref={nodeRef} style={[styles.card, flashStyle]}>
+    <Animated.View {...(nodeRef === undefined ? {} : { ref: nodeRef })} style={[styles.card, flashStyle]}>
       <View style={styles.headerRow}>
         <AvatarImage
           uri={authorPhotoUrl ?? undefined}

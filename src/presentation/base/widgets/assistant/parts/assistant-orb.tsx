@@ -22,6 +22,7 @@ export interface AssistantOrbProps {
 const SVG_SIZE = 100;
 const CENTRE = SVG_SIZE / ValueConstants.two;
 const HIGHLIGHT_STOPS = ['0.42', '0'] as const;
+const [HIGHLIGHT_FROM, HIGHLIGHT_TO] = HIGHLIGHT_STOPS;
 /** The orb drawing, as fractions of its centre (circles) or of the orb (overlays). */
 const ORB_SHAPE = {
   light: { cx: 0.7, cy: 0.6, r: 0.8 },
@@ -133,12 +134,12 @@ export const AssistantOrb = ({ status, isMuted }: AssistantOrbProps): React.JSX.
               <Stop offset="1" stopColor={colors.primaryGradientEnd} />
             </RadialGradient>
             <RadialGradient id="assistantOrbLight">
-              <Stop offset="0" stopColor={colors.onOverlay} stopOpacity={HIGHLIGHT_STOPS[ValueConstants.zero]} />
-              <Stop offset="1" stopColor={colors.onOverlay} stopOpacity={HIGHLIGHT_STOPS[ValueConstants.one]} />
+              <Stop offset="0" stopColor={colors.onOverlay} stopOpacity={HIGHLIGHT_FROM} />
+              <Stop offset="1" stopColor={colors.onOverlay} stopOpacity={HIGHLIGHT_TO} />
             </RadialGradient>
             <RadialGradient id="assistantOrbShade">
-              <Stop offset="0" stopColor={colors.shadow} stopOpacity={HIGHLIGHT_STOPS[ValueConstants.zero]} />
-              <Stop offset="1" stopColor={colors.shadow} stopOpacity={HIGHLIGHT_STOPS[ValueConstants.one]} />
+              <Stop offset="0" stopColor={colors.shadow} stopOpacity={HIGHLIGHT_FROM} />
+              <Stop offset="1" stopColor={colors.shadow} stopOpacity={HIGHLIGHT_TO} />
             </RadialGradient>
           </Defs>
 

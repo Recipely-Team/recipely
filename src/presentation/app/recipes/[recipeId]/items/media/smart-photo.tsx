@@ -18,7 +18,7 @@ export interface SmartPhotoProps {
   url: string;
   accessibilityLabel: string;
   /** Where the dish sits in the photo; a cropped frame centres on it. */
-  focus?: FocalPoint;
+  focus?: FocalPoint | undefined;
 }
 
 /**

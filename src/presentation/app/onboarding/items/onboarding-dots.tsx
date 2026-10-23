@@ -16,7 +16,7 @@ export interface OnboardingDotsProps {
   index: number;
   onSelect: (index: number) => void;
   /** 0→1 fill of the active dot while autoplay runs; absent = fully filled. */
-  progress?: Animated.Value;
+  progress?: Animated.Value | undefined;
 }
 
 /** Page dots: tap to go to a slide; the active one fills as autoplay counts down. */

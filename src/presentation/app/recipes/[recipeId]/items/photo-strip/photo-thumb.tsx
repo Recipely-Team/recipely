@@ -23,7 +23,7 @@ const RING_OFFSET = borderWidths.medium * ValueConstants.two;
 export interface PhotoThumbProps {
   url: string;
   /** Where the dish sits in the photo; the thumb's crop centres on it. */
-  focus?: FocalPoint;
+  focus?: FocalPoint | undefined;
   index: number;
   total: number;
   selected: boolean;

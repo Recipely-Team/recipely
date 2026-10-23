@@ -5,8 +5,8 @@ export interface UserEntityProps {
   id: string;
   email: Email;
   displayName: string;
-  photoUrl?: string;
-  bio?: string;
+  photoUrl?: string | undefined;
+  bio?: string | undefined;
   /** The user's own creator claims, one per platform; absent when there are none. */
   creatorClaims?: CreatorClaims;
 }

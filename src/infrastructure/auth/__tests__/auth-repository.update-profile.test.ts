@@ -43,8 +43,8 @@ const buildCurrentSession = (): AuthSessionEntity => {
 };
 
 interface RequestCall {
-  method?: string;
-  url?: string;
+  method?: string | undefined;
+  url?: string | undefined;
   data?: unknown;
 }
 

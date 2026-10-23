@@ -15,9 +15,9 @@ export interface IngredientRowProps {
   onRemove: () => void;
   removeLabel: string;
   /** Omitted for the first row in its group — there is nowhere up to go. */
-  onMoveUp?: () => void;
+  onMoveUp?: (() => void) | undefined;
   /** Omitted for the last row in its group. */
-  onMoveDown?: () => void;
+  onMoveDown?: (() => void) | undefined;
 }
 
 /**

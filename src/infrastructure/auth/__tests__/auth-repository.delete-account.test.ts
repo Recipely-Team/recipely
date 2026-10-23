@@ -8,8 +8,8 @@ import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-st
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 
 interface RequestCall {
-  method?: string;
-  url?: string;
+  method?: string | undefined;
+  url?: string | undefined;
 }
 
 const makeHttp = (

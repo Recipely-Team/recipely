@@ -28,7 +28,7 @@ export interface ConfirmSheetProps {
   /** Disables the actions and swaps the confirm label for a loading string while a request is in flight. */
   loading?: boolean;
   /** Inline error surfaced inside the still-open sheet after a failed confirm. */
-  error?: string;
+  error?: string | undefined;
 }
 
 /**

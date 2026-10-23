@@ -11,11 +11,11 @@ import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface RecipeAuthorCardProps {
   authorName: string;
-  authorPhotoUrl?: string;
+  authorPhotoUrl?: string | undefined;
   recipeCount: number;
   isOwner: boolean;
   /** A Recipely Kitchen recipe: the logo, "Recipely Kitchen" and a verified check, with no count. */
-  isKitchen?: boolean;
+  isKitchen?: boolean | undefined;
 }
 
 /**

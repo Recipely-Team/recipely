@@ -42,7 +42,7 @@ export interface RecipeCardProps {
   name: string;
   image: string;
   /** Where the dish sits in the cover; the crop centres on it. */
-  imageFocus?: FocalPoint;
+  imageFocus?: FocalPoint | undefined;
   cuisine: string;
   difficulty: string;
   rating: number;
@@ -51,9 +51,9 @@ export interface RecipeCardProps {
   likeCount?: number;
   likedByMe?: boolean;
   onPress: () => void;
-  onLike?: () => void;
+  onLike?: (() => void) | undefined;
   /** Web-only: lift the card slightly on mouse hover (used by the web grid). */
-  hoverEffect?: boolean;
+  hoverEffect?: boolean | undefined;
   /** Where the recipe came from. A hand-written one carries none and draws no seal. */
   provenance?: readonly ProvenanceMarkType[];
   /** The owner's view of the recipe (Created tab): a status badge on the photo's bottom-left. */

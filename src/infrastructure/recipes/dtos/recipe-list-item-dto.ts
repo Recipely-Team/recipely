@@ -11,7 +11,7 @@ export interface RecipeListItemDto {
   readonly name: string;
   readonly image: string;
   /** The cover's focal point; absent until the backend's focus sweep has found it. */
-  readonly imageFocus?: FocusDto;
+  readonly imageFocus?: FocusDto | undefined;
   /** The cover photo's credit; `null` (or absent, from an older server) when it needs none. */
   readonly imageCredit?: ImageCreditDto | null;
   /** Where the nutrition figures were looked up: `USDA_FDC`, or `null` when estimated. */
@@ -25,7 +25,7 @@ export interface RecipeListItemDto {
    * downstream said `number` while the value was `undefined` — which reached
    * the screen as "undefined min".
    */
-  readonly totalTimeMinutes?: number;
+  readonly totalTimeMinutes?: number | undefined;
   readonly rating: number;
   /** Absent from a server that predates private saves. */
   readonly isPublished?: boolean;

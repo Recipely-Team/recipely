@@ -9,10 +9,10 @@ export interface NotifItem {
   actor: string;
   /** The sender's photo; a followed creator's new recipe leads with it. */
   actorPhotoUrl?: string;
-  recipeName?: string;
+  recipeName?: string | undefined;
   daysAgo: number;
   read: boolean;
-  body?: string;
+  body?: string | undefined;
   /** Where an import's recipe came from; absent for other kinds and for older import rows. */
   source?: ImportSource;
   /** The account a creator decision is about; absent for every other kind. */

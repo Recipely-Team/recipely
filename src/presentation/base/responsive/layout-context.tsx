@@ -27,7 +27,7 @@ export const LayoutContext = createContext<LayoutContextValue>(DEFAULT_VALUE);
 export interface LayoutProviderProps {
   children: ReactNode;
   /** The fold-posture port, from the composition root; omitted, `fold` stays `null`. */
-  postureSource?: WindowPostureInterface;
+  postureSource?: WindowPostureInterface | undefined;
 }
 
 const resolveBreakpoint = (width: number): BreakpointType => {

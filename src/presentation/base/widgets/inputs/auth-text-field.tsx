@@ -32,7 +32,7 @@ export interface AuthTextFieldProps {
   keyboardType?: KeyboardTypeOptions;
   returnKeyType?: ReturnKeyTypeOptions;
   password?: boolean;
-  valid?: boolean;
+  valid?: boolean | undefined;
   maxLength?: number;
   onSubmitEditing?: () => void;
   containerStyle?: StyleProp<ViewStyle>;

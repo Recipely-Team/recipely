@@ -10,7 +10,7 @@ export interface SignInPromptSheetProps {
   onClose: () => void;
   onSignIn: () => void;
   /** Per-action copy, e.g. "Sign in to like this recipe." Falls back to a generic prompt. */
-  message?: string;
+  message?: string | undefined;
 }
 
 /**

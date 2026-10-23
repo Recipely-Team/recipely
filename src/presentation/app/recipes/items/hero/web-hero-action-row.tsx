@@ -8,7 +8,7 @@ import { HERO_SAVE_BG } from '@presentation/app/recipes/model/hero/web-hero-cons
 export interface WebHeroActionRowProps {
   onView: () => void;
   /** When provided, renders the cosmetic frosted "Save" button. */
-  onSave?: () => void;
+  onSave?: (() => void) | undefined;
   savedByMe?: boolean;
 }
 

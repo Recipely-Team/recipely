@@ -9,7 +9,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
 import { isBlank } from '@core/guards/type-guards';
 
 export interface AvatarImageProps {
-  uri?: string;
+  uri?: string | undefined;
   /** Empty for nobody in particular — a signed-out visitor — which draws the person mark. */
   name: string;
   size: number;

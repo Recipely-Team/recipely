@@ -11,7 +11,7 @@ export interface KcalBarProps {
   /** The bar's width inside its parent; full width by default. */
   width?: DimensionValue;
   /** Track and fill colours for a filled (selected) background. */
-  inverse?: { track: string; fill: string };
+  inverse?: { track: string; fill: string } | undefined;
 }
 
 const FULL = 100;

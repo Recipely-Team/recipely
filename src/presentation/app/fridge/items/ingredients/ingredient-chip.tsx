@@ -34,7 +34,7 @@ export const IngredientChip = ({ chip, dense, onRemove }: IngredientChipProps): 
   const label = chip.sure ? copy.removeIngredient.replace('{name}', chip.name) : `${copy.notSure.replace('{name}', chip.name)}, ${copy.removeIngredient.replace('{name}', chip.name)}`;
 
   return (
-    <Animated.View layout={reduceMotion ? undefined : LinearTransition.duration(durations.controlReveal)}>
+    <Animated.View {...(reduceMotion ? {} : { layout: LinearTransition.duration(durations.controlReveal) })}>
       <Pressable
         onPress={() => onRemove(chip)}
         accessibilityRole="button"

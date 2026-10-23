@@ -77,9 +77,9 @@ const SOURCE_WORDS: Record<SourceMarkType, {
 export interface ProvenanceNoteProps {
   marks: readonly ProvenanceMarkType[];
   /** The account an imported recipe was lifted from, or the site for a web page. */
-  sourceHandle?: string;
+  sourceHandle?: string | undefined;
   /** The page a web import was read from; the site's link goes there. */
-  sourceUrl?: string;
+  sourceUrl?: string | undefined;
   style?: StyleProp<ViewStyle>;
 }
 

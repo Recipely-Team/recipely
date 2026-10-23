@@ -13,6 +13,6 @@ export interface RecipeFilters {
   categories?: string[];
   difficulties?: Difficulty[];
   maxTime?: number;
-  sort?: RecipeSortType;
+  sort?: RecipeSortType | undefined;
   sortOrder?: 'asc' | 'desc';
 }

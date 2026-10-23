@@ -14,8 +14,8 @@ export interface ShareChannelsProps {
   /** The card is drawn only while the sheet is open, so its photo loads then. */
   visible: boolean;
   recipeName: string;
-  cuisine?: string;
-  imageUrl?: string;
+  cuisine?: string | undefined;
+  imageUrl?: string | undefined;
   url: string;
   totalMinutes: number;
   servings: number;

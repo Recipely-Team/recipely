@@ -22,7 +22,7 @@ export interface BottomSheetProps {
    * site genuinely needs a second, always-visible close control.
    */
   showCloseButton?: boolean;
-  rightAction?: { label: string; onPress: () => void };
+  rightAction?: { label: string; onPress: () => void } | undefined;
   /**
    * Pinned below the scroll area instead of inside it, for the sheet's primary
    * action. A sheet is capped at 78% of the screen, so a tall body (the recipe

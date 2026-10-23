@@ -28,5 +28,5 @@ export interface RecipeListLoaded {
   /** True while an appending fetch for the NEXT page is in flight. */
   isLoadingMore?: boolean;
   isRefreshing?: boolean;
-  refreshFailure?: Failure;
+  refreshFailure?: Failure | undefined;
 }

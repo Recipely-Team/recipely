@@ -16,7 +16,7 @@ export interface FakeRecipeRepositoryConfig {
   listMyRecipesResult?: Result<Page<RecipeSummaryEntity>, Failure>;
   getRecipeResult?: Result<RecipeEntity, Failure>;
   createRecipeResult?: Result<RecipeEntity, Failure>;
-  generateRecipeResult?: Result<RecipeEntity, Failure>;
+  generateRecipeResult?: Result<RecipeEntity, Failure> | undefined;
   enqueueInstagramImportResult?: Result<ImportJob, Failure>;
   getImportJobResult?: Result<ImportJob, Failure>;
   refineRecipeResult?: Result<RefinedRecipe, Failure>;

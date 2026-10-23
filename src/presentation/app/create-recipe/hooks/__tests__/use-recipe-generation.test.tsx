@@ -288,11 +288,11 @@ interface HookDriver {
 interface ResumeOptions {
   draftId: string;
   /** Omitted for a draft that cannot be read — `getDraft` then answers null. */
-  getDraft?: RecipeDraft;
+  getDraft?: RecipeDraft | undefined;
   /** Held open to inspect the screen WHILE the draft is still being fetched. */
   hold?: Promise<void>;
   /** Which failure the read answers with. Defaults to an unreadable draft. */
-  draftFailure?: Failure;
+  draftFailure?: Failure | undefined;
 }
 
 /**

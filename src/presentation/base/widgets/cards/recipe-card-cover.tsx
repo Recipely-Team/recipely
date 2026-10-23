@@ -19,7 +19,7 @@ export interface RecipeCardCoverProps {
   name: string;
   image: string;
   /** Where the dish sits in the cover; the crop centres on it. */
-  imageFocus?: FocalPoint;
+  imageFocus?: FocalPoint | undefined;
   cuisine: string;
   difficulty: string;
   provenance: readonly ProvenanceMarkType[];

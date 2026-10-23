@@ -23,7 +23,7 @@ export interface RecipeImageProps {
   /** Compact placeholder motif (no caption) for dense thumbnails. */
   placeholderCompact?: boolean;
   /** Where the dish sits in the photo; the crop centres on it. Absent crops centred. */
-  focus?: FocalPoint;
+  focus?: FocalPoint | undefined;
 }
 
 /**

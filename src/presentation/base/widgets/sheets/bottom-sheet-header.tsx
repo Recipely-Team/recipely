@@ -12,7 +12,7 @@ export interface BottomSheetHeaderProps {
   title: string;
   onClose: () => void;
   showCloseButton: boolean;
-  rightAction?: { label: string; onPress: () => void };
+  rightAction?: { label: string; onPress: () => void } | undefined;
 }
 
 /** Title row for {@link BottomSheet}: optional "×" close button, centered title, optional right action. */

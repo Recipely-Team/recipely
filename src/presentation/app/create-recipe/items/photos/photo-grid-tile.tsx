@@ -11,7 +11,7 @@ import { ValueConstants } from '@core/constants';
 export interface PhotoGridTileProps {
   url: string;
   /** Where the dish sits in the photo; the tile's crop centres on it. */
-  focus?: FocalPoint;
+  focus?: FocalPoint | undefined;
   isCover: boolean;
   size: number;
   x: number;

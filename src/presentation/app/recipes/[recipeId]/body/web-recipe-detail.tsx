@@ -40,7 +40,7 @@ export interface WebRecipeDetailProps {
    * the mobile layout's, because it is the same thing handed to a second
    * surface — `index.tsx` passes one object to whichever layout renders.
    */
-  photos?: GalleryOwnerControls;
+  photos?: GalleryOwnerControls | undefined;
   authorState: RecipeAuthorState;
   liked: boolean;
   likeCount: number;

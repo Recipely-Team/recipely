@@ -16,11 +16,11 @@ import { shareCardNameTier } from '@presentation/app/recipes/[recipeId]/model/sh
 
 export interface RecipeShareCardProps {
   recipeName: string;
-  cuisine?: string;
+  cuisine?: string | undefined;
   totalMinutes: number;
   servings: number;
   ingredients: readonly string[];
-  imageUrl?: string;
+  imageUrl?: string | undefined;
   /** Called once the photo has loaded or failed — the card is ready to capture. */
   onReady: () => void;
 }

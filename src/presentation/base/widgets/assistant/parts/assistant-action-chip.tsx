@@ -12,7 +12,7 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 
 export interface AssistantActionChipProps {
   action: AssistantActionType;
-  detail?: string;
+  detail?: string | undefined;
 }
 
 /**

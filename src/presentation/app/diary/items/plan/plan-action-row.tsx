@@ -12,7 +12,7 @@ export interface PlanActionRowProps {
   /** Red text and glyph — Remove, Clear week. */
   danger?: boolean;
   /** Greyed out, with the reason under the label. */
-  disabledHint?: string;
+  disabledHint?: string | undefined;
 }
 
 /** One row of a Plan menu sheet (design spec → Meal planner, Meal actions): glyph, label, min-height 52. */

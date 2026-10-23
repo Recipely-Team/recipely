@@ -1,5 +1,5 @@
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
-const mockParams: { tab?: string } = {};
+const mockParams: { tab?: string | undefined } = {};
 jest.mock('expo-router', () => ({ useLocalSearchParams: () => mockParams }));
 
 import { act, create } from 'react-test-renderer';

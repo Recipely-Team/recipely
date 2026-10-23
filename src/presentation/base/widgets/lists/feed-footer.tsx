@@ -17,7 +17,7 @@ export interface FeedFooterProps {
    * before the next fetch starts; `false` says the list is finished. Absent
    * keeps the old behaviour (spinner only while loading).
    */
-  hasMore?: boolean;
+  hasMore?: boolean | undefined;
 }
 
 /**

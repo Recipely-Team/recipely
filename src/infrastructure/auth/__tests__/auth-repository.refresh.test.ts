@@ -38,7 +38,7 @@ const memoryStorage = (initial: AuthSessionEntity | null, marker = false) => {
 };
 
 const http = (answer: Result<unknown, unknown>) => {
-  const calls: { url?: string; data?: unknown }[] = [];
+  const calls: { url?: string | undefined; data?: unknown }[] = [];
   const client = withHttpVerbs(jest.fn((config: { url?: string; data?: unknown }) => {
     calls.push({ url: config.url, data: config.data });
     return Promise.resolve(answer);

@@ -43,8 +43,8 @@ const buildSession = (claim: CreatorClaim | null = null, userId = 'u-1'): AuthSe
 };
 
 interface RequestCall {
-  method?: string;
-  url?: string;
+  method?: string | undefined;
+  url?: string | undefined;
   data?: unknown;
 }
 

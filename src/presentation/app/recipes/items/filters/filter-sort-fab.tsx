@@ -93,7 +93,7 @@ export const FilterSortFab = ({
 
   return (
     <Animated.View
-      entering={reduceMotion ? undefined : FadeIn.duration(durations.controlReveal)}
+      {...(reduceMotion ? {} : { entering: FadeIn.duration(durations.controlReveal) })}
       style={[
         styles.container,
         containerStyle,
