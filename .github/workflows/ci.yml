@@ -287,6 +287,8 @@ jobs:
           projectId: recipely-c05fc
           target: app-recipely
           channelId: live
+          # Pinned: 15.34.1 (2026-10-21) checks serviceusage.services.get, which this service account lacks (403).
+          firebaseToolsVersion: 15.34.0
 
   # --- Dev web (dev only) → app-recipely-dev.web.app (app-recipely-dev site) ---
   build-web-dev:
@@ -343,6 +345,8 @@ jobs:
           projectId: recipely-c05fc
           target: app-recipely-dev
           channelId: live
+          # Pinned: 15.34.1 (2026-10-21) checks serviceusage.services.get, which this service account lacks (403).
+          firebaseToolsVersion: 15.34.0
 
   # --- Dev Android (dev only) → Firebase App Distribution (com.recipely.app.dev) ---
   distribute-dev:
