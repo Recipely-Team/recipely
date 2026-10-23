@@ -200,7 +200,7 @@ afterEach(() => {
 // ─── toggleSave — add path ────────────────────────────────────────────────────
 
 describe("useSaveRecipe — toggleSave (add path)", () => {
-  it("calls addFavorite(userId, recipeId) when the recipe is NOT in savedIds", async () => {
+  it("calls addFavorite(recipeId) when the recipe is NOT in savedIds", async () => {
     const addFavorite = jest.fn().mockResolvedValue(undefined);
     const { latest } = driveHook({
       savedIds: new Set<string>(),
@@ -213,7 +213,7 @@ describe("useSaveRecipe — toggleSave (add path)", () => {
     });
 
     expect(addFavorite).toHaveBeenCalledTimes(1);
-    expect(addFavorite).toHaveBeenCalledWith("user-42", "recipe-new");
+    expect(addFavorite).toHaveBeenCalledWith("recipe-new");
   });
 
   it("does NOT call removeFavorite when adding", async () => {
@@ -234,7 +234,7 @@ describe("useSaveRecipe — toggleSave (add path)", () => {
 // ─── toggleSave — remove path ─────────────────────────────────────────────────
 
 describe("useSaveRecipe — toggleSave (remove path)", () => {
-  it("calls removeFavorite(userId, recipeId) when the recipe IS in savedIds", async () => {
+  it("calls removeFavorite(recipeId) when the recipe IS in savedIds", async () => {
     const removeFavorite = jest.fn().mockResolvedValue(undefined);
     const { latest } = driveHook({
       savedIds: new Set(["recipe-saved"]),
@@ -247,7 +247,7 @@ describe("useSaveRecipe — toggleSave (remove path)", () => {
     });
 
     expect(removeFavorite).toHaveBeenCalledTimes(1);
-    expect(removeFavorite).toHaveBeenCalledWith("user-7", "recipe-saved");
+    expect(removeFavorite).toHaveBeenCalledWith("recipe-saved");
   });
 
   it("does NOT call addFavorite when removing", async () => {
@@ -312,7 +312,7 @@ describe("useSaveRecipe — toggleSave no-op guards", () => {
       await latest().toggleSave("recipe-B");
     });
 
-    expect(addFavorite).toHaveBeenCalledWith("user-1", "recipe-B");
+    expect(addFavorite).toHaveBeenCalledWith("recipe-B");
   });
 
   it("does not call the store twice when toggleSave is called concurrently (no duplicate calls)", async () => {
@@ -341,9 +341,9 @@ describe("useSaveRecipe — toggleSave no-op guards", () => {
     // Set isLoading to true after the first call starts so the second is blocked.
     const originalAdd = favoritesStore.getState().addFavorite;
     favoritesStore.setState({
-      addFavorite: async (userId: string, recipeId: string) => {
+      addFavorite: async (recipeId: string) => {
         favoritesStore.setState({ isLoading: true, pending: new Set([recipeId]) });
-        const failure = await originalAdd(userId, recipeId);
+        const failure = await originalAdd(recipeId);
         favoritesStore.setState({ isLoading: false, pending: new Set<string>() });
         return failure;
       },

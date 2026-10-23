@@ -75,7 +75,6 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     onUpdateField: editable.onUpdateField,
     onChangeIngredient: editable.onChangeIngredient,
     onRemoveIngredient: editable.onRemoveIngredient,
-    onAddIngredient: editable.onAddIngredient,
     onAppendIngredient: editable.onAppendIngredient,
     onAddIngredientAt: editable.onAddIngredientAt,
     onMoveIngredient: editable.onMoveIngredient,

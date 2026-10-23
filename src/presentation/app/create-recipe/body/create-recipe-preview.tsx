@@ -59,7 +59,6 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
           onChangeCook={(v) => vm.onUpdateField('cookTimeMinutes', v)}
           onChangeIngredient={vm.onChangeIngredient}
           onRemoveIngredient={vm.onRemoveIngredient}
-          onAddIngredient={vm.onAddIngredient}
           onAddIngredientAt={vm.onAddIngredientAt}
           onMoveIngredient={vm.onMoveIngredient}
           onRemoveIngredientGroup={vm.onRemoveIngredientGroup}

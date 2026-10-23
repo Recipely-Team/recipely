@@ -28,8 +28,8 @@ export const useSaveRecipe = (): UseSaveRecipeResult => {
       if (favorites.pending.has(recipeId) || userId === null) return;
       const wasSaved = savedRecipesStore.getState().savedIds.has(recipeId);
       const failure = wasSaved
-        ? await favorites.removeFavorite(userId, recipeId)
-        : await favorites.addFavorite(userId, recipeId);
+        ? await favorites.removeFavorite(recipeId)
+        : await favorites.addFavorite(recipeId);
       if (failure !== null) {
         showErrorToast(failure);
         return;
@@ -40,7 +40,7 @@ export const useSaveRecipe = (): UseSaveRecipeResult => {
           message: t.recipes.removedFromSaved,
           actionLabel: t.common.undo,
           onAction: () => {
-            void favoritesStore.getState().addFavorite(userId, recipeId).then((undoFailure) => {
+            void favoritesStore.getState().addFavorite(recipeId).then((undoFailure) => {
               if (undoFailure !== null) showErrorToast(undoFailure);
             });
           },

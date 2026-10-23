@@ -122,7 +122,7 @@ export class IngredientLine extends BaseValueObject<IngredientLineProps> {
     return `${qty}${CharConstants.space}${name}`;
   }
 
-  equals(other: IngredientLine): boolean {
+  override equals(other: IngredientLine): boolean {
     return this.toText() === other.toText();
   }
 

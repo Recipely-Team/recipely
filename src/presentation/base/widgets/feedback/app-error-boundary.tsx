@@ -34,13 +34,13 @@ const CONTEXT = 'AppErrorBoundary';
  *   than a loop of restarts.
  */
 export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorBoundaryState> {
-  state: AppErrorBoundaryState = { hasError: false };
+  override state: AppErrorBoundaryState = { hasError: false };
 
   static getDerivedStateFromError(): AppErrorBoundaryState {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo): void {
+  override componentDidCatch(error: Error, info: ErrorInfo): void {
     // The component stack says where.
     this.props.onError(error, `${CONTEXT}${info.componentStack ?? CharConstants.empty}`);
   }
@@ -49,7 +49,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
     this.setState({ hasError: false });
   };
 
-  render(): ReactNode {
+  override render(): ReactNode {
     if (!this.state.hasError) return this.props.children;
 
     return (

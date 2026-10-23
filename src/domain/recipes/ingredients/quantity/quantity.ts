@@ -90,7 +90,7 @@ export class Quantity extends BaseValueObject<QuantityProps> {
     return [amounts.join(CharConstants.dash), label].filter((part) => part.length > ValueConstants.zero).join(CharConstants.space);
   }
 
-  equals(other: Quantity): boolean {
+  override equals(other: Quantity): boolean {
     return this.amount === other.amount && this.upTo === other.upTo && this.unit === other.unit;
   }
 

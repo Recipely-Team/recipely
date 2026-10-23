@@ -169,8 +169,8 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
   const handleToggleSave = useCallback(async () => {
     if (isLoading || !userId) return;
     const failure = isSaved
-      ? await favoritesStore.getState().removeFavorite(userId, recipeId)
-      : await favoritesStore.getState().addFavorite(userId, recipeId);
+      ? await favoritesStore.getState().removeFavorite(recipeId)
+      : await favoritesStore.getState().addFavorite(recipeId);
     if (failure !== null) {
       showErrorToast(failure);
     } else if (!isSaved) {

@@ -27,7 +27,7 @@ export class FavoritesRepository implements FavoritesRepositoryInterface {
     private readonly firstPageCache?: FirstPageCache<RecipeListItemDto>,
   ) {}
 
-  async addFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>> {
+  async addFavorite(recipeId: string): Promise<Result<void, Failure>> {
     const result = await this.http.post(ApiRoutes.recipes.favorite(recipeId), undefined);
 
     if (!result.ok) {
@@ -37,7 +37,7 @@ export class FavoritesRepository implements FavoritesRepositoryInterface {
     return ok(void ValueConstants.zero);
   }
 
-  async removeFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>> {
+  async removeFavorite(recipeId: string): Promise<Result<void, Failure>> {
     const result = await this.http.delete(ApiRoutes.recipes.favorite(recipeId));
 
     if (!result.ok) {

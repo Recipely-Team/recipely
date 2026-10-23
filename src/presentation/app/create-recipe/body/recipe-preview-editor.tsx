@@ -47,7 +47,6 @@ export interface RecipePreviewEditorProps {
   onChangeCook: (value: number) => void;
   onChangeIngredient: (index: number, value: string) => void;
   onRemoveIngredient: (index: number) => void;
-  onAddIngredient: () => void;
   onAddIngredientAt: (index: number) => void;
   onMoveIngredient: (from: number, to: number) => void;
   onAddIngredientGroup: () => void;
@@ -74,7 +73,6 @@ export const RecipePreviewEditor = ({
   onChangeCook,
   onChangeIngredient,
   onRemoveIngredient,
-  onAddIngredient,
   onAddIngredientAt,
   onMoveIngredient,
   onAddIngredientGroup,

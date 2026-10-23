@@ -56,10 +56,10 @@ export const configureFavoritesStore = (deps: FavoritesStoreDeps): StoreApi<Favo
     return {
       isLoading: false,
       pending: new Set<string>(),
-      addFavorite: (userId, recipeId) =>
-        run(recipeId, () => addFavoriteUseCase.execute(userId, recipeId), () => savedRecipesStore.getState().addLocal(recipeId)),
-      removeFavorite: (userId, recipeId) =>
-        run(recipeId, () => removeFavoriteUseCase.execute(userId, recipeId), () => savedRecipesStore.getState().removeLocal(recipeId)),
+      addFavorite: (recipeId) =>
+        run(recipeId, () => addFavoriteUseCase.execute(recipeId), () => savedRecipesStore.getState().addLocal(recipeId)),
+      removeFavorite: (recipeId) =>
+        run(recipeId, () => removeFavoriteUseCase.execute(recipeId), () => savedRecipesStore.getState().removeLocal(recipeId)),
     };
   });
 };

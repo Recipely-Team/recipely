@@ -64,7 +64,6 @@ export interface UseCreateRecipeResult {
   onUpdateField: <K extends keyof EditableRecipe>(key: K, value: EditableRecipe[K]) => void;
   onChangeIngredient: (index: number, value: string) => void;
   onRemoveIngredient: (index: number) => void;
-  onAddIngredient: () => void;
   /** Appends a row that already has its text — the assistant's path. */
   onAppendIngredient: (value: string) => void;
   onAddIngredientAt: (index: number) => void;

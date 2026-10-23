@@ -8,7 +8,7 @@ import type { FavoritesRepositoryInterface } from '@domain/favorites/favorites-r
 export class RemoveFavoriteUseCase {
   constructor(private readonly repo: FavoritesRepositoryInterface) {}
 
-  execute(userId: string, recipeId: string): Promise<Result<void, Failure>> {
-    return this.repo.removeFavorite(userId, recipeId);
+  execute(recipeId: string): Promise<Result<void, Failure>> {
+    return this.repo.removeFavorite(recipeId);
   }
 }

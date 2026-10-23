@@ -37,7 +37,7 @@ export class FeedbackMessage extends BaseValueObject<string> {
     return { subject: this.subject, message: this.value };
   }
 
-  equals(other: FeedbackMessage): boolean {
+  override equals(other: FeedbackMessage): boolean {
     return super.equals(other) && this.subject === other.subject;
   }
 }
