@@ -51,7 +51,7 @@ export const CuisineStrip = ({ selectedCuisines, onToggle, gutter = true }: Cuis
   }, []);
 
   const chips = cuisineKeys.map((cuisine) => {
-    const active = selectedCuisines.includes(cuisine);
+    const isActive = selectedCuisines.includes(cuisine);
     const { name, emoji } = cuisineLabel(cuisine);
     return (
       <Pressable
@@ -65,8 +65,8 @@ export const CuisineStrip = ({ selectedCuisines, onToggle, gutter = true }: Cuis
           style={[
             styles.circle,
             {
-              backgroundColor: active ? colors.primary : colors.surface,
-              borderColor: active ? colors.primary : colors.border,
+              backgroundColor: isActive ? colors.primary : colors.surface,
+              borderColor: isActive ? colors.primary : colors.border,
             },
           ]}
         >
@@ -74,7 +74,7 @@ export const CuisineStrip = ({ selectedCuisines, onToggle, gutter = true }: Cuis
         </View>
         <ThemedText
           variant="caption"
-          style={[styles.label, { color: active ? colors.primary : colors.textMuted }]}
+          style={[styles.label, { color: isActive ? colors.primary : colors.textMuted }]}
           numberOfLines={ValueConstants.one}
           // A circle's width is fixed: shrink before cutting "Turki…" at large text.
           adjustsFontSizeToFit

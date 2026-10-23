@@ -35,12 +35,12 @@ export const CaptureStep = ({ photos, failure, canUseCamera, onTakePhoto, onChoo
   const colors = useTheme().colors;
   const copy = t.fridge;
   const room = FridgeLimits.photosMax - photos.length;
-  const sources = (compact: boolean) => (
+  const sources = (isCompact: boolean) => (
     <View style={styles.row}>
       {canUseCamera ? (
-        compact ? <GhostButton compact grow icon="camera-outline" label={copy.takePhoto} onPress={onTakePhoto} /> : <FridgePrimaryButton grow icon="camera" label={copy.takePhoto} onPress={onTakePhoto} />
+        isCompact ? <GhostButton compact grow icon="camera-outline" label={copy.takePhoto} onPress={onTakePhoto} /> : <FridgePrimaryButton grow icon="camera" label={copy.takePhoto} onPress={onTakePhoto} />
       ) : null}
-      <GhostButton compact={compact} grow icon="images-outline" label={copy.choosePhotos} onPress={onChoosePhotos} />
+      <GhostButton compact={isCompact} grow icon="images-outline" label={copy.choosePhotos} onPress={onChoosePhotos} />
     </View>
   );
 

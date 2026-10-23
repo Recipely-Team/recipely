@@ -158,9 +158,9 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
   const onNotifyMe = useCallback((): void => {
     void getNotificationService()
       .requestPermissions()
-      .then((granted) => {
+      .then((isGranted) => {
         // Re-register push now that permission exists.
-        if (granted) ensurePushRegistration();
+        if (isGranted) ensurePushRegistration();
         else showWarningToast(t.importRecipe.notifyBlocked);
       })
       .catch(() => showWarningToast(t.importRecipe.notifyBlocked))

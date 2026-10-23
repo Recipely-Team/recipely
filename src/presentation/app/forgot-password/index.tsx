@@ -17,8 +17,8 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
   const requestPasswordReset = useStore(authStore, (s) => s.requestPasswordReset);
 
   const [email, setEmail] = useState(CharConstants.empty);
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+  const [wasSent, setSent] = useState(false);
   const [sendError, setSendError] = useState<string | undefined>(undefined);
 
   // A reload or a direct visit leaves no history on the web: go to login instead of nowhere.
@@ -45,7 +45,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
       backLabel={t.forgotPassword.backToLogin}
       onBack={goBack}
     >
-      {sent ? (
+      {wasSent ? (
         <ForgotPasswordSuccessView
           email={email}
           onBack={goBack}
@@ -55,7 +55,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
         <ForgotPasswordInputView
           email={email}
           onChangeEmail={setEmail}
-          loading={loading}
+          loading={isLoading}
           onSend={() => { void handleSend(); }}
           onBack={goBack}
           error={sendError}

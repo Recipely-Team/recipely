@@ -351,7 +351,7 @@ if (nearSizeLimit.length > 0 && process.env.CI !== 'true') {
 // the rule stays readable. Nest deeper than that and you must repeat the
 // guard on the call's own line.
 {
-  const GUARD = /__DEV__|enableLogging/;
+  const GUARD = /__DEV__|enableLogging|isLoggingEnabled/;
   const isComment = (line) => /^\s*(\/\/|\/\*|\*)/.test(line);
 
   for (const file of files) {

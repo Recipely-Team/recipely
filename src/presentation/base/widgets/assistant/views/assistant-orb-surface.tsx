@@ -62,7 +62,7 @@ export const AssistantOrbSurface = ({
   const { height } = useWindowDimensions();
   const [isTyping, setIsTyping] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const live = assistantIsLive(status);
+  const isLive = assistantIsLive(status);
 
   // The sheet is pinned to the bottom, so move it by the keyboard height.
   const keyboardHeight = useKeyboardHeight();
@@ -75,12 +75,12 @@ export const AssistantOrbSurface = ({
   const items = [
     {
       key: 'voice',
-      icon: (live && isMuted ? 'mic-off' : 'mic') as 'mic' | 'mic-off',
-      label: !live ? t.assistant.start : isMuted ? t.assistant.unmute : t.assistant.mute,
-      isOn: live && isMuted,
+      icon: (isLive && isMuted ? 'mic-off' : 'mic') as 'mic' | 'mic-off',
+      label: !isLive ? t.assistant.start : isMuted ? t.assistant.unmute : t.assistant.mute,
+      isOn: isLive && isMuted,
       onPress: () => {
         setIsMenuOpen(false);
-        if (!live) onToggleVoice();
+        if (!isLive) onToggleVoice();
         else onToggleMute();
       },
     },
@@ -91,7 +91,7 @@ export const AssistantOrbSurface = ({
       isOn: isTyping,
       onPress: () => {
         setIsMenuOpen(false);
-        setIsTyping((typing) => !typing);
+        setIsTyping((isTyping) => !isTyping);
       },
     },
     {
@@ -136,7 +136,7 @@ export const AssistantOrbSurface = ({
         <AssistantWaitingLine status={status} isMuted={isMuted} />
 
         <Pressable
-          onPress={() => setIsMenuOpen((open) => !open)}
+          onPress={() => setIsMenuOpen((isOpen) => !isOpen)}
           accessibilityRole="button"
           accessibilityLabel={t.assistant.title}
           accessibilityValue={{ text: assistantStatusValue(t, status, isMuted) }}

@@ -41,7 +41,7 @@ const FloatingChip = ({ spot, still }: { spot: ChipSpotType; still: boolean }): 
  */
 export const ChefsSoonHero = (): React.JSX.Element => {
   const colors = useTheme().colors;
-  const still = useReduceMotion();
+  const isStill = useReduceMotion();
   return (
     <View style={styles.box} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       <View style={[styles.halo, styles.outer, { backgroundColor: colors.primaryHaloOuter }]}>
@@ -57,7 +57,7 @@ export const ChefsSoonHero = (): React.JSX.Element => {
         </View>
       </View>
       {M.chipSpots.map((spot) => (
-        <FloatingChip key={spot.icon} spot={spot} still={still} />
+        <FloatingChip key={spot.icon} spot={spot} still={isStill} />
       ))}
     </View>
   );

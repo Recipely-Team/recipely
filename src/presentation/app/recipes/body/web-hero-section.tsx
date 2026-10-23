@@ -69,25 +69,25 @@ export const WebHeroSection = ({
     void load();
   }, [language, load]);
 
-  const stacked = width < STACK_WIDTH;
-  const inRow = aiPanelInRow(width);
+  const isStacked = width < STACK_WIDTH;
+  const isInRow = aiPanelInRow(width);
   const featuredFlex = { flexGrow: HeroFlex.featured.grow, flexBasis: HeroFlex.featured.basis };
   const miniFlex = { flexGrow: HeroFlex.runners.grow, flexBasis: HeroFlex.runners.basis };
-  const aiFlex = inRow
+  const aiFlex = isInRow
     ? { flexGrow: HeroFlex.ai.grow, flexBasis: HeroFlex.ai.basis, maxWidth: HeroFlex.ai.max }
     : styles.aiBand;
 
   if (state.status === StoreStatus.Idle || state.status === StoreStatus.Loading) {
     // The placeholder reserves the same slots as the loaded band, so it does not jump on load.
     return (
-      <View style={[styles.row, stacked ? styles.stacked : null]} testID={WEB_HERO_ROW_TEST_ID}>
+      <View style={[styles.row, isStacked ? styles.stacked : null]} testID={WEB_HERO_ROW_TEST_ID}>
         <View
           style={[styles.featured, featuredFlex, styles.featuredRatio]}
           testID={WEB_HERO_SKELETON_FEATURED_TEST_ID}
         >
           <SkeletonLoader width="100%" height="100%" borderRadius={radii.xxl2} />
         </View>
-        {stacked ? null : (
+        {isStacked ? null : (
           <View style={[styles.mini, miniFlex]}>
             <View style={styles.miniSlot}>
               <SkeletonLoader width="100%" height="100%" borderRadius={radii.xxl} />
@@ -99,7 +99,7 @@ export const WebHeroSection = ({
         )}
         {/* Only while the panel shares the line: below that it wraps to a band
             of its own, where it takes no width from the featured block. */}
-        {stacked || !inRow ? null : (
+        {isStacked || !isInRow ? null : (
           <View style={[styles.aiSlot, aiFlex]}>
             <SkeletonLoader width="100%" height="100%" borderRadius={radii.xxl2} />
           </View>
@@ -116,7 +116,7 @@ export const WebHeroSection = ({
   if (featured === undefined || mini1 === undefined || mini2 === undefined) return null;
 
   return (
-    <View style={[styles.row, stacked ? styles.stacked : null]} testID={WEB_HERO_ROW_TEST_ID}>
+    <View style={[styles.row, isStacked ? styles.stacked : null]} testID={WEB_HERO_ROW_TEST_ID}>
       <View style={[styles.featured, featuredFlex]}>
         <WebHeroFeaturedCard
           recipe={featured}
@@ -124,15 +124,15 @@ export const WebHeroSection = ({
           onSave={onToggleSave}
         />
       </View>
-      {stacked ? null : (
+      {isStacked ? null : (
         <View style={[styles.mini, miniFlex]}>
           <WebHeroMiniCard recipe={mini1} rank={MINI_CARD_RANKS.first} onPress={onOpenRecipe} />
           <WebHeroMiniCard recipe={mini2} rank={MINI_CARD_RANKS.second} onPress={onOpenRecipe} />
         </View>
       )}
-      {stacked ? null : (
+      {isStacked ? null : (
         <View style={[styles.aiSlot, aiFlex]}>
-          <WebAiBanner onPress={onOpenCreate} wide={!inRow} />
+          <WebAiBanner onPress={onOpenCreate} wide={!isInRow} />
         </View>
       )}
     </View>

@@ -74,8 +74,8 @@ export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
     ref,
   ): React.JSX.Element {
     const colors = useTheme().colors;
-    const [focused, setFocused] = useState(false);
-    const [revealed, setRevealed] = useState(false);
+    const [isFocused, setFocused] = useState(false);
+    const [isRevealed, setRevealed] = useState(false);
     const hasStatus = valid !== undefined;
     const slotCount = Number(password) + Number(hasStatus);
     const paddingRight = spacing.lg + slotCount * controlSizes.iconBtn;
@@ -91,7 +91,7 @@ export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
               paddingRight,
               backgroundColor: colors.inputBackground,
               color: colors.text,
-              borderColor: focused ? colors.inputBorderFocused : colors.inputBorder,
+              borderColor: isFocused ? colors.inputBorderFocused : colors.inputBorder,
             },
           ]}
           placeholder={placeholder}
@@ -102,7 +102,7 @@ export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
           autoCorrect={false}
           keyboardType={keyboardType}
           returnKeyType={returnKeyType}
-          secureTextEntry={password && !revealed}
+          secureTextEntry={password && !isRevealed}
           maxLength={maxLength}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
@@ -118,7 +118,7 @@ export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
               color={valid ? colors.success : colors.danger}
             />
           ) : null}
-          {password ? <PasswordEyeToggle visible={revealed} onToggle={() => setRevealed((v) => !v)} /> : null}
+          {password ? <PasswordEyeToggle visible={isRevealed} onToggle={() => setRevealed((wasOn) => !wasOn)} /> : null}
         </View>
       </View>
     );

@@ -79,10 +79,10 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): StoreApi<
       loadRules,
       loadMoreRules: () => rules.loadMore(),
 
-      setEnabled: async (rule, enabled) => {
+      setEnabled: async (rule, isEnabled) => {
         const isLatestFlip = flips.start(rule.id);
-        show(rule.withEnabled(enabled));
-        const result = await deps.setEnabled.execute(rule.id, enabled);
+        show(rule.withEnabled(isEnabled));
+        const result = await deps.setEnabled.execute(rule.id, isEnabled);
         // A later flip overtook this one: its answer decides, and this one has nothing to report.
         if (!isLatestFlip()) return ok(undefined);
         if (result.ok) {

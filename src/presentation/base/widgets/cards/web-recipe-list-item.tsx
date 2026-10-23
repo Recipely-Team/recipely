@@ -23,7 +23,7 @@ export type WebRecipeListItemProps = Omit<WebRecipeCardProps, 'saved'>;
 const WebRecipeListItemComponent = (props: WebRecipeListItemProps): React.JSX.Element => {
   const { likesStore, savedRecipesStore } = useStores();
   const { recipe } = props;
-  const saved = useStore(savedRecipesStore, (state) => state.savedIds.has(recipe.id));
+  const isSaved = useStore(savedRecipesStore, (state) => state.savedIds.has(recipe.id));
   const likeState = useStore(likesStore, (state) => state.byRecipe[recipe.id]);
   const seed = useStore(likesStore, (state) => state.seed);
 
@@ -34,7 +34,7 @@ const WebRecipeListItemComponent = (props: WebRecipeListItemProps): React.JSX.El
   return (
     <WebRecipeCard
       {...props}
-      saved={saved}
+      saved={isSaved}
       likedByMe={likeState?.likedByMe ?? recipe.likedByMe}
       likeCount={likeState?.likeCount ?? recipe.likeCount}
     />

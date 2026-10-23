@@ -43,7 +43,7 @@ export const IdeasStep = ({ query, ideas, load, added, grid, onEdit, onCook, onA
   const [width, setWidth] = useState(ValueConstants.zero);
   const columns = grid ? autoFillColumns(width, fridgeSizes.ideaCardMinWidth, spacing.md, ValueConstants.one) : ValueConstants.one;
   const cardWidth = columns > ValueConstants.one ? (width - spacing.md * (columns - ValueConstants.one)) / columns : undefined;
-  const loading = load === IdeasLoad.First || load === IdeasLoad.More;
+  const isLoading = load === IdeasLoad.First || load === IdeasLoad.More;
   const { filters } = query;
   const sub = [
     copy.ideasBasedOn.replace('{n}', String(query.ingredients.length)),
@@ -75,7 +75,7 @@ export const IdeasStep = ({ query, ideas, load, added, grid, onEdit, onCook, onA
             <IdeaCard idea={idea} added={added.includes(idea.title)} onCook={onCook} onAddMissing={onAddMissing} />
           </View>
         ))}
-        {loading
+        {isLoading
           ? Array.from({ length: PAGE_SKELETONS }, (_, index) => (
               <View key={`skeleton-${index}`} style={cell} accessibilityLabel={copy.ideasLoading}>
                 <IdeaSkeletonCard />

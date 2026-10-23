@@ -38,7 +38,7 @@ const isThemePreference = (v: string): v is ThemePreference =>
 
 export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX.Element => {
   const systemScheme = useColorScheme();
-  const hydrated = useIsHydrated();
+  const isHydrated = useIsHydrated();
   const [themeId, setThemeIdState] = useState<ThemeIdType>(DEFAULT_THEME_ID);
   const [preference, setPreferenceState] = useState<ThemePreference>(ThemePreference.System);
 
@@ -68,9 +68,9 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
   }, []);
 
   // Web static export renders light; ignore the system scheme until hydrated (React #418).
-  const ignoreSystemScheme = isWeb() && !hydrated;
+  const shouldIgnoreSystemScheme = isWeb() && !isHydrated;
   const effectiveSystemScheme: ThemeVariant =
-    !ignoreSystemScheme && systemScheme === ThemeVariant.Dark ? ThemeVariant.Dark : ThemeVariant.Light;
+    !shouldIgnoreSystemScheme && systemScheme === ThemeVariant.Dark ? ThemeVariant.Dark : ThemeVariant.Light;
 
   const scheme: ThemeVariant =
     preference === ThemePreference.System ? effectiveSystemScheme : preference;

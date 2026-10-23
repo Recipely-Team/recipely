@@ -31,12 +31,12 @@ export interface AssistantOrbAuraProps {
  */
 export const AssistantOrbAura = ({ isSpeaking }: AssistantOrbAuraProps): React.JSX.Element => {
   const { colors } = useTheme();
-  const reduceMotion = useReduceMotion();
+  const shouldReduceMotion = useReduceMotion();
   const [ring] = useState(() => new Animated.Value(ValueConstants.zero));
   const [orbit] = useState(() => new Animated.Value(ValueConstants.zero));
 
   useEffect(() => {
-    if (reduceMotion) return;
+    if (shouldReduceMotion) return;
     const spin = (value: Animated.Value, duration: number): Animated.CompositeAnimation =>
       Animated.loop(
         Animated.timing(value, {
@@ -55,7 +55,7 @@ export const AssistantOrbAura = ({ isSpeaking }: AssistantOrbAuraProps): React.J
       rings.stop();
       points.stop();
     };
-  }, [ring, orbit, isSpeaking, reduceMotion]);
+  }, [ring, orbit, isSpeaking, shouldReduceMotion]);
 
   const at = (value: Animated.Value, offset: number): Animated.AnimatedInterpolation<number> =>
     value.interpolate({

@@ -23,8 +23,8 @@ export const CreatorStatusPill = ({ claim }: CreatorStatusPillProps): React.JSX.
   const t = useTranslations();
   const colors = useTheme().colors;
   const copy = t.creators.account;
-  const approved = claim.status === CreatorStatus.Approved;
-  const look: { icon: IconName; ink: string; label: string } = approved
+  const isApproved = claim.status === CreatorStatus.Approved;
+  const look: { icon: IconName; ink: string; label: string } = isApproved
     ? { icon: 'checkmark', ink: colors.primaryText, label: copy.approved }
     : claim.status === CreatorStatus.Rejected
       ? { icon: 'alert-circle', ink: colors.danger, label: copy.rejected }
@@ -34,13 +34,13 @@ export const CreatorStatusPill = ({ claim }: CreatorStatusPillProps): React.JSX.
     <View
       style={[
         styles.pill,
-        approved
+        isApproved
           ? { backgroundColor: colors.primary, borderColor: colors.primary }
           : { backgroundColor: colors.background, borderColor: colors.cardBorder },
       ]}
     >
       <Ionicons name={look.icon} size={iconSizes.sm} color={look.ink} />
-      <SizedText size={fontSizes.small} weight={fontWeights.bold} color={approved ? colors.primaryText : colors.text}>
+      <SizedText size={fontSizes.small} weight={fontWeights.bold} color={isApproved ? colors.primaryText : colors.text}>
         {look.label}
       </SizedText>
     </View>

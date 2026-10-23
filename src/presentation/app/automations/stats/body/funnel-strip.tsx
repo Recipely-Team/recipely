@@ -47,8 +47,8 @@ export const FunnelStrip = ({ stats, inRow, wide }: FunnelStripProps): React.JSX
       wide={wide}
     />
   ));
-  const divider = (key: string, vertical: boolean): React.JSX.Element => (
-    <View key={key} style={[vertical ? styles.vDivider : styles.hDivider, { backgroundColor: colors.border }]} />
+  const divider = (key: string, isVertical: boolean): React.JSX.Element => (
+    <View key={key} style={[isVertical ? styles.vDivider : styles.hDivider, { backgroundColor: colors.border }]} />
   );
   const rows = inRow ? [cells] : [cells.slice(ValueConstants.zero, PAIR), cells.slice(PAIR)];
   return (

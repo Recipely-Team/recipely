@@ -33,7 +33,7 @@ export interface EmptyTabProps {
 export const EmptyTab = ({ tab, onBrowse, onCreate }: EmptyTabProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
-  const fillsFromFeed = tab === TabType.Saved || tab === TabType.Liked;
+  const doesFillFromFeed = tab === TabType.Saved || tab === TabType.Liked;
   return (
     <View style={styles.empty}>
       <MaterialCommunityIcons name={TabIcons[tab]} size={iconSizes.jumbo} color={colors.textMuted} />
@@ -41,8 +41,8 @@ export const EmptyTab = ({ tab, onBrowse, onCreate }: EmptyTabProps): React.JSX.
         {EMPTY_COPY[tab](t)}
       </ThemedText>
       <PrimaryButton
-        label={fillsFromFeed ? t.recipes.browseRecipes : t.myRecipes.createNew}
-        onPress={fillsFromFeed ? onBrowse : onCreate}
+        label={doesFillFromFeed ? t.recipes.browseRecipes : t.myRecipes.createNew}
+        onPress={doesFillFromFeed ? onBrowse : onCreate}
       />
     </View>
   );

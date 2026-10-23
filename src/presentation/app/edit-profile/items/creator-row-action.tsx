@@ -19,14 +19,14 @@ export interface CreatorRowActionProps {
 export const CreatorRowAction = ({ label, primary, loading, disabled, onPress, fill = false }: CreatorRowActionProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const ink = primary ? colors.primaryText : colors.text;
-  const inactive = loading || disabled;
+  const isInactive = loading || disabled;
   return (
     <Pressable
       onPress={onPress}
-      disabled={inactive}
+      disabled={isInactive}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ disabled: inactive, busy: loading }}
+      accessibilityState={{ disabled: isInactive, busy: loading }}
       style={({ pressed }) => [
         styles.button,
         fill ? styles.fill : null,

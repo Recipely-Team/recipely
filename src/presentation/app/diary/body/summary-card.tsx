@@ -39,19 +39,19 @@ export const SummaryCard = ({ day, wide }: SummaryCardProps): React.JSX.Element 
   const tone = status === CalorieStatus.None ? null : tones[status];
   const marker = statusMarkerFor(status);
   const isOver = day.overCalories > ValueConstants.zero;
-  const pastGoal = status === CalorieStatus.Over || status === CalorieStatus.Far;
+  const isPastGoal = status === CalorieStatus.Over || status === CalorieStatus.Far;
   const figure = isOver ? `+${formatWholeNumber(day.overCalories, locale)}` : formatWholeNumber(day.remainingCalories, locale);
   const strip =
     status === CalorieStatus.On
       ? strings.withinGoal
-      : pastGoal
+      : isPastGoal
         ? strings.overGoal.replace('{n}', formatWholeNumber(day.overCalories, locale))
         : null;
 
   const ring = (
     <CalorieRing
-      progress={pastGoal ? ValueConstants.one : day.calorieProgress}
-      color={pastGoal && tone !== null ? tone.solid : colors.primary}
+      progress={isPastGoal ? ValueConstants.one : day.calorieProgress}
+      color={isPastGoal && tone !== null ? tone.solid : colors.primary}
       size={wide ? diarySizes.ringWeb : diarySizes.ringMobile}
       stroke={wide ? diarySizes.ringStrokeWeb : diarySizes.ringStrokeMobile}
     >

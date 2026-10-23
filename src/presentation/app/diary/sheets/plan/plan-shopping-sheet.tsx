@@ -39,7 +39,7 @@ export const PlanShoppingSheet = ({ visible, week, onClose }: PlanShoppingSheetP
   const shop = usePlanShopping(visible, week.start, onClose);
   const lines = shop.lines ?? NO_LINES;
   const count = lines.filter((line) => shop.selected.has(line.key)).length;
-  const allSelected = lines.length > ValueConstants.zero && count === lines.length;
+  const isAllSelected = lines.length > ValueConstants.zero && count === lines.length;
 
   return (
     <BottomSheet
@@ -47,7 +47,7 @@ export const PlanShoppingSheet = ({ visible, week, onClose }: PlanShoppingSheetP
       title={strings.shopTitle}
       onClose={onClose}
       dialogMaxWidth={mealPlanSizes.shopDialogMaxWidth}
-      rightAction={lines.length === ValueConstants.zero ? undefined : { label: allSelected ? strings.clearAll : strings.selectAll, onPress: allSelected ? shop.clearAll : shop.selectAll }}
+      rightAction={lines.length === ValueConstants.zero ? undefined : { label: isAllSelected ? strings.clearAll : strings.selectAll, onPress: isAllSelected ? shop.clearAll : shop.selectAll }}
       footer={
         shop.lines === null || lines.length === ValueConstants.zero ? undefined : (
           <PrimaryButton label={strings.addItems.replace('{n}', String(count))} onPress={() => void shop.submit()} loading={shop.isSubmitting} disabled={count === ValueConstants.zero} />

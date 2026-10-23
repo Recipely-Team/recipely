@@ -20,15 +20,15 @@ const SNAP_BACK_DURATION_MS = 200;
  * `translateY` resets to 0 whenever `visible` becomes true, so a sheet
  * dismissed mid-drag re-opens from a clean position.
  */
-export const useDragToDismiss = (onClose: () => void, visible: boolean): UseDragToDismissResult => {
+export const useDragToDismiss = (onClose: () => void, isVisible: boolean): UseDragToDismissResult => {
   // Not compiled: create() stores its callbacks, which the compiler reads as a ref access in render.
   'use no memo';
   const [translateY] = useState(() => new Animated.Value(ValueConstants.zero));
   const onCloseRef = useLatestRef(onClose);
 
   useEffect(() => {
-    if (visible) translateY.setValue(ValueConstants.zero);
-  }, [visible, translateY]);
+    if (isVisible) translateY.setValue(ValueConstants.zero);
+  }, [isVisible, translateY]);
 
   const snapBack = (): void => {
     Animated.timing(translateY, {

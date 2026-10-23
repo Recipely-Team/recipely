@@ -53,9 +53,9 @@ export const useDiaryDay = (): UseDiaryDayResult => {
       const state = diaryStore.getState();
       const now = CalendarDate.today();
       const wasOnToday = state.selectedDate.value === lastToday.current;
-      const dayChanged = now.value !== lastToday.current;
+      const hasDayChanged = now.value !== lastToday.current;
       lastToday.current = now.value;
-      if (wasOnToday && dayChanged) void state.selectDate(now);
+      if (wasOnToday && hasDayChanged) void state.selectDate(now);
       else void state.loadDay();
     }, [diaryStore]),
   );

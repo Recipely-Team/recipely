@@ -89,13 +89,13 @@ export const useRecipeSave = ({
   };
 
   const hasRequiredText = (): boolean => {
-    const nameEmpty = recipe.name.trim().length === ValueConstants.zero;
+    const isNameEmpty = recipe.name.trim().length === ValueConstants.zero;
     // A recipe of group headings only has no ingredients.
-    const ingredientsEmpty = IngredientList.of(recipe.ingredients).filledCount === ValueConstants.zero;
-    if (nameEmpty || ingredientsEmpty) {
+    const areIngredientsEmpty = IngredientList.of(recipe.ingredients).filledCount === ValueConstants.zero;
+    if (isNameEmpty || areIngredientsEmpty) {
       const fields: CreateRecipeFieldErrors['fields'] = {};
-      if (nameEmpty) fields.name = t.createRecipe.nameRequired;
-      if (ingredientsEmpty) fields.ingredients = t.createRecipe.ingredientsRequired;
+      if (isNameEmpty) fields.name = t.createRecipe.nameRequired;
+      if (areIngredientsEmpty) fields.ingredients = t.createRecipe.ingredientsRequired;
       setFieldErrors({ fields, unmatched: [] });
       setSaveIssue(t.createRecipe.missing);
       return false;

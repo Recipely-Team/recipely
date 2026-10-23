@@ -28,7 +28,7 @@ export const FeedbackSheet = ({ visible, onClose }: FeedbackSheetProps): React.J
 
   const [subject, setSubject] = useState(CharConstants.empty);
   const [message, setMessage] = useState(CharConstants.empty);
-  const [sent, setSent] = useState(false);
+  const [wasSent, setSent] = useState(false);
   // This sheet's own failure; another submitter's never shows here.
   const [error, setError] = useState<Failure | null>(null);
 
@@ -51,7 +51,7 @@ export const FeedbackSheet = ({ visible, onClose }: FeedbackSheetProps): React.J
 
   return (
     <BottomSheet visible={visible} title={t.support.sheetTitle} onClose={handleClose}>
-      {sent ? (
+      {wasSent ? (
         <View style={styles.successWrap}>
           <View style={[styles.iconChip, { backgroundColor: colors.successLight }]}>
             <Ionicons name="checkmark-circle" size={iconSizes.xxxl} color={colors.success} />

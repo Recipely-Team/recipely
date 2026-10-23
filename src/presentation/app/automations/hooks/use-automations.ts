@@ -67,10 +67,10 @@ export const useAutomations = (): UseAutomationsResult => {
     [router],
   );
   const onToggle = useCallback(
-    (rule: DmRuleEntity, enabled: boolean) => {
+    (rule: DmRuleEntity, isEnabled: boolean) => {
       void automationsStore
         .getState()
-        .setEnabled(rule, enabled)
+        .setEnabled(rule, isEnabled)
         .then((result) => {
           if (!result.ok) showErrorToast(result.failure);
         });

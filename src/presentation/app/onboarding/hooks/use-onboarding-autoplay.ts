@@ -28,11 +28,11 @@ interface OnboardingAutoplay {
  *   tell), which kept autoplay off on the web for everyone.
  */
 export const useOnboardingAutoplay = (index: number, count: number, advance: () => void): OnboardingAutoplay => {
-  const reducedMotion = useReducedMotion();
-  const [screenReader, setScreenReader] = useState(false);
-  const [stopped, setStopped] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+  const [isScreenReaderOn, setScreenReader] = useState(false);
+  const [isStopped, setStopped] = useState(false);
   const [progress] = useState(() => new Animated.Value(AnimationConstants.progressMin));
-  const running = !stopped && !reducedMotion && !screenReader && index < count - ValueConstants.one;
+  const isRunning = !isStopped && !shouldReduceMotion && !isScreenReaderOn && index < count - ValueConstants.one;
 
   useEffect(() => {
     // Native only: react-native-web always answers true (see the head note).
@@ -44,7 +44,7 @@ export const useOnboardingAutoplay = (index: number, count: number, advance: () 
 
   useEffect(() => {
     progress.setValue(AnimationConstants.progressMin);
-    if (!running) return;
+    if (!isRunning) return;
     const fill = Animated.timing(progress, {
       toValue: AnimationConstants.progressMax,
       duration: SLIDE_MS,
@@ -55,7 +55,7 @@ export const useOnboardingAutoplay = (index: number, count: number, advance: () 
       if (finished) advance();
     });
     return () => fill.stop();
-  }, [advance, index, progress, running]);
+  }, [advance, index, progress, isRunning]);
 
-  return { progress, running, stop: () => setStopped(true) };
+  return { progress, running: isRunning, stop: () => setStopped(true) };
 };

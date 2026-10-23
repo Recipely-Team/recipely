@@ -65,8 +65,8 @@ export const RefineDock = ({
   const colors = useTheme().colors;
   const canSend = !isBlank(chatInput) && !refining;
   // The keyboard already covers the home indicator, so drop the bottom inset while it is up.
-  const keyboardVisible = useKeyboardVisible();
-  const resolvedBottomInset = keyboardVisible ? ValueConstants.zero : bottomInset;
+  const isKeyboardVisible = useKeyboardVisible();
+  const resolvedBottomInset = isKeyboardVisible ? ValueConstants.zero : bottomInset;
 
   // Only free text clears the field; a chip sends its own instruction.
   const submitFreeText = (): void => {
@@ -83,7 +83,7 @@ export const RefineDock = ({
 
   const closeAssistant = (): void => {
     pendingClose.current?.();
-    if (!keyboardVisible) {
+    if (!isKeyboardVisible) {
       onCollapse();
       return;
     }

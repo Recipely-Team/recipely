@@ -95,12 +95,12 @@ export class FoodLogEntryEntity extends BaseEntity<FoodLogEntryEntityProps> {
    * (`errors.validation.nothing_to_edit`), so an untouched "Save" just closes.
    */
   changesTo(servings: number, meal: MealSlotType): FoodLogEntryChanges | null {
-    const servingsChanged = servings !== this.props.servings;
-    const mealChanged = meal !== this.props.meal;
-    if (!servingsChanged && !mealChanged) return null;
+    const haveServingsChanged = servings !== this.props.servings;
+    const hasMealChanged = meal !== this.props.meal;
+    if (!haveServingsChanged && !hasMealChanged) return null;
     return {
-      ...(servingsChanged ? { servings } : {}),
-      ...(mealChanged ? { meal } : {}),
+      ...(haveServingsChanged ? { servings } : {}),
+      ...(hasMealChanged ? { meal } : {}),
     };
   }
 

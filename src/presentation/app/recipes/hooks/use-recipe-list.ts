@@ -140,7 +140,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   const loadMore = useStore(recipeListStore, (s) => s.loadMore);
   const { isWebShell, isExpanded, width, height } = useLayout();
   const { searchQuery: webSearchQuery, setSearchQuery: setWebSearchQuery } = useWebShellState();
-  const reduceMotion = useReducedMotion();
+  const shouldReduceMotion = useReducedMotion();
   // Subscribe to locale so the screen re-renders (and reloads) on a language switch.
   const language = useLocale();
 
@@ -176,7 +176,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     onScroll: (event) => {
       const y = event.contentOffset.y;
       scrollY.set(y);
-      if (reduceMotion) return;
+      if (shouldReduceMotion) return;
       const delta = y - lastScrollY.get();
       if (y <= layoutSizes.homeHeaderMax) {
         if (headerHidden.get() !== ValueConstants.zero) {
@@ -194,16 +194,16 @@ export const useRecipeList = (): UseRecipeListResult => {
     },
     // Snap the band to whichever edge is nearer when scrolling settles.
     onMomentumEnd: () => {
-      if (reduceMotion) return;
-      const hide = headerTranslateY.get() < hiddenHeaderY / ValueConstants.two;
-      headerHidden.set(hide ? ValueConstants.one : ValueConstants.zero);
-      headerTranslateY.set(withTiming(hide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING));
+      if (shouldReduceMotion) return;
+      const shouldHide = headerTranslateY.get() < hiddenHeaderY / ValueConstants.two;
+      headerHidden.set(shouldHide ? ValueConstants.one : ValueConstants.zero);
+      headerTranslateY.set(withTiming(shouldHide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING));
     },
     onEndDrag: () => {
-      if (reduceMotion) return;
-      const hide = headerTranslateY.get() < hiddenHeaderY / ValueConstants.two;
-      headerHidden.set(hide ? ValueConstants.one : ValueConstants.zero);
-      headerTranslateY.set(withTiming(hide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING));
+      if (shouldReduceMotion) return;
+      const shouldHide = headerTranslateY.get() < hiddenHeaderY / ValueConstants.two;
+      headerHidden.set(shouldHide ? ValueConstants.one : ValueConstants.zero);
+      headerTranslateY.set(withTiming(shouldHide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING));
     },
   });
 
@@ -309,9 +309,9 @@ export const useRecipeList = (): UseRecipeListResult => {
   const isFocused = useIsScreenFocused();
   const refetchIfStale = useEffectEvent(() => {
     const lastLoadedAt = lastLoadedAtRef.current;
-    const fresh = lastLoadedAt !== null && Date.now() - lastLoadedAt < FEED_STALE_AFTER_MS;
-    const sameViewer = loadedForRef.current === userId;
-    if (fresh && sameViewer && !ownRecipesChangedRef.current) return;
+    const isFresh = lastLoadedAt !== null && Date.now() - lastLoadedAt < FEED_STALE_AFTER_MS;
+    const isSameViewer = loadedForRef.current === userId;
+    if (isFresh && isSameViewer && !ownRecipesChangedRef.current) return;
     ownRecipesChangedRef.current = false;
     loadCurrent();
   });
@@ -378,22 +378,22 @@ export const useRecipeList = (): UseRecipeListResult => {
 
   // The query the stored rows answer — empty for the feed and before any load.
   const answeredQuery = state.status === StoreStatus.Loaded ? state.query : CharConstants.empty;
-  const answersCurrentQuery = answeredQuery === trimmedSearch;
+  const doesAnswerCurrentQuery = answeredQuery === trimmedSearch;
 
   const recipes = useMemo(
-    () => (state.status === StoreStatus.Loaded && answersCurrentQuery ? state.recipes : []),
-    [state, answersCurrentQuery],
+    () => (state.status === StoreStatus.Loaded && doesAnswerCurrentQuery ? state.recipes : []),
+    [state, doesAnswerCurrentQuery],
   );
 
   const hasRefreshFailure = state.status === StoreStatus.Loaded && state.refreshFailure !== undefined;
   // The window in which rows are withheld for not answering the current query.
-  const isAwaitingAnswer = !answersCurrentQuery && !hasRefreshFailure;
+  const isAwaitingAnswer = !doesAnswerCurrentQuery && !hasRefreshFailure;
   const isRefetching = isRecipeListRefreshing(state) || isAwaitingAnswer;
   const isReloadingResults = pendingReloads > ValueConstants.zero || isAwaitingAnswer;
 
   const isLoadingMore = state.status === StoreStatus.Loaded && state.isLoadingMore === true;
   const canLoadMore =
-    state.status === StoreStatus.Loaded && state.hasMore && answersCurrentQuery && !isLoadingMore;
+    state.status === StoreStatus.Loaded && state.hasMore && doesAnswerCurrentQuery && !isLoadingMore;
   const onEndReached = useCallback((): void => {
     if (!canLoadMore) return;
     void loadMore(buildApiFilters(filters, sortBy, debouncedSearch));
@@ -444,7 +444,7 @@ export const useRecipeList = (): UseRecipeListResult => {
       moveScrollTo(listRef.current, scrollTargetFor(direction, scrollY.get(), height)),
     scrollY,
     headerTranslateY,
-    reduceMotion,
+    reduceMotion: shouldReduceMotion,
     scrollHandler,
     search,
     onSearchChange: setSearch,

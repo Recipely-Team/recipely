@@ -16,7 +16,7 @@ export const ShoppingAddField = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const copy = t.shopping;
   const { draft: value, onChangeDraft: onChangeText, onAdd: onSubmit, isAdding } = useShoppingAddDraft();
-  const disabled = isAdding || isBlank(value);
+  const isDisabled = isAdding || isBlank(value);
   return (
     <View style={[styles.field, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder }]}>
       <TextInput
@@ -31,14 +31,14 @@ export const ShoppingAddField = (): React.JSX.Element => {
       />
       <Pressable
         onPress={onSubmit}
-        disabled={disabled}
+        disabled={isDisabled}
         hitSlop={spacing.xs}
         accessibilityRole="button"
         accessibilityLabel={copy.add}
-        accessibilityState={{ disabled, busy: isAdding }}
+        accessibilityState={{ disabled: isDisabled, busy: isAdding }}
         style={({ pressed }) => [
           styles.add,
-          { backgroundColor: colors.primary, opacity: disabled ? opacities.disabled : pressed ? opacities.pressed : opacities.full },
+          { backgroundColor: colors.primary, opacity: isDisabled ? opacities.disabled : pressed ? opacities.pressed : opacities.full },
         ]}
       >
         {isAdding ? <ActivityIndicator color={colors.primaryText} /> : <Ionicons name="add" size={iconSizes.lg} color={colors.primaryText} />}

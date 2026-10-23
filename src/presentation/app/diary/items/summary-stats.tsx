@@ -19,12 +19,12 @@ export const SummaryStats = ({ day }: SummaryStatsProps): React.JSX.Element => {
   const strings = t.diary;
   const kcal = t.nutrition.kcal;
   const isOver = day.overCalories > ValueConstants.zero;
-  const line = (label: string, value: number, strong: boolean): React.JSX.Element => (
+  const line = (label: string, value: number, isStrong: boolean): React.JSX.Element => (
     <View style={styles.line} accessible>
-      <SizedText size={strong ? fontSizes.caption : fontSizes.small} weight={strong ? fontWeights.bold : undefined} muted={!strong}>
+      <SizedText size={isStrong ? fontSizes.caption : fontSizes.small} weight={isStrong ? fontWeights.bold : undefined} muted={!isStrong}>
         {label}
       </SizedText>
-      <SizedText size={strong ? fontSizes.heading : fontSizes.medium} weight={strong ? fontWeights.bold : fontWeights.semibold}>
+      <SizedText size={isStrong ? fontSizes.heading : fontSizes.medium} weight={isStrong ? fontWeights.bold : fontWeights.semibold}>
         {`${formatWholeNumber(value, locale)} ${kcal}`}
       </SizedText>
     </View>

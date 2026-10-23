@@ -18,9 +18,9 @@ export const getFirebaseApp = (): FirebaseApp | null => null;
  * activity doesn't pollute production metrics.
  */
 export const initFirebase = async (): Promise<void> => {
-  const collect = !__DEV__;
+  const shouldCollect = !__DEV__;
   await Promise.allSettled([
-    analyticsService.setEnabled(collect),
-    setCrashReportingEnabled(collect),
+    analyticsService.setEnabled(shouldCollect),
+    setCrashReportingEnabled(shouldCollect),
   ]);
 };

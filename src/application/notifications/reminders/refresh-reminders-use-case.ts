@@ -40,8 +40,8 @@ export class RefreshRemindersUseCase {
   }
 
   private async replace(copies: readonly ReminderCopy[], nowMs: number): Promise<void> {
-    const optedIn = (await readRemindersChoice(this.prefs)) === RemindersChoice.On;
-    if (!optedIn || copies.length === ValueConstants.zero || !(await this.notifications.hasPermission())) {
+    const hasOptedIn = (await readRemindersChoice(this.prefs)) === RemindersChoice.On;
+    if (!hasOptedIn || copies.length === ValueConstants.zero || !(await this.notifications.hasPermission())) {
       await this.notifications.replaceReminders([]);
       return;
     }

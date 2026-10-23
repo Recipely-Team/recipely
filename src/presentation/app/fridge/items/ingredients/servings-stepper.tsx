@@ -19,14 +19,14 @@ export const ServingsStepper = ({ value, onChange }: ServingsStepperProps): Reac
   const copy = t.fridge;
   const canLess = value > FridgeLimits.servingsMin;
   const canMore = value < FridgeLimits.servingsMax;
-  const button = (icon: 'remove' | 'add', enabled: boolean, label: string, delta: number) => (
+  const button = (icon: 'remove' | 'add', isEnabled: boolean, label: string, delta: number) => (
     <Pressable
       onPress={() => onChange(value + delta)}
-      disabled={!enabled}
+      disabled={!isEnabled}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ disabled: !enabled }}
-      style={[styles.button, { borderColor: colors.border, opacity: enabled ? opacities.full : opacities.disabled }]}
+      accessibilityState={{ disabled: !isEnabled }}
+      style={[styles.button, { borderColor: colors.border, opacity: isEnabled ? opacities.full : opacities.disabled }]}
     >
       <Ionicons name={icon} size={iconSizes.lg} color={colors.text} />
     </Pressable>

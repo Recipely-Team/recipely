@@ -65,12 +65,12 @@ export const ShareChannels = ({
   };
 
   const { cardRef, onCardReady, shareCard } = useShareCard();
-  const [cardBusy, setCardBusy] = useState(false);
+  const [isCardBusy, setCardBusy] = useState(false);
   const handleStory = (): void => {
     setCardBusy(true);
-    void shareCard(t.recipes.shareTitle).then((shared) => {
+    void shareCard(t.recipes.shareTitle).then((wasShared) => {
       setCardBusy(false);
-      if (!shared) handleMore();
+      if (!wasShared) handleMore();
     });
   };
 
@@ -93,7 +93,7 @@ export const ShareChannels = ({
 
         {CAN_SHARE_CARD ? (
           <View style={styles.storyButton}>
-            <PrimaryButton label={t.recipes.shareChannelStory} onPress={handleStory} loading={cardBusy} />
+            <PrimaryButton label={t.recipes.shareChannelStory} onPress={handleStory} loading={isCardBusy} />
           </View>
         ) : null}
 

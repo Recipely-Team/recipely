@@ -82,10 +82,10 @@ export const configureCreatorProfileStore = (deps: CreatorProfileStoreDeps): Sto
         const { profileState, isFollowPending } = get();
         if (profileState.status !== StoreStatus.Loaded || isFollowPending) return null;
         const before = profileState.viewed;
-        const following = !before.isFollowedByMe;
-        set({ isFollowPending: true, profileState: { status: StoreStatus.Loaded, viewed: withFollowing(before, following) } });
+        const isFollowing = !before.isFollowedByMe;
+        set({ isFollowPending: true, profileState: { status: StoreStatus.Loaded, viewed: withFollowing(before, isFollowing) } });
         const tappedOn = pageShown;
-        const result = await deps.setFollowing.execute(before.profile.id, following);
+        const result = await deps.setFollowing.execute(before.profile.id, isFollowing);
         // The page was cleared or replaced since the tap: nothing here is this answer's.
         if (pageShown !== tappedOn) return result.ok ? null : result.failure;
         if (result.ok) {

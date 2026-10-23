@@ -25,8 +25,8 @@ export const useDeleteAccount = () => {
   const { authStore } = useStores();
   const deleteAccount = useStore(authStore, (s) => s.deleteAccount);
 
-  const [visible, setVisible] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [isVisible, setVisible] = useState(false);
+  const [isDeleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const open = useCallback(() => {
@@ -49,5 +49,5 @@ export const useDeleteAccount = () => {
     setError(failureToastMessage(t, failure));
   }, [deleteAccount, router, t]);
 
-  return { visible, deleting, error, open, close, confirm };
+  return { visible: isVisible, deleting: isDeleting, error, open, close, confirm };
 };

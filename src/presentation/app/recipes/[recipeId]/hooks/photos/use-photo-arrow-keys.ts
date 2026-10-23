@@ -9,9 +9,9 @@ import { ValueConstants } from '@core/constants';
  * Web only: the listener sits on `document`, and it is attached only while the
  * frame is focused, so the arrow keys keep scrolling the page everywhere else.
  */
-export const usePhotoArrowKeys = (enabled: boolean, onStep: (delta: number) => void): void => {
+export const usePhotoArrowKeys = (isEnabled: boolean, onStep: (delta: number) => void): void => {
   useEffect(() => {
-    if (!enabled || !isWeb()) return;
+    if (!isEnabled || !isWeb()) return;
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === KeyboardKey.arrowLeft) {
         event.preventDefault();
@@ -23,5 +23,5 @@ export const usePhotoArrowKeys = (enabled: boolean, onStep: (delta: number) => v
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [enabled, onStep]);
+  }, [isEnabled, onStep]);
 };

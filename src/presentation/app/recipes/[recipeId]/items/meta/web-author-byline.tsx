@@ -19,18 +19,18 @@ export interface WebAuthorBylineProps {
 export const WebAuthorByline = ({ author }: WebAuthorBylineProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
-  const kitchen = author.isKitchen === true;
+  const isKitchen = author.isKitchen === true;
   return (
     <View style={styles.row}>
-      {kitchen ? (
+      {isKitchen ? (
         <KitchenAvatar size={avatarSizes.xs} />
       ) : (
         <AvatarImage uri={author.authorPhotoUrl} name={author.authorName} size={avatarSizes.xs} />
       )}
       <ThemedText variant="body" style={styles.name}>
-        {kitchen ? t.recipes.originCuratedDetailLabel : author.authorName}
+        {isKitchen ? t.recipes.originCuratedDetailLabel : author.authorName}
       </ThemedText>
-      {kitchen ? (
+      {isKitchen ? (
         <Ionicons
           name="checkmark-circle"
           size={iconSizes.md}

@@ -39,7 +39,7 @@ export const PlanDaySection = ({ week, date, today, goal, onAdd, onOpen, onStep,
   const locale = useLocale();
   const strings = t.mealPlan;
   const planned = week.dayCalories(date);
-  const over = goal > ValueConstants.zero && planned > goal;
+  const isOver = goal > ValueConstants.zero && planned > goal;
   const canAdd = week.canPlanOn(date, today) && !week.isDayFull(date);
   return (
     <View style={styles.stack}>
@@ -51,7 +51,7 @@ export const PlanDaySection = ({ week, date, today, goal, onAdd, onOpen, onStep,
           {strings.dayPlanned.replace('{x}', formatWholeNumber(planned, locale)).replace('{goal}', formatWholeNumber(goal, locale))}
         </SizedText>
         <KcalBar planned={planned} goal={goal} height={mealPlanSizes.kcalBarHead} />
-        {over ? (
+        {isOver ? (
           <SizedText size={mealPlanSizes.overText} weight={fontWeights.bold} color={tones.over.solid}>
             {strings.overGoal.replace('{n}', formatWholeNumber(planned - goal, locale))}
           </SizedText>

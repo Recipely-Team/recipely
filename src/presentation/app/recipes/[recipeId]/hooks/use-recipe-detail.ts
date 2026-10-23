@@ -112,8 +112,8 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
   const commentState = useStore(commentsStore, (s) => s.byRecipe[recipeId]);
   const deleteState = useStore(recipeAuthoringStore, (s) => s.deleteState);
   const isDeleting = deleteState.status === StoreStatus.Deleting;
-  const [shareOpen, setShareOpen] = useState(false);
-  const [showDeleteSheet, setShowDeleteSheet] = useState(false);
+  const [isShareOpen, setShareOpen] = useState(false);
+  const [shouldShowDeleteSheet, setShowDeleteSheet] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const revealCommentInput = useScrollToEndOnKeyboard(scrollViewRef);
@@ -135,8 +135,8 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
 
   const handleDeleteComment = useCallback(
     async (commentId: string): Promise<void> => {
-      const removed = await commentsStore.getState().deleteComment(recipeId, commentId);
-      if (!removed) {
+      const wasRemoved = await commentsStore.getState().deleteComment(recipeId, commentId);
+      if (!wasRemoved) {
         const failure = commentsStore.getState().byRecipe[recipeId]?.error;
         if (failure != null) showErrorToast(failure);
       }
@@ -156,14 +156,14 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
   const handleAddComment = useCallback(async (text: string): Promise<boolean> => {
     const trimmed = text.trim();
     if (trimmed.length === ValueConstants.zero) return false;
-    const ok = await commentsStore.getState().addComment(recipeId, trimmed);
-    if (ok) {
+    const isOk = await commentsStore.getState().addComment(recipeId, trimmed);
+    if (isOk) {
       setSubmitError(null);
     } else {
       const failure = commentsStore.getState().byRecipe[recipeId]?.error;
       setSubmitError(failure != null ? failureToastMessage(t, failure) : t.comments.error);
     }
-    return ok;
+    return isOk;
   }, [commentsStore, recipeId, t]);
 
   const handleToggleSave = useCallback(async () => {
@@ -197,7 +197,7 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
   );
   const onAddComment = useCallback(
     (text: string, onPosted: () => void) =>
-      requestGate(() => void handleAddComment(text).then((ok) => ok && onPosted()), t.comments.signInToComment),
+      requestGate(() => void handleAddComment(text).then((isOk) => isOk && onPosted()), t.comments.signInToComment),
     [requestGate, handleAddComment, t],
   );
   const onLoadMoreComments = useCallback(
@@ -234,14 +234,14 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
   }, [recipeState?.status, commentState, commentsStore, recipeId]);
 
   const syncLikeCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.likeCount : null;
-  const syncLikedByMe = recipeState?.status === StoreStatus.Loaded ? recipeState.likedByMe : null;
+  const isSyncLikedByMe = recipeState?.status === StoreStatus.Loaded ? recipeState.likedByMe : null;
   const syncFetchedAt = recipeState?.status === StoreStatus.Loaded ? recipeState.fetchedAt : null;
 
   useEffect(() => {
-    if (syncLikeCount !== null && syncLikedByMe !== null && syncFetchedAt !== null) {
-      likesStore.getState().syncFromApi(recipeId, syncLikeCount, syncLikedByMe, syncFetchedAt);
+    if (syncLikeCount !== null && isSyncLikedByMe !== null && syncFetchedAt !== null) {
+      likesStore.getState().syncFromApi(recipeId, syncLikeCount, isSyncLikedByMe, syncFetchedAt);
     }
-  }, [syncLikeCount, syncLikedByMe, syncFetchedAt, recipeId, likesStore]);
+  }, [syncLikeCount, isSyncLikedByMe, syncFetchedAt, recipeId, likesStore]);
 
   const ingredientCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.ingredients.length : ValueConstants.zero;
 
@@ -283,7 +283,7 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
   const media: readonly MediaItem[] = useMemo(() => recipe?.heroPhotos() ?? NO_MEDIA, [recipe]);
   const firstImageUrl = media[ValueConstants.zero]?.url ?? CharConstants.empty;
   const cuisineName = recipe !== null ? cuisineLabel(recipe.cuisine).name : CharConstants.empty;
-  const liked = likeState?.likedByMe ?? (current.status === StoreStatus.Loaded && current.likedByMe);
+  const isLiked = likeState?.likedByMe ?? (current.status === StoreStatus.Loaded && current.likedByMe);
   const likeCount = likeState?.likeCount ?? recipe?.likeCount ?? ValueConstants.zero;
 
   // Ask the calculator once more before calling nutrition absent.
@@ -303,7 +303,7 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
     firstImageUrl,
     cuisineName,
     isNutritionCalculating,
-    liked,
+    liked: isLiked,
     likeCount,
     isOwner,
     isSaved,
@@ -345,10 +345,10 @@ export const useRecipeDetail = (scrollViewRef: RefObject<ScrollView | null>): Us
     commentDeletePending: commentRemoval.pendingId !== null,
     onConfirmDeleteComment: commentRemoval.confirm,
     onCancelDeleteComment: commentRemoval.cancel,
-    shareOpen,
+    shareOpen: isShareOpen,
     onOpenShare: () => setShareOpen(true),
     onCloseShare: () => setShareOpen(false),
-    showDeleteSheet,
+    showDeleteSheet: shouldShowDeleteSheet,
     deleteError,
     isDeleting,
     onOpenDelete,

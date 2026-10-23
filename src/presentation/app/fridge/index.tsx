@@ -93,7 +93,7 @@ export const FridgeScreen = (): React.JSX.Element => {
                 grid={isExpanded}
                 onEdit={flow.back}
                 onCook={ideas.cook}
-                onAddMissing={(idea) => void ideas.addMissing(idea).then((added) => (added ? flow.markAdded(idea.title) : undefined))}
+                onAddMissing={(idea) => void ideas.addMissing(idea).then((wasAdded) => (wasAdded ? flow.markAdded(idea.title) : undefined))}
                 onShowMore={flow.showMore}
                 onClearFilters={flow.clearFiltersAndRetry}
               />

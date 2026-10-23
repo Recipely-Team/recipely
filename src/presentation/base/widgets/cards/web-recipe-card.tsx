@@ -64,11 +64,11 @@ export interface WebRecipeCardProps {
  */
 export const WebRecipeCard = ({
   recipe, saved, onOpen, onToggleSave, ownedByMe = false, photoCount: photoCountProp,
-  likedByMe: likedByMeProp, likeCount: likeCountProp,
+  likedByMe: isLikedByMeProp, likeCount: likeCountProp,
 }: WebRecipeCardProps): React.JSX.Element => {
   // Defaulted here, not in the parameter list: a default that reads another prop stops the compiler.
   const photoCount = photoCountProp ?? recipe.photoCount;
-  const likedByMe = likedByMeProp ?? recipe.likedByMe;
+  const isLikedByMe = isLikedByMeProp ?? recipe.likedByMe;
   const likeCount = likeCountProp ?? recipe.likeCount;
   const t = useTranslations();
   const colors = useTheme().colors;
@@ -158,9 +158,9 @@ export const WebRecipeCard = ({
               </View>
               <View style={styles.footerItem}>
                 <MaterialCommunityIcons
-                  name={likedByMe ? 'heart' : 'heart-outline'}
+                  name={isLikedByMe ? 'heart' : 'heart-outline'}
                   size={iconSizes.md}
-                  color={likedByMe ? colors.likeActive : colors.textMuted}
+                  color={isLikedByMe ? colors.likeActive : colors.textMuted}
                 />
                 <ThemedText variant="caption" muted>
                   {likeCount}

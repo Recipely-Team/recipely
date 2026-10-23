@@ -65,19 +65,19 @@ export const useEditProfile = (): UseEditProfileResult => {
   };
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [discardVisible, setDiscardVisible] = useState(false);
+  const [isDiscardVisible, setDiscardVisible] = useState(false);
 
   const canSave = !isBlank(displayName);
-  const dirty = displayName !== initialDisplayName || bio !== initialBio;
-  const showNameError = dirty && !canSave;
+  const isDirty = displayName !== initialDisplayName || bio !== initialBio;
+  const shouldShowNameError = isDirty && !canSave;
   // The back gesture asks too; off while saving, so the save's own way back is not held.
   const heldBack = useRef(false);
-  const leaveGuard = useLeaveGuard(dirty && !isSaving, () => {
+  const leaveGuard = useLeaveGuard(isDirty && !isSaving, () => {
     heldBack.current = true;
     setDiscardVisible(true);
   });
-  const bioAtLimit = bio.length >= BIO_MAX;
-  const saveEnabled = canSave && dirty && !isSaving;
+  const isBioAtLimit = bio.length >= BIO_MAX;
+  const isSaveEnabled = canSave && isDirty && !isSaving;
 
   const onSave = async (): Promise<EditProfileSaveOutcomeType> => {
     const { displayName: name, bio: about } = latest.current;
@@ -104,14 +104,14 @@ export const useEditProfile = (): UseEditProfileResult => {
     photoUri,
     isUploading,
     onPickAvatar: () => void pickAndUpload(),
-    showNameError,
-    bioAtLimit,
-    saveEnabled,
-    isDirty: dirty,
+    showNameError: shouldShowNameError,
+    bioAtLimit: isBioAtLimit,
+    saveEnabled: isSaveEnabled,
+    isDirty: isDirty,
     isSaving,
     onSave,
-    onBack: () => (dirty ? setDiscardVisible(true) : goBack()),
-    discardVisible,
+    onBack: () => (isDirty ? setDiscardVisible(true) : goBack()),
+    discardVisible: isDiscardVisible,
     onConfirmDiscard: () => {
       setDiscardVisible(false);
       if (heldBack.current) leaveGuard.release();

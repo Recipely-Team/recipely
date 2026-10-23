@@ -16,7 +16,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
 export const useEditableRecipe = () => {
   const [recipe, setRecipe] = useState<EditableRecipe>(emptyEditable);
   const [fieldErrors, setFieldErrors] = useState<CreateRecipeFieldErrors>(NO_CREATE_RECIPE_FIELD_ERRORS);
-  const [photosOpen, setPhotosOpen] = useState(false);
+  const [isPhotosOpen, setPhotosOpen] = useState(false);
 
   // Clears a single field's inline validation error once the user edits it.
   const clearFieldError = useCallback((key: CreateRecipeFieldKeyType): void => {
@@ -109,9 +109,9 @@ export const useEditableRecipe = () => {
    * not have said.
    */
   const onRemoveIngredientGroup = useCallback(
-    (headerIndex: number, itemIndices: readonly number[], keepItems: boolean): void => {
+    (headerIndex: number, itemIndices: readonly number[], shouldKeepItems: boolean): void => {
       setRecipe((r) => {
-        const doomed = new Set<number>(keepItems ? [headerIndex] : [headerIndex, ...itemIndices]);
+        const doomed = new Set<number>(shouldKeepItems ? [headerIndex] : [headerIndex, ...itemIndices]);
         const kept = r.ingredients.filter((_, idx) => !doomed.has(idx));
         return { ...r, ingredients: kept.length === ValueConstants.zero ? [CharConstants.empty] : kept };
       });
@@ -190,7 +190,7 @@ export const useEditableRecipe = () => {
     onAddMedia,
     onRemoveMedia,
     onSetCover,
-    photosOpen,
+    photosOpen: isPhotosOpen,
     onOpenPhotos: () => setPhotosOpen(true),
     onClosePhotos: () => setPhotosOpen(false),
   };

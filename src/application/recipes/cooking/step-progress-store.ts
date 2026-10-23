@@ -3,9 +3,9 @@ import type { StoreApi } from 'zustand/vanilla';
 import type { StepProgressStore } from '@application/recipes/cooking/step-progress-store-contract';
 
 /** A copy of `flags` with `index` set to `done`; holes stay unticked. */
-const withFlag = (flags: readonly boolean[] | undefined, index: number, done: boolean): readonly boolean[] => {
+const withFlag = (flags: readonly boolean[] | undefined, index: number, isDone: boolean): readonly boolean[] => {
   const next = [...(flags ?? [])];
-  next[index] = done;
+  next[index] = isDone;
   return next;
 };
 
@@ -25,9 +25,9 @@ export const configureStepProgressStore = (): StoreApi<StepProgressStore> =>
       set({ byRecipe: { ...get().byRecipe, [recipeId]: withFlag(flags, index, flags?.[index] !== true) } });
     },
 
-    setStepDone: (recipeId, index, done) => {
-      if ((get().byRecipe[recipeId]?.[index] === true) === done) return;
-      set({ byRecipe: { ...get().byRecipe, [recipeId]: withFlag(get().byRecipe[recipeId], index, done) } });
+    setStepDone: (recipeId, index, isDone) => {
+      if ((get().byRecipe[recipeId]?.[index] === true) === isDone) return;
+      set({ byRecipe: { ...get().byRecipe, [recipeId]: withFlag(get().byRecipe[recipeId], index, isDone) } });
     },
 
     clear: () => set({ byRecipe: {} }),

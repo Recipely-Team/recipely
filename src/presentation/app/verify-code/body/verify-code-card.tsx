@@ -45,10 +45,10 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
   const resendRegistrationCode = useStore(authStore, (s) => s.resendRegistrationCode);
 
   const [code, setCode] = useState(CharConstants.empty);
-  const [focused, setFocused] = useState(false);
+  const [isFocused, setFocused] = useState(false);
   const [localError, setLocalError] = useState<string | undefined>(undefined);
-  const [resending, setResending] = useState(false);
-  const [resent, setResent] = useState(false);
+  const [isResending, setResending] = useState(false);
+  const [wasResent, setResent] = useState(false);
   // Absolute expiry, so the countdown survives re-renders and backgrounding.
   const [expiresAt, setExpiresAt] = useState(initialExpiresAt);
   // Tagged with the expiry it counts toward: a resent code restarts the count in the same render.
@@ -62,11 +62,11 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
     return () => clearInterval(id);
   }, [expiresAt]);
 
-  const codeValid = code.length === CODE_LENGTH && RegexConstants.digitsOnly.test(code);
+  const isCodeValid = code.length === CODE_LENGTH && RegexConstants.digitsOnly.test(code);
   const errorMessage = localError;
 
   const handleVerify = useCallback(async () => {
-    if (!codeValid) {
+    if (!isCodeValid) {
       setLocalError(t.verify.errorCode);
       return;
     }
@@ -81,13 +81,13 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
         }),
       );
     }
-  }, [codeValid, verifyRegistration, email, code, t]);
+  }, [isCodeValid, verifyRegistration, email, code, t]);
 
   // Resend is locked until the current code expires.
-  const canResend = remaining <= ValueConstants.zero && !resending;
+  const canResend = remaining <= ValueConstants.zero && !isResending;
 
   const handleResend = useCallback(async () => {
-    if (remaining > ValueConstants.zero || resending) return;
+    if (remaining > ValueConstants.zero || isResending) return;
     setResending(true);
     setResent(false);
     setLocalError(undefined);
@@ -99,7 +99,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
     } else {
       setLocalError(authFormMessage(t, result.failure, {}));
     }
-  }, [remaining, resending, resendRegistrationCode, email, t]);
+  }, [remaining, isResending, resendRegistrationCode, email, t]);
 
   return (
     <>
@@ -109,7 +109,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
           {
             backgroundColor: colors.inputBackground,
             color: colors.text,
-            borderColor: focused ? colors.inputBorderFocused : colors.inputBorder,
+            borderColor: isFocused ? colors.inputBorderFocused : colors.inputBorder,
           },
         ]}
         placeholder={t.verify.codePlaceholder}
@@ -133,7 +133,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
         </View>
       ) : null}
 
-      {resent ? (
+      {wasResent ? (
         <ThemedText variant="caption" style={[styles.notice, { color: colors.success }]}>
           {t.verify.resent}
         </ThemedText>
@@ -144,7 +144,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
           label={isLoading ? t.verify.verifying : t.verify.verify}
           onPress={() => { void handleVerify(); }}
           loading={isLoading}
-          disabled={!codeValid || isLoading}
+          disabled={!isCodeValid || isLoading}
         />
       </View>
 

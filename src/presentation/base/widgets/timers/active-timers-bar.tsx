@@ -60,7 +60,7 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
   // Clear the tab bar only on routes that have one.
   const hasTabBar = useTabBarState() !== null && !isWebShell;
   const timers = useStore(timerStore, (s) => s.timers);
-  const collapsed = useStore(timersBarStore, (s) => s.collapsed);
+  const isCollapsed = useStore(timersBarStore, (s) => s.collapsed);
   const setCollapsed = useStore(timersBarStore, (s) => s.setCollapsed);
   const currentRecipeId = RECIPE_DETAIL_PATH.exec(pathname)?.[ValueConstants.one] ?? null;
   const cookingRecipeId = RECIPE_COOK_PATH.exec(pathname)?.[ValueConstants.one] ?? null;
@@ -75,7 +75,7 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
   const bottom =
     insets.bottom + (hasTabBar ? controlSizes.tabBar : ValueConstants.zero) + spacing.sm;
 
-  if (collapsed) {
+  if (isCollapsed) {
     return (
       <View pointerEvents="box-none" style={[styles.bar, { bottom }]}>
         <Pressable

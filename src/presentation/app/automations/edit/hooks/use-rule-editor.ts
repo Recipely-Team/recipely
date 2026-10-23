@@ -42,11 +42,11 @@ export const useRuleEditor = (): UseRuleEditorResult => {
   const [keywordError, setKeywordError] = useState<string | null>(null);
   const [recipe, setRecipeState] = useState<{ id: string; name: string; image: string | null } | null>(null);
   const [dmText, setDmText] = useState(copy.defaultMessage);
-  const [replyOn, setReplyOn] = useState(false);
+  const [isReplyOn, setReplyOn] = useState(false);
   const [replyText, setReplyText] = useState(copy.defaultReply);
   const [isSaving, setSaving] = useState(false);
   const [isDeleteOpen, setDeleteOpen] = useState(false);
-  const [seeded, setSeeded] = useState(false);
+  const [wasSeeded, setSeeded] = useState(false);
 
   useAutomationsGuard(false);
 
@@ -56,7 +56,7 @@ export const useRuleEditor = (): UseRuleEditorResult => {
   const loadFailure = ruleId !== null && opened.status === StoreStatus.Error && opened.id === ruleId ? opened.failure : null;
 
   const existing = ruleId !== null && opened.status === StoreStatus.Loaded && opened.rule.id === ruleId ? opened.rule : null;
-  if (existing !== null && !seeded) {
+  if (existing !== null && !wasSeeded) {
     setSeeded(true);
     setMediaId(existing.mediaId);
     setKeywords(DmKeywords.of(existing.keywords));
@@ -66,7 +66,7 @@ export const useRuleEditor = (): UseRuleEditorResult => {
     setReplyText(existing.publicReplyText ?? copy.defaultReply);
   }
 
-  const publicReply = replyOn ? replyText : null;
+  const publicReply = isReplyOn ? replyText : null;
   const stepValid = [mediaId !== null, keywords.isValid, recipe !== null, DmRuleDraft.isDmTextValid(dmText) && DmRuleDraft.isPublicReplyValid(publicReply)];
   const canReach = (target: EditorStepType): boolean => EDITOR_STEPS.slice(ValueConstants.zero, target).every((s) => stepValid[s]);
   const toList = (): void => (router.canGoBack() ? router.back() : router.replace(RoutePaths.automations));
@@ -80,7 +80,7 @@ export const useRuleEditor = (): UseRuleEditorResult => {
   };
 
   return {
-    isLoading: ruleId !== null && !seeded && loadFailure === null,
+    isLoading: ruleId !== null && !wasSeeded && loadFailure === null,
     loadFailure,
     retryLoad: () => {
       if (ruleId !== null) void automationsStore.getState().openRule(ruleId);
@@ -96,7 +96,7 @@ export const useRuleEditor = (): UseRuleEditorResult => {
     recipeName: recipe?.name ?? null,
     recipeImage: recipe?.image ?? null,
     dmText,
-    replyOn,
+    replyOn: isReplyOn,
     replyText,
     isSaving,
     isDeleteOpen,

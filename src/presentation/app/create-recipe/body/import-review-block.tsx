@@ -32,7 +32,7 @@ export const ImportReviewBlock = ({ review, showLegend }: ImportReviewBlockProps
   const t = useTranslations();
   const colors = useTheme().colors;
   const copy = t.createRecipe.importReview;
-  const [reading, setReading] = useState(false);
+  const [isReading, setReading] = useState(false);
   const hasSource = review.sourceText !== undefined;
   if (!review.suggested && !hasSource && !showLegend) return null;
 
@@ -70,7 +70,7 @@ export const ImportReviewBlock = ({ review, showLegend }: ImportReviewBlockProps
           <ThemedText variant="caption" muted style={styles.legendText}>{copy.legend}</ThemedText>
         </View>
       ) : null}
-      {hasSource ? <WhatWeReadSheet visible={reading} review={review} onClose={() => setReading(false)} /> : null}
+      {hasSource ? <WhatWeReadSheet visible={isReading} review={review} onClose={() => setReading(false)} /> : null}
     </View>
   );
 };

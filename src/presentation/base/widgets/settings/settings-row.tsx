@@ -25,7 +25,7 @@ export const SettingsRow = ({
 }: SettingsRowProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const iconColor = destructive ? colors.danger : colors.primary;
-  const chevronVisible = showChevron ?? (onPress !== undefined);
+  const isChevronVisible = showChevron ?? (onPress !== undefined);
 
   return (
     <Pressable
@@ -53,7 +53,7 @@ export const SettingsRow = ({
         {label}
       </ThemedText>
       {rightElement}
-      {chevronVisible && !rightElement ? (
+      {isChevronVisible && !rightElement ? (
         <Ionicons name="chevron-forward" size={iconSizes.lg} color={colors.textMuted} />
       ) : null}
     </Pressable>

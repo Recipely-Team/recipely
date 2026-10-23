@@ -35,11 +35,11 @@ export const CreatorLinkedRow = ({ claim, isBusy, onRemove, onTryAgain }: Creato
   const colors = useTheme().colors;
   const copy = t.creators.account;
   const { tag, status } = claim;
-  const approved = status === CreatorStatus.Approved;
+  const isApproved = status === CreatorStatus.Approved;
   const body =
     status === CreatorStatus.Pending
       ? copy.pendingBody
-      : approved
+      : isApproved
         ? copy.approvedBody
         : copy.rejectedBody.replace('{handle}', tag.displayHandle);
 
@@ -52,7 +52,7 @@ export const CreatorLinkedRow = ({ claim, isBusy, onRemove, onTryAgain }: Creato
             {creatorPlatformName(t, tag.platform)}
           </SizedText>
           <SizedText size={fontSizes.caption} color={colors.textSubtle} numberOfLines={ValueConstants.one}>
-            {approved ? (
+            {isApproved ? (
               <Text
                 accessibilityRole="link"
                 onPress={() =>
@@ -78,7 +78,7 @@ export const CreatorLinkedRow = ({ claim, isBusy, onRemove, onTryAgain }: Creato
         <CreatorRowAction label={copy.resubmit} primary loading={false} disabled={isBusy} onPress={onTryAgain} />
       ) : (
         <CreatorRowAction
-          label={approved ? copy.remove : copy.withdraw}
+          label={isApproved ? copy.remove : copy.withdraw}
           primary={false}
           loading={false}
           disabled={isBusy}

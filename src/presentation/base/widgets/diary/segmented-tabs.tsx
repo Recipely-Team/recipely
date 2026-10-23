@@ -22,19 +22,19 @@ export const SegmentedTabs = <K extends string>({ options, value, onChange }: Se
   return (
     <View accessibilityRole="tablist" style={[styles.track, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
       {options.map((option) => {
-        const selected = option.key === value;
+        const isSelected = option.key === value;
         return (
           <Pressable
             key={option.key}
             onPress={() => onChange(option.key)}
             accessibilityRole="tab"
-            accessibilityState={{ selected }}
-            style={[styles.segment, selected ? { backgroundColor: colors.primary } : null]}
+            accessibilityState={{ selected: isSelected }}
+            style={[styles.segment, isSelected ? { backgroundColor: colors.primary } : null]}
           >
             <SizedText
               size={fontSizes.caption}
               weight={fontWeights.bold}
-              color={selected ? colors.primaryText : colors.textMuted}
+              color={isSelected ? colors.primaryText : colors.textMuted}
               numberOfLines={ValueConstants.two}
               ratio={lineHeights.tight}
               style={styles.label}

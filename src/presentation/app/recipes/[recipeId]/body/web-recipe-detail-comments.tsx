@@ -48,7 +48,7 @@ export const WebRecipeDetailComments = ({
   const items = commentState?.items ?? [];
   const canLoadMore = commentState !== undefined && items.length < commentState.total;
   const composer = useCommentDraft(onAddComment);
-  const submitDisabled = commentState?.isSubmitting === true || composer.isEmpty;
+  const isSubmitDisabled = commentState?.isSubmitting === true || composer.isEmpty;
 
   return (
     <View style={styles.section}>
@@ -71,12 +71,12 @@ export const WebRecipeDetailComments = ({
         />
         <Pressable
           onPress={composer.onSubmit}
-          disabled={submitDisabled}
+          disabled={isSubmitDisabled}
           accessibilityRole="button"
           accessibilityLabel={t.comments.send}
           style={({ pressed }) => [
             styles.sendBtn,
-            { backgroundColor: colors.primary, opacity: pressed || submitDisabled ? opacities.disabledFaint : opacities.full },
+            { backgroundColor: colors.primary, opacity: pressed || isSubmitDisabled ? opacities.disabledFaint : opacities.full },
           ]}
         >
           <Ionicons name="send" size={iconSizes.md} color={colors.onOverlay} />

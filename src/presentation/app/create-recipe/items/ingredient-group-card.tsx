@@ -59,7 +59,7 @@ export const IngredientGroupCard = ({
   const t = useTranslations();
   const colors = useTheme().colors;
   const copy = t.createRecipe;
-  const [confirming, setConfirming] = useState(false);
+  const [isConfirming, setConfirming] = useState(false);
   const titleLineHeight = useTextLineHeight(fontSizes.medium);
   const rowKeys = useStableKeys(group.items.map((item) => item.value));
 
@@ -121,7 +121,7 @@ export const IngredientGroupCard = ({
           </ThemedText>
         </View>
         <Pressable
-          onPress={() => setConfirming((open) => !open)}
+          onPress={() => setConfirming((isOpen) => !isOpen)}
           hitSlop={spacing.xs}
           style={styles.deleteBtn}
           accessibilityRole="button"
@@ -130,12 +130,12 @@ export const IngredientGroupCard = ({
           <Ionicons
             name="trash-outline"
             size={iconSizes.md}
-            color={confirming ? colors.danger : colors.textMuted}
+            color={isConfirming ? colors.danger : colors.textMuted}
           />
         </Pressable>
       </View>
 
-      {confirming ? <GroupDeleteConfirm onDelete={onDeleteGroup} onCancel={() => setConfirming(false)} /> : null}
+      {isConfirming ? <GroupDeleteConfirm onDelete={onDeleteGroup} onCancel={() => setConfirming(false)} /> : null}
 
       <View style={styles.body}>
         {group.items.length === ValueConstants.zero ? (

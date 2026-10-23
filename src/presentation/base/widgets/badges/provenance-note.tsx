@@ -117,18 +117,18 @@ export const ProvenanceNote = ({ marks, sourceHandle, sourceUrl, style }: Proven
   if (marks.length === ValueConstants.zero) return null;
 
   const seal = <ProvenanceSeal marks={marks} surface={SealSurface.Page} size={provenanceSealMetrics.pageSize} />;
-  const curated = marks.includes(ProvenanceMark.Curated);
+  const isCurated = marks.includes(ProvenanceMark.Curated);
   const platform = marks.find(
     (mark): mark is SourceMarkType => mark !== ProvenanceMark.Ai && mark !== ProvenanceMark.Curated,
   );
 
-  if (curated || platform === undefined) {
+  if (isCurated || platform === undefined) {
     return (
       <View style={style}>
         <View style={[styles.aiChip, { backgroundColor: colors.chipBackground }]}>
           {seal}
           <ThemedText style={[styles.aiLabel, { color: colors.chipText }]}>
-            {curated ? t.recipes.originCuratedDetailLabel : t.recipes.originAiDetailLabel}
+            {isCurated ? t.recipes.originCuratedDetailLabel : t.recipes.originAiDetailLabel}
           </ThemedText>
         </View>
       </View>

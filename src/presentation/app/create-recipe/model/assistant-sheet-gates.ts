@@ -39,13 +39,13 @@ interface SheetGates {
  *   them was to read them, and reading them is what missed it twice.
  */
 export function assistantSheetGates(sheets: OpenSheets): SheetGates {
-  const errorOrPhotosOpen = sheets.saveErrorOpen || sheets.saveIssueOpen || sheets.photosOpen;
+  const isErrorOrPhotosOpen = sheets.saveErrorOpen || sheets.saveIssueOpen || sheets.photosOpen;
   // Everything drawn over the EXIT sheet — itself excluded, for the reason above.
-  const otherSheetOpen = sheets.publishOpen || errorOrPhotosOpen;
+  const isOtherSheetOpen = sheets.publishOpen || isErrorOrPhotosOpen;
 
   return {
-    exitOrErrorOpen: sheets.exitOpen || errorOrPhotosOpen,
-    canLeave: !otherSheetOpen,
-    isExitPending: sheets.exitOpen && !otherSheetOpen,
+    exitOrErrorOpen: sheets.exitOpen || isErrorOrPhotosOpen,
+    canLeave: !isOtherSheetOpen,
+    isExitPending: sheets.exitOpen && !isOtherSheetOpen,
   };
 }

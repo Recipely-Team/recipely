@@ -60,16 +60,16 @@ export const FilePageSheet = ({ pages, index, isPdf, onMove, onRemove, onClose }
           {!isPdf && pages.length > ValueConstants.one ? (
             <View style={styles.moves}>
               {moves.map((move) => {
-                const off = move.to < ValueConstants.zero || move.to >= pages.length;
+                const isOff = move.to < ValueConstants.zero || move.to >= pages.length;
                 return (
                   <Pressable
                     key={move.label}
-                    disabled={off}
+                    disabled={isOff}
                     onPress={() => onMove(at, move.to)}
                     accessibilityRole="button"
                     accessibilityLabel={move.label}
-                    accessibilityState={{ disabled: off }}
-                    style={[styles.move, { borderColor: colors.border, opacity: off ? opacities.inactive : opacities.full }]}
+                    accessibilityState={{ disabled: isOff }}
+                    style={[styles.move, { borderColor: colors.border, opacity: isOff ? opacities.inactive : opacities.full }]}
                   >
                     <Ionicons name={move.icon} size={iconSizes.md} color={colors.text} />
                     <ThemedText variant="body" style={styles.moveLabel}>

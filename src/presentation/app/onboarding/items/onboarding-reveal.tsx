@@ -39,12 +39,12 @@ export const OnboardingReveal = ({
   float = false,
   style,
 }: OnboardingRevealProps): React.JSX.Element => {
-  const reducedMotion = useReducedMotion();
+  const shouldReduceMotion = useReducedMotion();
   const [progress] = useState(() => new Animated.Value(AnimationConstants.progressMin));
   const [floatValue] = useState(() => new Animated.Value(AnimationConstants.progressMin));
 
   useEffect(() => {
-    if (reducedMotion) return;
+    if (shouldReduceMotion) return;
     if (!active) {
       progress.setValue(AnimationConstants.progressMin);
       return;
@@ -58,10 +58,10 @@ export const OnboardingReveal = ({
     });
     animation.start();
     return () => animation.stop();
-  }, [active, delay, progress, reducedMotion]);
+  }, [active, delay, progress, shouldReduceMotion]);
 
   useEffect(() => {
-    if (reducedMotion || !float) return;
+    if (shouldReduceMotion || !float) return;
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(floatValue, {
@@ -80,9 +80,9 @@ export const OnboardingReveal = ({
     );
     loop.start();
     return () => loop.stop();
-  }, [float, floatValue, reducedMotion]);
+  }, [float, floatValue, shouldReduceMotion]);
 
-  if (reducedMotion) {
+  if (shouldReduceMotion) {
     return <Animated.View style={style}>{children}</Animated.View>;
   }
 

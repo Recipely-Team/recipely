@@ -61,10 +61,10 @@ export const WebHeader = (): React.JSX.Element => {
   const toBuy = useStore(shoppingListStore, (s) => s.toBuy) ?? ValueConstants.zero;
   const user = useSignedInUser();
   const unreadCount = useStore(notificationsStore, (s) => s.unreadCount);
-  const signedIn = user !== null;
+  const isSignedIn = user !== null;
   useEffect(() => {
-    if (signedIn) void shoppingListStore.getState().loadToBuy();
-  }, [shoppingListStore, signedIn]);
+    if (isSignedIn) void shoppingListStore.getState().loadToBuy();
+  }, [shoppingListStore, isSignedIn]);
   const { searchQuery, setSearchQuery } = useWebShellState();
 
   const activeTab = resolveActiveTab(pathname);
@@ -97,11 +97,11 @@ export const WebHeader = (): React.JSX.Element => {
   const goDiscover = (): void => router.push(RoutePaths.onboarding);
 
   // Discover is guest-only and on the Recipes tab.
-  const isAuthenticated = signedIn;
-  const showDiscover = activeTab === WebHeaderTabKey.Recipes && !isAuthenticated;
+  const isAuthenticated = isSignedIn;
+  const shouldShowDiscover = activeTab === WebHeaderTabKey.Recipes && !isAuthenticated;
 
   // Search only on the Recipes listing, which reads it.
-  const showSearch = activeTab === WebHeaderTabKey.Recipes;
+  const shouldShowSearch = activeTab === WebHeaderTabKey.Recipes;
 
   return (
     <View
@@ -121,7 +121,7 @@ export const WebHeader = (): React.JSX.Element => {
         </View>
 
         <View style={styles.searchWrap}>
-          {showSearch ? (
+          {shouldShowSearch ? (
             <WebHeaderSearch
               value={searchQuery}
               onChange={setSearchQuery}
@@ -144,11 +144,11 @@ export const WebHeader = (): React.JSX.Element => {
           isProfileActive={isProfileActive}
           avatarName={displayName}
           avatarUri={avatarUri}
-          discoverLabel={showDiscover ? t.onboarding.discover : undefined}
+          discoverLabel={shouldShowDiscover ? t.onboarding.discover : undefined}
           onCreate={goCreate}
           onOpenNotifications={goNotifs}
           onOpenProfile={goProfile}
-          onDiscover={showDiscover ? goDiscover : undefined}
+          onDiscover={shouldShowDiscover ? goDiscover : undefined}
         />
       </View>
       <SignInPromptSheet {...gate.prompt} />

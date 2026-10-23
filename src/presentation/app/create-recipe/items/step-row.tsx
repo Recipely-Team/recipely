@@ -29,15 +29,15 @@ export const StepRow = ({
 }: StepRowProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
-  const [focused, setFocused] = useState(false);
-  const guessed = useIsGuessed(value);
+  const [isFocused, setFocused] = useState(false);
+  const wasGuessed = useIsGuessed(value);
   return (
     <View
       style={[
         styles.root,
         {
-          backgroundColor: focused ? colors.chipBackground : colors.surface,
-          borderColor: focused ? colors.primary : colors.cardBorder,
+          backgroundColor: isFocused ? colors.chipBackground : colors.surface,
+          borderColor: isFocused ? colors.primary : colors.cardBorder,
         },
       ]}
     >
@@ -64,7 +64,7 @@ export const StepRow = ({
         minHeight={controlSizes.iconBtn}
         style={[styles.input, { color: colors.text }]}
       />
-      {guessed ? <CheckChip /> : null}
+      {wasGuessed ? <CheckChip /> : null}
       <Pressable
         onPress={onRemove}
         hitSlop={spacing.sm}

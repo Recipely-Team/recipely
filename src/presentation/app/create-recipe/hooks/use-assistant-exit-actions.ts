@@ -59,8 +59,8 @@ export const useAssistantExitActions = (deps: AssistantExitActionsDeps): void =>
   useAssistantAction(
     AssistantAction.GoBack,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      const asked = onClose();
-      return asked ? { ok: true, awaiting: true } : { ok: true };
+      const wasAsked = onClose();
+      return wasAsked ? { ok: true, awaiting: true } : { ok: true };
     }, [onClose]),
     canLeave,
   );

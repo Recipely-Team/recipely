@@ -20,15 +20,15 @@ const BAND_SHARE = 0.25;
  */
 export const ScanSweep = ({ height }: ScanSweepProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const reduceMotion = useReducedMotion();
+  const shouldReduceMotion = useReducedMotion();
   const band = height * BAND_SHARE;
   const progress = useSharedValue(ValueConstants.zero);
 
   useEffect(() => {
-    if (reduceMotion) return;
+    if (shouldReduceMotion) return;
     progress.set(withRepeat(withTiming(ValueConstants.one, { duration: durations.pulse, easing: Easing.linear }), ValueConstants.minusOne));
     return () => cancelAnimation(progress);
-  }, [progress, reduceMotion]);
+  }, [progress, shouldReduceMotion]);
 
   const style = useAnimatedStyle(() => ({ transform: [{ translateY: -band + progress.get() * (height + band) }] }));
 

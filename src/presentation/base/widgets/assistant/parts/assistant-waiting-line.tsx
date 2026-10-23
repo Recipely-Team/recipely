@@ -50,14 +50,14 @@ export const AssistantWaitingLine = ({
 }: AssistantWaitingLineProps): React.JSX.Element | null => {
   const t = useTranslations();
   const { colors } = useTheme();
-  const reduceMotion = useReduceMotion();
+  const shouldReduceMotion = useReduceMotion();
   const [pulse] = useState(() => new Animated.Value(ValueConstants.zero));
   // Muted outranks the other states.
   const isMutedLive = isMuted && status !== AssistantStatus.Idle;
   const isWaiting = WAITING.includes(status) || isMutedLive;
 
   useEffect(() => {
-    if (reduceMotion || !isWaiting) return;
+    if (shouldReduceMotion || !isWaiting) return;
     const loop = Animated.loop(
       Animated.timing(pulse, {
         toValue: ValueConstants.one,
@@ -68,7 +68,7 @@ export const AssistantWaitingLine = ({
     );
     loop.start();
     return () => loop.stop();
-  }, [pulse, isWaiting, reduceMotion]);
+  }, [pulse, isWaiting, shouldReduceMotion]);
 
   if (!isWaiting) return null;
 
@@ -87,7 +87,7 @@ export const AssistantWaitingLine = ({
               styles.dot,
               {
                 backgroundColor: colors.primary,
-                opacity: reduceMotion
+                opacity: shouldReduceMotion
                   ? opacities.inactive
                   : pulse.interpolate({
                       inputRange: [ValueConstants.zero, ValueConstants.one],

@@ -33,11 +33,11 @@ export const timersBarStore = createStore<TimersBarStore>((set, get) => ({
     set({ collapsed: stored === COLLAPSED });
   },
 
-  setCollapsed: async (collapsed) => {
-    set({ collapsed, chosen: true });
+  setCollapsed: async (isCollapsed) => {
+    set({ collapsed: isCollapsed, chosen: true });
     try {
       const store = getKeyValueStore();
-      await (collapsed
+      await (isCollapsed
         ? store.setItem(TIMERS_BAR_COLLAPSED_STORAGE_KEY, COLLAPSED)
         : store.removeItem(TIMERS_BAR_COLLAPSED_STORAGE_KEY));
     } catch {

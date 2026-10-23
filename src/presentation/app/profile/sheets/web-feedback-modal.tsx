@@ -28,7 +28,7 @@ export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): R
 
   const [subject, setSubject] = useState(CharConstants.empty);
   const [message, setMessage] = useState(CharConstants.empty);
-  const [sent, setSent] = useState(false);
+  const [wasSent, setSent] = useState(false);
   // This sheet's own failure; another submitter's never shows here.
   const [error, setError] = useState<Failure | null>(null);
 
@@ -57,7 +57,7 @@ export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): R
       showCloseButton
       dialogMaxWidth={layoutSizes.webModalMaxWidth}
       footer={
-        sent ? (
+        wasSent ? (
           <PrimaryButton label={t.support.sentDone} onPress={handleClose} />
         ) : (
           <PrimaryButton
@@ -69,7 +69,7 @@ export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): R
         )
       }
     >
-      {sent ? (
+      {wasSent ? (
         <WebFeedbackSuccess />
       ) : (
         <WebFeedbackForm

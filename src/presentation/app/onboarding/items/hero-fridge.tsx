@@ -32,12 +32,12 @@ export const HeroFridge = ({ active = true }: HeroProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
   const a = t.onboarding.art;
-  const reducedMotion = useReducedMotion();
+  const shouldReduceMotion = useReducedMotion();
   const [frameHeight, setFrameHeight] = useState(ValueConstants.zero);
   const [sweep] = useState(() => new Animated.Value(ValueConstants.zero));
 
   useEffect(() => {
-    if (!active || reducedMotion) return;
+    if (!active || shouldReduceMotion) return;
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(sweep, { toValue: ValueConstants.one, duration: SCAN_HALF_MS, easing: Easing.inOut(Easing.ease), useNativeDriver: !isWeb() }),
@@ -46,7 +46,7 @@ export const HeroFridge = ({ active = true }: HeroProps): React.JSX.Element => {
     );
     loop.start();
     return () => loop.stop();
-  }, [active, reducedMotion, sweep]);
+  }, [active, shouldReduceMotion, sweep]);
 
   const translateY = sweep.interpolate({
     inputRange: [ValueConstants.zero, ValueConstants.one],
@@ -60,7 +60,7 @@ export const HeroFridge = ({ active = true }: HeroProps): React.JSX.Element => {
           style={[styles.viewfinder, { backgroundColor: BrandColors.viewfinder }]}
           onLayout={(e: LayoutChangeEvent) => setFrameHeight(e.nativeEvent.layout.height)}
         >
-          {reducedMotion ? null : (
+          {shouldReduceMotion ? null : (
             <Animated.View style={[styles.scan, { backgroundColor: colors.primary, transform: [{ translateY }] }]} />
           )}
           <View style={styles.found}>

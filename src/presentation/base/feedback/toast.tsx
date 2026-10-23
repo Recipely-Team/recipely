@@ -51,7 +51,7 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
   const surfaces = useSeveritySurfaces();
   const accent = surfaces[item.severity].icon;
   const [anim] = useState(() => new Animated.Value(ValueConstants.zero));
-  const screenReader = useScreenReaderEnabled();
+  const isScreenReaderOn = useScreenReaderEnabled();
   useAnnounce(item.message);
 
   const dismiss = useCallback(() => {
@@ -72,9 +72,9 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
     const base = item.durationMs ?? (item.actionLabel !== undefined ? ACTION_TOAST_DURATION_MS : DEFAULT_TOAST_DURATION_MS);
     if (base <= ValueConstants.zero) return;
     const floor = item.actionLabel !== undefined ? Math.max(base, ACTION_TOAST_DURATION_MS) : base;
-    const timer = setTimeout(dismiss, screenReader ? floor * SCREEN_READER_DURATION_FACTOR : floor);
+    const timer = setTimeout(dismiss, isScreenReaderOn ? floor * SCREEN_READER_DURATION_FACTOR : floor);
     return () => clearTimeout(timer);
-  }, [anim, item.durationMs, item.actionLabel, screenReader, dismiss]);
+  }, [anim, item.durationMs, item.actionLabel, isScreenReaderOn, dismiss]);
 
   const handleAction = useCallback(() => {
     item.onAction?.();

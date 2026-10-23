@@ -26,19 +26,19 @@ export const OnboardingDots = ({ count, index, onSelect, progress }: OnboardingD
   return (
     <View style={styles.row}>
       {Array.from({ length: count }).map((_, i) => {
-        const active = i === index;
+        const isActive = i === index;
         return (
           <Pressable
             key={i}
             onPress={() => onSelect(i)}
             accessibilityRole="tab"
             accessibilityLabel={`${t.onboarding.slideLabel} ${i + ValueConstants.one} / ${count}`}
-            accessibilityState={{ selected: active }}
+            accessibilityState={{ selected: isActive }}
             style={styles.target}
           >
-            <View style={[styles.dot, { width: active ? ACTIVE_WIDTH : DOT_SIZE }]}>
+            <View style={[styles.dot, { width: isActive ? ACTIVE_WIDTH : DOT_SIZE }]}>
               <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.textMuted, opacity: TRACK_OPACITY }]} />
-              {active ? (
+              {isActive ? (
                 <Animated.View
                   style={[
                     StyleSheet.absoluteFill,

@@ -52,8 +52,8 @@ export const MessageStep = (props: MessageStepProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { isExpanded } = useLayout();
   const copy = t.instagram;
-  const linkMissing = !props.dmText.includes(DmMessageToken.Link);
-  const overLimit = props.dmText.length > DmRuleLimits.DmTextMax;
+  const isLinkMissing = !props.dmText.includes(DmMessageToken.Link);
+  const isOverLimit = props.dmText.length > DmRuleLimits.DmTextMax;
   // The caret, so a token lands where the user is typing rather than at the end.
   const [selection, setSelection] = useState({
     start: props.dmText.length,
@@ -67,7 +67,7 @@ export const MessageStep = (props: MessageStepProps): React.JSX.Element => {
   const field = {
     color: colors.text,
     backgroundColor: colors.inputBackground,
-    borderColor: linkMissing ? colors.danger : colors.inputBorder,
+    borderColor: isLinkMissing ? colors.danger : colors.inputBorder,
   };
   const preview = (
     <DmPreview
@@ -110,18 +110,18 @@ export const MessageStep = (props: MessageStepProps): React.JSX.Element => {
           </SizedText>
           {TOKENS.map((token) => {
             // One link is all a DM needs; a second would only repeat the card.
-            const used = token === DmMessageToken.Link && !linkMissing;
+            const wasUsed = token === DmMessageToken.Link && !isLinkMissing;
             return (
               <Pressable
                 key={token}
                 onPress={() => insert(token)}
-                disabled={used}
+                disabled={wasUsed}
                 accessibilityRole="button"
-                accessibilityState={{ disabled: used }}
+                accessibilityState={{ disabled: wasUsed }}
                 style={[
                   styles.token,
                   { backgroundColor: colors.chipBackground },
-                  used ? styles.used : null,
+                  wasUsed ? styles.used : null,
                 ]}
               >
                 <SizedText
@@ -138,7 +138,7 @@ export const MessageStep = (props: MessageStepProps): React.JSX.Element => {
           <SizedText
             size={fontSizes.small}
             numberOfLines={1}
-            color={overLimit ? colors.danger : colors.textMuted}
+            color={isOverLimit ? colors.danger : colors.textMuted}
             style={styles.counter}
           >
             {copy.counter
@@ -148,10 +148,10 @@ export const MessageStep = (props: MessageStepProps): React.JSX.Element => {
         </View>
         <SizedText
           size={fontSizes.small}
-          color={linkMissing ? colors.danger : colors.textSubtle}
-          role={linkMissing ? "alert" : undefined}
+          color={isLinkMissing ? colors.danger : colors.textSubtle}
+          role={isLinkMissing ? "alert" : undefined}
         >
-          {linkMissing ? copy.linkMissing : copy.cardHelper}
+          {isLinkMissing ? copy.linkMissing : copy.cardHelper}
         </SizedText>
         <View style={styles.switchRow}>
           <SizedText

@@ -73,8 +73,8 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): StoreApi<DiaryStore> 
 
   return createStore<DiaryStore>((set, get) => {
     /** Moves one concern's load to its next state. */
-    const mark = (concern: DiaryConcernType, loading: boolean, failure: Failure | null = null): void => {
-      const next: DiaryLoadState = loading
+    const mark = (concern: DiaryConcernType, isLoading: boolean, failure: Failure | null = null): void => {
+      const next: DiaryLoadState = isLoading
         ? { status: StoreStatus.Loading }
         : failure === null
           ? { status: StoreStatus.Loaded }
@@ -122,13 +122,13 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): StoreApi<DiaryStore> 
           if (isSelected()) mark(DiaryConcern.Day, false, result.failure);
           return;
         }
-        const fresh = goalsAt === goalsSaves;
-        let loaded = fresh ? result.value : result.value.withGoals(get().goals);
+        const isFresh = goalsAt === goalsSaves;
+        let loaded = isFresh ? result.value : result.value.withGoals(get().goals);
         water.confirmFromLoad(key, loaded.waterGlasses);
         const cached = get().days[key];
         if (water.hasTaps(key) && cached !== undefined) loaded = loaded.withWater(cached.waterGlasses);
         serverOrder.set(key, loaded.entries.map((entry) => entry.id));
-        set((s) => ({ days: { ...s.days, [key]: loaded }, ...(fresh ? { goals: loaded.goals } : {}) }));
+        set((s) => ({ days: { ...s.days, [key]: loaded }, ...(isFresh ? { goals: loaded.goals } : {}) }));
         if (isSelected()) mark(DiaryConcern.Day, false);
       },
 
@@ -139,9 +139,9 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): StoreApi<DiaryStore> 
         const result = await deps.loadMonth.execute(month);
         if (requested !== session) return;
         if (!result.ok) return mark(DiaryConcern.Month, false, result.failure);
-        const fresh = goalsAt === goalsSaves;
-        const loaded = fresh ? result.value : result.value.withGoals(get().goals);
-        set((s) => ({ months: { ...s.months, [month.value]: loaded }, ...(fresh ? { goals: loaded.goals } : {}) }));
+        const isFresh = goalsAt === goalsSaves;
+        const loaded = isFresh ? result.value : result.value.withGoals(get().goals);
+        set((s) => ({ months: { ...s.months, [month.value]: loaded }, ...(isFresh ? { goals: loaded.goals } : {}) }));
         mark(DiaryConcern.Month, false);
       },
 
@@ -196,8 +196,8 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): StoreApi<DiaryStore> 
         const result = await deps.updateEntry.execute(entry.id, changes);
         if (requested !== session) return result;
         if (result.ok) {
-          const moved = !result.value.date.equals(entry.date);
-          void refreshAround(moved ? [entry.date, result.value.date] : [entry.date]);
+          const hasMoved = !result.value.date.equals(entry.date);
+          void refreshAround(hasMoved ? [entry.date, result.value.date] : [entry.date]);
         }
         return result;
       },
@@ -225,15 +225,15 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): StoreApi<DiaryStore> 
         updateDay(key, (day) => day.withWater(glasses));
         const result = await deps.setWater.execute(date, glasses);
         if (requested !== session) return result.ok ? ok(undefined) : result;
-        const latest = water.isLatest(key, tap);
+        const isLatest = water.isLatest(key, tap);
         water.settle(key, tap);
         if (result.ok) {
           water.confirm(key, result.value);
-          if (latest) updateDay(key, (day) => day.withWater(result.value));
+          if (isLatest) updateDay(key, (day) => day.withWater(result.value));
           return ok(undefined);
         }
         const confirmed = water.confirmed(key);
-        if (latest && confirmed !== undefined) updateDay(key, (day) => day.withWater(confirmed));
+        if (isLatest && confirmed !== undefined) updateDay(key, (day) => day.withWater(confirmed));
         return result;
       },
 

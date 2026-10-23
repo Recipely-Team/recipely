@@ -41,16 +41,16 @@ export const OwnerStatusPanel = ({ recipe, onAddPhoto }: OwnerStatusPanelProps):
   const colors = useTheme().colors;
   const danger = useSeveritySurfaces().danger;
   const panel = useOwnerStatusPanel(recipe);
-  const rejected = panel.status === OwnerStatus.Rejected;
+  const isRejected = panel.status === OwnerStatus.Rejected;
   const isPrivate = panel.status === OwnerStatus.Private;
   const remaining = panel.blockers.length;
-  const inReview = panel.status === OwnerStatus.InReview;
+  const isInReview = panel.status === OwnerStatus.InReview;
 
   return (
     <View
       style={[
         styles.panel,
-        rejected
+        isRejected
           ? { backgroundColor: danger.bg, borderColor: danger.border }
           : { backgroundColor: colors.surface, borderColor: colors.cardBorder },
       ]}
@@ -59,13 +59,13 @@ export const OwnerStatusPanel = ({ recipe, onAddPhoto }: OwnerStatusPanelProps):
         <Ionicons
           name={ownerStatusLook[panel.status].icon}
           size={iconSizes.md}
-          color={rejected ? danger.icon : colors.primary}
+          color={isRejected ? danger.icon : colors.primary}
         />
         <View style={styles.headerText}>
-          <ThemedText variant="body" style={[styles.note, rejected ? { color: danger.text } : null]}>
+          <ThemedText variant="body" style={[styles.note, isRejected ? { color: danger.text } : null]}>
             {statusNote[panel.status](t)}
           </ThemedText>
-          {rejected ? (
+          {isRejected ? (
             <ThemedText variant="caption" muted>
               {t.publishing.rejectedNote}
             </ThemedText>
@@ -96,11 +96,11 @@ export const OwnerStatusPanel = ({ recipe, onAddPhoto }: OwnerStatusPanelProps):
           <PanelAction icon="create-outline" label={t.publishing.edit} onPress={panel.onEdit} disabled={panel.isBusy} />
         </View>
       ) : null}
-      {inReview || panel.status === OwnerStatus.Published ? (
+      {isInReview || panel.status === OwnerStatus.Published ? (
         <View style={styles.actions}>
           <PanelAction
-            icon={inReview ? 'lock-closed' : 'eye-off-outline'}
-            label={inReview ? t.publishing.makePrivate : t.publishing.unpublish}
+            icon={isInReview ? 'lock-closed' : 'eye-off-outline'}
+            label={isInReview ? t.publishing.makePrivate : t.publishing.unpublish}
             onPress={panel.onRequestUnpublish}
             disabled={panel.isBusy}
           />
@@ -117,9 +117,9 @@ export const OwnerStatusPanel = ({ recipe, onAddPhoto }: OwnerStatusPanelProps):
       />
       <ConfirmSheet
         visible={panel.confirm === PanelConfirm.Unpublish}
-        title={inReview ? t.publishing.makePrivateTitle : t.publishing.unpublishTitle}
-        message={inReview ? t.publishing.makePrivateMessage : t.publishing.unpublishMessage}
-        confirmLabel={inReview ? t.publishing.makePrivate : t.publishing.unpublish}
+        title={isInReview ? t.publishing.makePrivateTitle : t.publishing.unpublishTitle}
+        message={isInReview ? t.publishing.makePrivateMessage : t.publishing.unpublishMessage}
+        confirmLabel={isInReview ? t.publishing.makePrivate : t.publishing.unpublish}
         onConfirm={panel.onConfirm}
         onClose={panel.onCancelConfirm}
       />

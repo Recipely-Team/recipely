@@ -21,28 +21,28 @@ interface RemindersSetting {
 export const useRemindersSetting = (): RemindersSetting => {
   const t = useTranslations();
   const { getRemindersEnabled, setRemindersChoice } = useStores();
-  const [enabled, setEnabled] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [isEnabled, setEnabled] = useState(false);
+  const [isBusy, setBusy] = useState(false);
 
   useEffect(() => {
-    let live = true;
-    void getRemindersEnabled.execute().then((on) => {
-      if (live) setEnabled(on);
+    let isLive = true;
+    void getRemindersEnabled.execute().then((isOn) => {
+      if (isLive) setEnabled(isOn);
     });
     return () => {
-      live = false;
+      isLive = false;
     };
   }, [getRemindersEnabled]);
 
   const onChange = useCallback(
-    (next: boolean): void => {
-      setEnabled(next);
+    (isNextEnabled: boolean): void => {
+      setEnabled(isNextEnabled);
       setBusy(true);
       void setRemindersChoice
-        .execute(next, t.reminders.messages, Date.now())
-        .then((on) => {
-          setEnabled(on);
-          if (next && !on) showWarningToast(t.reminders.permissionDenied);
+        .execute(isNextEnabled, t.reminders.messages, Date.now())
+        .then((isOn) => {
+          setEnabled(isOn);
+          if (isNextEnabled && !isOn) showWarningToast(t.reminders.permissionDenied);
         })
         .catch(() => setEnabled(false))
         .finally(() => setBusy(false));
@@ -50,5 +50,5 @@ export const useRemindersSetting = (): RemindersSetting => {
     [setRemindersChoice, t],
   );
 
-  return { enabled, busy, onChange };
+  return { enabled: isEnabled, busy: isBusy, onChange };
 };

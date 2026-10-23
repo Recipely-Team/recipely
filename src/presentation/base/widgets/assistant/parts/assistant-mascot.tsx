@@ -45,8 +45,8 @@ export const AssistantMascot = ({
   status,
   isAnimated = true,
 }: AssistantMascotProps): React.JSX.Element => {
-  const speaking = status === AssistantStatus.Speaking;
-  const listening = status === AssistantStatus.Listening;
+  const isSpeaking = status === AssistantStatus.Speaking;
+  const isListening = status === AssistantStatus.Listening;
   const isStill = useReduceMotion() || !isAnimated;
 
   const [blink] = useState(() => new Animated.Value(mascotGeometry.eyes.r));
@@ -74,7 +74,7 @@ export const AssistantMascot = ({
   }, [blink, isStill]);
 
   useEffect(() => {
-    if (isStill || !listening) {
+    if (isStill || !isListening) {
       bob.setValue(ValueConstants.zero);
       return;
     }
@@ -96,7 +96,7 @@ export const AssistantMascot = ({
     );
     loop.start();
     return () => loop.stop();
-  }, [bob, listening, isStill]);
+  }, [bob, isListening, isStill]);
 
   const translateY = bob.interpolate({
     inputRange: [ValueConstants.zero, ValueConstants.one],
@@ -147,7 +147,7 @@ export const AssistantMascot = ({
           fill={mascotGeometry.eye}
         />
 
-        {speaking ? (
+        {isSpeaking ? (
           <Ellipse {...mascotGeometry.mouth} fill={mascotGeometry.mouthFill} />
         ) : (
           <Path

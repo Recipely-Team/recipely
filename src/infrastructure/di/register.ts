@@ -67,8 +67,8 @@ interface InfrastructureOptions {
  */
 export const registerInfrastructure = (container: Container, opts?: InfrastructureOptions): void => {
   // Web keeps tokens in memory and the refresh token in the API's HttpOnly cookie.
-  const cookieSession = isWeb();
-  const storage = new SecureTokenStorage(!cookieSession);
+  const isCookieSession = isWeb();
+  const storage = new SecureTokenStorage(!isCookieSession);
   const deviceIdentity = new StoredDeviceIdentity(
     kvStore,
     randomUUID,
@@ -110,7 +110,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
       return localeService.getLocale();
     },
     enableLogging: __DEV__,
-    cookieSession,
+    cookieSession: isCookieSession,
     // Read at call time: the refresher is built after the client it renews for.
     refreshSession: () => refresher.run(),
     requestIdProvider: randomUUID,
@@ -120,7 +120,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
     httpClientOptions.onUnauthorized = opts.onUnauthorized;
   }
   const http = new AxiosHttpClient(httpClientOptions);
-  const authRepository = new AuthRepository(http, storage, deviceIdentity, cookieSession);
+  const authRepository = new AuthRepository(http, storage, deviceIdentity, isCookieSession);
   const refresher = new SessionRefresher(() => authRepository.refreshSession());
 
   container.register(TOKENS.AuthRepository, () => authRepository);

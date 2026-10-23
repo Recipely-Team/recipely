@@ -9,10 +9,10 @@ import type { UseDiarySheetsResult } from '@presentation/app/diary/model/use-dia
 /** The Day view's two sheets — Add food (add or edit) and Daily goals. New foods go to the selected day. */
 export const useDiarySheets = (selected: CalendarDate): UseDiarySheetsResult => {
   const [addRequest, setAddRequest] = useState<AddFoodRequestType | null>(null);
-  const [goalsOpen, setGoalsOpen] = useState(false);
+  const [isGoalsOpen, setGoalsOpen] = useState(false);
   return {
     addRequest,
-    goalsOpen,
+    goalsOpen: isGoalsOpen,
     openAdd: useCallback((meal: MealSlotType | null) => setAddRequest({ kind: AddFoodRequestKind.Pick, date: selected, meal }), [selected]),
     openSearch: useCallback(
       (query: string) => setAddRequest({ kind: AddFoodRequestKind.Pick, date: selected, meal: null, query }),

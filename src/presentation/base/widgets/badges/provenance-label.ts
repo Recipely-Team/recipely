@@ -22,11 +22,11 @@ const PLATFORM_A11Y: Record<SourceMarkType, (t: TranslationsType) => string> = {
  */
 export const provenanceLabel = (t: TranslationsType, marks: readonly ProvenanceMarkType[]): string => {
   if (marks.includes(ProvenanceMark.Curated)) return t.recipes.originCuratedA11y;
-  const byModel = marks.includes(ProvenanceMark.Ai);
+  const isByModel = marks.includes(ProvenanceMark.Ai);
   const platform = marks.find(
     (mark): mark is SourceMarkType => mark !== ProvenanceMark.Ai && mark !== ProvenanceMark.Curated,
   );
   const base = platform === undefined ? null : PLATFORM_A11Y[platform](t);
-  if (base === null) return byModel ? t.recipes.originAiA11y : CharConstants.empty;
-  return byModel ? `${base}${t.recipes.originEditedByAiSuffix}` : base;
+  if (base === null) return isByModel ? t.recipes.originAiA11y : CharConstants.empty;
+  return isByModel ? `${base}${t.recipes.originEditedByAiSuffix}` : base;
 };

@@ -68,11 +68,11 @@ export const WebHeaderActions = ({
 }: WebHeaderActionsProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const badgeText = countBadgeLabel(unreadCount);
-  const showDiscover = discoverLabel !== undefined && onDiscover !== undefined;
+  const shouldShowDiscover = discoverLabel !== undefined && onDiscover !== undefined;
 
   return (
     <View style={styles.row}>
-      {showDiscover ? (
+      {shouldShowDiscover ? (
         <Pressable
           onPress={onDiscover}
           accessibilityRole="button"

@@ -45,11 +45,11 @@ export interface FeedFooterProps {
 export const FeedFooter = ({ isLoadingMore, failure, onRetry, hasMore }: FeedFooterProps): React.JSX.Element | null => {
   const t = useTranslations();
   const colors = useTheme().colors;
-  const failed = failure != null && onRetry !== undefined;
-  if (isLoadingMore || (hasMore === true && !failed)) {
+  const hasFailed = failure != null && onRetry !== undefined;
+  if (isLoadingMore || (hasMore === true && !hasFailed)) {
     return <ActivityIndicator color={colors.primary} style={styles.root} accessibilityLabel={t.common.loadingMore} />;
   }
-  if (!failed) {
+  if (!hasFailed) {
     return hasMore === false ? (
       <ThemedText variant="caption" muted style={styles.end}>
         {t.common.endOfList}

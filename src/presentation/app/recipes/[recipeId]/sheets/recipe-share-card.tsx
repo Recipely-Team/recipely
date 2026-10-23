@@ -47,8 +47,8 @@ export const RecipeShareCard = forwardRef<View, RecipeShareCardProps>(
     const t = useTranslations();
   const locale = useLocale();
     const colors = useTheme().colors;
-    const [photoFailed, setPhotoFailed] = useState(false);
-    const hasPhoto = imageUrl !== undefined && !photoFailed;
+    const [hasPhotoFailed, setPhotoFailed] = useState(false);
+    const hasPhoto = imageUrl !== undefined && !hasPhotoFailed;
     useEffect(() => {
       if (!hasPhoto) onReady();
     }, [hasPhoto, onReady]);

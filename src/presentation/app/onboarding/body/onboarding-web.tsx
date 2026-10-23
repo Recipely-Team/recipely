@@ -34,11 +34,11 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
   const colors = useTheme().colors;
   const { width } = useWindowDimensions();
   const [index, setIndex] = useState(ValueConstants.zero);
-  const stacked = width < TWO_COL_MIN;
+  const isStacked = width < TWO_COL_MIN;
 
   const slide = slides[index];
-  const atStart = index === ValueConstants.zero;
-  const atEnd = index === slides.length - ValueConstants.one;
+  const isAtStart = index === ValueConstants.zero;
+  const isAtEnd = index === slides.length - ValueConstants.one;
   const move = useCallback(
     (delta: number): void => setIndex((i) => Math.min(slides.length - ValueConstants.one, Math.max(ValueConstants.zero, i + delta))),
     [slides.length],
@@ -54,16 +54,16 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
   };
 
   const arrows: { icon: 'chevron-back' | 'chevron-forward'; delta: number; disabled: boolean; label: string }[] = [
-    { icon: 'chevron-back', delta: -1, disabled: atStart, label: t.onboarding.previousSlide },
-    { icon: 'chevron-forward', delta: 1, disabled: atEnd, label: t.onboarding.nextSlide },
+    { icon: 'chevron-back', delta: -1, disabled: isAtStart, label: t.onboarding.previousSlide },
+    { icon: 'chevron-forward', delta: 1, disabled: isAtEnd, label: t.onboarding.nextSlide },
   ];
 
   // The slide list is never empty in the app; an empty one draws nothing rather than crashing.
   if (slide === undefined) return <View />;
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={[styles.grid, stacked ? styles.gridStacked : styles.gridRow, { maxWidth: CONTENT_MAX }]}>
-        <View style={[styles.copyCol, stacked ? styles.copyColStacked : null]}>
+      <View style={[styles.grid, isStacked ? styles.gridStacked : styles.gridRow, { maxWidth: CONTENT_MAX }]}>
+        <View style={[styles.copyCol, isStacked ? styles.copyColStacked : null]}>
           <View style={styles.headerRow}>
             <View style={styles.brand}>
               <RecipelyLogo size={LOGO_SIZE} />
@@ -114,7 +114,7 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
           <OnboardingActions web onSignUp={actions.onSignUp} onSignIn={actions.onSignIn} />
         </View>
 
-        <View style={[styles.heroCol, stacked ? styles.heroColStacked : null]}>
+        <View style={[styles.heroCol, isStacked ? styles.heroColStacked : null]}>
           <OnboardingHero key={index} kind={slide.kind} web style={styles.hero} />
         </View>
       </View>

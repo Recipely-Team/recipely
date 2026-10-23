@@ -95,7 +95,7 @@ export const AssistantPill = (): React.JSX.Element | null => {
   useOsAssistantCredentials();
 
   const isOffered = useAssistantIsOffered();
-  const live = assistantIsLive(status);
+  const isLive = assistantIsLive(status);
   const floatingClearance = useAssistantFloatingClearance();
   const hasTabBar = useTabBarState() !== null && !isWebShell;
   const edge = isExpanded ? spacing.xl : spacing.lg;
@@ -110,19 +110,19 @@ export const AssistantPill = (): React.JSX.Element | null => {
 
   // Hiding the controls must not leave a session running (e.g. on an expired-session redirect).
   useEffect(() => {
-    if (!isOffered && live) void toggleVoice();
-  }, [isOffered, live, toggleVoice]);
+    if (!isOffered && isLive) void toggleVoice();
+  }, [isOffered, isLive, toggleVoice]);
 
   // Below every hook, so the order never changes with the route.
   if (!isOffered) return null;
 
   // Minimise keeps a running session in the mini bar; close only when nothing is running.
   const minimize = (): void => {
-    setView(live ? AssistantView.Mini : AssistantView.Closed);
+    setView(isLive ? AssistantView.Mini : AssistantView.Closed);
   };
 
   const end = (): void => {
-    if (live) void toggleVoice();
+    if (isLive) void toggleVoice();
     setView(AssistantView.Closed);
   };
 
@@ -139,7 +139,7 @@ export const AssistantPill = (): React.JSX.Element | null => {
    */
   const open = (): void => {
     setView(AssistantView.Open);
-    if (!live) void toggleVoice();
+    if (!isLive) void toggleVoice();
   };
 
   // On a phone the orb is the only form, so Mini and Open are the same surface.

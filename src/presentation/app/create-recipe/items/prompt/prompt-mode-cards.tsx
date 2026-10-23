@@ -24,15 +24,15 @@ export const PromptModeCards = (): React.JSX.Element | null => {
   if (availability !== FridgeAvailability.On) return null;
   const strings = t.fridge;
 
-  const card = (selected: boolean, icon: keyof typeof Ionicons.glyphMap, title: string, sub: string, onPress?: () => void): React.JSX.Element => (
+  const card = (isSelected: boolean, icon: keyof typeof Ionicons.glyphMap, title: string, sub: string, onPress?: () => void): React.JSX.Element => (
     <Pressable
       onPress={onPress}
       disabled={onPress === undefined}
       accessibilityRole="tab"
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected: isSelected }}
       style={({ pressed }) => [
         styles.card,
-        selected
+        isSelected
           ? { backgroundColor: colors.chipBackground, borderColor: colors.primary, borderWidth: borderWidths.medium }
           : { backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: borderWidths.hairline },
         { opacity: pressed ? opacities.pressedSubtle : opacities.full },

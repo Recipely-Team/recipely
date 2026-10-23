@@ -29,12 +29,12 @@ const shown = (name: string): string => (name.length > NAME_MAX ? name.slice(Val
 export const IngredientChip = ({ chip, dense, onRemove }: IngredientChipProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
-  const reduceMotion = useReducedMotion();
+  const shouldReduceMotion = useReducedMotion();
   const copy = t.fridge;
   const label = chip.sure ? copy.removeIngredient.replace('{name}', chip.name) : `${copy.notSure.replace('{name}', chip.name)}, ${copy.removeIngredient.replace('{name}', chip.name)}`;
 
   return (
-    <Animated.View {...(reduceMotion ? {} : { layout: LinearTransition.duration(durations.controlReveal) })}>
+    <Animated.View {...(shouldReduceMotion ? {} : { layout: LinearTransition.duration(durations.controlReveal) })}>
       <Pressable
         onPress={() => onRemove(chip)}
         accessibilityRole="button"

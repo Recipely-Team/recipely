@@ -33,14 +33,14 @@ export const AnalysingStep = ({ photos }: AnalysingStepProps): React.JSX.Element
     <View style={styles.root}>
       <View style={styles.tiles}>
         {photos.map((photo, index) => {
-          const active = index === current;
+          const isActive = index === current;
           return (
             <View
               key={photo.uri}
-              style={[styles.tile, { borderColor: active ? colors.primary : colors.cardBorder, backgroundColor: colors.skeleton }, active ? styles.tileActive : null]}
+              style={[styles.tile, { borderColor: isActive ? colors.primary : colors.cardBorder, backgroundColor: colors.skeleton }, isActive ? styles.tileActive : null]}
             >
               <RecipeImage accessibilityLabel={null} uri={photo.uri} style={styles.image} placeholderCompact />
-              {active ? <ScanSweep height={TILE_HEIGHT} /> : null}
+              {isActive ? <ScanSweep height={TILE_HEIGHT} /> : null}
             </View>
           );
         })}

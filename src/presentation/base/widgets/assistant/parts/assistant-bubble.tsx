@@ -30,11 +30,11 @@ export interface AssistantBubbleProps {
  */
 const AssistantBubbleComponent = ({ speaker, text }: AssistantBubbleProps): React.JSX.Element => {
   const { colors } = useTheme();
-  const mine = speaker === ChatRole.User;
+  const isMine = speaker === ChatRole.User;
 
   return (
-    <View style={[styles.row, mine ? styles.rowMine : styles.rowTheirs]}>
-      {!mine ? (
+    <View style={[styles.row, isMine ? styles.rowMine : styles.rowTheirs]}>
+      {!isMine ? (
         <View style={[styles.avatar, shadows.sm, { backgroundColor: colors.primary }]}>
           <AssistantMascot size={assistantMetrics.bubbleMascot} status={AssistantStatus.Idle} isAnimated={false} />
         </View>
@@ -44,7 +44,7 @@ const AssistantBubbleComponent = ({ speaker, text }: AssistantBubbleProps): Reac
         style={[
           styles.bubble,
           shadows.md,
-          mine
+          isMine
             ? { backgroundColor: colors.primary, borderBottomRightRadius: radii.xs }
             : {
                 backgroundColor: colors.surface,
@@ -54,7 +54,7 @@ const AssistantBubbleComponent = ({ speaker, text }: AssistantBubbleProps): Reac
               },
         ]}
       >
-        <ThemedText variant="body" style={mine ? { color: colors.primaryText } : undefined}>
+        <ThemedText variant="body" style={isMine ? { color: colors.primaryText } : undefined}>
           {text}
         </ThemedText>
       </View>

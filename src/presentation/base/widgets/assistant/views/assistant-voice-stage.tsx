@@ -56,7 +56,7 @@ export const AssistantVoiceStage = ({
 }: AssistantVoiceStageProps): React.JSX.Element => {
   const t = useTranslations();
   const { colors } = useTheme();
-  const live = assistantIsLive(status);
+  const isLive = assistantIsLive(status);
   const isSounding = assistantIsSounding(status, isMuted);
 
   return (
@@ -85,7 +85,7 @@ export const AssistantVoiceStage = ({
           </ThemedText>
         </Pressable>
 
-        {live ? (
+        {isLive ? (
           <>
             <Pressable
               onPress={onToggleMute}

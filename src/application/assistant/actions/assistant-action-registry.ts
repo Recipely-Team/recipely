@@ -149,10 +149,10 @@ export class AssistantActionRegistry {
     if (this.hasScreenHandler(action)) return true;
 
     return new Promise<boolean>((resolve) => {
-      const settle = (arrived: boolean): void => {
+      const settle = (hasArrived: boolean): void => {
         clearTimeout(timer);
         this.watchers.delete(check);
-        resolve(arrived);
+        resolve(hasArrived);
       };
       const check = (): void => {
         if (this.hasScreenHandler(action)) settle(true);

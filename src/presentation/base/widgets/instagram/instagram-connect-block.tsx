@@ -31,7 +31,7 @@ export const InstagramConnectBlock = ({ phase, onConnect, label, showBody, onMan
   const t = useTranslations();
   const colors = useTheme().colors;
   const copy = t.instagram;
-  const waiting = phase === InstagramConnectPhase.Waiting;
+  const isWaiting = phase === InstagramConnectPhase.Waiting;
   return (
     <View style={styles.block}>
       {phase === InstagramConnectPhase.Cancelled ? <FormBanner message={copy.cancelled} severity={SeverityType.Warning} /> : null}
@@ -42,21 +42,21 @@ export const InstagramConnectBlock = ({ phase, onConnect, label, showBody, onMan
       ) : null}
       <Pressable
         onPress={onConnect}
-        disabled={waiting}
+        disabled={isWaiting}
         accessibilityRole="button"
-        accessibilityState={{ disabled: waiting, busy: waiting }}
+        accessibilityState={{ disabled: isWaiting, busy: isWaiting }}
         style={({ pressed }) => [
           styles.button,
-          { backgroundColor: colors.primary, opacity: waiting ? opacities.disabled : pressed ? opacities.pressed : opacities.full },
+          { backgroundColor: colors.primary, opacity: isWaiting ? opacities.disabled : pressed ? opacities.pressed : opacities.full },
         ]}
       >
-        {waiting ? <ActivityIndicator size="small" color={colors.primaryText} /> : <CreatorPlatformMark platform={CreatorPlatform.Instagram} size={AutomationMetrics.connectMark} />}
+        {isWaiting ? <ActivityIndicator size="small" color={colors.primaryText} /> : <CreatorPlatformMark platform={CreatorPlatform.Instagram} size={AutomationMetrics.connectMark} />}
         <SizedText size={fontSizes.body} weight={fontWeights.bold} color={colors.primaryText}>
-          {waiting ? copy.connecting : label}
+          {isWaiting ? copy.connecting : label}
         </SizedText>
       </Pressable>
       {onManual === undefined ? null : (
-        <Pressable onPress={onManual} disabled={waiting} accessibilityRole="button" style={styles.manual}>
+        <Pressable onPress={onManual} disabled={isWaiting} accessibilityRole="button" style={styles.manual}>
           <SizedText size={fontSizes.caption} weight={fontWeights.semibold} color={colors.textSubtle} style={styles.underline}>
             {copy.manual}
           </SizedText>

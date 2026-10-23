@@ -102,9 +102,9 @@ export const configureCommentsStore = (deps: CommentsStoreDeps): StoreApi<Commen
       toggleLike: async (recipeId, commentId): Promise<Result<void, Failure>> => {
         const original = get().byRecipe[recipeId]?.items.find((c) => c.comment.id === commentId);
         if (original === undefined) return ok(undefined);
-        const like = !original.likedByMe;
-        replaceComment(recipeId, { comment: original.comment.withViewerLike(like), likedByMe: like });
-        const result = await setCommentLike.execute(recipeId, commentId, like);
+        const shouldLike = !original.likedByMe;
+        replaceComment(recipeId, { comment: original.comment.withViewerLike(shouldLike), likedByMe: shouldLike });
+        const result = await setCommentLike.execute(recipeId, commentId, shouldLike);
         if (!result.ok) replaceComment(recipeId, original);
         return result;
       },

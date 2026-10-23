@@ -94,15 +94,15 @@ export const WebRecipeGrid = ({
     [onOpenRecipe, onToggleSave, gridCellMaxWidth],
   );
 
-  const segButton = (key: string, label: string, active: boolean, onPress: () => void): React.JSX.Element => (
+  const segButton = (key: string, label: string, isActive: boolean, onPress: () => void): React.JSX.Element => (
     <Pressable
       key={key}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      style={[styles.segBtn, active ? [shadows.sm, { backgroundColor: colors.cardBackground }] : null]}
+      style={[styles.segBtn, isActive ? [shadows.sm, { backgroundColor: colors.cardBackground }] : null]}
     >
-      <ThemedText style={[styles.segText, { color: colors.text, fontWeight: active ? fontWeights.bold : fontWeights.regular }]}>
+      <ThemedText style={[styles.segText, { color: colors.text, fontWeight: isActive ? fontWeights.bold : fontWeights.regular }]}>
         {label}
       </ThemedText>
     </Pressable>

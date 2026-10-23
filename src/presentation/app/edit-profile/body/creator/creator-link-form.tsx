@@ -39,10 +39,10 @@ export const CreatorLinkForm = (props: CreatorLinkFormProps): React.JSX.Element 
   const t = useTranslations();
   const colors = useTheme().colors;
   const danger = useSeveritySurfaces().danger;
-  const [focused, setFocused] = useState(false);
+  const [isFocused, setFocused] = useState(false);
   const copy = t.creators.account;
   const { Max } = CreatorHandleRules.Length[props.platform];
-  const fieldBorder = props.error !== null ? danger.icon : focused ? colors.inputBorderFocused : colors.inputBorder;
+  const fieldBorder = props.error !== null ? danger.icon : isFocused ? colors.inputBorderFocused : colors.inputBorder;
 
   return (
     <View style={styles.form}>

@@ -36,7 +36,7 @@ const CreatorCardComponent = ({ creator, onOpen }: CreatorCardProps): React.JSX.
   const t = useTranslations();
   const locale = useLocale();
   const colors = useTheme().colors;
-  const [hovered, setHovered] = useState(false);
+  const [isHovered, setHovered] = useState(false);
   const caption = t
     .creators.cardCaption.replace('{recipes}', formatCompactCount(creator.recipeCount, locale))
     .replace('{followers}', formatCompactCount(creator.followerCount, locale));
@@ -50,7 +50,7 @@ const CreatorCardComponent = ({ creator, onOpen }: CreatorCardProps): React.JSX.
       accessibilityLabel={creatorItemLabel(t, creator)}
       style={({ pressed }) => [
         styles.card,
-        hovered ? [shadows.md, styles.lifted] : shadows.sm,
+        isHovered ? [shadows.md, styles.lifted] : shadows.sm,
         { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder },
         { opacity: pressed ? opacities.pressedSubtle : opacities.full },
       ]}

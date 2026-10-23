@@ -69,10 +69,10 @@ export const AssistantSheet = ({
   const t = useTranslations();
   const { colors } = useTheme();
   const [draft, setDraft] = useState(CharConstants.empty);
-  const ready = draft.trim() !== CharConstants.empty;
+  const isReady = draft.trim() !== CharConstants.empty;
 
   const submit = (): void => {
-    if (!ready) return;
+    if (!isReady) return;
     onSend(draft.trim());
     setDraft(CharConstants.empty);
   };
@@ -128,20 +128,20 @@ export const AssistantSheet = ({
           onPress={submit}
           accessibilityRole="button"
           accessibilityLabel={t.assistant.send}
-          disabled={!ready}
+          disabled={!isReady}
           style={[
             styles.send,
             {
-              backgroundColor: ready ? colors.primary : colors.surface,
-              borderColor: ready ? colors.primary : colors.cardBorder,
-              opacity: ready ? opacities.full : opacities.disabledFaint,
+              backgroundColor: isReady ? colors.primary : colors.surface,
+              borderColor: isReady ? colors.primary : colors.cardBorder,
+              opacity: isReady ? opacities.full : opacities.disabledFaint,
             },
           ]}
         >
           <Ionicons
             name="arrow-up"
             size={iconSizes.lg}
-            color={ready ? colors.primaryText : colors.textMuted}
+            color={isReady ? colors.primaryText : colors.textMuted}
           />
         </Pressable>
       </View>

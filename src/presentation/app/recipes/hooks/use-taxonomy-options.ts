@@ -26,12 +26,12 @@ export const useTaxonomyOptions = (): TaxonomyOptions => {
   const categories = useStore(taxonomyStore, (s) => s.categories);
 
   return useMemo(() => {
-    const ready = status === StoreStatus.Ready;
+    const isReady = status === StoreStatus.Ready;
     return {
       cuisineKeys:
-        ready && cuisines.length > ValueConstants.zero ? cuisines.map((c) => c.key) : CUISINE_KEY_VALUES,
+        isReady && cuisines.length > ValueConstants.zero ? cuisines.map((c) => c.key) : CUISINE_KEY_VALUES,
       categoryKeys:
-        ready && categories.length > ValueConstants.zero ? categories.map((c) => c.key) : RECIPE_CATEGORY_VALUES,
+        isReady && categories.length > ValueConstants.zero ? categories.map((c) => c.key) : RECIPE_CATEGORY_VALUES,
     };
   }, [status, cuisines, categories]);
 };

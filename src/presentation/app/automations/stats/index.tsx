@@ -39,8 +39,8 @@ export const CreatorStatsScreen = (): React.JSX.Element => {
   const vm = useCreatorStats();
   const scrollable = useAssistantScrollable(vm.view === StatsViewKind.Stats);
   const copy = t.creatorStats;
-  const ranged = vm.view === StatsViewKind.Stats || vm.view === StatsViewKind.NoSends || vm.view === StatsViewKind.Loading;
-  const range = ranged ? (
+  const isRanged = vm.view === StatsViewKind.Stats || vm.view === StatsViewKind.NoSends || vm.view === StatsViewKind.Loading;
+  const range = isRanged ? (
     <SegmentedTabs
       options={RANGES.map((days) => ({ key: String(days), label: days === StatsRange.Week ? copy.range7 : days === StatsRange.Month ? copy.range30 : copy.range90 }))}
       value={String(vm.range)}

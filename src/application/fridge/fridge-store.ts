@@ -30,8 +30,8 @@ export const configureFridgeStore = (deps: FridgeStoreDeps): StoreApi<FridgeStor
       availability: FridgeAvailability.Unknown,
       checkAvailability: () => {
         if (get().availability !== FridgeAvailability.Unknown) return Promise.resolve();
-        asking ??= deps.isEnabled().then((on) => {
-          set({ availability: on ? FridgeAvailability.On : FridgeAvailability.Off });
+        asking ??= deps.isEnabled().then((isOn) => {
+          set({ availability: isOn ? FridgeAvailability.On : FridgeAvailability.Off });
         });
         return asking;
       },

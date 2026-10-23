@@ -23,8 +23,8 @@ export function useResetPasswordForm(token: string) {
   const resetPassword = useStore(authStore, (s) => s.resetPassword);
   const [newPassword, setNewPassword] = useState(CharConstants.empty);
   const [confirmPassword, setConfirmPassword] = useState(CharConstants.empty);
-  const [loading, setLoading] = useState(false);
-  const [succeeded, setSucceeded] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+  const [hasSucceeded, setSucceeded] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const submit = useCallback(async (): Promise<void> => {
@@ -52,5 +52,5 @@ export function useResetPasswordForm(token: string) {
     );
   }, [newPassword, confirmPassword, resetPassword, token, t]);
 
-  return { newPassword, setNewPassword, confirmPassword, setConfirmPassword, loading, succeeded, error, setError, submit };
+  return { newPassword, setNewPassword, confirmPassword, setConfirmPassword, loading: isLoading, succeeded: hasSucceeded, error, setError, submit };
 }

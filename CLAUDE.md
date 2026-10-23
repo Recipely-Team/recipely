@@ -201,6 +201,9 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
    and `FlatList` turns it ON by default on Android, so leaving it out is not enough (v1.7.0). Bound mounted rows with
    `windowSize` / `maxToRenderPerBatch` / `initialNumToRender`. `check:structure` rule R.
 7. **Component props interface** — `ComponentNameProps`, exported, above the component in the same file.
+7b. **Booleans read as questions** — a boolean variable or parameter we name starts with a verb: `isLoading`, `hasMore`,
+   `canSave`, `shouldReduceMotion`, `wasSent`, `doPasswordsMatch`. Props and fields keep the name of the API they mirror
+   (React Native's `visible`/`disabled`, the backend's `likedByMe`). eslint `@typescript-eslint/naming-convention`.
 8. **Hooks, stores and the React Compiler** — prefix `use`, one hook per file, no store state passed as props.
    Stores are vanilla (`createStore` from `zustand/vanilla`, no React in `application/`); components read them
    with `useStore(store, selector)`, selecting the narrowest value (`s.state.status`, `s.savedIds.has(id)`).

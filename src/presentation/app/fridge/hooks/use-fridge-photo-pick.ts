@@ -13,13 +13,13 @@ const CAMERA_OPTIONS: ImagePicker.ImagePickerOptions = { mediaTypes: 'images' };
 /** Camera or library, shrunk and named for upload; a throw is reported and picks nothing. */
 const pickFridgePhotos = async (source: PickSource, room: number): Promise<FridgePhoto[]> => {
   try {
-    const camera = source === PickSource.Camera;
-    const permission = camera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const isCamera = source === PickSource.Camera;
+    const permission = isCamera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
       PhotoPickFeedback.permissionDenied();
       return [];
     }
-    const result = camera
+    const result = isCamera
       ? await ImagePicker.launchCameraAsync(CAMERA_OPTIONS)
       : await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', allowsMultipleSelection: room > ValueConstants.one, orderedSelection: true, selectionLimit: room });
     if (result.canceled) return [];

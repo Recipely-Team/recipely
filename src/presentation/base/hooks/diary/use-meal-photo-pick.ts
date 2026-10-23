@@ -28,10 +28,10 @@ export const useMealPhotoPick = (locale: string): (() => Promise<MealPhotoPick>)
   return useCallback(async (): Promise<MealPhotoPick> => {
     const source = await askPickSource(t.diary.mealLogPhoto);
     if (source === null) return { photo: null, denied: false };
-    const camera = source === PickSource.Camera;
-    const perm = camera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const isCamera = source === PickSource.Camera;
+    const perm = isCamera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) return { photo: null, denied: true };
-    const result = camera ? await ImagePicker.launchCameraAsync(PICKER_OPTIONS) : await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS);
+    const result = isCamera ? await ImagePicker.launchCameraAsync(PICKER_OPTIONS) : await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS);
     const asset = result.canceled ? undefined : result.assets[ValueConstants.zero];
     if (asset === undefined) return { photo: null, denied: false };
     const uri = await shrinkForUpload({ uri: asset.uri, width: asset.width, height: asset.height }, MEDIA_UPLOAD_MAX_EDGE);

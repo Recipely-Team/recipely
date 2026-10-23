@@ -40,9 +40,9 @@ export const useRecipeAuthor = ({
 
   useEffect(() => {
     if (lookupId === null) return;
-    let active = true;
+    let isActive = true;
     void getUserProfile.execute({ userId: lookupId }).then((result) => {
-      if (!active) return;
+      if (!isActive) return;
       setFetched({
         ownerId: lookupId,
         state: result.ok
@@ -59,7 +59,7 @@ export const useRecipeAuthor = ({
       });
     });
     return () => {
-      active = false;
+      isActive = false;
     };
   }, [lookupId, getUserProfile]);
 

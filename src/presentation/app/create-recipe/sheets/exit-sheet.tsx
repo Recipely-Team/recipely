@@ -22,8 +22,8 @@ export interface ExitSheetProps {
 }
 
 /** The sheet's words, by what is being left: a draft, or edits to a saved recipe. */
-const copyFor = (t: TranslationsType, editing: boolean) =>
-  editing
+const copyFor = (t: TranslationsType, isEditing: boolean) =>
+  isEditing
     ? {
         title: t.createRecipe.editExitTitle,
         body: t.createRecipe.editExitBody,

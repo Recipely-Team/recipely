@@ -10,8 +10,8 @@ import { unitWord } from '@presentation/base/utils/diary/units/unit-word';
  * base unit ("300 ml") when the base unit is known, else under its raw key.
  */
 export const formatFoodPortion = (t: TranslationsType, unit: FoodUnit, quantity: number, baseUnit: string | null, locale: string): string => {
-  const known = hasUnitWord(t, unit.key) || baseUnit === null;
-  const amount = known ? quantity : quantity * unit.amount;
-  const key = known ? unit.key : baseUnit;
+  const isKnown = hasUnitWord(t, unit.key) || baseUnit === null;
+  const amount = isKnown ? quantity : quantity * unit.amount;
+  const key = isKnown ? unit.key : baseUnit;
   return t.diary.portion.replace('{n}', formatOneDecimal(amount, locale)).replace('{u}', unitWord(t, key, amount));
 };

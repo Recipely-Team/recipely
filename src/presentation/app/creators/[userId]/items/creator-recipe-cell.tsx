@@ -23,13 +23,13 @@ const CreatorRecipeCellComponent = ({
   onToggleSave,
 }: CreatorRecipeCellProps): React.JSX.Element => {
   // Its own recipe only, so saving one card does not re-render the grid.
-  const saved = useStore(useStores().savedRecipesStore, (s) => s.savedIds.has(recipe.id));
+  const isSaved = useStore(useStores().savedRecipesStore, (s) => s.savedIds.has(recipe.id));
   return (
     <View style={styles.cell}>
       {expanded ? (
         <WebRecipeCard
           recipe={recipe}
-          saved={saved}
+          saved={isSaved}
           onOpen={onOpen}
           onToggleSave={onToggleSave}
         />

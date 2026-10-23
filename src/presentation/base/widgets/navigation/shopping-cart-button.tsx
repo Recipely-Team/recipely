@@ -32,12 +32,12 @@ export const ShoppingCartButton = (): React.JSX.Element => {
   const router = useRouter();
   const gate = useGuestRouteGate();
   const { authStore, shoppingListStore } = useStores();
-  const signedIn = useStore(authStore, (s) => s.state.status === StoreStatus.Authenticated);
+  const isSignedIn = useStore(authStore, (s) => s.state.status === StoreStatus.Authenticated);
   const toBuy = useStore(shoppingListStore, (s) => s.toBuy) ?? ValueConstants.zero;
 
   useEffect(() => {
-    if (signedIn) void shoppingListStore.getState().loadToBuy();
-  }, [shoppingListStore, signedIn]);
+    if (isSignedIn) void shoppingListStore.getState().loadToBuy();
+  }, [shoppingListStore, isSignedIn]);
 
   return (
     <View>

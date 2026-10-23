@@ -32,11 +32,11 @@ export interface WebRecipeFeedProps {
 export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => {
   const t = useTranslations();
   const { width } = useLayout();
-  const [allCuisinesOpen, setAllCuisinesOpen] = useState(false);
-  const recipesLoaded =
+  const [isAllCuisinesOpen, setAllCuisinesOpen] = useState(false);
+  const isRecipesLoaded =
     vm.state.status === StoreStatus.Loaded && !vm.isReloadingResults && vm.recipes.length > ValueConstants.zero;
   // The rail's label is the first thing to go when the row runs out of width.
-  const showRailTitle = width >= BREAKPOINTS.desktop;
+  const shouldShowRailTitle = width >= BREAKPOINTS.desktop;
 
   return (
   <>
@@ -57,7 +57,7 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
           selectedCuisines={vm.filters.cuisines}
           onToggle={vm.onToggleCuisineQuick}
           onOpenAll={() => setAllCuisinesOpen(true)}
-          showTitle={showRailTitle}
+          showTitle={shouldShowRailTitle}
         />
         {/* Between the rail and the grid, which is the only place on this page
             with finished content both above and below it. Not above the hero
@@ -71,7 +71,7 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
             against a page with nothing on it yet — which is the shape of the
             violation this placement exists to avoid, and on a failed load the
             unit was thrown away unread when the error state replaced the feed. */}
-        {recipesLoaded ? (
+        {isRecipesLoaded ? (
           <WebBannerAd slotId={webFeedSlotId()} accessibilityLabel={t.createRecipe.adLabel} />
         ) : null}
       </>
@@ -98,7 +98,7 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
     />
   </ScrollView>
   <AllCuisinesSheet
-    visible={allCuisinesOpen}
+    visible={isAllCuisinesOpen}
     selectedCuisines={vm.filters.cuisines}
     onToggle={vm.onToggleCuisineQuick}
     onClear={vm.onResetFilters}

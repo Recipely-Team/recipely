@@ -20,21 +20,21 @@ interface LeaveGuard {
  */
 export const useLeaveGuard = (shouldAsk: boolean, onAsk: (release: () => void) => void): LeaveGuard => {
   const navigation = useNavigation();
-  const [released, setReleased] = useState(false);
+  const [wasReleased, setReleased] = useState(false);
   const held = useRef<NavigationAction | null>(null);
   const release = (): void => setReleased(true);
 
-  usePreventRemove(shouldAsk && !released, ({ data }) => {
+  usePreventRemove(shouldAsk && !wasReleased, ({ data }) => {
     held.current = data.action;
     onAsk(release);
   });
 
   useEffect(() => {
-    if (!released || held.current === null) return;
+    if (!wasReleased || held.current === null) return;
     const action = held.current;
     held.current = null;
     navigation.dispatch(action);
-  }, [released, navigation]);
+  }, [wasReleased, navigation]);
 
   return { release };
 };

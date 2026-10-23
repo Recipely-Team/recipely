@@ -59,11 +59,11 @@ export const RecipeImage = ({
 }: RecipeImageProps): React.JSX.Element => {
   // Rows are recycled, so a failure belongs to the uri that failed, not to the row.
   const [failedUri, setFailedUri] = useState<string | null>(null);
-  const failed = failedUri !== null && failedUri === uri;
+  const hasFailed = failedUri !== null && failedUri === uri;
 
   const hasImage = isString(uri) && uri.trim().length > ValueConstants.zero;
 
-  if (!hasImage || failed) {
+  if (!hasImage || hasFailed) {
     return <RecipePlaceholder label={placeholderLabel} compact={placeholderCompact} />;
   }
 

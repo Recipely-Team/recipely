@@ -6,7 +6,7 @@ import type { UserProfileRepositoryInterface } from '@domain/user-profile/user-p
 export class SetFollowingUseCase {
   constructor(private readonly repo: UserProfileRepositoryInterface) {}
 
-  execute(userId: string, follow: boolean): Promise<Result<void, Failure>> {
-    return follow ? this.repo.follow(userId) : this.repo.unfollow(userId);
+  execute(userId: string, shouldFollow: boolean): Promise<Result<void, Failure>> {
+    return shouldFollow ? this.repo.follow(userId) : this.repo.unfollow(userId);
   }
 }

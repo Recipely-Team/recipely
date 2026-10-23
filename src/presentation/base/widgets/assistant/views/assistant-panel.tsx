@@ -84,7 +84,7 @@ export const AssistantPanel = ({
   } = useAssistantSession();
   const [isTyping, setIsTyping] = useState(false);
 
-  const live = assistantIsLive(status);
+  const isLive = assistantIsLive(status);
   // Dev builds append the diagnostic to the notice.
   const notice =
     error !== null
@@ -139,7 +139,7 @@ export const AssistantPanel = ({
           <ThemedText variant="caption" style={styles.title}>
             {t.assistant.title}
           </ThemedText>
-          <View style={[styles.liveDot, { backgroundColor: live ? colors.success : colors.textMuted }]} />
+          <View style={[styles.liveDot, { backgroundColor: isLive ? colors.success : colors.textMuted }]} />
         </View>
 
         <View style={styles.headerSpacer} pointerEvents="none" />

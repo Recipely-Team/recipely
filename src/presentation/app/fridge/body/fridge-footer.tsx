@@ -35,11 +35,11 @@ export const FridgeFooter = ({ state, onFindIngredients, onCancel, onShowIdeas }
 
   let action: React.JSX.Element | null = null;
   if (view.step === FridgeStep.Capture) {
-    const failed = view.failure !== null;
+    const hasFailed = view.failure !== null;
     action = (
       <GradientCta
-        label={failed ? strings.tryAgain : strings.findIngredients}
-        icon={failed ? 'refresh' : 'scan-outline'}
+        label={hasFailed ? strings.tryAgain : strings.findIngredients}
+        icon={hasFailed ? 'refresh' : 'scan-outline'}
         onPress={onFindIngredients}
         disabled={state.photos.length === ValueConstants.zero}
       />
@@ -47,8 +47,8 @@ export const FridgeFooter = ({ state, onFindIngredients, onCancel, onShowIdeas }
   } else if (view.step === FridgeStep.Analysing) {
     action = <GhostButton label={strings.cancel} onPress={onCancel} />;
   } else if (view.step === FridgeStep.Ingredients) {
-    const empty = state.chips.length === ValueConstants.zero;
-    action = <GradientCta label={empty ? strings.addAtLeastOne : strings.showIdeas} icon="sparkles" onPress={onShowIdeas} disabled={empty} />;
+    const isEmpty = state.chips.length === ValueConstants.zero;
+    action = <GradientCta label={isEmpty ? strings.addAtLeastOne : strings.showIdeas} icon="sparkles" onPress={onShowIdeas} disabled={isEmpty} />;
   }
   if (action === null) return null;
 

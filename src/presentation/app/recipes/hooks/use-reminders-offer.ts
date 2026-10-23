@@ -21,37 +21,37 @@ interface RemindersOffer {
  * - **Any dismissal is an answer:** "Not now" and a backdrop tap both store a no; the Settings
  *   switch is the way back, which the question itself says.
  */
-export const useRemindersOffer = (blocked: boolean): RemindersOffer => {
+export const useRemindersOffer = (isBlocked: boolean): RemindersOffer => {
   const t = useTranslations();
   const { shouldOfferReminders, setRemindersChoice } = useStores();
-  const [offered, setOffered] = useState(false);
+  const [wasOffered, setOffered] = useState(false);
 
   useEffect(() => {
     if (isWeb()) return undefined;
-    let live = true;
+    let isLive = true;
     void shouldOfferReminders
       .execute(Date.now())
-      .then((ask: boolean) => {
-        if (live) setOffered(ask);
+      .then((shouldAsk: boolean) => {
+        if (isLive) setOffered(shouldAsk);
       })
       .catch(() => undefined);
     return () => {
-      live = false;
+      isLive = false;
     };
   }, [shouldOfferReminders]);
 
   const answer = useCallback(
-    (yes: boolean): void => {
+    (isAccepted: boolean): void => {
       setOffered(false);
       void setRemindersChoice
-        .execute(yes, t.reminders.messages, Date.now())
-        .then((on) => {
-          if (yes && !on) showWarningToast(t.reminders.permissionDenied);
+        .execute(isAccepted, t.reminders.messages, Date.now())
+        .then((isOn) => {
+          if (isAccepted && !isOn) showWarningToast(t.reminders.permissionDenied);
         })
         .catch(() => undefined);
     },
     [setRemindersChoice, t],
   );
 
-  return { visible: offered && !blocked, onAccept: () => answer(true), onDecline: () => answer(false) };
+  return { visible: wasOffered && !isBlocked, onAccept: () => answer(true), onDecline: () => answer(false) };
 };

@@ -117,30 +117,30 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   const likeState = useStore(likesStore, (s) => s.byRecipe[recipeId]);
 
   const setSaved = useCallback(
-    async (wanted: boolean): Promise<AssistantActionResultType> => {
+    async (isWanted: boolean): Promise<AssistantActionResultType> => {
       if (userId === null) return { ok: false, error: AssistantActionError.SignedOut };
-      if (isSaved === wanted) {
+      if (isSaved === isWanted) {
         // An unloaded saved set reads every recipe as not saved; only unsave needs it loaded.
-        if (!wanted && savedListState.status !== StoreStatus.Loaded) {
+        if (!isWanted && savedListState.status !== StoreStatus.Loaded) {
           return { ok: false, error: AssistantActionError.NotReady };
         }
         return { ok: true, title: recipeName };
       }
 
       // The assistant must not announce a save that failed.
-      const failure = wanted ? await addFavorite(recipeId) : await removeFavorite(recipeId);
+      const failure = isWanted ? await addFavorite(recipeId) : await removeFavorite(recipeId);
       return failure === null ? { ok: true, title: recipeName } : { ok: false, error: AssistantActionError.Failed };
     },
     [userId, isSaved, savedListState, recipeId, recipeName, addFavorite, removeFavorite],
   );
 
   const setLiked = useCallback(
-    async (wanted: boolean): Promise<AssistantActionResultType> => {
+    async (isWanted: boolean): Promise<AssistantActionResultType> => {
       if (userId === null) return { ok: false, error: AssistantActionError.SignedOut };
       // The store, not the render state, knows whether the recipe is liked.
       if (likeState === undefined) return { ok: false, error: AssistantActionError.NotReady };
 
-      const result = await setLikedInStore(recipeId, wanted);
+      const result = await setLikedInStore(recipeId, isWanted);
       return result.ok ? { ok: true, title: recipeName } : { ok: false, error: AssistantActionError.Failed };
     },
     [userId, likeState, recipeId, recipeName, setLikedInStore],

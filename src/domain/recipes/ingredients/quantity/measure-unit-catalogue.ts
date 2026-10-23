@@ -45,12 +45,12 @@ interface MeasureUnitDefinition {
 const unit = (
   dimension: MeasureDimensionType,
   base: number | null,
-  fraction: boolean,
+  isFraction: boolean,
   aliases: readonly [string, ...string[]],
   plural?: string,
 ): MeasureUnitDefinition => {
   const [one] = aliases;
-  return { dimension, base, fraction, one, other: plural ?? one, aliases };
+  return { dimension, base, fraction: isFraction, one, other: plural ?? one, aliases };
 };
 
 const { Mass, Volume, Count } = MeasureDimension;

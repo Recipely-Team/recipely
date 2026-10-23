@@ -82,12 +82,12 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): StoreAp
         const cached = s.byId[recipe.id];
         const loaded = cached?.status === StoreStatus.Loaded ? cached : null;
         // The like is the cached one, so it keeps the cached age: a fresh stamp would let it rewind a newer like.
-        const likedByMe = loaded?.likedByMe ?? false;
+        const isLikedByMe = loaded?.likedByMe ?? false;
         const fetchedAt = loaded?.fetchedAt ?? ValueConstants.zero;
         return {
           byId: {
             ...s.byId,
-            [recipe.id]: { status: StoreStatus.Loaded, recipe, likedByMe, fetchedAt },
+            [recipe.id]: { status: StoreStatus.Loaded, recipe, likedByMe: isLikedByMe, fetchedAt },
           },
         };
       }),

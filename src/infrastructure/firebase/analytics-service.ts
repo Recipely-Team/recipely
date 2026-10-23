@@ -15,10 +15,10 @@ type AnalyticsModule = typeof import('@react-native-firebase/analytics');
 const mod: AnalyticsModule | null = (() => { try { return require('@react-native-firebase/analytics') as AnalyticsModule; } catch { return null; } })();
 
 export const analyticsService: AnalyticsServiceInterface = {
-  async setEnabled(enabled: boolean): Promise<void> {
+  async setEnabled(isEnabled: boolean): Promise<void> {
     if (mod === null) return;
     try {
-      await mod.setAnalyticsCollectionEnabled(mod.getAnalytics(), enabled);
+      await mod.setAnalyticsCollectionEnabled(mod.getAnalytics(), isEnabled);
     } catch {
       // Firebase native module unavailable — no-op.
     }

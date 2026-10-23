@@ -76,7 +76,7 @@ const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element =>
   useLocale();
   const colors = useTheme().colors;
   const meta = useKindMeta(item.kind);
-  const tappable = item.target !== null || !item.read;
+  const isTappable = item.target !== null || !item.read;
   const sourceLine =
     item.source !== undefined
       ? importSourceLine(t, item.source)
@@ -86,18 +86,18 @@ const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element =>
 
   return (
     <Pressable
-      onPress={tappable ? () => onTap(item) : undefined}
-      disabled={!tappable}
+      onPress={isTappable ? () => onTap(item) : undefined}
+      disabled={!isTappable}
       style={({ pressed }) => [
         styles.row,
         {
           backgroundColor: item.read ? colors.cardBackground : colors.chipBackground,
           borderLeftWidth: item.read ? ValueConstants.zero : borderWidths.thick,
           borderLeftColor: colors.primary,
-          opacity: pressed && tappable ? PRESSED_OPACITY : opacities.full,
+          opacity: pressed && isTappable ? PRESSED_OPACITY : opacities.full,
         },
       ]}
-      accessibilityRole={tappable ? 'button' : 'text'}
+      accessibilityRole={isTappable ? 'button' : 'text'}
       accessibilityLabel={rowLabel(t, item, sourceLine)}
       // Target-less unread rows only mark read; say so.
       accessibilityHint={

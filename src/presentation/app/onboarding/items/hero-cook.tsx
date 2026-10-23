@@ -34,21 +34,21 @@ export const HeroCook = ({ active = true }: HeroProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
   const a = t.onboarding.art;
-  const reducedMotion = useReducedMotion();
-  const running = active && !reducedMotion;
+  const shouldReduceMotion = useReducedMotion();
+  const isRunning = active && !shouldReduceMotion;
   // Starting or stopping the slide's timer winds it back to the top, in the same render.
-  const [timer, setTimer] = useState({ running, left: TIMER_START_S });
-  if (timer.running !== running) setTimer({ running, left: TIMER_START_S });
-  const left = timer.running === running ? timer.left : TIMER_START_S;
+  const [timer, setTimer] = useState({ running: isRunning, left: TIMER_START_S });
+  if (timer.running !== isRunning) setTimer({ running: isRunning, left: TIMER_START_S });
+  const left = timer.running === isRunning ? timer.left : TIMER_START_S;
 
   useEffect(() => {
-    if (!running) return;
+    if (!isRunning) return;
     const id = setInterval(
       () => setTimer((current) => ({ ...current, left: Math.max(ValueConstants.zero, current.left - ValueConstants.one) })),
       TimeConstants.millisecondsPerSecond,
     );
     return () => clearInterval(id);
-  }, [running]);
+  }, [isRunning]);
 
   return (
     <View style={styles.root}>
@@ -64,7 +64,7 @@ export const HeroCook = ({ active = true }: HeroProps): React.JSX.Element => {
       </ArtCard>
       <View style={styles.bottomRow}>
         <OnboardingReveal active={active} delay={ORB_DELAY_MS} style={[styles.orb, { backgroundColor: colors.primary }]}>
-          <Waveform color={colors.primaryText} running={active && !reducedMotion} />
+          <Waveform color={colors.primaryText} running={active && !shouldReduceMotion} />
         </OnboardingReveal>
         <ArtCard active={active} delay={TIMER_DELAY_MS} style={styles.timer}>
           <Ionicons name="timer-outline" size={iconSizes.md} color={colors.primary} />

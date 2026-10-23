@@ -16,10 +16,10 @@ import { RoutePaths } from '@presentation/base/constants';
 export const useAutomationsGuard = (isMissing: boolean): void => {
   const router = useRouter();
   const { instagramStore } = useStores();
-  const known = useStore(instagramStore, (s) => s.connection.status === StoreStatus.Loaded);
+  const isKnown = useStore(instagramStore, (s) => s.connection.status === StoreStatus.Loaded);
   const connection = useInstagramConnection();
-  const blocked = isMissing || (known && (!connection.isAvailable || !connection.isConnected));
+  const isBlocked = isMissing || (isKnown && (!connection.isAvailable || !connection.isConnected));
   useEffect(() => {
-    if (blocked) router.replace(RoutePaths.automations);
-  }, [blocked, router]);
+    if (isBlocked) router.replace(RoutePaths.automations);
+  }, [isBlocked, router]);
 };

@@ -65,7 +65,7 @@ export const LoginForm = (): React.JSX.Element => {
     [t],
   );
 
-  const fieldsEmpty = isBlank(email) || isBlank(password);
+  const areFieldsEmpty = isBlank(email) || isBlank(password);
 
   const handleSignIn = useCallback(async () => {
     if (isBlank(email) || isBlank(password)) {
@@ -134,7 +134,7 @@ export const LoginForm = (): React.JSX.Element => {
           label={t.login.signIn}
           onPress={() => { void handleSignIn(); }}
           loading={isLoading}
-          disabled={fieldsEmpty}
+          disabled={areFieldsEmpty}
         />
       </View>
 

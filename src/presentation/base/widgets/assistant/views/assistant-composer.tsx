@@ -40,10 +40,10 @@ export const AssistantComposer = ({ onSend, onSwitchToVoice }: AssistantComposer
   const t = useTranslations();
   const { colors } = useTheme();
   const [draft, setDraft] = useState(CharConstants.empty);
-  const ready = !isBlank(draft);
+  const isReady = !isBlank(draft);
 
   const submit = (): void => {
-    if (!ready) return;
+    if (!isReady) return;
     onSend(draft.trim());
     setDraft(CharConstants.empty);
   };
@@ -89,21 +89,21 @@ export const AssistantComposer = ({ onSend, onSwitchToVoice }: AssistantComposer
           onPress={submit}
           accessibilityRole="button"
           accessibilityLabel={t.assistant.send}
-          disabled={!ready}
+          disabled={!isReady}
           style={[
             styles.round,
             {
-              backgroundColor: ready ? colors.primary : colors.surface,
-              borderColor: ready ? colors.primary : colors.cardBorder,
+              backgroundColor: isReady ? colors.primary : colors.surface,
+              borderColor: isReady ? colors.primary : colors.cardBorder,
               borderWidth: borderWidths.hairline,
-              opacity: ready ? opacities.full : opacities.disabledFaint,
+              opacity: isReady ? opacities.full : opacities.disabledFaint,
             },
           ]}
         >
           <Ionicons
             name="arrow-up"
             size={iconSizes.lg}
-            color={ready ? colors.primaryText : colors.textMuted}
+            color={isReady ? colors.primaryText : colors.textMuted}
           />
         </Pressable>
       </View>

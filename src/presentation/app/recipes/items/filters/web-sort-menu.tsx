@@ -32,11 +32,11 @@ export const WebSortMenu = ({ current, onChange }: WebSortMenuProps): React.JSX.
   const t = useTranslations();
   const colors = useTheme().colors;
   const labels = sortKeyLabels(t);
-  const [open, setOpen] = useState(false);
+  const [isOpen, setOpen] = useState(false);
 
   // Web only: close on outside press and Escape.
   useEffect(() => {
-    if (!open || !isWeb()) return;
+    if (!isOpen || !isWeb()) return;
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === KeyboardKey.escape) setOpen(false);
     };
@@ -52,7 +52,7 @@ export const WebSortMenu = ({ current, onChange }: WebSortMenuProps): React.JSX.
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('mousedown', onMouseDown);
     };
-  }, [open]);
+  }, [isOpen]);
 
   const select = (key: SortKey): void => {
     setOpen(false);
@@ -62,9 +62,9 @@ export const WebSortMenu = ({ current, onChange }: WebSortMenuProps): React.JSX.
   return (
     <View nativeID={ANCHOR_ID} style={styles.anchor}>
       <Pressable
-        onPress={() => setOpen((v) => !v)}
+        onPress={() => setOpen((wasOn) => !wasOn)}
         accessibilityRole="button"
-        accessibilityState={{ expanded: open }}
+        accessibilityState={{ expanded: isOpen }}
         accessibilityLabel={t.recipes.sortBy}
         style={[styles.button, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
       >
@@ -76,13 +76,13 @@ export const WebSortMenu = ({ current, onChange }: WebSortMenuProps): React.JSX.
           {labels[current]}
         </ThemedText>
         <Ionicons
-          name={open ? 'chevron-up' : 'chevron-down'}
+          name={isOpen ? 'chevron-up' : 'chevron-down'}
           size={iconSizes.md}
           color={colors.textMuted}
         />
       </Pressable>
 
-      {open ? (
+      {isOpen ? (
         <View
           style={[
             styles.menu,
@@ -91,31 +91,31 @@ export const WebSortMenu = ({ current, onChange }: WebSortMenuProps): React.JSX.
           ]}
         >
           {(Object.keys(labels) as SortKey[]).map((key) => {
-            const selected = current === key;
+            const isSelected = current === key;
             return (
               <Pressable
                 key={key}
                 onPress={() => select(key)}
                 accessibilityRole="menuitem"
-                accessibilityState={{ selected }}
+                accessibilityState={{ selected: isSelected }}
                 accessibilityLabel={labels[key]}
                 style={[
                   styles.option,
-                  selected ? { backgroundColor: colors.chipBackground } : null,
+                  isSelected ? { backgroundColor: colors.chipBackground } : null,
                 ]}
               >
                 <ThemedText
                   style={[
                     styles.optionLabel,
                     {
-                      color: selected ? colors.chipText : colors.text,
-                      fontWeight: selected ? fontWeights.bold : fontWeights.medium,
+                      color: isSelected ? colors.chipText : colors.text,
+                      fontWeight: isSelected ? fontWeights.bold : fontWeights.medium,
                     },
                   ]}
                 >
                   {labels[key]}
                 </ThemedText>
-                {selected ? (
+                {isSelected ? (
                   <Ionicons name="checkmark" size={iconSizes.md} color={colors.primary} />
                 ) : null}
               </Pressable>

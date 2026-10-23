@@ -7,7 +7,7 @@ import type { InstagramRepositoryInterface } from '@domain/instagram/instagram-r
 export class SetDmRuleEnabledUseCase {
   constructor(private readonly repo: InstagramRepositoryInterface) {}
 
-  execute(id: string, enabled: boolean): Promise<Result<DmRuleEntity, Failure>> {
-    return this.repo.updateRule(id, { enabled });
+  execute(id: string, isEnabled: boolean): Promise<Result<DmRuleEntity, Failure>> {
+    return this.repo.updateRule(id, { enabled: isEnabled });
   }
 }

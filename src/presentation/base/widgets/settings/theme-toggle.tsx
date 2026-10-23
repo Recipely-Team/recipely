@@ -25,16 +25,16 @@ export const ThemeToggle = ({ value, onChange }: ThemeToggleProps): React.JSX.El
   return (
     <View style={[styles.container, { backgroundColor: colors.inputBackground }]}>
       {options.map((opt) => {
-        const active = value === opt.key;
+        const isActive = value === opt.key;
         return (
           <Pressable
             key={opt.key}
             accessibilityRole="radio"
-            accessibilityState={{ selected: active, checked: active }}
+            accessibilityState={{ selected: isActive, checked: isActive }}
             onPress={() => onChange(opt.key)}
             style={[
               styles.segment,
-              active ? { backgroundColor: colors.primary } : undefined,
+              isActive ? { backgroundColor: colors.primary } : undefined,
             ]}
           >
             <ThemedText
@@ -42,7 +42,7 @@ export const ThemeToggle = ({ value, onChange }: ThemeToggleProps): React.JSX.El
               numberOfLines={ValueConstants.one}
               style={[
                 styles.segmentLabel,
-                { color: active ? colors.primaryText : colors.textMuted },
+                { color: isActive ? colors.primaryText : colors.textMuted },
               ]}
             >
               {t.settings[opt.labelKey]}

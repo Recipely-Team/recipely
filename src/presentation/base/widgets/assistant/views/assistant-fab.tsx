@@ -32,12 +32,12 @@ export interface AssistantFabProps {
 export const AssistantFab = ({ status, onOpen }: AssistantFabProps): React.JSX.Element => {
   const t = useTranslations();
   const { colors } = useTheme();
-  const reduceMotion = useReduceMotion();
+  const shouldReduceMotion = useReduceMotion();
   const [ring] = useState(() => new Animated.Value(ValueConstants.zero));
-  const idle = status === AssistantStatus.Idle;
+  const isIdle = status === AssistantStatus.Idle;
 
   useEffect(() => {
-    if (reduceMotion || !idle) {
+    if (shouldReduceMotion || !isIdle) {
       ring.setValue(ValueConstants.zero);
       return;
     }
@@ -51,7 +51,7 @@ export const AssistantFab = ({ status, onOpen }: AssistantFabProps): React.JSX.E
     );
     loop.start();
     return () => loop.stop();
-  }, [ring, idle, reduceMotion]);
+  }, [ring, isIdle, shouldReduceMotion]);
 
   return (
     <Pressable

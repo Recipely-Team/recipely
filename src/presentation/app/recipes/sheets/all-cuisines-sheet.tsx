@@ -92,7 +92,7 @@ export const AllCuisinesSheet = ({
       <View style={styles.wrap}>
         {matches.map((key) => {
           const { name, emoji } = cuisineLabel(key);
-          const active = selectedCuisines.includes(key);
+          const isActive = selectedCuisines.includes(key);
           return (
             <Pressable
               key={key}
@@ -101,15 +101,15 @@ export const AllCuisinesSheet = ({
               accessibilityLabel={name}
               style={[
                 styles.chip,
-                active
+                isActive
                   ? { backgroundColor: colors.primary, borderColor: colors.primary }
                   : { backgroundColor: colors.surface, borderColor: colors.border },
               ]}
             >
-              <View style={[styles.dot, { backgroundColor: active ? colors.gradientSurface : colors.cardBackground }]}>
+              <View style={[styles.dot, { backgroundColor: isActive ? colors.gradientSurface : colors.cardBackground }]}>
                 <ThemedText style={styles.emoji}>{emoji}</ThemedText>
               </View>
-              <ThemedText style={[styles.chipLabel, { color: active ? colors.primaryText : colors.text }]}>
+              <ThemedText style={[styles.chipLabel, { color: isActive ? colors.primaryText : colors.text }]}>
                 {name}
               </ThemedText>
             </Pressable>

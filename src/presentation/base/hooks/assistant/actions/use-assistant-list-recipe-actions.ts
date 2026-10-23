@@ -70,8 +70,8 @@ export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[
     travelling.current = true;
     const travel = async (): Promise<AssistantActionResultType> => {
       router.push(RoutePaths.recipeDetail(row.id) as Href);
-      const arrived = await registry.waitForScreenHandler(action, SCREEN_ARRIVAL_TIMEOUT_MS);
-      if (!arrived) return { ok: false, error: AssistantActionError.ScreenDidNotOpen };
+      const hasArrived = await registry.waitForScreenHandler(action, SCREEN_ARRIVAL_TIMEOUT_MS);
+      if (!hasArrived) return { ok: false, error: AssistantActionError.ScreenDidNotOpen };
       return registry.run(action, arg);
     };
     return travel().finally(() => {
@@ -79,13 +79,13 @@ export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[
     });
   };
 
-  const setLiked = async (arg: string | undefined, wanted: boolean): Promise<AssistantActionResultType> => {
+  const setLiked = async (arg: string | undefined, isWanted: boolean): Promise<AssistantActionResultType> => {
     if (!isSignedIn) return { ok: false, error: AssistantActionError.SignedOut };
     const row = find(arg);
     if (row === null) return { ok: false, notMine: true };
 
     // The store reports when the row's like state is unknown.
-    const result = await setLikedInStore(row.id, wanted);
+    const result = await setLikedInStore(row.id, isWanted);
     return result.ok ? { ok: true, title: row.name } : { ok: false, error: AssistantActionError.NotReady };
   };
 

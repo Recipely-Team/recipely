@@ -37,7 +37,7 @@ interface MealPlanWeekModel {
  */
 export const useMealPlanWeek = (): MealPlanWeekModel => {
   const { authStore, mealPlanStore, diaryStore } = useStores();
-  const signedIn = useStore(authStore, (s) => s.state.status === StoreStatus.Authenticated);
+  const isSignedIn = useStore(authStore, (s) => s.state.status === StoreStatus.Authenticated);
   const weekStart = useStore(mealPlanStore, (s) => s.weekStart);
   const state = useStore(mealPlanStore, (s) => s.weeks[s.weekStart.value]);
   const goal = useStore(diaryStore, (s) => s.goals.calories);
@@ -46,12 +46,12 @@ export const useMealPlanWeek = (): MealPlanWeekModel => {
   const [isRefreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (signedIn && state === undefined) void mealPlanStore.getState().load(weekStart);
-  }, [mealPlanStore, signedIn, state, weekStart]);
+    if (isSignedIn && state === undefined) void mealPlanStore.getState().load(weekStart);
+  }, [mealPlanStore, isSignedIn, state, weekStart]);
 
   useEffect(() => {
-    if (signedIn) void diaryStore.getState().loadGoals();
-  }, [diaryStore, signedIn]);
+    if (isSignedIn) void diaryStore.getState().loadGoals();
+  }, [diaryStore, isSignedIn]);
 
   const showWeek = (day: CalendarDate): void => {
     mealPlanStore.getState().showWeek(day);
@@ -59,7 +59,7 @@ export const useMealPlanWeek = (): MealPlanWeekModel => {
   };
 
   return {
-    view: toPlanView(signedIn, state),
+    view: toPlanView(isSignedIn, state),
     today,
     weekStart,
     selected,

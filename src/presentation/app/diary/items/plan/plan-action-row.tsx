@@ -18,18 +18,18 @@ export interface PlanActionRowProps {
 /** One row of a Plan menu sheet (design spec → Meal planner, Meal actions): glyph, label, min-height 52. */
 export const PlanActionRow = ({ icon, label, onPress, danger = false, disabledHint }: PlanActionRowProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const disabled = disabledHint !== undefined;
+  const isDisabled = disabledHint !== undefined;
   const ink = danger ? colors.danger : colors.text;
   return (
     <Pressable
       onPress={onPress}
-      disabled={disabled}
+      disabled={isDisabled}
       accessibilityRole="button"
-      accessibilityState={{ disabled }}
+      accessibilityState={{ disabled: isDisabled }}
       accessibilityHint={disabledHint}
       style={({ pressed }) => [
         styles.row,
-        { opacity: disabled ? opacities.inactive : pressed ? opacities.pressedSubtle : opacities.full },
+        { opacity: isDisabled ? opacities.inactive : pressed ? opacities.pressedSubtle : opacities.full },
       ]}
     >
       <Ionicons name={icon} size={iconSizes.lg} color={ink} />

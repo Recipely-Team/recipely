@@ -40,7 +40,7 @@ interface PlanShoppingAnswer {
  * and "Add N items" sending the ticked lines' drafts to the shopping list.
  * Read again each time the sheet opens, so it follows the plan.
  */
-export const usePlanShopping = (open: boolean, weekStart: CalendarDate, onDone: () => void): PlanShoppingModel => {
+export const usePlanShopping = (isOpen: boolean, weekStart: CalendarDate, onDone: () => void): PlanShoppingModel => {
   const t = useTranslations();
   const router = useRouter();
   const { mealPlanStore, shoppingListStore } = useStores();
@@ -50,16 +50,16 @@ export const usePlanShopping = (open: boolean, weekStart: CalendarDate, onDone: 
   const [isSubmitting, setSubmitting] = useState(false);
   const [attempt, setAttempt] = useState<number>(ValueConstants.zero);
   // Closing forgets the answer, so the next open shows loading rather than last time's list.
-  if (!open && answer !== null) setAnswer(null);
+  if (!isOpen && answer !== null) setAnswer(null);
   const current = answer !== null && answer.attempt === attempt && answer.weekStart.equals(weekStart) ? answer : null;
   const lines = current?.lines ?? null;
   const failure = current?.failure ?? null;
 
   useEffect(() => {
-    if (!open) return;
-    let live = true;
+    if (!isOpen) return;
+    let isLive = true;
     void mealPlanStore.getState().shoppingList(weekStart).then((result) => {
-      if (!live) return;
+      if (!isLive) return;
       if (!result.ok) {
         setAnswer({ weekStart, attempt, lines: null, failure: result.failure });
         return;
@@ -68,9 +68,9 @@ export const usePlanShopping = (open: boolean, weekStart: CalendarDate, onDone: 
       setSelected(new Set(result.value.filter((line) => !line.isStaple).map((line) => line.key)));
     });
     return () => {
-      live = false;
+      isLive = false;
     };
-  }, [attempt, mealPlanStore, open, weekStart]);
+  }, [attempt, mealPlanStore, isOpen, weekStart]);
 
   const toggle = useCallback((key: string) => {
     setSelected((current) => {

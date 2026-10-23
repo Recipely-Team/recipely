@@ -80,24 +80,24 @@ export const WebRecipeDetailSidebar = ({
                 </ThemedText>
               );
             }
-            const checked = checkedIngredients[i] ?? false;
+            const isChecked = checkedIngredients[i] ?? false;
             return (
               <Pressable
                 key={i}
                 onPress={() => onToggleIngredient(i)}
                 accessibilityRole="checkbox"
-                accessibilityState={{ checked }}
+                accessibilityState={{ checked: isChecked }}
                 accessibilityLabel={item}
                 style={styles.checkRow}
               >
-                <TickBox checked={checked} />
+                <TickBox checked={isChecked} />
                 <ThemedText
                   variant="body"
                   style={[
                     styles.checkText,
                     {
-                      color: checked ? colors.textMuted : colors.text,
-                      textDecorationLine: checked ? 'line-through' : 'none',
+                      color: isChecked ? colors.textMuted : colors.text,
+                      textDecorationLine: isChecked ? 'line-through' : 'none',
                     },
                   ]}
                 >

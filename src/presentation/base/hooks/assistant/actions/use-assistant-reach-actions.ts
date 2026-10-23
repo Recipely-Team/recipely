@@ -61,14 +61,14 @@ export const useAssistantReachActions = (): void => {
         const wasAt = pathname;
 
         // Compare without the query: usePathname never carries one.
-        const alreadyThere = wasAt === target.split(QUERY_START)[ValueConstants.zero];
-        if (!alreadyThere) router.navigate(target as Href);
+        const isAlreadyThere = wasAt === target.split(QUERY_START)[ValueConstants.zero];
+        if (!isAlreadyThere) router.navigate(target as Href);
 
-        const arrived = await registry.waitForScreenHandler(
+        const hasArrived = await registry.waitForScreenHandler(
           action as AssistantActionType,
           SCREEN_ARRIVAL_TIMEOUT_MS,
         );
-        if (!arrived) {
+        if (!hasArrived) {
           // Report from where we are; a late back() could undo the user's own navigation.
           return { ok: false, error: AssistantActionError.ScreenDidNotOpen };
         }

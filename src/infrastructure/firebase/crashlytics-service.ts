@@ -30,10 +30,10 @@ export const warmUpCrashReporting = (): void => {
 };
 
 /** Enables or disables crash reporting collection (kept off in development). */
-export const setCrashReportingEnabled = async (enabled: boolean): Promise<void> => {
+export const setCrashReportingEnabled = async (isEnabled: boolean): Promise<void> => {
   if (isWeb() || mod === null) return;
   try {
-    await mod.setCrashlyticsCollectionEnabled(mod.getCrashlytics(), enabled);
+    await mod.setCrashlyticsCollectionEnabled(mod.getCrashlytics(), isEnabled);
   } catch {
     // Firebase native module unavailable — no-op.
   }

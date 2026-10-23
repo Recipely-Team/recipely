@@ -55,11 +55,11 @@ export const useAutomationActivity = (): UseAutomationActivityResult => {
     setFilter,
     onBack: () => (router.canGoBack() ? router.back() : router.replace(RoutePaths.automations)),
     onEdit: () => router.push({ pathname: RoutePaths.automationEdit, params: { ruleId } }),
-    onToggle: (enabled) => {
+    onToggle: (isEnabled) => {
       if (opened.status !== StoreStatus.Loaded) return;
       void automationsStore
         .getState()
-        .setEnabled(opened.rule, enabled)
+        .setEnabled(opened.rule, isEnabled)
         .then((result) => {
           if (!result.ok) showErrorToast(result.failure);
         });

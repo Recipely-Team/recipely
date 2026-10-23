@@ -50,15 +50,15 @@ export const usePlanEntryActions = (today: CalendarDate): PlanEntryActions => {
 
   const toggleEaten = useCallback(
     async (entry: MealPlanEntryEntity) => {
-      const eaten = !entry.eaten;
-      const result = await mealPlanStore.getState().setEaten(entry, eaten, today);
+      const isEaten = !entry.eaten;
+      const result = await mealPlanStore.getState().setEaten(entry, isEaten, today);
       if (!result.ok) {
         showErrorToast(result.failure);
         return;
       }
       void diaryStore.getState().loadDay(entry.date);
       const strings = t.mealPlan;
-      showSuccessToast(eaten ? strings.loggedToDiary.replace('{day}', formatPlanDay(entry.date, locale)) : strings.removedFromDiary);
+      showSuccessToast(isEaten ? strings.loggedToDiary.replace('{day}', formatPlanDay(entry.date, locale)) : strings.removedFromDiary);
     },
     [diaryStore, locale, mealPlanStore, today, t],
   );

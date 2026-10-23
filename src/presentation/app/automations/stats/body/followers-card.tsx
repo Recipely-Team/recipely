@@ -36,7 +36,7 @@ export const FollowersCard = ({ stats, wide }: FollowersCardProps): React.JSX.El
   const [width, setWidth] = useState<number>(ValueConstants.zero);
   const height = wide ? StatsMetrics.sparkHeightWide : StatsMetrics.sparkHeight;
   const { current, change, trackingSince, points } = stats.followers;
-  const startsInside = trackingSince !== null && trackingSince > stats.from;
+  const doesStartInside = trackingSince !== null && trackingSince > stats.from;
 
   const slots = stats.daily.map((d) => d.day);
   const span = Math.max(ValueConstants.one, slots.length - ValueConstants.one);
@@ -66,7 +66,7 @@ export const FollowersCard = ({ stats, wide }: FollowersCardProps): React.JSX.El
             {`${sign}${formatWholeNumber(Math.abs(change), locale)}`}
           </SizedText>
         ) : null}
-        {!startsInside ? (
+        {!doesStartInside ? (
           <SizedText size={fontSizes.small} color={colors.textSubtle}>
             {`· ${copy.lastDays.replace('{n}', String(stats.days))}`}
           </SizedText>
@@ -75,17 +75,17 @@ export const FollowersCard = ({ stats, wide }: FollowersCardProps): React.JSX.El
       <View style={{ height }} onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         {width > ValueConstants.zero && first !== undefined ? (
           <Svg width={width} height={height}>
-            {startsInside ? (
+            {doesStartInside ? (
               <Line x1={PAD} x2={xOf(first.day)} y1={yOf(first.followers)} y2={yOf(first.followers)} stroke={colors.textMuted} strokeWidth={borderWidths.thin} strokeDasharray={StatsMetrics.dashArray} />
             ) : null}
             <Path d={area} fill={colors.chipBackground} />
             <Path d={line} stroke={colors.primary} strokeWidth={StatsMetrics.openedStroke} fill="none" />
-            {startsInside ? <Circle cx={xOf(first.day)} cy={yOf(first.followers)} r={StatsMetrics.endDot} fill={colors.primary} /> : null}
+            {doesStartInside ? <Circle cx={xOf(first.day)} cy={yOf(first.followers)} r={StatsMetrics.endDot} fill={colors.primary} /> : null}
             {lastPoint !== undefined ? <Circle cx={xOf(lastPoint.day)} cy={yOf(lastPoint.followers)} r={StatsMetrics.endDot} fill={colors.primary} /> : null}
           </Svg>
         ) : null}
       </View>
-      {startsInside && trackingSince !== null ? (
+      {doesStartInside && trackingSince !== null ? (
         <View style={styles.note}>
           <Ionicons name="information-circle-outline" size={iconSizes.sm} color={colors.text} />
           <SizedText size={fontSizes.small} weight={fontWeights.semibold}>

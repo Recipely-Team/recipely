@@ -45,7 +45,7 @@ export const WebHeroFeaturedCard = ({
 }: WebHeroFeaturedCardProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
-  const savedByMe = useStore(useStores().savedRecipesStore, (s) => s.savedIds.has(recipe.id));
+  const isSavedByMe = useStore(useStores().savedRecipesStore, (s) => s.savedIds.has(recipe.id));
   const totalMin = recipe.totalTimeMinutes;
   return (
     <View style={styles.card}>
@@ -110,7 +110,7 @@ export const WebHeroFeaturedCard = ({
         <WebHeroActionRow
           onView={() => onPress(recipe.id)}
           onSave={onSave !== undefined ? () => onSave(recipe.id) : undefined}
-          savedByMe={savedByMe}
+          savedByMe={isSavedByMe}
         />
       </View>
     </View>

@@ -38,7 +38,7 @@ export const useAddToPlan = (recipe: RecipeEntity): AddToPlanModel => {
   const pathname = usePathname();
   const { mealPlanStore } = useStores();
   const userId = useSignedInUserId();
-  const enabled = useStore(mealPlanStore, (s) => s.enabled === true);
+  const isEnabled = useStore(mealPlanStore, (s) => s.enabled === true);
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const [request, setRequest] = useState<AddToPlanRequest | null>(null);
 
@@ -65,7 +65,7 @@ export const useAddToPlan = (recipe: RecipeEntity): AddToPlanModel => {
   }, [recipe, requestGate, t]);
 
   return {
-    enabled,
+    enabled: isEnabled,
     request,
     open,
     close: useCallback(() => setRequest(null), []),

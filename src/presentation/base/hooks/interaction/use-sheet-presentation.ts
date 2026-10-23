@@ -46,22 +46,22 @@ interface SheetPresentation {
  *   JS-driven one is an error at runtime, not a type error.
  */
 export const useSheetPresentation = (
-  visible: boolean,
+  isVisible: boolean,
   isExpanded: boolean,
   dragOffset: Animated.Value,
 ): SheetPresentation => {
   const { height: windowHeight } = useWindowDimensions();
-  const [isMounted, setIsMounted] = useState(visible);
+  const [isMounted, setIsMounted] = useState(isVisible);
   const [panelHeight, setPanelHeight] = useState<number | null>(null);
   const [scrim] = useState(() => new Animated.Value(ValueConstants.zero));
   /** 0 while resting, 1 while off-screen. */
   const [away] = useState(() => new Animated.Value(ValueConstants.one));
 
   // Opening mounts the sheet in the same render, so it is there for the enter animation.
-  if (visible && !isMounted) setIsMounted(true);
+  if (isVisible && !isMounted) setIsMounted(true);
 
   useEffect(() => {
-    if (visible) {
+    if (isVisible) {
       Animated.timing(scrim, {
         toValue: ValueConstants.one,
         duration: SCRIM_ENTER_MS,
@@ -91,7 +91,7 @@ export const useSheetPresentation = (
       if (finished) setIsMounted(false);
     });
     return () => exit.stop();
-  }, [visible, scrim, away, panelHeight]);
+  }, [isVisible, scrim, away, panelHeight]);
 
   // The dialog fades; the sheet travels its height plus the live drag offset.
   const panelMotion = isExpanded

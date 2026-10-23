@@ -84,8 +84,8 @@ export class Quantity extends BaseValueObject<QuantityProps> {
   /** "1½ su bardağı", "2-3", "1.5 kg" — `writtenUnit` is kept unless it names the unit generically. */
   toText(decimalMark: string, writtenUnit: string = CharConstants.empty): string {
     const { amount, upTo, unit } = this._value;
-    const fraction = unit === null || MEASURE_UNITS[unit].fraction;
-    const amounts = [amount, upTo].flatMap((n) => (n === null ? [] : [formatAmount(n, fraction, decimalMark)]));
+    const isFraction = unit === null || MEASURE_UNITS[unit].fraction;
+    const amounts = [amount, upTo].flatMap((n) => (n === null ? [] : [formatAmount(n, isFraction, decimalMark)]));
     const label = this.unitLabel(writtenUnit);
     return [amounts.join(CharConstants.dash), label].filter((part) => part.length > ValueConstants.zero).join(CharConstants.space);
   }
@@ -98,8 +98,8 @@ export class Quantity extends BaseValueObject<QuantityProps> {
   unitLabel(writtenUnit: string = CharConstants.empty): string {
     if (this.unit === null) return CharConstants.empty;
     const { one, other } = MEASURE_UNITS[this.unit];
-    const generic = [one, other].includes(writtenUnit.toLowerCase());
-    if (writtenUnit.length > ValueConstants.zero && !generic) return writtenUnit;
+    const isGeneric = [one, other].includes(writtenUnit.toLowerCase());
+    if (writtenUnit.length > ValueConstants.zero && !isGeneric) return writtenUnit;
     return (this.upTo ?? this.amount) > ValueConstants.one ? other : one;
   }
 }

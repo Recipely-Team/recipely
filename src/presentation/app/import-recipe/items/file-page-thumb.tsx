@@ -26,10 +26,10 @@ const NAME_LINES = 2;
 export const FilePageThumb = ({ file, large = false }: FilePageThumbProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
-  const [broken, setBroken] = useState(false);
+  const [isBroken, setBroken] = useState(false);
   const isPdf = file.mimeType === ImportFileMimeType.Pdf;
 
-  if (!isPdf && !broken) {
+  if (!isPdf && !isBroken) {
     return <Image source={{ uri: file.uri }} style={styles.fill} resizeMode="cover" onError={() => setBroken(true)} accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />;
   }
 

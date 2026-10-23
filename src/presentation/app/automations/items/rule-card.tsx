@@ -104,7 +104,7 @@ const RuleCardComponent = ({
         <AutomationSwitch
           value={rule.enabled}
           disabled={isPaused}
-          onChange={(enabled) => onToggle(rule, enabled)}
+          onChange={(isEnabled) => onToggle(rule, isEnabled)}
         />
         <Pressable
           onPress={() => onDelete(rule)}

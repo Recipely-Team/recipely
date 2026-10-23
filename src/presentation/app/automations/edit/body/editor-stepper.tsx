@@ -27,28 +27,28 @@ export const EditorStepper = ({ step, stepValid, onGoTo }: EditorStepperProps): 
     <View style={styles.column}>
       {EDITOR_STEPS.map((target, index) => {
         const label = editorStepLabels(t)[index];
-        const current = index === step;
-        const reachable = index <= step || stepValid.slice(ValueConstants.zero, index).every(Boolean);
-        const done = index < step && stepValid[index] === true;
+        const isCurrent = index === step;
+        const isReachable = index <= step || stepValid.slice(ValueConstants.zero, index).every(Boolean);
+        const isDone = index < step && stepValid[index] === true;
         return (
           <Pressable
             key={label}
             onPress={() => onGoTo(target)}
-            disabled={!reachable}
+            disabled={!isReachable}
             accessibilityRole="button"
-            accessibilityState={{ selected: current, disabled: !reachable }}
-            style={[styles.item, { opacity: reachable ? opacities.full : AutomationMetrics.disabledOpacity }]}
+            accessibilityState={{ selected: isCurrent, disabled: !isReachable }}
+            style={[styles.item, { opacity: isReachable ? opacities.full : AutomationMetrics.disabledOpacity }]}
           >
-            <View style={[styles.dot, { backgroundColor: current || done ? colors.primary : colors.chipBackground }]}>
-              {done ? (
+            <View style={[styles.dot, { backgroundColor: isCurrent || isDone ? colors.primary : colors.chipBackground }]}>
+              {isDone ? (
                 <Ionicons name="checkmark" size={iconSizes.sm} color={colors.primaryText} />
               ) : (
-                <SizedText size={fontSizes.small} weight={fontWeights.bold} color={current ? colors.primaryText : colors.chipText}>
+                <SizedText size={fontSizes.small} weight={fontWeights.bold} color={isCurrent ? colors.primaryText : colors.chipText}>
                   {String(index + ValueConstants.one)}
                 </SizedText>
               )}
             </View>
-            <SizedText size={fontSizes.medium} weight={current ? fontWeights.bold : fontWeights.regular}>
+            <SizedText size={fontSizes.medium} weight={isCurrent ? fontWeights.bold : fontWeights.regular}>
               {label}
             </SizedText>
           </Pressable>

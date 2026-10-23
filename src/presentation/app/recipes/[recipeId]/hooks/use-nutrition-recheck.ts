@@ -43,10 +43,10 @@ export const useNutritionRecheck = (
   const [answeredFor, setAnsweredFor] = useState<string | null>(null);
   /** The recipe this hook has already spent its one recheck on. */
   const rechecked = useRef<string | null>(null);
-  const missing = recipeId.length > ValueConstants.zero && !hasNutrition;
+  const isMissing = recipeId.length > ValueConstants.zero && !hasNutrition;
 
   useEffect(() => {
-    if (!missing || rechecked.current === recipeId) return;
+    if (!isMissing || rechecked.current === recipeId) return;
 
     // Spent when it fires, not when it is scheduled: a cancelled timer gets another go.
     const timer = setTimeout(() => {
@@ -57,7 +57,7 @@ export const useNutritionRecheck = (
     return () => {
       clearTimeout(timer);
     };
-  }, [recipeId, missing, reload]);
+  }, [recipeId, isMissing, reload]);
 
-  return missing && answeredFor !== recipeId;
+  return isMissing && answeredFor !== recipeId;
 };

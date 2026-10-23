@@ -37,10 +37,10 @@ export const uploadMultipart = async <T>(
 ): Promise<Result<T, Failure>> => {
   const fullUrl = joinUrl(options.baseUrl, url);
   const commonHeaders = await buildCommonHeaders(options);
-  const enableLogging = options.enableLogging === true;
+  const isLoggingEnabled = options.enableLogging === true;
 
   return new Promise<Result<T, Failure>>((resolve) => {
-    if (enableLogging) {
+    if (isLoggingEnabled) {
       console.log(`${LogTag.multipartRequest} ${HttpMethod.Post} ${fullUrl}`);
     }
     const xhr = new XMLHttpRequest();
@@ -61,7 +61,7 @@ export const uploadMultipart = async <T>(
     xhr.onload = (): void => {
       const status = xhr.status;
       const responseText = xhr.responseText;
-      if (enableLogging) {
+      if (isLoggingEnabled) {
         console.log(`${LogTag.multipartResponse} ${status} ${fullUrl}`);
       }
       let body: unknown;
@@ -74,7 +74,7 @@ export const uploadMultipart = async <T>(
         try {
           body = decryptEnvelope(body, aesKey);
         } catch (err) {
-          if (enableLogging) {
+          if (isLoggingEnabled) {
             console.log(`${LogTag.multipartResponse} ${DECRYPT_FAILED_LOG} ${(err as Error).message}`);
           }
           // An undecryptable reply is a failure, never a 2xx success carrying the raw envelope.
@@ -98,7 +98,7 @@ export const uploadMultipart = async <T>(
     };
 
     xhr.onerror = (): void => {
-      if (enableLogging) {
+      if (isLoggingEnabled) {
         console.log(`${LogTag.multipartResponse} network error ${fullUrl} (status=${xhr.status}, body="${xhr.responseText}")`);
       }
       // Connection-level failure (status 0 = no response).
@@ -106,7 +106,7 @@ export const uploadMultipart = async <T>(
     };
 
     xhr.ontimeout = (): void => {
-      if (enableLogging) {
+      if (isLoggingEnabled) {
         console.log(`${LogTag.multipartResponse} timeout ${fullUrl}`);
       }
       resolve(fail(new TimeoutFailure(DiagnosticMessage.network.timedOut)));

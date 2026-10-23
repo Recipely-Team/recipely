@@ -43,9 +43,9 @@ const reported = new Set<string>();
  *   scroll. The first one carries the whole message; the rest add nothing.
  */
 export const AdSlot = ({ unitId, accessibilityLabel, width }: AdSlotProps): React.JSX.Element | null => {
-  const ready = useAdsReady();
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const isReady = useAdsReady();
+  const [isLoaded, setLoaded] = useState(false);
+  const [hasFailed, setFailed] = useState(false);
 
   const onFailed = useCallback(
     (error: Error): void => {
@@ -60,12 +60,12 @@ export const AdSlot = ({ unitId, accessibilityLabel, width }: AdSlotProps): Reac
     [unitId],
   );
 
-  if (!ready || failed) return null;
+  if (!isReady || hasFailed) return null;
 
   return (
     <View
-      style={loaded ? styles.slot : styles.pending}
-      accessible={loaded}
+      style={isLoaded ? styles.slot : styles.pending}
+      accessible={isLoaded}
       accessibilityLabel={accessibilityLabel}
     >
       <BannerAd

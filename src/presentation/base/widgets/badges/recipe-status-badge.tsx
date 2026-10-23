@@ -24,9 +24,9 @@ export const RecipeStatusBadge = ({ status }: RecipeStatusBadgeProps): React.JSX
   const t = useTranslations();
   const colors = useTheme().colors;
   const look = ownerStatusLook[status];
-  const rejected = status === OwnerStatus.Rejected;
-  const background = rejected ? colors.danger : colors.overlay;
-  const foreground = rejected ? colors.primaryText : colors.onOverlay;
+  const isRejected = status === OwnerStatus.Rejected;
+  const background = isRejected ? colors.danger : colors.overlay;
+  const foreground = isRejected ? colors.primaryText : colors.onOverlay;
 
   return (
     <View

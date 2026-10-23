@@ -46,8 +46,8 @@ const SmartPhotoComponent = ({ url, accessibilityLabel, focus }: SmartPhotoProps
   const [decoded, setDecoded] = useState<{ url: string; ratio: number | null; failed: boolean } | null>(null);
   const current = decoded?.url === url ? decoded : null;
   const photoRatio = current?.ratio ?? null;
-  const failed = current?.failed ?? false;
-  const portrait = isPortraitPhoto(photoRatio, frameRatio);
+  const hasFailed = current?.failed ?? false;
+  const isPortrait = isPortraitPhoto(photoRatio, frameRatio);
 
   const onLayout = (event: LayoutChangeEvent): void => {
     const { width, height } = event.nativeEvent.layout;
@@ -61,11 +61,11 @@ const SmartPhotoComponent = ({ url, accessibilityLabel, focus }: SmartPhotoProps
 
   return (
     <View style={[styles.frame, { backgroundColor: colors.skeleton }]} onLayout={onLayout}>
-      {failed ? (
+      {hasFailed ? (
         <RecipePlaceholder label={t.recipes.noPhoto} />
       ) : (
         <>
-          {portrait ? (
+          {isPortrait ? (
             <Image
               source={{ uri: url }}
               contentFit="cover"
@@ -79,8 +79,8 @@ const SmartPhotoComponent = ({ url, accessibilityLabel, focus }: SmartPhotoProps
           ) : null}
           <Image
             source={{ uri: url }}
-            contentFit={portrait ? 'contain' : 'cover'}
-            contentPosition={portrait ? CENTRED : toContentPosition(focus)}
+            contentFit={isPortrait ? 'contain' : 'cover'}
+            contentPosition={isPortrait ? CENTRED : toContentPosition(focus)}
             cachePolicy="memory-disk"
             recyclingKey={url}
             transition={durations.imageFade}

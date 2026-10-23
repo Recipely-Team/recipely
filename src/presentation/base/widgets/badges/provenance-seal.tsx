@@ -50,9 +50,9 @@ export const ProvenanceSeal = ({ marks, surface, size, label: override, decorati
   const colors = useTheme().colors;
   if (marks.length === ValueConstants.zero) return null;
 
-  const onPhoto = surface === SealSurface.Photo;
-  const glyph = Math.round(size * (onPhoto ? m.glyphShareOnPhoto : m.glyphShareOnPage));
-  const pair = marks.length > ValueConstants.one;
+  const isOnPhoto = surface === SealSurface.Photo;
+  const glyph = Math.round(size * (isOnPhoto ? m.glyphShareOnPhoto : m.glyphShareOnPage));
+  const isPair = marks.length > ValueConstants.one;
   const label = override ?? provenanceLabel(t, marks);
 
   const face = (
@@ -61,14 +61,14 @@ export const ProvenanceSeal = ({ marks, surface, size, label: override, decorati
       importantForAccessibility={decorative ? 'no-hide-descendants' : 'auto'}
       style={[
         styles.seal,
-        onPhoto ? shadows.md : shadows.sm,
+        isOnPhoto ? shadows.md : shadows.sm,
         {
           height: size,
           minWidth: size,
           gap: Math.round(size * m.gapShare),
-          paddingHorizontal: pair ? Math.round(size * m.pairPaddingShare) : ValueConstants.zero,
-          borderWidth: onPhoto ? m.ringOnPhoto : m.ringOnPage,
-          borderColor: onPhoto ? BrandColors.sealRing : colors.cardBorder,
+          paddingHorizontal: isPair ? Math.round(size * m.pairPaddingShare) : ValueConstants.zero,
+          borderWidth: isOnPhoto ? m.ringOnPhoto : m.ringOnPage,
+          borderColor: isOnPhoto ? BrandColors.sealRing : colors.cardBorder,
         },
       ]}
     >

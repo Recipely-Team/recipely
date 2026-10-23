@@ -41,8 +41,8 @@ export const IngredientRow = ({
 }: IngredientRowProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
-  const [focused, setFocused] = useState(false);
-  const guessed = useIsGuessed(value);
+  const [isFocused, setFocused] = useState(false);
+  const wasGuessed = useIsGuessed(value);
   const canReorder = onMoveUp !== undefined || onMoveDown !== undefined;
 
   return (
@@ -50,8 +50,8 @@ export const IngredientRow = ({
       style={[
         styles.root,
         {
-          backgroundColor: focused ? colors.chipBackground : BrandColors.transparent,
-          borderColor: focused ? colors.primary : BrandColors.transparent,
+          backgroundColor: isFocused ? colors.chipBackground : BrandColors.transparent,
+          borderColor: isFocused ? colors.primary : BrandColors.transparent,
         },
       ]}
     >
@@ -91,7 +91,7 @@ export const IngredientRow = ({
         minHeight={controlSizes.iconBtn}
         style={[styles.input, { color: colors.text }]}
       />
-      {guessed ? <CheckChip /> : null}
+      {wasGuessed ? <CheckChip /> : null}
       <Pressable
         onPress={onRemove}
         hitSlop={spacing.sm}

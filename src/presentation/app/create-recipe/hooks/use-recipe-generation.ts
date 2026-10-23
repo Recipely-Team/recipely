@@ -126,8 +126,8 @@ const GEN_STEP_INTERVAL_MS = 620;
   const seeded = useRef(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState(CharConstants.empty);
-  const [chatExpanded, setChatExpanded] = useState(false);
-  const [exitOpen, setExitOpen] = useState(false);
+  const [isChatExpanded, setChatExpanded] = useState(false);
+  const [isExitOpen, setExitOpen] = useState(false);
   /**
    * The draft exactly as this screen adopted it, or null for one started here.
    * Leaving with the recipe still identical to it means there is nothing to
@@ -142,7 +142,7 @@ const GEN_STEP_INTERVAL_MS = 620;
    */
   const [carried, setCarried] = useState<DraftRecipeSnapshot | undefined>(undefined);
 
-  const refining = refineState.status === StoreStatus.Refining;
+  const isRefining = refineState.status === StoreStatus.Refining;
 
   // router.replace changes the param on an already-mounted screen: that draft resumes too.
   const [resumingFor, setResumingFor] = useState(draftId);
@@ -154,12 +154,12 @@ const GEN_STEP_INTERVAL_MS = 620;
   // Resume a draft passed via ?draftId once on mount.
   useEffect(() => {
     if (draftId === undefined) return;
-    let cancelled = false;
+    let isCancelled = false;
     FailureReporter.trail(ImportTrail.editorMounted);
     void (async () => {
       FailureReporter.trail(ImportTrail.draftFetchStarted);
       const result = await draftsStore.getState().getDraft(draftId);
-      if (cancelled) return;
+      if (isCancelled) return;
       // An unreadable draft falls back to the prompt phase and says why.
       if (!result.ok) {
         FailureReporter.trail(ImportTrail.draftFetchFailed);
@@ -192,7 +192,7 @@ const GEN_STEP_INTERVAL_MS = 620;
       FailureReporter.trail(ImportTrail.editorReady);
     })();
     return () => {
-      cancelled = true;
+      isCancelled = true;
     };
   }, [draftId, draftsStore, setRecipe, router, t]);
 
@@ -246,8 +246,8 @@ const GEN_STEP_INTERVAL_MS = 620;
     setRecipe,
     chatHistory,
     setChatHistory,
-    chatExpanded,
-    refining,
+    chatExpanded: isChatExpanded,
+    refining: isRefining,
   });
 
   const generation = useRef<number>(ValueConstants.zero);
@@ -283,12 +283,12 @@ const GEN_STEP_INTERVAL_MS = 620;
       }
       if (state.status === StoreStatus.Error) {
         const { failure } = state;
-        const unnamed4xx =
+        const isUnnamed4xx =
           failure instanceof ValidationFailure && failureKeyMessage(t, failure) === undefined;
-        const message = unnamed4xx
+        const message = isUnnamed4xx
           ? t.createRecipe.aiPromptFailed
           : failureToastMessage(t, failure);
-        if (unnamed4xx) showDangerToast(message);
+        if (isUnnamed4xx) showDangerToast(message);
         else showErrorToast(failure);
         setGenerateError(message);
       }
@@ -369,11 +369,11 @@ const GEN_STEP_INTERVAL_MS = 620;
   // Opening an existing draft and leaving wrote nothing, so there is nothing to ask about.
   /** Work that is not in the drafts list yet — the only thing worth asking about. */
   const hasUnkeptWork = useCallback((): boolean => {
-    const unchanged =
+    const isUnchanged =
       openedAs !== null && openedAs === JSON.stringify(editableToSnapshot(recipe, carried));
     // Editing a saved recipe asks about ANY change — clearing a field is one too.
-    if (editRecipeId !== undefined) return phase === PhaseType.Preview && !unchanged;
-    return phase === PhaseType.Preview && editableHasContent(recipe) && !unchanged;
+    if (editRecipeId !== undefined) return phase === PhaseType.Preview && !isUnchanged;
+    return phase === PhaseType.Preview && editableHasContent(recipe) && !isUnchanged;
   }, [editRecipeId, phase, recipe, openedAs, carried]);
 
   const onClose = useCallback((): boolean => {
@@ -456,7 +456,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     stopAutosave: cancelAutosave,
     phase,
     genStep,
-    refining,
+    refining: isRefining,
     prompt,
     generateError,
     onChangePrompt,
@@ -472,7 +472,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     chatHistory,
     chatInput,
     onChangeChatInput: setChatInput,
-    chatExpanded,
+    chatExpanded: isChatExpanded,
     onExpandChat: () => setChatExpanded(true),
     onCollapseChat: () => setChatExpanded(false),
     canRegenerate: originalPrompt.length > ValueConstants.zero,
@@ -481,7 +481,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     onSubmitRefine,
     onAcceptProposal,
     onRejectProposal,
-    exitOpen,
+    exitOpen: isExitOpen,
     onGenerateAnother,
     onSaveDraftAndExit: () => void onSaveDraftAndExit(),
     onDiscardAndExit: () => void onDiscardAndExit(),

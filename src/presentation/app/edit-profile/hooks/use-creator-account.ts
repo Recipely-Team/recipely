@@ -92,8 +92,8 @@ export const useCreatorAccount = (): UseCreatorAccountResult => {
       void run(
         () => requestCreatorTag(input),
         (failure) => setError(failureKeyMessage(t, failure) ?? failureToastMessage(t, failure)),
-      ).then((sent) => {
-        if (sent) setFormPlatform(null);
+      ).then((wasSent) => {
+        if (wasSent) setFormPlatform(null);
       });
     },
     onCancel: () => {
@@ -106,8 +106,8 @@ export const useCreatorAccount = (): UseCreatorAccountResult => {
       void run(
         () => removeCreatorTag(platform),
         (failure) => void showErrorToast(failure),
-      ).then((removed) => {
-        if (!removed || claim === null) return;
+      ).then((wasRemoved) => {
+        if (!wasRemoved || claim === null) return;
         setDrafts((current) => ({ ...current, [platform]: claim.isPending ? claim.tag.handle : undefined }));
       });
     },

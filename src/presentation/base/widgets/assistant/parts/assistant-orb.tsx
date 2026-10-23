@@ -56,26 +56,26 @@ const ORB_SHAPE = {
 export const AssistantOrb = ({ status, isMuted }: AssistantOrbProps): React.JSX.Element => {
   const level = useStore(useStores().assistantSessionStore, (s) => s.level);
   const { colors } = useTheme();
-  const reduceMotion = useReduceMotion();
-  const speaking = status === AssistantStatus.Speaking && !isMuted;
-  const live = assistantIsLive(status);
+  const shouldReduceMotion = useReduceMotion();
+  const isSpeaking = status === AssistantStatus.Speaking && !isMuted;
+  const isLive = assistantIsLive(status);
 
   const [drift] = useState(() => new Animated.Value(ValueConstants.zero));
   const [sweep] = useState(() => new Animated.Value(ValueConstants.zero));
 
   useEffect(() => {
-    if (reduceMotion) return;
+    if (shouldReduceMotion) return;
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(drift, {
           toValue: ValueConstants.one,
-          duration: speaking ? assistantMetrics.orbSpeakingBobMs : assistantMetrics.orbBobMs,
+          duration: isSpeaking ? assistantMetrics.orbSpeakingBobMs : assistantMetrics.orbBobMs,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(drift, {
           toValue: ValueConstants.zero,
-          duration: speaking ? assistantMetrics.orbSpeakingBobMs : assistantMetrics.orbBobMs,
+          duration: isSpeaking ? assistantMetrics.orbSpeakingBobMs : assistantMetrics.orbBobMs,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
@@ -83,10 +83,10 @@ export const AssistantOrb = ({ status, isMuted }: AssistantOrbProps): React.JSX.
     );
     loop.start();
     return () => loop.stop();
-  }, [drift, speaking, reduceMotion]);
+  }, [drift, isSpeaking, shouldReduceMotion]);
 
   useEffect(() => {
-    if (reduceMotion || status !== AssistantStatus.Connecting) {
+    if (shouldReduceMotion || status !== AssistantStatus.Connecting) {
       sweep.setValue(ValueConstants.zero);
       return;
     }
@@ -100,7 +100,7 @@ export const AssistantOrb = ({ status, isMuted }: AssistantOrbProps): React.JSX.
     );
     loop.start();
     return () => loop.stop();
-  }, [sweep, status, reduceMotion]);
+  }, [sweep, status, shouldReduceMotion]);
 
   const bob = drift.interpolate({
     inputRange: [ValueConstants.zero, ValueConstants.one],
@@ -114,7 +114,7 @@ export const AssistantOrb = ({ status, isMuted }: AssistantOrbProps): React.JSX.
 
   return (
     <View style={styles.halo} pointerEvents="none">
-      {live && !isMuted ? <AssistantOrbAura isSpeaking={speaking} /> : null}
+      {isLive && !isMuted ? <AssistantOrbAura isSpeaking={isSpeaking} /> : null}
       <Animated.View
         style={[
           styles.orb,
@@ -122,7 +122,7 @@ export const AssistantOrb = ({ status, isMuted }: AssistantOrbProps): React.JSX.
             opacity: isMuted ? opacities.disabledFaint : opacities.full,
             transform: [
               { translateY: bob },
-              { scale: speaking ? ValueConstants.one + level * assistantMetrics.orbLevelGrowth : breath },
+              { scale: isSpeaking ? ValueConstants.one + level * assistantMetrics.orbLevelGrowth : breath },
             ],
           },
         ]}
@@ -178,7 +178,7 @@ export const AssistantOrb = ({ status, isMuted }: AssistantOrbProps): React.JSX.
         ) : null}
       </Animated.View>
 
-      {live && !isMuted ? (
+      {isLive && !isMuted ? (
         <>
           <View style={[styles.lift, { backgroundColor: colors.primary + colorAlphas.faint }]} />
           <View style={[styles.waveBadge, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>

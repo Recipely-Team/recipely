@@ -59,16 +59,16 @@ const useCatalog = (kind: TaxonomyPickerKind): Catalog => {
   const categories = useStore(taxonomyStore, (s) => s.categories);
 
   return useMemo(() => {
-    const ready = status === StoreStatus.Ready;
+    const isReady = status === StoreStatus.Ready;
     if (kind === TaxonomyPickerKind.Cuisine) {
       const items =
-        ready && cuisines.length > ValueConstants.zero
+        isReady && cuisines.length > ValueConstants.zero
           ? cuisines
           : localItems(CUISINE_KEY_VALUES, CUISINE_EMOJI, tr.cuisineNames);
       return { items, title: tr.createRecipe.pickCuisineTitle };
     }
     const items =
-      ready && categories.length > ValueConstants.zero
+      isReady && categories.length > ValueConstants.zero
         ? categories
         : localItems(RECIPE_CATEGORY_VALUES, CATEGORY_EMOJI, tr.categoryNames);
     return { items, title: tr.createRecipe.pickCategoryTitle };
@@ -95,7 +95,7 @@ export const TaxonomyPickerSheet = (props: TaxonomyPickerSheetProps): React.JSX.
     <BottomSheet visible={visible} title={catalog.title} onClose={onClose} showCloseButton>
       <View style={styles.grid}>
         {catalog.items.map((item) => {
-          const active = item.key === selected;
+          const isActive = item.key === selected;
           return (
             <Pressable
               key={item.key}
@@ -105,8 +105,8 @@ export const TaxonomyPickerSheet = (props: TaxonomyPickerSheetProps): React.JSX.
               style={[
                 styles.option,
                 {
-                  backgroundColor: active ? colors.chipBackground : colors.surface,
-                  borderColor: active ? colors.primary : colors.cardBorder,
+                  backgroundColor: isActive ? colors.chipBackground : colors.surface,
+                  borderColor: isActive ? colors.primary : colors.cardBorder,
                 },
               ]}
             >
@@ -114,7 +114,7 @@ export const TaxonomyPickerSheet = (props: TaxonomyPickerSheetProps): React.JSX.
               <ThemedText
                 variant="caption"
                 numberOfLines={ValueConstants.one}
-                style={[styles.optionLabel, { color: active ? colors.primary : colors.text }]}
+                style={[styles.optionLabel, { color: isActive ? colors.primary : colors.text }]}
               >
                 {item.name}
               </ThemedText>

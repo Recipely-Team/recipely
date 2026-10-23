@@ -101,9 +101,9 @@ export const configureMealPlanStore = (deps: MealPlanStoreDeps): StoreApi<MealPl
 
       checkEnabled: async () => {
         flag ??= deps.isEnabled();
-        const on = await flag;
-        set({ enabled: on });
-        return on;
+        const isOn = await flag;
+        set({ enabled: isOn });
+        return isOn;
       },
       showWeek: (day) => {
         set({ weekStart: day.weekStart() });
@@ -144,11 +144,11 @@ export const configureMealPlanStore = (deps: MealPlanStoreDeps): StoreApi<MealPl
         return result;
       },
 
-      setEaten: async (entry, eaten, today) => {
+      setEaten: async (entry, isEaten, today) => {
         const isLatest = edits.start(entry.id);
         const isSession = session.current();
-        patch(entry.date, (week) => week.withEntry(entry.withEaten(eaten)));
-        const result = await deps.setEaten.execute(entry, eaten, today);
+        patch(entry.date, (week) => week.withEntry(entry.withEaten(isEaten)));
+        const result = await deps.setEaten.execute(entry, isEaten, today);
         if (isLatest() && isSession()) patch(entry.date, (week) => week.withEntry(result.ok ? result.value : entry));
         return result;
       },

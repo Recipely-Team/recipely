@@ -196,11 +196,11 @@ export const RecipePreviewEditor = ({
               onRenameGroup={(label) =>
                 onChangeIngredient(group.headerIndex, IngredientLine.heading(label))
               }
-              onDeleteGroup={(keepItems) =>
+              onDeleteGroup={(shouldKeepItems) =>
                 onRemoveIngredientGroup(
                   group.headerIndex,
                   group.items.map((item) => item.index),
-                  keepItems,
+                  shouldKeepItems,
                 )
               }
             />

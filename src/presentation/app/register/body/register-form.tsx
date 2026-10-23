@@ -51,15 +51,15 @@ export const RegisterForm = (): React.JSX.Element => {
   const [email, setEmail] = useState(CharConstants.empty);
   const [password, setPassword] = useState(CharConstants.empty);
   const [confirm, setConfirm] = useState(CharConstants.empty);
-  const [agree, setAgree] = useState(false);
+  const [hasAgreed, setAgree] = useState(false);
   const [localError, setLocalError] = useState<string | undefined>(undefined);
 
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
   const confirmRef = useRef<TextInput>(null);
 
-  const emailValid = Email.create(email).ok;
-  const passwordsMatch = password.length > ValueConstants.zero && password === confirm;
+  const isEmailValid = Email.create(email).ok;
+  const doPasswordsMatch = password.length > ValueConstants.zero && password === confirm;
   const strength = useMemo(() => Password.strengthOf(password), [password]);
 
   const handleRegister = useCallback(async () => {
@@ -67,7 +67,7 @@ export const RegisterForm = (): React.JSX.Element => {
       setLocalError(t.register.errorName);
       return;
     }
-    if (!emailValid) {
+    if (!isEmailValid) {
       setLocalError(t.register.errorEmail);
       return;
     }
@@ -79,7 +79,7 @@ export const RegisterForm = (): React.JSX.Element => {
       setLocalError(t.register.errorMismatch);
       return;
     }
-    if (!agree) {
+    if (!hasAgreed) {
       setLocalError(t.register.errorAgree);
       return;
     }
@@ -97,7 +97,7 @@ export const RegisterForm = (): React.JSX.Element => {
     } else {
       setLocalError(authFormMessage(t, result.failure, { conflict: t.register.emailTaken }));
     }
-  }, [name, email, emailValid, password, confirm, agree, register, router, redirect, t]);
+  }, [name, email, isEmailValid, password, confirm, hasAgreed, register, router, redirect, t]);
 
   const errorMessage = localError;
 
@@ -124,7 +124,7 @@ export const RegisterForm = (): React.JSX.Element => {
         onChangeText={setEmail}
         keyboardType="email-address"
         returnKeyType="next"
-        valid={email.length > ValueConstants.zero ? emailValid : undefined}
+        valid={email.length > ValueConstants.zero ? isEmailValid : undefined}
         onSubmitEditing={() => passwordRef.current?.focus()}
         containerStyle={styles.fieldSpacing}
       />
@@ -153,12 +153,12 @@ export const RegisterForm = (): React.JSX.Element => {
         onChangeText={setConfirm}
         password
         returnKeyType="done"
-        valid={confirm.length > ValueConstants.zero ? passwordsMatch : undefined}
+        valid={confirm.length > ValueConstants.zero ? doPasswordsMatch : undefined}
         onSubmitEditing={() => { void handleRegister(); }}
         containerStyle={styles.fieldSpacing}
       />
 
-      <TermsAgreement agree={agree} onToggle={() => setAgree((a) => !a)} />
+      <TermsAgreement agree={hasAgreed} onToggle={() => setAgree((hadAgreed) => !hadAgreed)} />
 
       {errorMessage !== undefined ? (
         <View style={styles.error}>

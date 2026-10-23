@@ -81,8 +81,8 @@ const useShouldRenderWebHeader = (): boolean => {
 };
 
 const WebShellChrome = (): React.JSX.Element | null => {
-  const show = useShouldRenderWebHeader();
-  if (!show) return null;
+  const shouldShow = useShouldRenderWebHeader();
+  if (!shouldShow) return null;
   return <WebHeader />;
 };
 

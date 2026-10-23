@@ -119,23 +119,23 @@ export const GeneratingView = ({ activeStep, onCancel, topInset }: GeneratingVie
 
       <View style={styles.checklist}>
         {steps.map((label, i) => {
-          const done = i < spotlight;
-          const active = i === spotlight;
+          const isDone = i < spotlight;
+          const isActive = i === spotlight;
           return (
-            <View key={label} style={[styles.checkRow, { opacity: done || active ? opacities.full : opacities.inactive }]}>
+            <View key={label} style={[styles.checkRow, { opacity: isDone || isActive ? opacities.full : opacities.inactive }]}>
               <View
                 style={[
                   styles.checkBadge,
                   {
-                    backgroundColor: done ? colors.primary : BrandColors.transparent,
-                    borderColor: active ? colors.primary : colors.border,
-                    borderWidth: done ? ValueConstants.zero : borderWidths.thin,
+                    backgroundColor: isDone ? colors.primary : BrandColors.transparent,
+                    borderColor: isActive ? colors.primary : colors.border,
+                    borderWidth: isDone ? ValueConstants.zero : borderWidths.thin,
                   },
                 ]}
               >
-                {done ? (
+                {isDone ? (
                   <Ionicons name="checkmark" size={iconSizes.md} color={colors.primaryText} />
-                ) : active ? (
+                ) : isActive ? (
                   <View style={[styles.activeDot, { backgroundColor: colors.primary }]} />
                 ) : null}
               </View>
@@ -143,8 +143,8 @@ export const GeneratingView = ({ activeStep, onCancel, topInset }: GeneratingVie
                 style={[
                   styles.checkLabel,
                   {
-                    color: active || done ? colors.text : colors.textMuted,
-                    fontWeight: active ? fontWeights.bold : fontWeights.medium,
+                    color: isActive || isDone ? colors.text : colors.textMuted,
+                    fontWeight: isActive ? fontWeights.bold : fontWeights.medium,
                   },
                 ]}
               >

@@ -48,21 +48,21 @@ export const NutritionBasisSwitch = ({ weightGrams, basis, onChange }: Nutrition
       style={[styles.track, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
     >
       {options.map((option) => {
-        const checked = option.value === basis;
+        const isChecked = option.value === basis;
         return (
           <Pressable
             key={option.value}
             accessibilityRole="radio"
-            accessibilityState={{ checked }}
+            accessibilityState={{ checked: isChecked }}
             accessibilityLabel={option.label}
             onPress={() => onChange(option.value)}
-            style={[styles.option, option.flex, checked ? [styles.on, { backgroundColor: colors.cardBackground }] : null]}
+            style={[styles.option, option.flex, isChecked ? [styles.on, { backgroundColor: colors.cardBackground }] : null]}
           >
             <ThemedText
               style={[
                 styles.label,
-                checked ? styles.labelOn : styles.labelOff,
-                { lineHeight, color: checked ? colors.text : colors.textMuted },
+                isChecked ? styles.labelOn : styles.labelOff,
+                { lineHeight, color: isChecked ? colors.text : colors.textMuted },
               ]}
             >
               {option.label}

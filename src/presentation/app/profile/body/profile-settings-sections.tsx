@@ -46,8 +46,8 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
   const signOut = useStore(authStore, (s) => s.signOut);
 
   const language = useLocale() as 'en' | 'tr';
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [signOutVisible, setSignOutVisible] = useState(false);
+  const [isFeedbackOpen, setFeedbackOpen] = useState(false);
+  const [isSignOutVisible, setSignOutVisible] = useState(false);
   const deleteAccountFlow = useDeleteAccount();
 
   const handleSignOut = async (): Promise<void> => {
@@ -69,7 +69,7 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
     onRequestSignOut: () => setSignOutVisible(true),
   });
   // The sign-out sheet also takes a spoken answer.
-  useAssistantConfirmation(signOutVisible, () => void handleSignOut(), () => setSignOutVisible(false));
+  useAssistantConfirmation(isSignOutVisible, () => void handleSignOut(), () => setSignOutVisible(false));
 
   return (
     <View>
@@ -148,14 +148,14 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
       </View>
 
       {isWeb() ? (
-        <WebFeedbackModal visible={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+        <WebFeedbackModal visible={isFeedbackOpen} onClose={() => setFeedbackOpen(false)} />
       ) : (
-        <FeedbackSheet visible={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+        <FeedbackSheet visible={isFeedbackOpen} onClose={() => setFeedbackOpen(false)} />
       )}
       {/* Signing out is one tap away from a destructive-looking row and drops
           the session; it asks first, like account deletion does. */}
       <ConfirmSheet
-        visible={signOutVisible}
+        visible={isSignOutVisible}
         title={t.settings.signOut}
         message={t.settings.signOutConfirm}
         confirmLabel={t.settings.signOut}

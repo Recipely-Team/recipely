@@ -26,13 +26,13 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const vm = useCreateRecipe();
   // Only the assistant's publish is confirmed here (speech may be misheard).
-  const [assistantPublishOpen, setAssistantPublishOpen] = useState(false);
+  const [isAssistantPublishOpen, setAssistantPublishOpen] = useState(false);
   // Sheets live in the preview phase only, so confirmations are gated on it.
   const isPreview = vm.phase === PhaseType.Preview;
   // Which sheet owns the spoken yes/no — derived and tested in one place.
   const { exitOrErrorOpen, canLeave, isExitPending } = assistantSheetGates({
     exitOpen: vm.exitOpen,
-    publishOpen: assistantPublishOpen,
+    publishOpen: isAssistantPublishOpen,
     saveErrorOpen: vm.saveError !== null,
     saveIssueOpen: vm.saveIssue !== null,
     photosOpen: vm.photosOpen,
@@ -67,7 +67,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     onRequestPublish: () => setAssistantPublishOpen(true),
   });
   useAssistantConfirmation(
-    isPreview && assistantPublishOpen && !exitOrErrorOpen,
+    isPreview && isAssistantPublishOpen && !exitOrErrorOpen,
     () => {
       setAssistantPublishOpen(false);
       vm.onSaveAndPublish();
@@ -76,7 +76,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   );
   // One confirmation at a time: the publish modal owns the spoken yes while open.
   useAssistantConfirmation(
-    isPreview && vm.proposal !== null && !assistantPublishOpen && !exitOrErrorOpen,
+    isPreview && vm.proposal !== null && !isAssistantPublishOpen && !exitOrErrorOpen,
     vm.onAcceptProposal,
     vm.onRejectProposal,
   );
@@ -146,7 +146,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         onKeepEditing={vm.onKeepEditing}
       />
       <ConfirmSheet
-        visible={assistantPublishOpen}
+        visible={isAssistantPublishOpen}
         title={t.assistant.publishTitle}
         message={t.assistant.publishMessage}
         confirmLabel={t.assistant.publishConfirm}

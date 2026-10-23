@@ -39,7 +39,7 @@ export const RecipeShareSheet = ({
 }: RecipeShareSheetProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
-  const [copied, setCopied] = useState(false);
+  const [wasCopied, setCopied] = useState(false);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -138,29 +138,29 @@ export const RecipeShareSheet = ({
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={copied ? t.recipes.shareCopied : t.recipes.shareCopy}
+          accessibilityLabel={wasCopied ? t.recipes.shareCopied : t.recipes.shareCopy}
           onPress={() => void handleCopy()}
           style={[
             styles.copyBtn,
             {
-              backgroundColor: copied ? colors.success : colors.primary,
+              backgroundColor: wasCopied ? colors.success : colors.primary,
               borderRadius: radii.lg,
             },
           ]}
         >
           <Ionicons
-            name={copied ? 'checkmark' : 'copy-outline'}
+            name={wasCopied ? 'checkmark' : 'copy-outline'}
             size={iconSizes.md}
-            color={copied ? colors.onSuccess : colors.primaryText}
+            color={wasCopied ? colors.onSuccess : colors.primaryText}
           />
           <ThemedText
             variant="caption"
             style={[
               styles.copyLabel,
-              { color: copied ? colors.onSuccess : colors.primaryText },
+              { color: wasCopied ? colors.onSuccess : colors.primaryText },
             ]}
           >
-            {copied ? t.recipes.shareCopied : t.recipes.shareCopy}
+            {wasCopied ? t.recipes.shareCopied : t.recipes.shareCopy}
           </ThemedText>
         </Pressable>
       </View>

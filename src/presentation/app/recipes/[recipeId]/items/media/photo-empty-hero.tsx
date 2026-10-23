@@ -28,15 +28,15 @@ export interface PhotoEmptyHeroProps {
 export const PhotoEmptyHero = ({ variant, onAddFirst, disabled, overlap }: PhotoEmptyHeroProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
-  const framed = variant === PhotoViewerVariant.Framed;
-  const label = framed ? t.photoViewer.noPhotoShort : t.recipes.noPhoto;
-  const offset = framed ? photoViewerSizes.addFirstOffsetFramed : photoViewerSizes.addFirstOffset;
+  const isFramed = variant === PhotoViewerVariant.Framed;
+  const label = isFramed ? t.photoViewer.noPhotoShort : t.recipes.noPhoto;
+  const offset = isFramed ? photoViewerSizes.addFirstOffsetFramed : photoViewerSizes.addFirstOffset;
 
   return (
     <View style={StyleSheet.absoluteFill}>
       <RecipePlaceholder
         {...(onAddFirst === undefined ? { label } : {})}
-        logoSize={framed ? photoViewerSizes.emptyLogoFramed : photoViewerSizes.emptyLogo}
+        logoSize={isFramed ? photoViewerSizes.emptyLogoFramed : photoViewerSizes.emptyLogo}
       />
       {onAddFirst !== undefined ? (
         <View style={[styles.anchor, { bottom: offset + overlap }]} pointerEvents="box-none">

@@ -51,9 +51,9 @@ export const WebCuisineRail = ({
 
   const visible = railChipCount(feedContentWidth(width), width, height);
   const railKeys = cuisineKeys.slice(ValueConstants.zero, visible);
-  const noneSelected = selectedCuisines.length === ValueConstants.zero;
+  const isNoneSelected = selectedCuisines.length === ValueConstants.zero;
 
-  const chip = (key: string, name: string, emoji: string, active: boolean): React.JSX.Element => (
+  const chip = (key: string, name: string, emoji: string, isActive: boolean): React.JSX.Element => (
     <Pressable
       key={key}
       onPress={() => onToggle(key)}
@@ -65,8 +65,8 @@ export const WebCuisineRail = ({
         style={[
           styles.circle,
           {
-            backgroundColor: active ? colors.primary : colors.surface,
-            borderColor: active ? colors.primary : colors.border,
+            backgroundColor: isActive ? colors.primary : colors.surface,
+            borderColor: isActive ? colors.primary : colors.border,
           },
         ]}
       >
@@ -74,7 +74,7 @@ export const WebCuisineRail = ({
       </View>
       <ThemedText
         numberOfLines={ValueConstants.one}
-        style={[styles.label, { color: active ? colors.primary : colors.textMuted }]}
+        style={[styles.label, { color: isActive ? colors.primary : colors.textMuted }]}
       >
         {name}
       </ThemedText>
@@ -106,7 +106,7 @@ export const WebCuisineRail = ({
       </View>
 
       <View style={styles.wrap}>
-        {chip(ALL_CUISINES_KEY, t.recipes.cuisineAll, ALL_EMOJI, noneSelected)}
+        {chip(ALL_CUISINES_KEY, t.recipes.cuisineAll, ALL_EMOJI, isNoneSelected)}
         {railKeys.map((key) => {
           const { name, emoji } = cuisineLabel(key);
           return chip(key, name, emoji, selectedCuisines.includes(key));

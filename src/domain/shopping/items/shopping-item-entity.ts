@@ -61,7 +61,7 @@ export class ShoppingItemEntity extends BaseEntity<ShoppingItemEntityProps> {
     return this.props.position;
   }
 
-  withChecked(checked: boolean): ShoppingItemEntity {
-    return new ShoppingItemEntity({ ...this.props, checked });
+  withChecked(isChecked: boolean): ShoppingItemEntity {
+    return new ShoppingItemEntity({ ...this.props, checked: isChecked });
   }
 }

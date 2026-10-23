@@ -28,7 +28,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  *   pending and passes `visible` accordingly, rather than registering both.
  */
 export const useAssistantConfirmation = (
-  visible: boolean,
+  isVisible: boolean,
   onConfirm: () => void,
   onCancel: () => void,
 ): void => {
@@ -39,7 +39,7 @@ export const useAssistantConfirmation = (
 
   useEffect(() => {
     // Focus too: a sheet on a screen the user left must not take the answer.
-    if (!visible || !isFocused) return;
+    if (!isVisible || !isFocused) return;
 
     const unregisterConfirm = assistantActionRegistry.register(AssistantAction.Confirm, () => {
       confirm();
@@ -53,5 +53,5 @@ export const useAssistantConfirmation = (
       unregisterConfirm();
       unregisterCancel();
     };
-  }, [visible, isFocused, assistantActionRegistry]);
+  }, [isVisible, isFocused, assistantActionRegistry]);
 };

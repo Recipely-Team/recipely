@@ -120,13 +120,13 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): StoreAp
       addFromRecipe: async (lines, recipe) => { const isSession = session.current(); return added(await deps.addFromRecipe.execute(lines, recipe), isSession); },
       addDrafts: async (drafts) => { const isSession = session.current(); return added(await deps.addDrafts.execute(drafts), isSession); },
 
-      setChecked: async (item, checked) => {
+      setChecked: async (item, isChecked) => {
         const tick = (ticks.get(item.id) ?? ValueConstants.zero) + ValueConstants.one;
         ticks.set(item.id, tick);
         const isSession = session.current();
         const wasShown = hasItem(get().list, item.id);
-        if (wasShown) place([item.withChecked(checked)]);
-        const result = await deps.setChecked.execute(item.id, checked);
+        if (wasShown) place([item.withChecked(isChecked)]);
+        const result = await deps.setChecked.execute(item.id, isChecked);
         if (ticks.get(item.id) !== tick || !isSession()) return ok(undefined);
         if (result.ok) show(result.value);
         else if (wasShown) place([item]);

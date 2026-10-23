@@ -28,21 +28,21 @@ const toFields = (goals: NutritionGoals): Record<GoalFieldType, string> => ({
  *   `create`; while that refuses them the hint is hidden and Save disabled.
  *   Water is not on this sheet, so the saved glasses ride along.
  */
-export const useGoalsForm = (visible: boolean, onSaved: () => void): GoalsForm => {
+export const useGoalsForm = (isVisible: boolean, onSaved: () => void): GoalsForm => {
   const t = useTranslations();
   const { diaryStore } = useStores();
   const goals = useStore(diaryStore, (s) => s.goals);
   const [values, setValues] = useState(() => toFields(goals));
-  const [wasVisible, setWasVisible] = useState(visible);
+  const [wasVisible, setWasVisible] = useState(isVisible);
   const [isSaving, setSaving] = useState(false);
-  if (visible !== wasVisible) {
-    setWasVisible(visible);
-    if (visible) setValues(toFields(goals));
+  if (isVisible !== wasVisible) {
+    setWasVisible(isVisible);
+    if (isVisible) setValues(toFields(goals));
   }
 
   const numbers = Object.fromEntries(Object.entries(values).map(([key, text]) => [key, parseDecimalInput(text)])) as Record<GoalFieldType, number | null>;
-  const complete = Object.values(numbers).every((value) => value !== null);
-  const built = complete
+  const isComplete = Object.values(numbers).every((value) => value !== null);
+  const built = isComplete
     ? NutritionGoals.create({
         calories: numbers.calories ?? ValueConstants.zero,
         protein: numbers.protein ?? ValueConstants.zero,

@@ -39,7 +39,7 @@ export const useRecipeDetailAssistant = (
   vm: UseRecipeDetailResult,
   scrollViewRef: RefObject<ScrollView | null>,
 ): RecipeDetailAssistant => {
-  const [unsavePending, setUnsavePending] = useState(false);
+  const [isUnsavePending, setUnsavePending] = useState(false);
   const scrollOffset = useRef(ValueConstants.zero);
   const scrollDetail = useCallback(
     (direction: AssistantScrollDirectionType): boolean =>
@@ -96,14 +96,14 @@ export const useRecipeDetailAssistant = (
 
   useAssistantConfirmation(vm.showDeleteSheet, vm.onConfirmDelete, vm.onCloseDelete);
   useAssistantConfirmation(
-    unsavePending && !vm.showDeleteSheet && !vm.shareOpen && !vm.promptVisible,
+    isUnsavePending && !vm.showDeleteSheet && !vm.shareOpen && !vm.promptVisible,
     confirmUnsave,
     cancelUnsave,
   );
   useAssistantScroll(scrollDetail);
 
   return {
-    unsavePending,
+    unsavePending: isUnsavePending,
     confirmUnsave,
     cancelUnsave,
     onScroll: (event) => {

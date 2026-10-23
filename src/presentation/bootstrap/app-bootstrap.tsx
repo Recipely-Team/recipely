@@ -84,15 +84,15 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
 
   // Register the push token once signed in (Android FCM, web Firebase JS; iOS pending).
   useEffect(() => {
-    let registered = false;
+    let wasRegistered = false;
     const register = (): void => {
       if (stores.authStore.getState().state.status !== StoreStatus.Authenticated) return;
-      registered = true;
+      wasRegistered = true;
       void registerPushToken((token, platform) => stores.registerDeviceToken.execute(token, platform));
     };
     // Exposed so a screen that promises a notification can retry after permission is granted.
     const maybeRegister = (): void => {
-      if (registered) return;
+      if (wasRegistered) return;
       register();
     };
     setPushRegistrationHandler(register);

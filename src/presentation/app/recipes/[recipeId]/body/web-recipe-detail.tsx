@@ -88,7 +88,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
   const backLabel = useBackLabel();
   const { width } = useLayout();
   const { recipe, media } = props;
-  const twoColumn = width >= layoutSizes.webDetailTwoColMin;
+  const isTwoColumn = width >= layoutSizes.webDetailTwoColMin;
 
   return (
     <View style={styles.page}>
@@ -119,7 +119,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
         photos={props.photos}
       />
 
-      <View style={[styles.grid, twoColumn ? styles.gridRow : styles.gridColumn]}>
+      <View style={[styles.grid, isTwoColumn ? styles.gridRow : styles.gridColumn]}>
         <View style={styles.mainColumn}>
           <View style={styles.cover}>
             <RecipePhotoViewer
@@ -159,7 +159,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
           />
         </View>
 
-        <View style={[styles.sideColumn, twoColumn ? stickyColumn : null]}>
+        <View style={[styles.sideColumn, isTwoColumn ? stickyColumn : null]}>
           <WebRecipeDetailSidebar
             recipe={recipe}
             checkedIngredients={props.checkedIngredients}

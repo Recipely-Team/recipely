@@ -13,7 +13,7 @@ import { AdUnitStatus } from '@presentation/base/widgets/ads/ad-unit-status';
 import type { WebBannerAdProps } from '@presentation/base/widgets/ads/web-banner-ad-props';
 
 /** Whether this session has already filed the one report it is allowed. */
-let reported = false;
+let wasReported = false;
 
 /**
  * One AdSense display unit. **Web build** — see `web-banner-ad.tsx`.
@@ -58,8 +58,8 @@ export const WebBannerAd = ({ slotId, accessibilityLabel }: WebBannerAdProps): R
     if (node === null || !(node instanceof HTMLElement) || slotId === CharConstants.empty) return;
 
     void mountAdsenseUnit(node, slotId).catch((error: Error) => {
-      if (reported) return;
-      reported = true;
+      if (wasReported) return;
+      wasReported = true;
       FailureReporter.report(
         new UnknownFailure(DiagnosticMessage.ads.bannerFailed(error.message)),
         'WebBannerAd.load',

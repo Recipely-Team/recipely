@@ -35,14 +35,14 @@ export const usePlanMyWeek = (weekStart: CalendarDate, today: CalendarDate): Use
   const t = useTranslations();
   const { mealPlanStore } = useStores();
   const locale = useLocale();
-  const [visible, setVisible] = useState(false);
+  const [isVisible, setVisible] = useState(false);
   const [step, setStep] = useState<PlanWeekStepType>(PlanWeekStep.Meals);
   const [meals, setMeals] = useState<ReadonlySet<MealSlotType>>(() => new Set([MealSlot.Dinner]));
   const [seed, setSeed] = useState(newSeed);
   const [suggestion, setSuggestion] = useState<WeekSuggestion | null>(null);
   const [swapped, setSwapped] = useState<ReadonlySet<string>>(() => new Set());
-  const [loading, setLoading] = useState(false);
-  const [adding, setAdding] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+  const [isAdding, setAdding] = useState(false);
 
   const fetchWeek = useCallback(
     async (withSeed: number) => {
@@ -111,14 +111,14 @@ export const usePlanMyWeek = (weekStart: CalendarDate, today: CalendarDate): Use
   }, [mealPlanStore, toAdd, today, t]);
 
   return {
-    visible,
+    visible: isVisible,
     step,
     meals,
-    loading,
+    loading: isLoading,
     emptyPool: suggestion !== null && suggestion.poolSize === ValueConstants.zero,
     days,
     addCount: toAdd.length,
-    adding,
+    adding: isAdding,
     open: () => {
       setStep(PlanWeekStep.Meals);
       setVisible(true);

@@ -11,6 +11,9 @@ const EXPO_PUBLIC_BRACKET_READ = {
   message: 'Read EXPO_PUBLIC_* with a dot (process.env.EXPO_PUBLIC_X): Expo does not inline bracket reads.',
 };
 
+/** The verbs a boolean we name ourselves starts with. */
+const BOOLEAN_PREFIXES = ['is', 'has', 'have', 'can', 'should', 'did', 'does', 'do', 'will', 'was', 'were', 'had', 'are', 'needs', 'allows', 'shows'];
+
 const VECTOR_ICONS_ROOT = {
   name: '@expo/vector-icons',
   message: "Import the family's own path, e.g. '@expo/vector-icons/Ionicons' — the root index bundles every icon font.",
@@ -137,6 +140,27 @@ module.exports = defineConfig([
             })),
           ],
         },
+      ],
+    },
+  },
+  {
+    // Type-aware rules for app code. A boolean we name ourselves (a variable or
+    // a parameter) reads as a question: isLoading, hasMore, canSave,
+    // shouldReduceMotion, wasSent. Props and fields keep the names of the API
+    // they mirror (React Native's `visible`, `disabled`; the backend's
+    // `likedByMe`), so destructured names and properties are left alone, as are
+    // SCREAMING_CASE constants.
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: ['**/__tests__/**', '**/__fixtures__/**', '**/__mocks__/**', 'src/presentation/base/test-support/**'],
+    languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: __dirname } },
+    rules: {
+      '@typescript-eslint/naming-convention': [
+        'error',
+        { selector: 'variable', types: ['boolean'], format: ['PascalCase'], prefix: BOOLEAN_PREFIXES },
+        { selector: 'parameter', types: ['boolean'], format: ['PascalCase'], prefix: BOOLEAN_PREFIXES },
+        { selector: 'variable', modifiers: ['destructured'], types: ['boolean'], format: null },
+        { selector: 'parameter', modifiers: ['destructured'], types: ['boolean'], format: null },
+        { selector: 'variable', types: ['boolean'], format: null, filter: { regex: '^[A-Z0-9_]+$', match: true } },
       ],
     },
   },

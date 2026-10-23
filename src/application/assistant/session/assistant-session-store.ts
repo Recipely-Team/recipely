@@ -177,7 +177,7 @@ export const configureAssistantSessionStore = (
       stopHeartbeat();
       const ownEpoch = heartbeatEpoch;
       // Once per session, or a second session would run out in silence.
-      let warned = false;
+      let wasWarned = false;
       heartbeat = setInterval(() => {
         void tokens.reportUsage(HEARTBEAT_SECONDS).then((reported) => {
           // A report in flight when the session ended must not write onto the next one.
@@ -190,8 +190,8 @@ export const configureAssistantSessionStore = (
             void controller.stop();
             return;
           }
-          if (!warned && budget.value.needsWarning(BUDGET_WARNING_SECONDS)) {
-            warned = true;
+          if (!wasWarned && budget.value.needsWarning(BUDGET_WARNING_SECONDS)) {
+            wasWarned = true;
             controller.sendText(BUDGET_WARNING_PROMPT, { hidden: true });
           }
         });
@@ -221,11 +221,11 @@ export const configureAssistantSessionStore = (
         meter.reset();
         patch.level = ValueConstants.zero;
       }
-      const ended = previousStatus !== SessionStatus.Idle && state.status === SessionStatus.Idle;
+      const hasEnded = previousStatus !== SessionStatus.Idle && state.status === SessionStatus.Idle;
       previousStatus = state.status;
       set(patch);
 
-      if (ended) {
+      if (hasEnded) {
         stopHeartbeat();
         // Say that it ended: torn down in silence, the session simply was not there any more.
         if (state.endReason === EndReason.Silence) {

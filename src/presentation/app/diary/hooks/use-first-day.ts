@@ -15,8 +15,8 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 export const useFirstDay = (day: DiaryDay | null): boolean => {
   const { diaryStore } = useStores();
   const recentCount = useStore(diaryStore, (s) => s.recent.length);
-  const recentFailed = useStore(diaryStore, (s) => s.loads.recent.status === StoreStatus.Error);
-  const [checked, setChecked] = useState(false);
+  const hasRecentFailed = useStore(diaryStore, (s) => s.loads.recent.status === StoreStatus.Error);
+  const [isChecked, setChecked] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -27,5 +27,5 @@ export const useFirstDay = (day: DiaryDay | null): boolean => {
     }, [diaryStore]),
   );
 
-  return checked && !recentFailed && recentCount === ValueConstants.zero && day !== null && !day.hasEntries;
+  return isChecked && !hasRecentFailed && recentCount === ValueConstants.zero && day !== null && !day.hasEntries;
 };

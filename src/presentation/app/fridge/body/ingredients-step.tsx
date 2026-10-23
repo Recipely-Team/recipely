@@ -34,18 +34,18 @@ export const IngredientsStep = ({ chips, source, filters, failure, startAdding, 
   const t = useTranslations();
   const colors = useTheme().colors;
   const copy = t.fridge;
-  const scanned = source === IngredientSource.Scan;
-  const anyUnsure = chips.some((chip) => !chip.sure);
+  const wasScanned = source === IngredientSource.Scan;
+  const isAnyUnsure = chips.some((chip) => !chip.sure);
 
   return (
     <View style={styles.root}>
       {failure === null ? null : <FormBanner severity="danger" message={fridgeFailureMessage(t, failure)} />}
       <View style={styles.heading}>
         <SizedText accessibilityRole="header" accessibilityLiveRegion="polite" size={fontSizes.display} weight={fontWeights.heavy} ratio={lineHeights.tight}>
-          {scanned ? copy.foundTitle.replace('{n}', String(chips.length)) : copy.typedTitle}
+          {wasScanned ? copy.foundTitle.replace('{n}', String(chips.length)) : copy.typedTitle}
         </SizedText>
         <SizedText size={fontSizes.medium} ratio={lineHeights.normal} muted>
-          {scanned ? copy.foundSub : copy.typedSub}
+          {wasScanned ? copy.foundSub : copy.typedSub}
         </SizedText>
       </View>
       <View style={styles.chips}>
@@ -54,7 +54,7 @@ export const IngredientsStep = ({ chips, source, filters, failure, startAdding, 
         ))}
         <AddIngredientChip startOpen={startAdding} dense={dense} onAdd={onAddChip} />
       </View>
-      {anyUnsure ? (
+      {isAnyUnsure ? (
         <View style={styles.legend}>
           <View style={[styles.legendSwatch, { borderColor: colors.border }]} />
           <SizedText size={fontSizes.caption} muted>

@@ -68,9 +68,9 @@ export const useTimerNotificationSync = (): void => {
   useEffect(() => {
     let unsubscribeTick: (() => void) | null = null;
     const syncTick = (): void => {
-      const running = hasRunningTimer(timerStore.getState().timers);
-      if (running && unsubscribeTick === null) unsubscribeTick = subscribeToTick(checkForCompletedTimers);
-      if (!running && unsubscribeTick !== null) {
+      const isRunning = hasRunningTimer(timerStore.getState().timers);
+      if (isRunning && unsubscribeTick === null) unsubscribeTick = subscribeToTick(checkForCompletedTimers);
+      if (!isRunning && unsubscribeTick !== null) {
         unsubscribeTick();
         unsubscribeTick = null;
       }

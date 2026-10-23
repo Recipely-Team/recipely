@@ -39,8 +39,8 @@ const LOGO_SIZE = 96;
 export const SplashOverlay = (): React.JSX.Element | null => {
   const t = useTranslations();
   const colors = useTheme().colors;
-  const [visible, setVisible] = useState(!isWeb());
-  const [leaving, setLeaving] = useState(false);
+  const [isVisible, setVisible] = useState(!isWeb());
+  const [isLeaving, setLeaving] = useState(false);
   const [opacity] = useState(() => new Animated.Value(ValueConstants.one));
 
   const dismiss = useCallback((): void => {
@@ -63,12 +63,12 @@ export const SplashOverlay = (): React.JSX.Element | null => {
     };
   }, [dismiss]);
 
-  if (!visible) return null;
+  if (!isVisible) return null;
 
   return (
     <Animated.View
       style={[styles.root, { opacity }]}
-      pointerEvents={leaving ? 'none' : 'auto'}
+      pointerEvents={isLeaving ? 'none' : 'auto'}
     >
       <Pressable
         style={StyleSheet.absoluteFill}

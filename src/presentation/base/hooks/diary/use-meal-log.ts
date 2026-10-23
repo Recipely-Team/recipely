@@ -51,7 +51,7 @@ export const useMealLog = ({ initialText, onLog }: MealLogOptions): MealLog => {
     phase: initialText === null ? MealLogPhase.Compose : MealLogPhase.Parsing,
   });
   const [text, setText] = useState(initialText ?? CharConstants.empty);
-  const [photoDenied, setPhotoDenied] = useState(false);
+  const [isPhotoDenied, setPhotoDenied] = useState(false);
   const latest = useRef(ValueConstants.zero);
 
   /** The state a parse leads to, or null when a later request superseded it. */
@@ -104,7 +104,7 @@ export const useMealLog = ({ initialText, onLog }: MealLogOptions): MealLog => {
     state,
     text,
     setText,
-    photoDenied,
+    photoDenied: isPhotoDenied,
     parseText: () => void parse({ kind: MealParseInputKind.Text, text, locale }),
     pickPhoto: () => {
       setPhotoDenied(false);

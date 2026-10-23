@@ -27,17 +27,17 @@ export const configureLikesStore = (deps: LikesStoreDeps): StoreApi<LikesStore> 
   return createStore<LikesStore>((set, get) => ({
     byRecipe: {},
 
-    seed: (recipeId, likeCount, likedByMe) => {
+    seed: (recipeId, likeCount, isLikedByMe) => {
       if (get().byRecipe[recipeId] !== undefined) return;
       set((s) => ({
         byRecipe: {
           ...s.byRecipe,
-          [recipeId]: { likeCount, likedByMe, isLoading: false, updatedAt: Date.now() },
+          [recipeId]: { likeCount, likedByMe: isLikedByMe, isLoading: false, updatedAt: Date.now() },
         },
       }));
     },
 
-    syncFromApi: (recipeId, likeCount, likedByMe, fetchedAt) => {
+    syncFromApi: (recipeId, likeCount, isLikedByMe, fetchedAt) => {
       // Skip while an optimistic toggle is in flight.
       const current = get().byRecipe[recipeId];
       if (current?.isLoading) return;
@@ -47,13 +47,13 @@ export const configureLikesStore = (deps: LikesStoreDeps): StoreApi<LikesStore> 
       if (
         current !== undefined &&
         current.likeCount === likeCount &&
-        current.likedByMe === likedByMe
+        current.likedByMe === isLikedByMe
       )
         return;
       set((s) => ({
         byRecipe: {
           ...s.byRecipe,
-          [recipeId]: { likeCount, likedByMe, isLoading: false, updatedAt: fetchedAt },
+          [recipeId]: { likeCount, likedByMe: isLikedByMe, isLoading: false, updatedAt: fetchedAt },
         },
       }));
     },
@@ -94,7 +94,7 @@ export const configureLikesStore = (deps: LikesStoreDeps): StoreApi<LikesStore> 
       return result;
     },
 
-    setLiked: async (recipeId, wanted) => {
+    setLiked: async (recipeId, isWanted) => {
       const current = get().byRecipe[recipeId];
 
       // No entry means unknown, not "done": report not-ready.
@@ -105,7 +105,7 @@ export const configureLikesStore = (deps: LikesStoreDeps): StoreApi<LikesStore> 
         return fail(new ConflictFailure(DiagnosticMessage.assistant.likeAlreadyInFlight));
       }
       // Already the wanted outcome: the user asked for a state, and it holds.
-      if (current.likedByMe === wanted) return ok(undefined);
+      if (current.likedByMe === isWanted) return ok(undefined);
 
       return get().toggle(recipeId);
     },
