@@ -10,6 +10,7 @@ import type { FoodLogEntryChanges } from '@domain/diary/entry/food-log-entry-cha
 import type { FoodLogEntryEntity } from '@domain/diary/food-log-entry-entity';
 import type { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import type { DiaryConcernType } from '@application/diary/diary-concern';
+import type { DiaryLoadState } from '@application/diary/diary-load-state';
 
 export interface DiaryStore {
   /** The day the Day view shows; starts on today (local). */
@@ -21,11 +22,11 @@ export interface DiaryStore {
   recent: readonly LoggableFood[];
   /** Defaults until the first day, month or goals response arrives. */
   goals: NutritionGoals;
-  loading: Readonly<Record<DiaryConcernType, boolean>>;
-  errors: Readonly<Record<DiaryConcernType, Failure | null>>;
+  /** Each concern's load: idle, loading, loaded or failed with its `Failure`. */
+  loads: Readonly<Record<DiaryConcernType, DiaryLoadState>>;
   /** Selects a day and loads it. */
   selectDate: (date: CalendarDate) => Promise<void>;
-  /** Loads (or refreshes) a day; defaults to the selected one. A cached day stays on screen meanwhile; `loading.day` / `errors.day` track the selected day only. */
+  /** Loads (or refreshes) a day; defaults to the selected one. A cached day stays on screen meanwhile; `loads.day` tracks the selected day only. */
   loadDay: (date?: CalendarDate) => Promise<void>;
   loadMonth: (month: CalendarMonth) => Promise<void>;
   loadRecent: () => Promise<void>;
@@ -40,6 +41,7 @@ export interface DiaryStore {
   deleteEntry: (entry: FoodLogEntryEntity) => Promise<Result<void, Failure>>;
   /** Sets the day's glasses at once; on refusal returns to the last server-confirmed count, if this is still the latest tap. */
   setWater: (date: CalendarDate, glasses: number) => Promise<Result<void, Failure>>;
+  /** Dismisses a failed load (back to idle) once the screen has shown it. */
   clearError: (concern: DiaryConcernType) => void;
   /** Drops the signed-in user's diary. Called when the session ends. */
   clear: () => void;

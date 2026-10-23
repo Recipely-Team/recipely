@@ -1,3 +1,5 @@
+import type { AssistantSessionState } from '@application/assistant/session/assistant-session-state';
+import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
 import { create } from 'zustand';
 import {
   AssistantController,
@@ -107,6 +109,8 @@ export const configureAssistantSessionStore = (
   const meter = new AssistantLevelMeter();
   let languageCode = CharConstants.empty;
   let overlay: AssistantStatusType | null = null;
+  /** Why the last start was refused; read only while the session is `Unavailable`. */
+  let denied: AssistantDenialReasonType | null = null;
   let extras: { after: number; line: AssistantTranscriptLineType }[] = [];
   let extraId = ValueConstants.zero;
   let typedEpoch = ValueConstants.zero;
@@ -194,12 +198,16 @@ export const configureAssistantSessionStore = (
       }, HEARTBEAT_INTERVAL_MS);
     };
 
+    /** The named state for a status; the refusal reason rides only on `Unavailable`. */
+    const sessionFor = (status: AssistantStatusType): AssistantSessionState =>
+      status === AssistantStatus.Unavailable ? { status, deniedReason: denied } : { status };
+
     const sync = (): void => {
       const state = controller.getState();
       const patch: Partial<AssistantSessionStore> = {
         isMuted: state.isMuted,
         tokensUsed: state.tokensUsed,
-        status: state.status !== SessionStatus.Idle ? state.status : (overlay ?? AssistantStatus.Idle),
+        session: sessionFor(state.status !== SessionStatus.Idle ? state.status : (overlay ?? AssistantStatus.Idle)),
       };
       if (state.transcript !== seenEntries) {
         seenEntries = state.transcript;
@@ -279,7 +287,7 @@ export const configureAssistantSessionStore = (
     };
 
     return {
-      status: AssistantStatus.Idle,
+      session: { status: AssistantStatus.Idle },
       view: AssistantView.Closed,
       level: ValueConstants.zero,
       isMuted: false,
@@ -287,7 +295,6 @@ export const configureAssistantSessionStore = (
       remainingSeconds: ValueConstants.zero,
       isUnlimited: false,
       tokensUsed: ValueConstants.zero,
-      deniedReason: null,
       error: null,
 
       setView: (view) => set({ view }),
@@ -301,11 +308,12 @@ export const configureAssistantSessionStore = (
 
       startVoice: async (locale: string) => {
         // Not "is it idle": a refused session leaves Unavailable, and the next press must start.
-        if (assistantIsLive(get().status)) return;
+        if (assistantIsLive(get().session.status)) return;
         typedEpoch += ValueConstants.one;
         overlay = null;
         languageCode = locale;
-        set({ deniedReason: null, error: null });
+        denied = null;
+        set({ error: null });
 
         const started = await controller.start();
         if (!started.ok) {
@@ -313,7 +321,9 @@ export const configureAssistantSessionStore = (
           const denial = AssistantFailurePolicy.toStartDenial(started.failure);
           if (denial !== null) {
             overlay = AssistantStatus.Unavailable;
-            if (Object.keys(denial).length > ValueConstants.zero) set(denial);
+            const { deniedReason, ...budget } = denial;
+            if (deniedReason !== undefined) denied = deniedReason;
+            if (Object.keys(budget).length > ValueConstants.zero) set(budget);
           }
           sync();
           return;
@@ -339,6 +349,7 @@ export const configureAssistantSessionStore = (
       reset: () => {
         typedEpoch += ValueConstants.one;
         overlay = null;
+        denied = null;
         extras = [];
         void controller.stop();
         controller.clearTranscript();
@@ -348,8 +359,8 @@ export const configureAssistantSessionStore = (
           remainingSeconds: ValueConstants.zero,
           isUnlimited: false,
           tokensUsed: ValueConstants.zero,
-          deniedReason: null,
           error: null,
+          session: { status: AssistantStatus.Idle },
           view: AssistantView.Closed,
           level: ValueConstants.zero,
           isMuted: false,

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import type { Failure } from '@core/failure';
 import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
-import type { AssistantStatusType } from '@application/assistant/session/assistant-status';
+import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
 import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import type { AssistantViewType } from '@application/assistant/session/assistant-view';
@@ -44,14 +44,14 @@ export const useAssistantSession = (): AssistantSessionView => {
   const { assistantSessionStore } = useStores();
   const locale = useLocale();
 
-  const status = assistantSessionStore((s) => s.status);
+  const status = assistantSessionStore((s) => s.session.status);
   const view = assistantSessionStore((s) => s.view);
   const level = assistantSessionStore((s) => s.level);
   const isMuted = assistantSessionStore((s) => s.isMuted);
   const transcript = assistantSessionStore((s) => s.transcript);
   const remainingSeconds = assistantSessionStore((s) => s.remainingSeconds);
   const isUnlimited = assistantSessionStore((s) => s.isUnlimited);
-  const deniedReason = assistantSessionStore((s) => s.deniedReason);
+  const deniedReason = assistantSessionStore((s) => (s.session.status === AssistantStatus.Unavailable ? s.session.deniedReason : null));
   const error = assistantSessionStore((s) => s.error);
   const clearError = assistantSessionStore((s) => s.clearError);
   const setView = assistantSessionStore((s) => s.setView);

@@ -85,8 +85,7 @@ describe('diary store', () => {
     const store = makeStore(makeRepo());
     await store.getState().selectDate(today);
     expect(store.getState().days['2026-09-30']?.entries).toHaveLength(1);
-    expect(store.getState().loading.day).toBe(false);
-    expect(store.getState().errors.day).toBeNull();
+    expect(store.getState().loads.day).toEqual({ status: 'loaded' });
   });
 
   it('records a day failure under its own concern and keeps the cache', async () => {
@@ -95,8 +94,8 @@ describe('diary store', () => {
     await store.getState().loadDay();
     repo.getDay.mockResolvedValueOnce(fail(failure));
     await store.getState().loadDay();
-    expect(store.getState().errors.day).toBe(failure);
-    expect(store.getState().errors.month).toBeNull();
+    expect(store.getState().loads.day).toEqual({ status: 'error', failure });
+    expect(store.getState().loads.month.status).not.toBe('error');
     expect(store.getState().days['2026-09-30']).toBeDefined();
   });
 
@@ -130,8 +129,8 @@ describe('diary store', () => {
     settle(fail(failure));
     const r = await pending;
     await flush();
-    expect(r.ok).toBe(false);
-    expect(store.getState().errors.save).toBe(failure);
+    // The write answers its own caller; no shared "save error" is left behind.
+    expect(!r.ok && r.failure).toBe(failure);
     expect(store.getState().days['2026-09-30']?.entries).toHaveLength(1);
   });
 
@@ -211,8 +210,7 @@ describe('diary store', () => {
     const store = makeStore(repo);
     repo.getDay.mockResolvedValueOnce(fail(failure));
     await store.getState().loadDay(today.addDays(-3));
-    expect(store.getState().errors.day).toBeNull();
-    expect(store.getState().loading.day).toBe(false);
+    expect(store.getState().loads.day.status).not.toBe('error');
   });
 
   it('does not let a load that started before a goals save overwrite the saved goals', async () => {
@@ -270,8 +268,8 @@ describe('diary store', () => {
   it('clears one concern error on request', async () => {
     const store = makeStore(makeRepo({ getGoals: jest.fn().mockResolvedValue(fail(failure)) }));
     await store.getState().loadGoals();
-    expect(store.getState().errors.goals).toBe(failure);
+    expect(store.getState().loads.goals).toEqual({ status: 'error', failure });
     store.getState().clearError(DiaryConcern.Goals);
-    expect(store.getState().errors.goals).toBeNull();
+    expect(store.getState().loads.goals.status).not.toBe('error');
   });
 });

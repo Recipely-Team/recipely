@@ -1,11 +1,11 @@
-import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
 import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
-import type { AssistantStatusType } from '@application/assistant/session/assistant-status';
+import type { AssistantSessionState } from '@application/assistant/session/assistant-session-state';
 import type { AssistantViewType } from '@application/assistant/session/assistant-view';
 import type { Failure } from '@core/failure';
 
 export interface AssistantSessionStore {
-  status: AssistantStatusType;
+  /** The voice session as one named state; only `AssistantUnavailable` carries a refusal reason. */
+  session: AssistantSessionState;
   /** How much of the assistant is showing. The assistant drives the app in
    *  view, so the panel never covers the screen it is working on. */
   view: AssistantViewType;
@@ -45,7 +45,6 @@ export interface AssistantSessionStore {
    * against a real conversation instead of an estimate.
    */
   tokensUsed: number;
-  deniedReason: AssistantDenialReasonType | null;
   error: Failure | null;
 
   setView: (view: AssistantViewType) => void;

@@ -14,8 +14,10 @@ class GrantRefusal {
   ) {}
 }
 
-/** What a refused start writes to the store, beside the `Unavailable` pill. */
-type StartDenialPatch = Partial<Pick<AssistantSessionStore, 'deniedReason' | 'remainingSeconds' | 'isUnlimited'>>;
+/** What a refused start tells the store: the reason the `Unavailable` state carries, and the budget it read. */
+type StartDenialPatch = Partial<Pick<AssistantSessionStore, 'remainingSeconds' | 'isUnlimited'>> & {
+  deniedReason?: AssistantDenialReasonType;
+};
 
 /**
  * **Assistant failure policy** — which `@live-assistant/*` failures the user is

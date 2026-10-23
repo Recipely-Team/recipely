@@ -1,3 +1,4 @@
+import { StoreStatus } from '@application/store/store-status';
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import type { DiaryDay } from '@domain/diary/day/diary-day';
@@ -13,7 +14,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 export const useFirstDay = (day: DiaryDay | null): boolean => {
   const { diaryStore } = useStores();
   const recentCount = diaryStore((s) => s.recent.length);
-  const recentFailed = diaryStore((s) => s.errors.recent !== null);
+  const recentFailed = diaryStore((s) => s.loads.recent.status === StoreStatus.Error);
   const [checked, setChecked] = useState(false);
 
   useFocusEffect(
