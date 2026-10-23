@@ -9,6 +9,7 @@ import { t } from '@presentation/i18n';
 import { getLocale } from '@presentation/i18n/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { PROD_WEB_APP_DOMAIN } from '@infrastructure/constants/api/api-hosts';
+import { isWeb } from '@infrastructure/constants/platform';
 import { ShareCardLayout as L } from '@presentation/app/recipes/[recipeId]/model/share/share-card-layout';
 import { shareCardIngredients } from '@presentation/app/recipes/[recipeId]/model/share/share-card-ingredients';
 import { shareCardMeta } from '@presentation/app/recipes/[recipeId]/model/share/share-card-meta';
@@ -64,7 +65,8 @@ export const RecipeShareCard = forwardRef<View, RecipeShareCardProps>(
     return (
       <View
         ref={ref}
-        collapsable={false}
+        // Native only: keeps the view un-flattened so it can be captured; on the web React writes it to the DOM and warns.
+        collapsable={isWeb() ? undefined : false}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
         style={[styles.card, { backgroundColor: paper }]}

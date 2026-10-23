@@ -3131,3 +3131,13 @@ navigation hooks live in a `RootEffects` sibling that renders nothing, `screenOp
 memoized, and the rows are `memo` with stable callbacks. `check:structure` rule AW blocks
 `authStore((s) => s.state)`. *The class:* **select the value you render, not the object
 that holds it; and anything that listens to navigation renders nothing under it.**
+
+## A native-only prop handed to the web DOM (2026-10-23)
+
+`RecipeShareCard` set `collapsable={false}` unconditionally. It keeps a native view
+un-flattened for capture; on the web React writes unknown props to the DOM and warned
+"Received `false` for a non-boolean attribute `collapsable`". *Now:* it is passed on native
+only (`recipe-share-card.test.tsx` renders as web and as iOS). The same warning still comes
+from dependencies (react-native-screens, gesture-handler pass it on web), which is theirs to
+fix. *The class:* **a prop that means something only to native views is gated by platform
+when the component also renders on the web.**
