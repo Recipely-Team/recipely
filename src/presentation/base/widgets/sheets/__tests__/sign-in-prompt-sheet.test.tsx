@@ -53,7 +53,7 @@ describe('SignInPromptSheet', () => {
       <SignInPromptSheet visible onClose={jest.fn()} onSignIn={onSignIn} />,
     );
 
-    act(() => (primaryButton(root).props.onPress as () => void)());
+    act(() => (primaryButton(root)!.props.onPress as () => void)());
 
     expect(onSignIn).toHaveBeenCalledTimes(1);
   });

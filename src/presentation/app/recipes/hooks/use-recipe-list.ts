@@ -399,6 +399,8 @@ export const useRecipeList = (): UseRecipeListResult => {
     void loadMore(buildApiFilters(filters, sortBy, debouncedSearch));
   }, [canLoadMore, loadMore, buildApiFilters, filters, sortBy, debouncedSearch]);
 
+  const [firstCuisine] = filters.cuisines;
+
   return {
     state,
     recipes,
@@ -415,7 +417,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     gridCellMaxWidth,
     sortBy,
     filters,
-    activeCuisineLabel: filters.cuisines.length > ValueConstants.zero ? cuisineLabel(filters.cuisines[ValueConstants.zero]).name : null,
+    activeCuisineLabel: firstCuisine === undefined ? null : cuisineLabel(firstCuisine).name,
     // A callback ref (each branch attaches a different list class) bundled with onScroll so neither is forgotten.
     assistantScroll: {
       ref: (instance: AssistantScrollHandleType): void => {

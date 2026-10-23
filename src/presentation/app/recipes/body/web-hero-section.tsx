@@ -113,6 +113,7 @@ export const WebHeroSection = ({
   }
 
   const [featured, mini1, mini2] = state.recipes;
+  if (featured === undefined || mini1 === undefined || mini2 === undefined) return null;
 
   return (
     <View style={[styles.row, stacked ? styles.stacked : null]} testID={WEB_HERO_ROW_TEST_ID}>

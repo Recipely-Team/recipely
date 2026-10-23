@@ -26,8 +26,8 @@ describe('toCreatorPage', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.value.items.map((c) => c.id)).toEqual(['1', '2']);
-    expect(r.value.items[0].creatorTags[0]?.displayHandle).toBe('@chef_1');
-    expect(r.value.items[0].followerCount).toBe(40);
+    expect(r.value.items[0]!.creatorTags[0]?.displayHandle).toBe('@chef_1');
+    expect(r.value.items[0]!.followerCount).toBe(40);
     expect(r.value.total).toBe(45);
     expect(r.value.page).toBe(2);
     expect(r.value.pageSize).toBe(20);

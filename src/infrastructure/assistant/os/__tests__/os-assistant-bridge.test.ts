@@ -39,16 +39,16 @@ const raw = (overrides: Record<string, unknown> = {}) => ({
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockKit.getPendingInvocationsAsync.mockResolvedValue([]);
-  mockKit.removePendingInvocationAsync.mockResolvedValue(undefined);
-  mockKit.setEntityCatalogAsync.mockResolvedValue(undefined);
-  mockKit.refreshShortcutsAsync.mockResolvedValue(undefined);
-  mockKit.setCredentialsAsync.mockResolvedValue(undefined);
+  mockKit.getPendingInvocationsAsync!.mockResolvedValue([]);
+  mockKit.removePendingInvocationAsync!.mockResolvedValue(undefined);
+  mockKit.setEntityCatalogAsync!.mockResolvedValue(undefined);
+  mockKit.refreshShortcutsAsync!.mockResolvedValue(undefined);
+  mockKit.setCredentialsAsync!.mockResolvedValue(undefined);
 });
 
 describe('OsAssistantBridge — the boundary refuses what it cannot run', () => {
   it('passes a request whose id and action this build knows', async () => {
-    mockKit.getPendingInvocationsAsync.mockResolvedValue([raw()]);
+    mockKit.getPendingInvocationsAsync!.mockResolvedValue([raw()]);
 
     await expect(new OsAssistantBridge().pendingInvocations()).resolves.toEqual([
       {
@@ -66,7 +66,7 @@ describe('OsAssistantBridge — the boundary refuses what it cannot run', () => 
   // the registry would only answer `unknown_action` for is dropped here, or the
   // user hears the app deny something the system had just offered them.
   it('drops a request naming an action this build does not have', async () => {
-    mockKit.getPendingInvocationsAsync.mockResolvedValue([raw({ action: 'writeBio' })]);
+    mockKit.getPendingInvocationsAsync!.mockResolvedValue([raw({ action: 'writeBio' })]);
 
     await expect(new OsAssistantBridge().pendingInvocations()).resolves.toEqual([]);
   });
@@ -76,7 +76,7 @@ describe('OsAssistantBridge — the boundary refuses what it cannot run', () => 
   it.each([AssistantAction.Confirm, AssistantAction.Cancel])(
     'drops %s, which only answers a sheet the user is looking at',
     async (action) => {
-      mockKit.getPendingInvocationsAsync.mockResolvedValue([
+      mockKit.getPendingInvocationsAsync!.mockResolvedValue([
         raw({ id: OsIntentId.AskRecipely, action, arg: undefined }),
       ]);
 
@@ -87,18 +87,18 @@ describe('OsAssistantBridge — the boundary refuses what it cannot run', () => 
   // The caller never sees a dropped entry, so it can never acknowledge one. Left
   // in the queue it was re-read and re-dropped on every launch.
   it('removes what it drops from the queue, and keeps what it passes', async () => {
-    mockKit.getPendingInvocationsAsync.mockResolvedValue([
+    mockKit.getPendingInvocationsAsync!.mockResolvedValue([
       raw({ invocationId: 'unknown', action: 'writeBio' }),
       raw({ invocationId: 'kept' }),
     ]);
 
     await new OsAssistantBridge().pendingInvocations();
 
-    expect(mockKit.removePendingInvocationAsync.mock.calls).toEqual([['unknown']]);
+    expect(mockKit.removePendingInvocationAsync!.mock.calls).toEqual([['unknown']]);
   });
 
   it('drops a request whose catalogue id it has never heard of', async () => {
-    mockKit.getPendingInvocationsAsync.mockResolvedValue([raw({ id: 'orderGroceries' })]);
+    mockKit.getPendingInvocationsAsync!.mockResolvedValue([raw({ id: 'orderGroceries' })]);
 
     await expect(new OsAssistantBridge().pendingInvocations()).resolves.toEqual([]);
   });
@@ -107,7 +107,7 @@ describe('OsAssistantBridge — the boundary refuses what it cannot run', () => 
   // reach JavaScript it must survive the boundary rather than be mistaken for
   // an unknown word.
   it('keeps a request that deliberately carries no action', async () => {
-    mockKit.getPendingInvocationsAsync.mockResolvedValue([
+    mockKit.getPendingInvocationsAsync!.mockResolvedValue([
       raw({ id: OsIntentId.AskRecipely, action: null }),
     ]);
 
@@ -124,7 +124,7 @@ describe('OsAssistantBridge — the boundary refuses what it cannot run', () => 
     const { action: _action, arg: _arg, ...withoutOptionals } = raw({
       id: OsIntentId.AskRecipely,
     });
-    mockKit.getPendingInvocationsAsync.mockResolvedValue([withoutOptionals]);
+    mockKit.getPendingInvocationsAsync!.mockResolvedValue([withoutOptionals]);
 
     const [invocation] = await new OsAssistantBridge().pendingInvocations();
 
@@ -135,10 +135,10 @@ describe('OsAssistantBridge — the boundary refuses what it cannot run', () => 
 
   it('applies the same filter to live invocations', () => {
     const listener = jest.fn();
-    mockKit.addInvocationListener.mockImplementation(() => () => undefined);
+    mockKit.addInvocationListener!.mockImplementation(() => () => undefined);
 
     new OsAssistantBridge().subscribe(listener);
-    const emit = mockKit.addInvocationListener.mock.calls[0][0];
+    const emit = mockKit.addInvocationListener!.mock.calls[0][0];
     emit(raw({ action: 'writeBio' }));
     emit(raw());
 
@@ -153,8 +153,8 @@ describe('OsAssistantBridge — publishing downwards', () => {
   // its own.
   it('refreshes the shortcuts after replacing the catalogue', async () => {
     const order: string[] = [];
-    mockKit.setEntityCatalogAsync.mockImplementation(async () => void order.push('catalogue'));
-    mockKit.refreshShortcutsAsync.mockImplementation(async () => void order.push('shortcuts'));
+    mockKit.setEntityCatalogAsync!.mockImplementation(async () => void order.push('catalogue'));
+    mockKit.refreshShortcutsAsync!.mockImplementation(async () => void order.push('shortcuts'));
 
     await new OsAssistantBridge().publishRecipes([{ id: 'r1', title: 'Köfte', subtitle: null }]);
 

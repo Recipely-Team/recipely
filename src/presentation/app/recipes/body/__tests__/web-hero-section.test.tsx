@@ -132,7 +132,7 @@ const instancesIn = (children: (ReactTestInstance | string)[]): ReactTestInstanc
 const slotWidths = (root: ReactTestInstance): unknown[] => {
   const row = root.find((node: ReactTestInstance) => node.props.testID === WEB_HERO_ROW_TEST_ID);
   const host = instancesIn(row.children)[ValueConstants.zero];
-  return instancesIn(host.children).map((slot: ReactTestInstance) => {
+  return instancesIn(host!.children).map((slot: ReactTestInstance) => {
     const style = StyleSheet.flatten(slot.props.style) as unknown as Record<string, unknown>;
     return { flexGrow: style.flexGrow, flexBasis: style.flexBasis, maxWidth: style.maxWidth };
   });

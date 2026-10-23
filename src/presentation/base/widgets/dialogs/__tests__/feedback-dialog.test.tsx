@@ -55,7 +55,7 @@ describe('FeedbackDialog', () => {
     const onPrimary = jest.fn();
     const { root } = renderSheet({ onPrimary });
 
-    act(() => (buttonByLabel(root, PRIMARY_LABEL).props.onPress as () => void)());
+    act(() => (buttonByLabel(root, PRIMARY_LABEL)!.props.onPress as () => void)());
 
     expect(onPrimary).toHaveBeenCalledTimes(1);
   });
@@ -67,7 +67,7 @@ describe('FeedbackDialog', () => {
       onSecondary,
     });
 
-    act(() => (buttonByLabel(root, SECONDARY_LABEL).props.onPress as () => void)());
+    act(() => (buttonByLabel(root, SECONDARY_LABEL)!.props.onPress as () => void)());
 
     expect(onSecondary).toHaveBeenCalledTimes(1);
   });

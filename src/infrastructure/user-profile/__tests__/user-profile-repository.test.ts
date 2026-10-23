@@ -51,8 +51,8 @@ describe('UserProfileRepository.getById', () => {
       expect(r.value.recipeCount).toBe(12);
     }
     expect(calls).toHaveLength(1);
-    expect(calls[0].method).toBe('GET');
-    expect(calls[0].url).toBe('/users/u-1');
+    expect(calls[0]!.method).toBe('GET');
+    expect(calls[0]!.url).toBe('/users/u-1');
   });
 
   it('encodes the user id in the URL', async () => {
@@ -61,7 +61,7 @@ describe('UserProfileRepository.getById', () => {
 
     await repo.getById('user/3 a');
 
-    expect(calls[0].url).toBe('/users/user%2F3%20a');
+    expect(calls[0]!.url).toBe('/users/user%2F3%20a');
   });
 
   it('propagates the AxiosHttpClient failure unchanged without mapping', async () => {
@@ -110,9 +110,9 @@ describe('UserProfileRepository.listCreators', () => {
     await repo.listCreators(3, 20);
 
     expect(calls).toHaveLength(1);
-    expect(calls[0].method).toBe('GET');
-    expect(calls[0].url).toBe('/users/creators');
-    expect(calls[0].params).toEqual({ page: 3, pageSize: 20 });
+    expect(calls[0]!.method).toBe('GET');
+    expect(calls[0]!.url).toBe('/users/creators');
+    expect(calls[0]!.params).toEqual({ page: 3, pageSize: 20 });
   });
 
   it('returns the mapped page with the backend envelope', async () => {

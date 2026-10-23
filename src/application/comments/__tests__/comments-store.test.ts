@@ -94,7 +94,7 @@ const seededStore = async (config: StubConfig) => {
 };
 
 const itemOf = (store: ReturnType<typeof makeStore>['store'], commentId: string) =>
-  store.getState().byRecipe[RECIPE_ID].items.find((c) => c.comment.id === commentId);
+  store.getState().byRecipe[RECIPE_ID]!.items.find((c) => c.comment.id === commentId);
 
 describe('commentsStore.toggleLike — like direction', () => {
   it('optimistically flips an unliked comment to liked before resolving', async () => {
@@ -229,9 +229,9 @@ describe('commentsStore.load / loadMore', () => {
     await store.getState().loadMore(RECIPE_ID);
 
     const thread = store.getState().byRecipe[RECIPE_ID];
-    expect(thread.items.map((c) => c.comment.id)).toEqual(['c1', 'c2']);
-    expect(thread.page).toBe(2);
-    expect(thread.isLoadingMore).toBe(false);
+    expect(thread!.items.map((c) => c.comment.id)).toEqual(['c1', 'c2']);
+    expect(thread!.page).toBe(2);
+    expect(thread!.isLoadingMore).toBe(false);
     expect(requested).toEqual([1, 2]);
   });
 
@@ -242,8 +242,8 @@ describe('commentsStore.load / loadMore', () => {
     await store.getState().load(RECIPE_ID);
 
     const thread = store.getState().byRecipe[RECIPE_ID];
-    expect(thread.error).toBe(failure);
-    expect(thread.isLoading).toBe(false);
+    expect(thread!.error).toBe(failure);
+    expect(thread!.isLoading).toBe(false);
   });
 
   // Regression: the loaders had no request guard, so a load answering after
@@ -274,8 +274,8 @@ describe('commentsStore.load / loadMore', () => {
     await older;
 
     const thread = store.getState().byRecipe[RECIPE_ID];
-    expect(thread.items.map((c) => c.comment.id)).toEqual(['fresh']);
-    expect(thread.isLoading).toBe(false);
+    expect(thread!.items.map((c) => c.comment.id)).toEqual(['fresh']);
+    expect(thread!.isLoading).toBe(false);
   });
 });
 
@@ -288,9 +288,9 @@ describe('commentsStore.addComment / deleteComment', () => {
 
     const thread = store.getState().byRecipe[RECIPE_ID];
     expect(added).toBe(true);
-    expect(thread.items.map((c) => c.comment.id)).toEqual(['new', 'c1']);
-    expect(thread.total).toBe(2);
-    expect(thread.isSubmitting).toBe(false);
+    expect(thread!.items.map((c) => c.comment.id)).toEqual(['new', 'c1']);
+    expect(thread!.total).toBe(2);
+    expect(thread!.isSubmitting).toBe(false);
   });
 
   // Review finding: `upsertItem` does nothing before a thread loads, so a comment posted meanwhile vanished from view.
@@ -306,7 +306,7 @@ describe('commentsStore.addComment / deleteComment', () => {
     await loading;
     await Promise.resolve();
 
-    expect(store.getState().byRecipe[RECIPE_ID].items.map((c) => c.comment.id)).toEqual(['new', 'c1']);
+    expect(store.getState().byRecipe[RECIPE_ID]!.items.map((c) => c.comment.id)).toEqual(['new', 'c1']);
   });
 
   it('a comment answer that lands after sign-out writes nothing back', async () => {
@@ -326,7 +326,7 @@ describe('commentsStore.addComment / deleteComment', () => {
     const added = await store.getState().addComment(RECIPE_ID, 'Lovely');
 
     expect(added).toBe(false);
-    expect(store.getState().byRecipe[RECIPE_ID].error).toBe(failure);
+    expect(store.getState().byRecipe[RECIPE_ID]!.error).toBe(failure);
   });
 
   it('removes a deleted comment and lowers the total', async () => {
@@ -339,8 +339,8 @@ describe('commentsStore.addComment / deleteComment', () => {
 
     const thread = store.getState().byRecipe[RECIPE_ID];
     expect(deleted).toBe(true);
-    expect(thread.items.map((c) => c.comment.id)).toEqual(['c2']);
-    expect(thread.total).toBe(1);
+    expect(thread!.items.map((c) => c.comment.id)).toEqual(['c2']);
+    expect(thread!.total).toBe(1);
   });
 });
 
@@ -377,7 +377,7 @@ describe('commentsStore — a write before the next page', () => {
     server.rows.unshift(created);
     await store.getState().loadMore(RECIPE_ID);
 
-    expect(store.getState().byRecipe[RECIPE_ID].items.map((c) => c.comment.id)).toEqual(['new', 'c1', 'c2', 'c3']);
+    expect(store.getState().byRecipe[RECIPE_ID]!.items.map((c) => c.comment.id)).toEqual(['new', 'c1', 'c2', 'c3']);
   });
 
   // Regression: after a delete every later row moved up one on the server,
@@ -392,6 +392,6 @@ describe('commentsStore — a write before the next page', () => {
     await store.getState().loadMore(RECIPE_ID);
     await store.getState().loadMore(RECIPE_ID);
 
-    expect(store.getState().byRecipe[RECIPE_ID].items.map((c) => c.comment.id)).toEqual(['c2', 'c3', 'c4']);
+    expect(store.getState().byRecipe[RECIPE_ID]!.items.map((c) => c.comment.id)).toEqual(['c2', 'c3', 'c4']);
   });
 });

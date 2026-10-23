@@ -25,7 +25,7 @@ describe('AuthTextField', () => {
 
     expect(root.findByType(TextInput).props.secureTextEntry).toBe(true);
     act(() => {
-      (buttons(root)[0].props.onPress as () => void)();
+      (buttons(root)[0]!.props.onPress as () => void)();
     });
     expect(root.findByType(TextInput).props.secureTextEntry).toBe(false);
     expect(iconNames(root)).toContain('eye-off-outline');

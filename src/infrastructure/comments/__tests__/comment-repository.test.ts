@@ -56,8 +56,8 @@ describe('CommentRepository.like', () => {
 
     expect(r.ok).toBe(true);
     expect(calls).toHaveLength(1);
-    expect(calls[0].method).toBe('POST');
-    expect(calls[0].url).toBe('/recipes/recipe-3/comments/comment-7/like');
+    expect(calls[0]!.method).toBe('POST');
+    expect(calls[0]!.url).toBe('/recipes/recipe-3/comments/comment-7/like');
   });
 
   it('propagates the AxiosHttpClient failure unchanged', async () => {
@@ -77,7 +77,7 @@ describe('CommentRepository.like', () => {
 
     await repo.like('recipe/3 a', 'comment#7');
 
-    expect(calls[0].url).toBe('/recipes/recipe%2F3%20a/comments/comment%237/like');
+    expect(calls[0]!.url).toBe('/recipes/recipe%2F3%20a/comments/comment%237/like');
   });
 });
 
@@ -90,8 +90,8 @@ describe('CommentRepository.unlike', () => {
 
     expect(r.ok).toBe(true);
     expect(calls).toHaveLength(1);
-    expect(calls[0].method).toBe('DELETE');
-    expect(calls[0].url).toBe('/recipes/recipe-3/comments/comment-7/like');
+    expect(calls[0]!.method).toBe('DELETE');
+    expect(calls[0]!.url).toBe('/recipes/recipe-3/comments/comment-7/like');
   });
 
   it('propagates the AxiosHttpClient failure unchanged', async () => {
@@ -115,7 +115,7 @@ describe('CommentRepository.listByRecipe — like mapping', () => {
 
     expect(r.ok).toBe(true);
     if (r.ok) {
-      const { comment, likedByMe } = r.value.items[0];
+      const { comment, likedByMe } = r.value.items[0]!;
       expect(comment).toBeInstanceOf(CommentEntity);
       expect(comment.likeCount).toBe(7);
       expect(likedByMe).toBe(true);
@@ -133,7 +133,7 @@ describe('CommentRepository.listByRecipe — like mapping', () => {
 
     expect(r.ok).toBe(true);
     if (r.ok) {
-      const { comment, likedByMe } = r.value.items[0];
+      const { comment, likedByMe } = r.value.items[0]!;
       expect(comment.likeCount).toBe(0);
       expect(likedByMe).toBe(false);
     }
@@ -145,6 +145,6 @@ describe('CommentRepository.listByRecipe — like mapping', () => {
 
     await repo.listByRecipe('recipe/3 a', 1, 20);
 
-    expect(calls[0].url).toBe('/recipes/recipe%2F3%20a/comments');
+    expect(calls[0]!.url).toBe('/recipes/recipe%2F3%20a/comments');
   });
 });

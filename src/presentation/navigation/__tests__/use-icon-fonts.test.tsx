@@ -33,7 +33,7 @@ const sources = (dir: string): string[] =>
 const importedFamilies = (): string[] => {
   const families = new Set<string>();
   for (const file of sources(SRC)) {
-    for (const match of fs.readFileSync(file, 'utf8').matchAll(ICON_IMPORT)) families.add(match[1]);
+    for (const match of fs.readFileSync(file, 'utf8').matchAll(ICON_IMPORT)) families.add(match[1]!);
   }
   return [...families].sort();
 };
@@ -53,7 +53,7 @@ const registeredFonts = (): string[] => {
   act(() => {
     create(<Probe />);
   });
-  const [map] = useFontsMock.mock.calls[0];
+  const [map] = useFontsMock.mock.calls[0]!;
   return typeof map === 'string' ? [map] : Object.keys(map);
 };
 

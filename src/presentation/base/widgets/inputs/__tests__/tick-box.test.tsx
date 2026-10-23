@@ -4,7 +4,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { TickBox } from '@presentation/base/widgets/inputs/tick-box';
 
 const boxStyle = (root: ReturnType<typeof renderComponent>['root']): ViewStyle =>
-  StyleSheet.flatten(root.findAllByType(View)[0].props.style as ViewStyle);
+  StyleSheet.flatten(root.findAllByType(View)[0]!.props.style as ViewStyle);
 
 describe('TickBox', () => {
   it('draws a tick on a filled box when checked', () => {

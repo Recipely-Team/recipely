@@ -117,7 +117,7 @@ describe('RefineDock — sending free text', () => {
   };
 
   const send = (r: ReactTestRenderer): void => {
-    fire(r.root.findAll((n) => n.props.returnKeyType === 'send')[0], 'onSubmitEditing');
+    fire(r.root.findAll((n) => n.props.returnKeyType === 'send')[0]!, 'onSubmitEditing');
   };
 
   it('empties the field after the instruction is sent', () => {
@@ -149,7 +149,7 @@ describe('RefineDock — sending free text', () => {
     const chip = renderer.root.findAll(
       (n) => n.props.accessibilityLabel === t().createRecipe.chipVegan && n.props.onPress !== undefined,
     )[0];
-    fire(chip, 'onPress');
+    fire(chip!, 'onPress');
 
     expect(spies.onSubmit).toHaveBeenCalledWith(t().createRecipe.chipVegan);
     expect(spies.onChangeChatInput).not.toHaveBeenCalled();

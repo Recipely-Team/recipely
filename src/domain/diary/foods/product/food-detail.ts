@@ -15,13 +15,18 @@ import type { FoodDetailProps } from '@domain/diary/foods/product/food-detail-pr
  * the variant swaps the per-100 figures and the serving units together.
  */
 export class FoodDetail {
-  private constructor(private readonly props: FoodDetailProps) {}
+  private constructor(
+    private readonly props: FoodDetailProps,
+    /** The first variant, held apart so "there is at least one" is a type, not a comment. */
+    private readonly firstVariant: FoodVariant,
+  ) {}
 
   static create(props: FoodDetailProps): Result<FoodDetail, ValidationFailure> {
-    if (props.variants.length === ValueConstants.zero) {
+    const [first] = props.variants;
+    if (first === undefined) {
       return fail(new ValidationFailure(DiagnosticMessage.diary.foodWithoutVariants, 'variants'));
     }
-    return ok(new FoodDetail(props));
+    return ok(new FoodDetail(props, first));
   }
 
   get name(): string {
@@ -39,7 +44,7 @@ export class FoodDetail {
   }
 
   productAt(index: number): LoggableProduct {
-    const variant = this.props.variants[index] ?? this.props.variants[ValueConstants.zero];
+    const variant = this.props.variants[index] ?? this.firstVariant;
     return LoggableProduct.of({
       name: foodDisplayName({
         name: this.props.name,

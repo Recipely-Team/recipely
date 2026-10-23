@@ -64,7 +64,7 @@ describe('RecipeCommentsSection — typing a comment', () => {
     expect(onAddComment).toHaveBeenCalledWith('Great recipe!', expect.any(Function));
     expect(field().props.value).toBe('Great recipe!');
 
-    act(() => onAddComment.mock.calls[0][1]());
+    act(() => onAddComment.mock.calls[0]![1]());
     expect(field().props.value).toBe('');
   });
 });

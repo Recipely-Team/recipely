@@ -56,7 +56,7 @@ describe('BottomSheet', () => {
 
     const closeButton = explicitCloseButton(root);
     expect(closeButton).toBeDefined();
-    act(() => (closeButton.props.onPress as () => void)());
+    act(() => (closeButton!.props.onPress as () => void)());
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -69,7 +69,7 @@ describe('BottomSheet', () => {
       </BottomSheet>,
     );
 
-    act(() => (grabber(root).props.onAccessibilityTap as () => void)());
+    act(() => (grabber(root)!.props.onAccessibilityTap as () => void)());
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -86,7 +86,7 @@ describe('BottomSheet', () => {
     // (no intermediate handler), so it's the node whose `onPress` is that
     // exact function reference.
     const backdrop = root.findAll((node) => node.props.onPress === onClose)[0];
-    act(() => (backdrop.props.onPress as () => void)());
+    act(() => (backdrop!.props.onPress as () => void)());
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -109,7 +109,7 @@ describe('BottomSheet', () => {
     const rightButton = root.findAll(
       (node) => node.props.accessibilityRole === 'button' && node.props.accessibilityLabel === 'Clear',
     )[0];
-    act(() => (rightButton.props.onPress as () => void)());
+    act(() => (rightButton!.props.onPress as () => void)());
 
     expect(onPressRight).toHaveBeenCalledTimes(1);
     expect(onClose).not.toHaveBeenCalled();
@@ -167,7 +167,7 @@ describe('BottomSheet', () => {
       // pushes the footer past the sheet's bottom edge — the same invisible
       // button, just one layer down.
       const scroll = root.findAllByType(ScrollView)[0];
-      expect(StyleSheet.flatten(scroll.props.style as StyleProp<ViewStyle>).flexShrink).toBe(1);
+      expect(StyleSheet.flatten(scroll!.props.style as StyleProp<ViewStyle>).flexShrink).toBe(1);
     });
 
     it('renders no footer container when a consumer passes none', () => {

@@ -83,6 +83,7 @@ export const useAssistantNotificationActions = (deps: AssistantNotificationActio
         if (at === null) return { ok: false, error: AssistantActionError.NotFound };
 
         const item = items[at];
+        if (item === undefined) return { ok: false, error: AssistantActionError.NotFound };
         // Already read is success.
         if (item.read) return { ok: true, title: rowName(item) };
 

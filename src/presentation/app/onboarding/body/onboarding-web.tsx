@@ -58,6 +58,8 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
     { icon: 'chevron-forward', delta: 1, disabled: atEnd, label: t.onboarding.nextSlide },
   ];
 
+  // The slide list is never empty in the app; an empty one draws nothing rather than crashing.
+  if (slide === undefined) return <View />;
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={[styles.grid, stacked ? styles.gridStacked : styles.gridRow, { maxWidth: CONTENT_MAX }]}>

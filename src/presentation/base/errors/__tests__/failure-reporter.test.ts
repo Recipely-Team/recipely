@@ -33,7 +33,7 @@ describe('FailureReporter', () => {
     FailureReporter.report(new UnknownFailure('boom'), 'FeedScreen');
 
     expect(events.map((e) => e.code)).toEqual(['network', 'validation', 'unknown']);
-    expect(events[0].context).toBe('FeedScreen');
+    expect(events[0]!.context).toBe('FeedScreen');
   });
 
   // "You're offline" on sign-in with the phone online: network failures are
@@ -63,7 +63,7 @@ describe('FailureReporter', () => {
       'ImportRecipeScreen',
     );
 
-    const message = String((crashes[0].error as Error).message);
+    const message = String((crashes[0]!.error as Error).message);
     expect(message).not.toContain('instagram.com');
     expect(message).not.toContain('a@b.com');
     expect(message).toContain('[redacted]');

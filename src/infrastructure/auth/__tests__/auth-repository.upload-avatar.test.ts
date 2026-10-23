@@ -84,7 +84,7 @@ describe('AuthRepository.uploadAvatar', () => {
 
     expect(result.ok).toBe(true);
     expect(calls).toHaveLength(1);
-    expect(calls[0].url).toBe(AVATAR_UPLOAD_URL);
+    expect(calls[0]!.url).toBe(AVATAR_UPLOAD_URL);
     expect(saved).toHaveLength(1);
     if (result.ok) {
       expect(result.value).toBe(saved[0]);

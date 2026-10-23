@@ -120,7 +120,7 @@ describe('RecipeRepository.refineRecipe', () => {
       { role: ChatRole.Assistant, content: 'Swapped the beef.', rejected: true },
     ]);
 
-    expect(calls[0].data).toEqual({
+    expect(calls[0]!.data).toEqual({
       currentRecipe: snapshot,
       instruction: 'and spicier too',
       history: [
@@ -137,9 +137,9 @@ describe('RecipeRepository.refineRecipe', () => {
     await repo.refineRecipe(snapshot, 'add more garlic', []);
 
     expect(calls).toHaveLength(1);
-    expect(calls[0].method).toBe('POST');
-    expect(calls[0].url).toBe('/recipes/refine');
-    expect(calls[0].data).toEqual({
+    expect(calls[0]!.method).toBe('POST');
+    expect(calls[0]!.url).toBe('/recipes/refine');
+    expect(calls[0]!.data).toEqual({
       currentRecipe: snapshot,
       instruction: 'add more garlic',
       history: [],
@@ -147,7 +147,7 @@ describe('RecipeRepository.refineRecipe', () => {
     // The synchronous Gemini call routinely exceeds the default 10s JSON
     // timeout, so a per-request override is required or the client would abort
     // a request the backend then completes.
-    expect(calls[0].timeout).toBe(AI_REQUEST_TIMEOUT_MS);
+    expect(calls[0]!.timeout).toBe(AI_REQUEST_TIMEOUT_MS);
   });
 
   it('propagates AxiosHttpClient failure unchanged', async () => {

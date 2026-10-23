@@ -72,4 +72,4 @@ const RULES: Readonly<Record<string, (n: number) => PluralCategory>> = {
  *   integer rules for the 14 app languages, held equal to Node's ICU by the test.
  */
 export const pluralCategory = (locale: string, n: number): PluralCategory =>
-  (RULES[locale.split(CharConstants.dash)[zero]] ?? (() => 'other'))(n);
+  (RULES[locale.split(CharConstants.dash)[zero] ?? locale] ?? (() => 'other'))(n);

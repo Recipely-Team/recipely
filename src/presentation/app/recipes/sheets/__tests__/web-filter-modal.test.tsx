@@ -121,7 +121,7 @@ const buttonsByLabel = (root: RenderResult['root'], label: string) =>
 /** Fires the first button with the given accessibility label. */
 const pressByLabel = (root: RenderResult['root'], label: string): void => {
   const button = buttonsByLabel(root, label)[0];
-  act(() => (button.props.onPress as () => void)());
+  act(() => (button!.props.onPress as () => void)());
 };
 
 describe('WebFilterModal', () => {
@@ -153,8 +153,8 @@ describe('WebFilterModal', () => {
     const { root, handlers } = renderModal({ visible: true });
 
     // Resolve the visible label the same way the component does (i18n fallback).
-    const label = (t().cuisineNames as Record<string, string>)[firstCuisine] ?? firstCuisine;
-    pressByLabel(root, label);
+    const label = (t().cuisineNames as Record<string, string>)[firstCuisine!] ?? firstCuisine;
+    pressByLabel(root, label!);
 
     expect(handlers.onToggleCuisine).toHaveBeenCalledTimes(1);
     expect(handlers.onToggleCuisine).toHaveBeenCalledWith(firstCuisine);
@@ -174,7 +174,7 @@ describe('WebFilterModal', () => {
       )
       .filter((node) => textContent(node).includes(applyLabel));
     const applyButton = applyButtons[applyButtons.length - 1];
-    act(() => (applyButton.props.onPress as () => void)());
+    act(() => (applyButton!.props.onPress as () => void)());
 
     expect(handlers.onApply).toHaveBeenCalledTimes(1);
   });
