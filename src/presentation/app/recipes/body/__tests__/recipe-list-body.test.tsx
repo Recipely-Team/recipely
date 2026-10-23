@@ -208,7 +208,7 @@ const render = (overrides: Partial<UseRecipeListResult>): ReactTestInstance => {
  * these tests can't pass vacuously.
  */
 const refreshingProp = (overrides: Partial<UseRecipeListResult>): boolean => {
-  const refreshing = render(overrides).findByType(RefreshControl).props.refreshing;
+  const refreshing = render(overrides).findByType(RefreshControl).props['refreshing'];
 
   if (typeof refreshing !== 'boolean') {
     throw new Error(`expected a boolean 'refreshing' prop, got ${String(refreshing)}`);
@@ -289,7 +289,7 @@ describe('RecipeListBody — mobile RefreshControl wiring', () => {
     // iOS applies the value as a raw frame shift, so the full band height is right.
     const control = render({ isPullRefreshing: false }).findByType(RefreshControl);
 
-    expect(control.props.progressViewOffset).toBe(layoutSizes.homeHeaderMax);
+    expect(control.props['progressViewOffset']).toBe(layoutSizes.homeHeaderMax);
   });
 
   it('uses the smaller Android offset so the spinner rests under the band, not over the AI banner', () => {
@@ -302,7 +302,7 @@ describe('RecipeListBody — mobile RefreshControl wiring', () => {
     try {
       const control = render({ isPullRefreshing: false }).findByType(RefreshControl);
 
-      expect(control.props.progressViewOffset).toBe(layoutSizes.homeRefreshOffsetAndroid);
+      expect(control.props['progressViewOffset']).toBe(layoutSizes.homeRefreshOffsetAndroid);
     } finally {
       selectSpy.mockRestore();
     }
@@ -313,7 +313,7 @@ describe('RecipeListBody — mobile RefreshControl wiring', () => {
 
     const control = render({ onRefresh }).findByType(RefreshControl);
 
-    expect(control.props.onRefresh).toBe(onRefresh);
+    expect(control.props['onRefresh']).toBe(onRefresh);
   });
 });
 
@@ -338,8 +338,8 @@ describe('RecipeListBody — empty state is pullable', () => {
     // A plain View would render the icon and copy but swallow the pull gesture:
     // the control must hang off the list's own scroll view.
     const scrollView = root.findByType(ScrollView);
-    expect(scrollView.props.refreshControl).toBeDefined();
-    expect(root.findByType(RefreshControl).props.onRefresh).toBe(onRefresh);
+    expect(scrollView.props['refreshControl']).toBeDefined();
+    expect(root.findByType(RefreshControl).props['onRefresh']).toBe(onRefresh);
   });
 
   it.each(FLAVORS)('mirrors the pull flag on the empty surface (filters active: %s)', (withFilters) => {
@@ -354,7 +354,7 @@ describe('RecipeListBody — empty state is pullable', () => {
     // nothing tall enough to pull on. The style arrives as an array of the
     // list's two content styles, so flatten before asserting.
     const contentStyle = StyleSheet.flatten(
-      root.findByType(ScrollView).props.contentContainerStyle as StyleProp<ViewStyle>,
+      root.findByType(ScrollView).props['contentContainerStyle'] as StyleProp<ViewStyle>,
     );
     expect(contentStyle.flexGrow).toBe(1);
   });
@@ -419,9 +419,9 @@ describe('RecipeListBody — reloading the results', () => {
 
   /** The rows the list was actually handed — virtualization keeps them out of the tree. */
   const listData = (overrides: Partial<UseRecipeListResult>): unknown[] => {
-    const list = render(overrides).findAll((node) => Array.isArray(node.props.data))[0];
+    const list = render(overrides).findAll((node) => Array.isArray(node.props['data']))[0];
     if (list === undefined) throw new Error('no list rendered');
-    return list.props.data as unknown[];
+    return list.props['data'] as unknown[];
   };
 
   it('replaces the rows with the loading copy while new results are fetched', () => {
@@ -510,7 +510,7 @@ describe('RecipeListBody — the feed does not clip its own children', () => {
     try {
       const list = render({}).findByType(Animated.FlatList);
 
-      expect(list.props.removeClippedSubviews).toBe(false);
+      expect(list.props['removeClippedSubviews']).toBe(false);
     } finally {
       platform.restore();
     }
@@ -521,8 +521,8 @@ describe('RecipeListBody — the feed does not clip its own children', () => {
   it('still bounds the mounted rows with windowing props', () => {
     const list = render({}).findByType(Animated.FlatList);
 
-    expect(list.props.windowSize).toBe(ListConstants.windowSize);
-    expect(list.props.maxToRenderPerBatch).toBe(ListConstants.rowsPerBatch);
-    expect(list.props.initialNumToRender).toBe(ListConstants.initialRows);
+    expect(list.props['windowSize']).toBe(ListConstants.windowSize);
+    expect(list.props['maxToRenderPerBatch']).toBe(ListConstants.rowsPerBatch);
+    expect(list.props['initialNumToRender']).toBe(ListConstants.initialRows);
   });
 });

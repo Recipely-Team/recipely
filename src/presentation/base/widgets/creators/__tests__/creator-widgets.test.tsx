@@ -12,7 +12,7 @@ import { CreatorBadge } from '@presentation/base/widgets/creators/creator-badge'
 import { t } from '@presentation/i18n';
 
 const pressable = (root: ReactTestInstance, role: string): ReactTestInstance =>
-  root.find((node) => node.props.accessibilityRole === role && typeof node.props.onPress === 'function');
+  root.find((node) => node.props['accessibilityRole'] === role && typeof node.props['onPress'] === 'function');
 
 const tagOf = (platform: string, handle: string): CreatorTag => {
   const tag = CreatorTag.create(platform, handle);
@@ -34,7 +34,7 @@ describe('CreatorTagChip', () => {
     const { root } = renderComponent(<CreatorTagChip tag={tagOf('instagram', 'aysemutfakta')} />);
 
     expect(textContent(root)).toContain('@aysemutfakta');
-    act(() => (pressable(root, 'link').props.onPress as () => void)());
+    act(() => (pressable(root, 'link').props['onPress'] as () => void)());
 
     expect(openURL).toHaveBeenCalledWith('https://instagram.com/aysemutfakta');
     openURL.mockRestore();
@@ -45,10 +45,10 @@ describe('CreatorTagChip', () => {
     const { root } = renderComponent(<CreatorTagChip tag={tagOf('tiktok', 'sefkerem')} />);
 
     const link = pressable(root, 'link');
-    act(() => (link.props.onPress as () => void)());
+    act(() => (link.props['onPress'] as () => void)());
 
     expect(openURL).toHaveBeenCalledWith('https://www.tiktok.com/@sefkerem');
-    expect(link.props.accessibilityLabel).toBe(
+    expect(link.props['accessibilityLabel']).toBe(
       t().creators.verifiedAccount.replace('{platform}', 'TikTok').replace('{handle}', '@sefkerem'),
     );
     openURL.mockRestore();
@@ -65,7 +65,7 @@ describe('CreatorCard', () => {
       .creators.cardCaption.replace('{recipes}', String(creator.recipeCount))
       .replace('{followers}', String(creator.followerCount));
     expect(textContent(root)).toEqual(expect.arrayContaining(['Creator 9', '@chef_9', caption]));
-    act(() => (pressable(root, 'button').props.onPress as () => void)());
+    act(() => (pressable(root, 'button').props['onPress'] as () => void)());
     // The page's address is the creator's Instagram handle, not their id.
     expect(onOpen).toHaveBeenCalledWith('chef_9');
   });
@@ -75,7 +75,7 @@ describe('CreatorBadge', () => {
   it('names itself an approved creator', () => {
     const { root } = renderComponent(<CreatorBadge size={22} />);
 
-    expect(root.findAll((n) => n.props.accessibilityLabel === t().creators.approvedBadge).length).toBeGreaterThan(0);
+    expect(root.findAll((n) => n.props['accessibilityLabel'] === t().creators.approvedBadge).length).toBeGreaterThan(0);
   });
 });
 
@@ -97,7 +97,7 @@ describe('a creator verified on both platforms', () => {
     const { root } = renderComponent(<CreatorCard creator={both()} onOpen={jest.fn()} />);
 
     expect(textContent(root)).toEqual(expect.arrayContaining(['@mertmutfakta', '@mert.mutfakta']));
-    const label = String(pressable(root, 'button').props.accessibilityLabel);
+    const label = String(pressable(root, 'button').props['accessibilityLabel']);
     expect(label).toContain('@mertmutfakta');
     expect(label).toContain('@mert.mutfakta');
   });
@@ -108,6 +108,6 @@ describe('a creator verified on both platforms', () => {
     );
 
     expect(root.findAllByType(CreatorPlatformMark)).toHaveLength(2);
-    expect(root.findAll((n) => n.props.accessibilityLabel === t().creators.verifiedOnBoth).length).toBeGreaterThan(0);
+    expect(root.findAll((n) => n.props['accessibilityLabel'] === t().creators.verifiedOnBoth).length).toBeGreaterThan(0);
   });
 });

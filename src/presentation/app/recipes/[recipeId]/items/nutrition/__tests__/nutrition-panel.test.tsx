@@ -11,7 +11,7 @@ const factsOf = (caloriesPerServing: number, nutrition: RecipeNutrition | undefi
   NutritionFacts.of({ caloriesPerServing, servings: 4, nutrition });
 
 const radios = (root: ReactTestInstance): ReactTestInstance[] =>
-  root.findAll((node) => node.props.accessibilityRole === 'radio' && typeof node.props.onPress === 'function');
+  root.findAll((node) => node.props['accessibilityRole'] === 'radio' && typeof node.props['onPress'] === 'function');
 
 describe('NutritionPanel — basis switch', () => {
   const nutrition = { protein: 24, carbs: 60, fat: 18, fiber: 6, servingWeightGrams: 400 };
@@ -22,13 +22,13 @@ describe('NutritionPanel — basis switch', () => {
     // 520 kcal per 400 g serving → 130 kcal per 100 g; 60 g carbs → 15 g.
     expect(textContent(root)).toEqual(expect.arrayContaining(['130', '15', t().nutrition.per100]));
 
-    const press: unknown = radios(root)[1]?.props.onPress;
+    const press: unknown = radios(root)[1]?.props['onPress'];
     if (typeof press !== 'function') throw new Error('no serving option');
     act(() => press());
 
     expect(textContent(root)).toEqual(expect.arrayContaining(['520', '60', t().nutrition.perServing]));
     expect(textContent(root)).not.toContain('130');
-    expect(radios(root)[1]?.props.accessibilityState).toEqual({ checked: true });
+    expect(radios(root)[1]?.props['accessibilityState']).toEqual({ checked: true });
   });
 });
 

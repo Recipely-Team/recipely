@@ -70,15 +70,15 @@ const renderScreen = async (viewer: UserEntity | null, standing: { followerCount
 const followButton = (root: ReactTestInstance): ReactTestInstance =>
   root.find(
     (node) =>
-      node.props.accessibilityRole === 'togglebutton' &&
-      typeof node.props.accessibilityLabel === 'string' &&
-      [t().creators.followName, t().creators.followingName].some((label) => label.replace('{name}', 'Creator u-1') === node.props.accessibilityLabel) &&
-      typeof node.props.onPress === 'function',
+      node.props['accessibilityRole'] === 'togglebutton' &&
+      typeof node.props['accessibilityLabel'] === 'string' &&
+      [t().creators.followName, t().creators.followingName].some((label) => label.replace('{name}', 'Creator u-1') === node.props['accessibilityLabel']) &&
+      typeof node.props['onPress'] === 'function',
   );
 
 const press = async (node: ReactTestInstance): Promise<void> => {
   await act(async () => {
-    (node.props.onPress as () => void)();
+    (node.props['onPress'] as () => void)();
     await Promise.resolve();
     await Promise.resolve();
   });
@@ -106,9 +106,9 @@ describe('CreatorProfileScreen — follow', () => {
   it('names the creator in the follow button\'s label, in both states', async () => {
     const { root } = await renderScreen(userOf('viewer'), { followerCount: 12, isFollowedByMe: false });
 
-    expect(followButton(root).props.accessibilityLabel).toBe(t().creators.followName.replace('{name}', 'Creator u-1'));
+    expect(followButton(root).props['accessibilityLabel']).toBe(t().creators.followName.replace('{name}', 'Creator u-1'));
     await press(followButton(root));
-    expect(followButton(root).props.accessibilityLabel).toBe(t().creators.followingName.replace('{name}', 'Creator u-1'));
+    expect(followButton(root).props['accessibilityLabel']).toBe(t().creators.followingName.replace('{name}', 'Creator u-1'));
   });
 
   it('unfollows a creator the viewer already follows', async () => {
@@ -127,9 +127,9 @@ describe('CreatorProfileScreen — follow', () => {
 
     expect(repo.followCalls).toEqual([]);
     const prompt = root.findByType(SignInPromptSheet);
-    expect(prompt.props.visible).toBe(true);
-    expect(prompt.props.message).toBe(t().creators.signInToFollow);
-    await act(async () => (prompt.props.onSignIn as () => void)());
+    expect(prompt.props['visible']).toBe(true);
+    expect(prompt.props['message']).toBe(t().creators.signInToFollow);
+    await act(async () => (prompt.props['onSignIn'] as () => void)());
     expect(mockPush).toHaveBeenCalledWith('/login?redirect=%2Fcreators%2Fu-1');
   });
 

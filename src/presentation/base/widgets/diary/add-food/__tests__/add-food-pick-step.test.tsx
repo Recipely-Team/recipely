@@ -23,7 +23,7 @@ import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 
 const textOf = (root: ReturnType<typeof renderComponent>['root']): string[] =>
-  root.findAll((node) => typeof node.props.children === 'string').map((node) => node.props.children as string);
+  root.findAll((node) => typeof node.props['children'] === 'string').map((node) => node.props['children'] as string);
 
 const setup = async (initialQuery = 'tomato') => {
   const repo = fakeFoodCatalogRepository();
@@ -77,7 +77,7 @@ describe('AddFoodPickStep', () => {
 
   it('loads the next page of the first group with more when the list reaches its end', async () => {
     const { repo, view } = await setup();
-    const onEndReached: unknown = view.root.findByType(FlatList).props.onEndReached;
+    const onEndReached: unknown = view.root.findByType(FlatList).props['onEndReached'];
     if (typeof onEndReached !== 'function') throw new Error('the list does not page');
     await act(async () => onEndReached());
     expect(repo.searchRecipes).toHaveBeenCalledWith('tomato', 'saved', 2, 8);
@@ -87,12 +87,12 @@ describe('AddFoodPickStep', () => {
   it('searches the recipe groups only while the Recipes tab shows', async () => {
     const { repo, view } = await setup('');
     expect(repo.searchRecipes).toHaveBeenCalledTimes(3);
-    const onChange: unknown = view.root.findByType(SegmentedTabs).props.onChange;
+    const onChange: unknown = view.root.findByType(SegmentedTabs).props['onChange'];
     if (typeof onChange !== 'function') throw new Error('no tabs');
     await act(async () => onChange(PickTab.Recent));
     expect(repo.listRecent).toHaveBeenCalled();
     const typeInBox = (text: string): void => {
-      const onChangeText: unknown = view.root.findByType(FoodSearchField).props.onChangeText;
+      const onChangeText: unknown = view.root.findByType(FoodSearchField).props['onChangeText'];
       if (typeof onChangeText !== 'function') throw new Error('no search box');
       onChangeText(text);
     };

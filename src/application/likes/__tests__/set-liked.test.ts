@@ -31,8 +31,8 @@ describe('setLiked, against the real store', () => {
 
     expect(result.ok).toBe(true);
     expect(calls).toContain('like:r1');
-    expect(store.getState().byRecipe.r1?.likedByMe).toBe(true);
-    expect(store.getState().byRecipe.r1?.likeCount).toBe(5);
+    expect(store.getState().byRecipe['r1']?.likedByMe).toBe(true);
+    expect(store.getState().byRecipe['r1']?.likeCount).toBe(5);
   });
 
   it('unlikes one the feed seeded as liked, and drops it from the Liked grid', async () => {
@@ -45,8 +45,8 @@ describe('setLiked, against the real store', () => {
     expect(result.ok).toBe(true);
     expect(calls).toContain('unlike:r1');
     expect(calls).toContain('removeLocal:r1');
-    expect(store.getState().byRecipe.r1?.likedByMe).toBe(false);
-    expect(store.getState().byRecipe.r1?.likeCount).toBe(0);
+    expect(store.getState().byRecipe['r1']?.likedByMe).toBe(false);
+    expect(store.getState().byRecipe['r1']?.likeCount).toBe(0);
   });
 
   // The reported shape: the assistant says done and the heart does not move.
@@ -86,6 +86,6 @@ describe('toggle after sign-out', () => {
     answer(ok(undefined));
     await toggling;
 
-    expect(store.getState().byRecipe.r1).toBeUndefined();
+    expect(store.getState().byRecipe['r1']).toBeUndefined();
   });
 });

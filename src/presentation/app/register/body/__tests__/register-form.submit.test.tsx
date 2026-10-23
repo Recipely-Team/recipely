@@ -13,15 +13,15 @@ jest.mock('expo-router', () => ({
 }));
 
 const type = (root: ReactTestInstance, placeholder: string, text: string): void => {
-  const field = root.find((n) => n.props.placeholder === placeholder && typeof n.props.onChangeText === 'function');
-  act(() => (field.props.onChangeText as (v: string) => void)(text));
+  const field = root.find((n) => n.props['placeholder'] === placeholder && typeof n.props['onChangeText'] === 'function');
+  act(() => (field.props['onChangeText'] as (v: string) => void)(text));
 };
 
 const pressSignUp = async (root: ReactTestInstance): Promise<void> => {
   const button = root.findAll(
-    (n) => n.props.accessibilityRole === 'button' && typeof n.props.onPress === 'function' && textContent(n).includes(t().register.signUp),
+    (n) => n.props['accessibilityRole'] === 'button' && typeof n.props['onPress'] === 'function' && textContent(n).includes(t().register.signUp),
   )[0];
-  await act(async () => (button?.props.onPress as () => void)());
+  await act(async () => (button?.props['onPress'] as () => void)());
 };
 
 describe('RegisterForm — Sign up', () => {
@@ -54,8 +54,8 @@ describe('RegisterForm — Sign up', () => {
     type(root, t().register.emailPlaceholder, 'cook@example.com');
     type(root, t().register.passwordPlaceholder, 'Sup3r-secret!');
     type(root, t().register.confirmPlaceholder, 'Sup3r-secret!');
-    const terms = root.find((n) => n.props.accessibilityRole === 'checkbox' && typeof n.props.onPress === 'function');
-    act(() => (terms.props.onPress as () => void)());
+    const terms = root.find((n) => n.props['accessibilityRole'] === 'checkbox' && typeof n.props['onPress'] === 'function');
+    act(() => (terms.props['onPress'] as () => void)());
     await pressSignUp(root);
 
     expect(register).toHaveBeenCalled();

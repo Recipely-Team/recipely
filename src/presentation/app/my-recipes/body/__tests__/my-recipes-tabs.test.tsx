@@ -43,8 +43,8 @@ interface TabProps {
 const tabByLabel = (result: RenderResult, label: string): TabProps =>
   result.root.find(
     (node: ReactTestInstance) =>
-      node.props.accessibilityRole === 'tab' &&
-      String(node.props.accessibilityLabel).startsWith(label),
+      node.props['accessibilityRole'] === 'tab' &&
+      String(node.props['accessibilityLabel']).startsWith(label),
   ).props as unknown as TabProps;
 
 describe('MyRecipesTabs', () => {
@@ -105,7 +105,7 @@ describe('MyRecipesTabs', () => {
     let badge: ReactTestInstance | null = countText?.parent ?? null;
     let style: ViewStyle = {};
     while (badge !== null) {
-      style = (StyleSheet.flatten(badge.props.style as ViewStyle) ?? {}) as ViewStyle;
+      style = (StyleSheet.flatten(badge.props['style'] as ViewStyle) ?? {}) as ViewStyle;
       if (style.position === 'absolute') break;
       badge = badge.parent;
     }

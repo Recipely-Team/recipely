@@ -51,8 +51,8 @@ it('shows the bookmark as saved once the recipe enters the saved set, and not be
   );
   const bookmarkLabels = (): unknown[] =>
     root
-      .findAll((node) => node.props.accessibilityRole === 'button')
-      .map((node) => node.props.accessibilityLabel)
+      .findAll((node) => node.props['accessibilityRole'] === 'button')
+      .map((node) => node.props['accessibilityLabel'])
       .filter((label) => label === t().recipes.save || label === t().recipes.saved);
 
   expect(bookmarkLabels()).toContain(t().recipes.save);

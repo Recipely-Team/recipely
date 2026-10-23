@@ -76,11 +76,11 @@ describe('My Recipes — deleting a draft by touch', () => {
     act(() => mockList.props?.onDeleteDraft('d1'));
     const confirm = root.findAll(
       (node) =>
-        node.props.accessibilityRole === 'button' &&
-        typeof node.props.onPress === 'function' &&
+        node.props['accessibilityRole'] === 'button' &&
+        typeof node.props['onPress'] === 'function' &&
         textContent(node).includes(t().myRecipes.deleteRecipe),
     )[0];
-    await act(async () => (confirm?.props.onPress as () => void)());
+    await act(async () => (confirm?.props['onPress'] as () => void)());
 
     expect(deleteDraft).toHaveBeenCalledWith('d1');
   });

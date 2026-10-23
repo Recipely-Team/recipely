@@ -5,7 +5,7 @@ import { NotificationFilterPills } from '@presentation/app/notifications/body/no
 import { NotificationsHeader } from '@presentation/app/notifications/body/notifications-header';
 
 const buttons = (root: ReturnType<typeof renderComponent>['root']) =>
-  root.findAll((node) => node.props.accessibilityRole === 'button' && typeof node.props.onPress === 'function');
+  root.findAll((node) => node.props['accessibilityRole'] === 'button' && typeof node.props['onPress'] === 'function');
 
 /**
  * Review findings: the All / Unread pills showed which filter was on by colour
@@ -16,7 +16,7 @@ describe('notifications accessibility', () => {
     const { root } = renderComponent(
       <NotificationFilterPills filter={NotificationFilter.Unread} totalCount={3} unreadCount={1} onChange={jest.fn()} />,
     );
-    const states = buttons(root).map((node) => node.props.accessibilityState as { selected?: boolean } | undefined);
+    const states = buttons(root).map((node) => node.props['accessibilityState'] as { selected?: boolean } | undefined);
 
     expect(states.map((state) => state?.selected)).toEqual([false, true]);
   });
@@ -24,6 +24,6 @@ describe('notifications accessibility', () => {
   it('announces the back button as "back", not as the screen title', () => {
     const { root } = renderComponent(<NotificationsHeader unreadCount={0} onBack={jest.fn()} onMarkAllRead={jest.fn()} />);
 
-    expect(buttons(root)[0]?.props.accessibilityLabel).toBe(t().common.back);
+    expect(buttons(root)[0]?.props['accessibilityLabel']).toBe(t().common.back);
   });
 });

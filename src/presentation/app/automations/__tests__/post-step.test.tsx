@@ -46,7 +46,7 @@ const setup = () => {
 };
 
 const tiles = (view: Awaited<ReturnType<ReturnType<typeof setup>['mount']>>) =>
-  view.root.findAll((n) => n.props.accessibilityRole === 'radio' && typeof n.props.onPress === 'function');
+  view.root.findAll((n) => n.props['accessibilityRole'] === 'radio' && typeof n.props['onPress'] === 'function');
 
 // On a device the picker was empty on first open, and showed one post after reopening.
 describe('PostStep', () => {
@@ -55,7 +55,7 @@ describe('PostStep', () => {
     const view = await mount();
     expect(repo.listMedia).toHaveBeenCalledWith(1, 9);
     expect(tiles(view)).toHaveLength(3);
-    const glyphs = view.root.findAll((n) => n.props.name === 'image-outline' || n.props.name === 'albums-outline');
+    const glyphs = view.root.findAll((n) => n.props['name'] === 'image-outline' || n.props['name'] === 'albums-outline');
     expect(glyphs.length).toBeGreaterThanOrEqual(2);
   });
 

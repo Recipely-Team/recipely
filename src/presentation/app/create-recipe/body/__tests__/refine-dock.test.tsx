@@ -117,7 +117,7 @@ describe('RefineDock — sending free text', () => {
   };
 
   const send = (r: ReactTestRenderer): void => {
-    fire(r.root.findAll((n) => n.props.returnKeyType === 'send')[0]!, 'onSubmitEditing');
+    fire(r.root.findAll((n) => n.props['returnKeyType'] === 'send')[0]!, 'onSubmitEditing');
   };
 
   it('empties the field after the instruction is sent', () => {
@@ -147,7 +147,7 @@ describe('RefineDock — sending free text', () => {
     renderer = renderWithSpies('yarısı kadar şeker', spies);
 
     const chip = renderer.root.findAll(
-      (n) => n.props.accessibilityLabel === t().createRecipe.chipVegan && n.props.onPress !== undefined,
+      (n) => n.props['accessibilityLabel'] === t().createRecipe.chipVegan && n.props['onPress'] !== undefined,
     )[0];
     fire(chip!, 'onPress');
 

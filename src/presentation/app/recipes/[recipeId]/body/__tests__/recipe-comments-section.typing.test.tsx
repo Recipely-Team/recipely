@@ -38,9 +38,9 @@ const render = () => {
   };
   const { root } = renderComponent(<DetailScreen />);
   const field = (): ReactTestInstance =>
-    root.find((node) => node.props.placeholder === t().comments.placeholder && typeof node.props.onChangeText === 'function');
+    root.find((node) => node.props['placeholder'] === t().comments.placeholder && typeof node.props['onChangeText'] === 'function');
   const send = (): ReactTestInstance =>
-    root.find((node) => node.props.accessibilityLabel === t().comments.send && typeof node.props.onPress === 'function');
+    root.find((node) => node.props['accessibilityLabel'] === t().comments.send && typeof node.props['onPress'] === 'function');
   return { screen, onAddComment, field, send };
 };
 
@@ -49,22 +49,22 @@ describe('RecipeCommentsSection — typing a comment', () => {
     const { screen, field } = render();
     const rendersAfterMount = screen.renders;
 
-    act(() => (field().props.onChangeText as (text: string) => void)('Gre'));
-    act(() => (field().props.onChangeText as (text: string) => void)('Great recipe!'));
+    act(() => (field().props['onChangeText'] as (text: string) => void)('Gre'));
+    act(() => (field().props['onChangeText'] as (text: string) => void)('Great recipe!'));
 
     expect(screen.renders).toBe(rendersAfterMount);
-    expect(field().props.value).toBe('Great recipe!');
+    expect(field().props['value']).toBe('Great recipe!');
   });
 
   it('sends the typed text and clears the field only once the post lands', () => {
     const { onAddComment, field, send } = render();
-    act(() => (field().props.onChangeText as (text: string) => void)('Great recipe!'));
+    act(() => (field().props['onChangeText'] as (text: string) => void)('Great recipe!'));
 
-    act(() => (send().props.onPress as () => void)());
+    act(() => (send().props['onPress'] as () => void)());
     expect(onAddComment).toHaveBeenCalledWith('Great recipe!', expect.any(Function));
-    expect(field().props.value).toBe('Great recipe!');
+    expect(field().props['value']).toBe('Great recipe!');
 
     act(() => onAddComment.mock.calls[0]![1]());
-    expect(field().props.value).toBe('');
+    expect(field().props['value']).toBe('');
   });
 });

@@ -80,17 +80,17 @@ const setup = (over: Partial<{ servings: number; ingredients: string[] }> = {}, 
 const texts = (root: ReactTestInstance): string[] =>
   root
     .findAllByType(ThemedText)
-    .map((node) => node.props.children)
+    .map((node) => node.props['children'])
     .filter((child): child is string => typeof child === 'string');
 
 const pressButton = (root: ReactTestInstance, label: string): void => {
   const button = root.find(
     (node) =>
-      node.props.accessibilityRole === 'button' &&
-      typeof node.props.onPress === 'function' &&
+      node.props['accessibilityRole'] === 'button' &&
+      typeof node.props['onPress'] === 'function' &&
       texts(node).includes(label),
   );
-  const onPress = button.props.onPress as () => void;
+  const onPress = button.props['onPress'] as () => void;
   act(() => onPress());
 };
 
@@ -109,7 +109,7 @@ describe('CookModeScreen', () => {
     const { root, stepProgressStore } = setup();
     pressButton(root, t().cookMode.next);
     expect(texts(root)).toContain(STEPS[1]);
-    expect(stepProgressStore.getState().byRecipe.r1?.[0]).toBe(true);
+    expect(stepProgressStore.getState().byRecipe['r1']?.[0]).toBe(true);
   });
 
   it('offers the timer a step names, and only there', () => {

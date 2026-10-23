@@ -78,7 +78,7 @@ describe('buildCreateInput — ingredient groups', () => {
       'tr',
     );
 
-    expect(input.ingredients.tr).toEqual(['# Kek', '3 yumurta', '# Şerbet', '2 su bardağı şeker']);
+    expect(input.ingredients['tr']).toEqual(['# Kek', '3 yumurta', '# Şerbet', '2 su bardağı şeker']);
   });
 
   it('drops a group the user added but never named', () => {
@@ -86,11 +86,11 @@ describe('buildCreateInput — ingredient groups', () => {
     // abandoned one would publish as a blank heading over the lines below it.
     const input = buildCreateInput(withIngredients(['# ', '3 yumurta']), 'tr');
 
-    expect(input.ingredients.tr).toEqual(['3 yumurta']);
+    expect(input.ingredients['tr']).toEqual(['3 yumurta']);
   });
 
   it('drops an unnamed group written without a space', () => {
-    expect(buildCreateInput(withIngredients(['#', '3 yumurta']), 'tr').ingredients.tr).toEqual([
+    expect(buildCreateInput(withIngredients(['#', '3 yumurta']), 'tr').ingredients['tr']).toEqual([
       '3 yumurta',
     ]);
   });

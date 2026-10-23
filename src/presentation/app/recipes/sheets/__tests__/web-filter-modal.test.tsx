@@ -113,15 +113,15 @@ const renderModal = (
 const buttonsByLabel = (root: RenderResult['root'], label: string) =>
   root.findAll(
     (node) =>
-      node.props.accessibilityRole === 'button' &&
-      node.props.accessibilityLabel === label &&
-      typeof node.props.onPress === 'function',
+      node.props['accessibilityRole'] === 'button' &&
+      node.props['accessibilityLabel'] === label &&
+      typeof node.props['onPress'] === 'function',
   );
 
 /** Fires the first button with the given accessibility label. */
 const pressByLabel = (root: RenderResult['root'], label: string): void => {
   const button = buttonsByLabel(root, label)[0];
-  act(() => (button!.props.onPress as () => void)());
+  act(() => (button!.props['onPress'] as () => void)());
 };
 
 describe('WebFilterModal', () => {
@@ -170,11 +170,11 @@ describe('WebFilterModal', () => {
     const applyButtons = root
       .findAll(
         (node) =>
-          node.props.accessibilityRole === 'button' && typeof node.props.onPress === 'function',
+          node.props['accessibilityRole'] === 'button' && typeof node.props['onPress'] === 'function',
       )
       .filter((node) => textContent(node).includes(applyLabel));
     const applyButton = applyButtons[applyButtons.length - 1];
-    act(() => (applyButton!.props.onPress as () => void)());
+    act(() => (applyButton!.props['onPress'] as () => void)());
 
     expect(handlers.onApply).toHaveBeenCalledTimes(1);
   });

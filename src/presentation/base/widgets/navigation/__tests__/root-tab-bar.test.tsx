@@ -25,8 +25,8 @@ const signedInUser = (): UserEntity => {
 };
 
 const pressTab = (root: ReturnType<typeof renderComponent>['root'], label: string): void => {
-  const tab = root.find((node) => node.props.accessibilityRole === 'tab' && node.props.accessibilityLabel === label);
-  act(() => (tab.props.onPress as () => void)());
+  const tab = root.find((node) => node.props['accessibilityRole'] === 'tab' && node.props['accessibilityLabel'] === label);
+  act(() => (tab.props['onPress'] as () => void)());
 };
 
 /**
@@ -59,9 +59,9 @@ describe('RootTabBar — a guest on an account tab', () => {
     pressTab(root, t().navigation.diary);
 
     const signIn = root.findAll(
-      (node) => node.props.accessibilityRole === 'button' && textContent(node).includes(t().signInPrompt.cta),
+      (node) => node.props['accessibilityRole'] === 'button' && textContent(node).includes(t().signInPrompt.cta),
     )[0];
-    act(() => (signIn?.props.onPress as () => void)());
+    act(() => (signIn?.props['onPress'] as () => void)());
 
     expect(mockPush).toHaveBeenCalledWith('/login?redirect=%2Fdiary');
   });

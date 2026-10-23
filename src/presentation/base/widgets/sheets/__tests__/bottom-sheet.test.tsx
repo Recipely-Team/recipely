@@ -25,14 +25,14 @@ import { t } from '@presentation/i18n';
 const explicitCloseButton = (root: RenderResult['root']) =>
   root.findAll(
     (node) =>
-      node.props.accessibilityRole === 'button' &&
-      node.props.accessibilityLabel === t().common.close &&
-      typeof node.props.onPress === 'function',
+      node.props['accessibilityRole'] === 'button' &&
+      node.props['accessibilityLabel'] === t().common.close &&
+      typeof node.props['onPress'] === 'function',
   )[0];
 
 /** The node exposing `onAccessibilityTap` — the draggable grabber. */
 const grabber = (root: RenderResult['root']) =>
-  root.findAll((node) => typeof node.props.onAccessibilityTap === 'function')[0];
+  root.findAll((node) => typeof node.props['onAccessibilityTap'] === 'function')[0];
 
 describe('BottomSheet', () => {
   it('hides the header close button by default, leaving the grabber as the only dismiss affordance beyond the backdrop', () => {
@@ -56,7 +56,7 @@ describe('BottomSheet', () => {
 
     const closeButton = explicitCloseButton(root);
     expect(closeButton).toBeDefined();
-    act(() => (closeButton!.props.onPress as () => void)());
+    act(() => (closeButton!.props['onPress'] as () => void)());
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -69,7 +69,7 @@ describe('BottomSheet', () => {
       </BottomSheet>,
     );
 
-    act(() => (grabber(root)!.props.onAccessibilityTap as () => void)());
+    act(() => (grabber(root)!.props['onAccessibilityTap'] as () => void)());
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -85,8 +85,8 @@ describe('BottomSheet', () => {
     // The backdrop `Pressable` is wired directly to the `onClose` prop
     // (no intermediate handler), so it's the node whose `onPress` is that
     // exact function reference.
-    const backdrop = root.findAll((node) => node.props.onPress === onClose)[0];
-    act(() => (backdrop!.props.onPress as () => void)());
+    const backdrop = root.findAll((node) => node.props['onPress'] === onClose)[0];
+    act(() => (backdrop!.props['onPress'] as () => void)());
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -107,9 +107,9 @@ describe('BottomSheet', () => {
 
     expect(textContent(root)).toContain('Clear');
     const rightButton = root.findAll(
-      (node) => node.props.accessibilityRole === 'button' && node.props.accessibilityLabel === 'Clear',
+      (node) => node.props['accessibilityRole'] === 'button' && node.props['accessibilityLabel'] === 'Clear',
     )[0];
-    act(() => (rightButton!.props.onPress as () => void)());
+    act(() => (rightButton!.props['onPress'] as () => void)());
 
     expect(onPressRight).toHaveBeenCalledTimes(1);
     expect(onClose).not.toHaveBeenCalled();
@@ -140,13 +140,13 @@ describe('BottomSheet', () => {
       // `children`, which is the bug.
       const footerText = root
         .findAllByType(ThemedText)
-        .find((node) => node.props.children === 'apply');
+        .find((node) => node.props['children'] === 'apply');
       expect(footerText).toBeDefined();
 
       const scrollViews = root.findAllByType(ScrollView);
       expect(scrollViews).not.toHaveLength(0);
       const insideScroll = scrollViews.some((scroll) =>
-        scroll.findAllByType(ThemedText).some((node) => node.props.children === 'apply'),
+        scroll.findAllByType(ThemedText).some((node) => node.props['children'] === 'apply'),
       );
       expect(insideScroll).toBe(false);
     });
@@ -167,7 +167,7 @@ describe('BottomSheet', () => {
       // pushes the footer past the sheet's bottom edge — the same invisible
       // button, just one layer down.
       const scroll = root.findAllByType(ScrollView)[0];
-      expect(StyleSheet.flatten(scroll!.props.style as StyleProp<ViewStyle>).flexShrink).toBe(1);
+      expect(StyleSheet.flatten(scroll!.props['style'] as StyleProp<ViewStyle>).flexShrink).toBe(1);
     });
 
     it('renders no footer container when a consumer passes none', () => {
@@ -194,12 +194,12 @@ describe('BottomSheet — the scrim does not travel with the panel', () => {
   /** The absolutely-filled layer carrying the overlay colour. */
   const backdropOpacity = (root: RenderResult['root']): number => {
     const layer = root.findAll((node) => {
-      const style = StyleSheet.flatten(node.props.style as StyleProp<ViewStyle>);
+      const style = StyleSheet.flatten(node.props['style'] as StyleProp<ViewStyle>);
       return style?.position === 'absolute' && style?.backgroundColor !== undefined
         && style?.opacity !== undefined && style?.top === 0 && style?.left === 0;
     })[0];
     if (layer === undefined) throw new Error('no backdrop rendered');
-    const style = StyleSheet.flatten(layer.props.style as StyleProp<ViewStyle>) ?? {};
+    const style = StyleSheet.flatten(layer.props['style'] as StyleProp<ViewStyle>) ?? {};
     return (style.opacity as unknown as { __getValue: () => number }).__getValue();
   };
 
@@ -228,7 +228,7 @@ describe('BottomSheet — the scrim does not travel with the panel', () => {
 
     // Not "on its way to zero" — zero, with the panel still on screen behind it.
     expect(backdropOpacity(root)).toBe(0);
-    expect(root.findByType(Modal).props.visible).toBe(true);
+    expect(root.findByType(Modal).props['visible']).toBe(true);
 
     await act(async () => {
       await new Promise((settle) => setTimeout(settle, 400));

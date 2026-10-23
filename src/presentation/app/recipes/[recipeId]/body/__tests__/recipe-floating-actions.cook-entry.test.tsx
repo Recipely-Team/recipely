@@ -23,12 +23,12 @@ const render = (canCook: boolean) =>
   ).root;
 
 const cookButtons = (canCook: boolean) =>
-  render(canCook).findAll((node) => node.props.accessibilityLabel === t().cookMode.start && typeof node.props.onPress === 'function');
+  render(canCook).findAll((node) => node.props['accessibilityLabel'] === t().cookMode.start && typeof node.props['onPress'] === 'function');
 
 describe('the recipe page opens cook mode', () => {
   it('pushes cook mode for this recipe from the floating actions', () => {
     const [button] = cookButtons(true);
-    const onPress = button?.props.onPress as () => void;
+    const onPress = button?.props['onPress'] as () => void;
     act(() => onPress());
     expect(mockPush).toHaveBeenCalledWith('/recipes/r%201/cook');
   });

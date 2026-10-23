@@ -14,7 +14,7 @@ import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-t
 import { spacing, controlSizes } from '@presentation/base/theme';
 
 const inputStyle = (root: ReactTestInstance): TextStyle =>
-  StyleSheet.flatten(root.findByType(TextInput).props.style as StyleProp<TextStyle>);
+  StyleSheet.flatten(root.findByType(TextInput).props['style'] as StyleProp<TextStyle>);
 
 describe('AutoGrowTextInput (native)', () => {
   it('renders a multiline field floored at minHeight and never pinned', () => {
@@ -22,7 +22,7 @@ describe('AutoGrowTextInput (native)', () => {
       <AutoGrowTextInput minHeight={controlSizes.messageField} value="" onChangeText={jest.fn()} />,
     );
 
-    expect(root.findByType(TextInput).props.multiline).toBe(true);
+    expect(root.findByType(TextInput).props['multiline']).toBe(true);
     expect(inputStyle(root).minHeight).toBe(controlSizes.messageField);
     expect(inputStyle(root).height).toBeUndefined();
   });
@@ -47,6 +47,6 @@ describe('AutoGrowTextInput (native)', () => {
       <AutoGrowTextInput minHeight={controlSizes.textArea} value="" onChangeText={jest.fn()} />,
     );
 
-    expect(root.findByType(TextInput).props.textAlignVertical).toBe('top');
+    expect(root.findByType(TextInput).props['textAlignVertical']).toBe('top');
   });
 });

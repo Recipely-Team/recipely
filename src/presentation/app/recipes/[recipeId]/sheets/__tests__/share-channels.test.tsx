@@ -38,9 +38,9 @@ const renderChannels = () =>
   );
 
 const press = async (label: string, root: ReturnType<typeof renderChannels>['root']): Promise<void> => {
-  const tile = root.find((node) => node.props.accessibilityLabel === label && typeof node.props.onPress === 'function');
+  const tile = root.find((node) => node.props['accessibilityLabel'] === label && typeof node.props['onPress'] === 'function');
   await act(async () => {
-    (tile.props.onPress as () => void)();
+    (tile.props['onPress'] as () => void)();
     await Promise.resolve();
   });
 };

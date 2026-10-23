@@ -123,7 +123,7 @@ const render = (overrides: Partial<MyRecipesListProps>): ReactTestInstance => {
  * tests can't pass vacuously.
  */
 const refreshingProp = (overrides: Partial<MyRecipesListProps>): boolean => {
-  const refreshing = render(overrides).findByType(RefreshControl).props.refreshing;
+  const refreshing = render(overrides).findByType(RefreshControl).props['refreshing'];
 
   if (typeof refreshing !== 'boolean') {
     throw new Error(`expected a boolean 'refreshing' prop, got ${String(refreshing)}`);
@@ -221,8 +221,8 @@ describe('MyRecipesList — RefreshControl wiring', () => {
       // the control must hang off a ScrollView.
       const scrollView = root.findByType(ScrollView);
       const control = root.findByType(RefreshControl);
-      expect(scrollView.props.refreshControl).toBeDefined();
-      expect(control.props.onRefresh).toBe(onRefresh);
+      expect(scrollView.props['refreshControl']).toBeDefined();
+      expect(control.props['onRefresh']).toBe(onRefresh);
     });
 
     it.each(EMPTY_TABS)('lets the empty %s tab content grow so the pull gesture has a surface', (tab) => {
@@ -230,7 +230,7 @@ describe('MyRecipesList — RefreshControl wiring', () => {
 
       // Without flexGrow the content collapses to its natural height and there
       // is nothing tall enough to pull on.
-      const contentStyle = root.findByType(ScrollView).props.contentContainerStyle;
+      const contentStyle = root.findByType(ScrollView).props['contentContainerStyle'];
       expect(contentStyle).toEqual(expect.objectContaining({ flexGrow: 1 }));
     });
 
@@ -245,8 +245,8 @@ describe('MyRecipesList — RefreshControl wiring', () => {
 
       const root = render({ tab: 'drafts', drafts: [makeDraft('d1')], onRefresh });
 
-      expect(root.findByType(FlatList).props.refreshControl).toBeDefined();
-      expect(root.findByType(RefreshControl).props.onRefresh).toBe(onRefresh);
+      expect(root.findByType(FlatList).props['refreshControl']).toBeDefined();
+      expect(root.findByType(RefreshControl).props['onRefresh']).toBe(onRefresh);
     });
 
     it('gives the saved grid a RefreshControl bound to the pull handler', () => {
@@ -254,8 +254,8 @@ describe('MyRecipesList — RefreshControl wiring', () => {
 
       const root = render({ tab: 'saved', items: [makeRecipe('r1')], onRefresh });
 
-      expect(root.findByType(FlatList).props.refreshControl).toBeDefined();
-      expect(root.findByType(RefreshControl).props.onRefresh).toBe(onRefresh);
+      expect(root.findByType(FlatList).props['refreshControl']).toBeDefined();
+      expect(root.findByType(RefreshControl).props['onRefresh']).toBe(onRefresh);
     });
 
     it('gives the multi-column web grid a RefreshControl', () => {
@@ -268,7 +268,7 @@ describe('MyRecipesList — RefreshControl wiring', () => {
 
       // The grid remounts on a column change (`key={grid-${gridColumns}}`), an
       // easy place to drop the prop.
-      expect(root.findByType(FlatList).props.refreshControl).toBeDefined();
+      expect(root.findByType(FlatList).props['refreshControl']).toBeDefined();
     });
   });
 

@@ -44,9 +44,9 @@ const makeStores = (): ApplicationStores =>
 const pressableLabelled = (root: ReactTestInstance, label: string): ReactTestInstance | undefined =>
   root.findAll(
     (node) =>
-      node.props.accessibilityRole === 'button' &&
-      typeof node.props.onPress === 'function' &&
-      (node.props.accessibilityLabel === label ||
+      node.props['accessibilityRole'] === 'button' &&
+      typeof node.props['onPress'] === 'function' &&
+      (node.props['accessibilityLabel'] === label ||
         textContent(node).includes(label)),
   )[0];
 
@@ -83,7 +83,7 @@ describe('ProfileSettingsSections — sign out', () => {
     const root = render();
 
     act(() => {
-      (pressableLabelled(root, t().settings.signOut)?.props.onPress as () => void)();
+      (pressableLabelled(root, t().settings.signOut)?.props['onPress'] as () => void)();
     });
 
     expect(signOut).not.toHaveBeenCalled();
@@ -94,18 +94,18 @@ describe('ProfileSettingsSections — sign out', () => {
     const root = render();
 
     act(() => {
-      (pressableLabelled(root, t().settings.signOut)?.props.onPress as () => void)();
+      (pressableLabelled(root, t().settings.signOut)?.props['onPress'] as () => void)();
     });
     // The sheet's confirm carries the same label as the row that opened it, so
     // take the last one — the one inside the sheet.
     const confirms = root.findAll(
       (node) =>
-        node.props.accessibilityRole === 'button' &&
-        typeof node.props.onPress === 'function' &&
+        node.props['accessibilityRole'] === 'button' &&
+        typeof node.props['onPress'] === 'function' &&
         textContent(node).includes(t().settings.signOut),
     );
     await act(async () => {
-      (confirms[confirms.length - 1]?.props.onPress as () => void)();
+      (confirms[confirms.length - 1]?.props['onPress'] as () => void)();
       await Promise.resolve();
     });
 

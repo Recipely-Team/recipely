@@ -18,9 +18,9 @@ describe('ForgotPasswordScreen', () => {
   it('goes to login when there is no history to go back to', () => {
     const stores = { authStore: create(() => ({ requestPasswordReset: jest.fn() })) } as unknown as Partial<ApplicationStores>;
     const { root } = renderComponent(<ForgotPasswordScreen />, stores);
-    const [back] = root.findAll((node) => node.props.accessibilityLabel === t().forgotPassword.backToLogin && typeof node.props.onPress === 'function');
+    const [back] = root.findAll((node) => node.props['accessibilityLabel'] === t().forgotPassword.backToLogin && typeof node.props['onPress'] === 'function');
 
-    act(() => (back!.props.onPress as () => void)());
+    act(() => (back!.props['onPress'] as () => void)());
 
     expect(mockRouter.back).not.toHaveBeenCalled();
     expect(mockRouter.replace).toHaveBeenCalledWith(RoutePaths.login);

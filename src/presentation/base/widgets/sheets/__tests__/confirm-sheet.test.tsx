@@ -18,9 +18,9 @@ const CONFIRM_LABEL = 'Delete account';
 const buttonByLabel = (root: RenderResult['root'], label: string) =>
   root.findAll(
     (node) =>
-      node.props.accessibilityRole === 'button' &&
-      node.props.accessibilityLabel === label &&
-      typeof node.props.onPress === 'function',
+      node.props['accessibilityRole'] === 'button' &&
+      node.props['accessibilityLabel'] === label &&
+      typeof node.props['onPress'] === 'function',
   )[0];
 
 describe('ConfirmSheet', () => {
@@ -55,7 +55,7 @@ describe('ConfirmSheet', () => {
       />,
     );
 
-    act(() => (buttonByLabel(root, CONFIRM_LABEL)!.props.onPress as () => void)());
+    act(() => (buttonByLabel(root, CONFIRM_LABEL)!.props['onPress'] as () => void)());
 
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
@@ -74,7 +74,7 @@ describe('ConfirmSheet', () => {
       />,
     );
 
-    act(() => (buttonByLabel(root, t().common.cancel)!.props.onPress as () => void)());
+    act(() => (buttonByLabel(root, t().common.cancel)!.props['onPress'] as () => void)());
 
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(onConfirm).not.toHaveBeenCalled();
@@ -93,8 +93,8 @@ describe('ConfirmSheet', () => {
       />,
     );
 
-    expect(buttonByLabel(root, CONFIRM_LABEL)!.props.disabled).toBe(true);
-    expect(buttonByLabel(root, t().common.cancel)!.props.disabled).toBe(true);
+    expect(buttonByLabel(root, CONFIRM_LABEL)!.props['disabled']).toBe(true);
+    expect(buttonByLabel(root, t().common.cancel)!.props['disabled']).toBe(true);
     expect(textContent(root)).toContain(t().common.loading);
   });
 

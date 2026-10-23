@@ -59,7 +59,7 @@ export class FirstPageCache<TDto> {
     if (!read.ok || read.value === null) return null;
     try {
       const stored: unknown = JSON.parse(read.value);
-      return isObject(stored) && stored.query === query && isObject(stored.page) ? (stored.page as unknown as PageDto<TDto>) : null;
+      return isObject(stored) && stored['query'] === query && isObject(stored['page']) ? (stored['page'] as unknown as PageDto<TDto>) : null;
     } catch {
       return null;
     }

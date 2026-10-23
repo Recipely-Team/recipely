@@ -106,21 +106,21 @@ const renderHeaderWithTopInset = (topInset: number): ReactTestInstance => {
 
 /** The absolutely-positioned band (identified by its fixed zIndex). */
 const bandStyle = (root: ReactTestInstance): Record<string, unknown> => {
-  const node = root.findAll((n) => flattenStyle(n.props.style).zIndex === 20)[0];
-  return flattenStyle(node?.props.style);
+  const node = root.findAll((n) => flattenStyle(n.props['style'])['zIndex'] === 20)[0];
+  return flattenStyle(node?.props['style']);
 };
 
 describe('CollapsingHomeHeader', () => {
   it('offsets the band by the top safe-area inset so it clears the status bar / notch', () => {
     const root = renderHeaderWithTopInset(47);
 
-    expect(bandStyle(root).top).toBe(47);
+    expect(bandStyle(root)['top']).toBe(47);
   });
 
   it('does not add extra offset when there is no top inset (no-notch devices)', () => {
     const root = renderHeaderWithTopInset(0);
 
-    expect(bandStyle(root).top).toBe(0);
+    expect(bandStyle(root)['top']).toBe(0);
   });
 
 
@@ -148,17 +148,17 @@ describe('CollapsingHomeHeader', () => {
     }
 
     expect(shared).not.toBeNull();
-    expect(StyleSheet.flatten(shared?.props.style as StyleProp<ViewStyle>)?.flexDirection).toBe('row');
+    expect(StyleSheet.flatten(shared?.props['style'] as StyleProp<ViewStyle>)?.flexDirection).toBe('row');
   });
 
   it('renders a SearchBar wired to the search value and change handler', () => {
     const { root, onSearchChange } = renderHeader({ searchValue: 'pasta' });
 
     const input = root.findByType(TextInput);
-    expect(input.props.value).toBe('pasta');
-    expect(input.props.placeholder).toBe(t().recipes.searchPlaceholder);
+    expect(input.props['value']).toBe('pasta');
+    expect(input.props['placeholder']).toBe(t().recipes.searchPlaceholder);
 
-    act(() => (input.props.onChangeText as (text: string) => void)('soup'));
+    act(() => (input.props['onChangeText'] as (text: string) => void)('soup'));
     expect(onSearchChange).toHaveBeenCalledWith('soup');
   });
 });

@@ -67,6 +67,6 @@ describe("app.json", () => {
 
     expect(plugin("react-native-google-mobile-ads")).toBeDefined();
     const tracking = plugin("expo-tracking-transparency");
-    expect(Array.isArray(tracking) && tracking[1].userTrackingPermission).toBeTruthy();
+    expect(Array.isArray(tracking) && tracking[1]['userTrackingPermission']).toBeTruthy();
   });
 });

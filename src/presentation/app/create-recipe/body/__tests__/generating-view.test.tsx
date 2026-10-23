@@ -37,7 +37,7 @@ describe('the generating screen has a way out', () => {
   it('offers a cancel from the first frame', () => {
     const onCancel = jest.fn();
     const { root } = renderComponent(<GeneratingView activeStep={0} onCancel={onCancel} topInset={0} />);
-    const cancel = root.find((node) => node.props.accessibilityRole === 'button' && typeof node.props.onPress === 'function');
+    const cancel = root.find((node) => node.props['accessibilityRole'] === 'button' && typeof node.props['onPress'] === 'function');
     act(() => (cancel.props as { onPress: () => void }).onPress());
     expect(onCancel).toHaveBeenCalledTimes(1);
   });

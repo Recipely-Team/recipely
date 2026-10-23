@@ -193,9 +193,9 @@ const measure = async (name: string, event: () => void) => {
   act(() => event.call(stores));
   meter.on = false;
   const result: Record<string, number> = { ...mockRenders, duration: duration() };
-  if (process.env['PROFILE_RENDERS'] === '1') {
+  if (process.env.PROFILE_RENDERS === '1') {
     process.stdout.write(
-      `[profile] detail ${name}: ${Object.entries(mockRenders).map(([k, v]) => `${k}=${v}`).join(' ')} actualDuration=${result.duration!.toFixed(1)}ms\n`,
+      `[profile] detail ${name}: ${Object.entries(mockRenders).map(([k, v]) => `${k}=${v}`).join(' ')} actualDuration=${result['duration']!.toFixed(1)}ms\n`,
     );
   }
   return { stores, result };

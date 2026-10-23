@@ -33,7 +33,7 @@ describe('ShoppingCartButton', () => {
   // --- regression: the shopping list was reachable only from a row deep in Profile.
   it('opens the shopping list from any tab bar', () => {
     const { root } = renderComponent(<ShoppingCartButton />);
-    act(() => (byRole(root, 'button').props.onPress as () => void)());
+    act(() => (byRole(root, 'button').props['onPress'] as () => void)());
     expect(mockPush).toHaveBeenCalledWith('/shopping-list');
   });
 
@@ -46,7 +46,7 @@ describe('ShoppingCartButton', () => {
     mockToBuy = 7;
     const seven = renderComponent(<ShoppingCartButton />);
     expect(textContent(seven.root)).toContain('7');
-    expect(byRole(seven.root, 'button').props.accessibilityLabel).toBe(t().shopping.cartA11y.replace('{n}', '7'));
+    expect(byRole(seven.root, 'button').props['accessibilityLabel']).toBe(t().shopping.cartA11y.replace('{n}', '7'));
     mockToBuy = 140;
     expect(textContent(renderComponent(<ShoppingCartButton />).root)).toContain('99+');
   });
@@ -54,7 +54,7 @@ describe('ShoppingCartButton', () => {
   it('tells a guest why to sign in, and does not ask for a count', () => {
     mockGuest = true;
     const { root } = renderComponent(<ShoppingCartButton />);
-    act(() => (byRole(root, 'button').props.onPress as () => void)());
+    act(() => (byRole(root, 'button').props['onPress'] as () => void)());
     expect(mockPush).not.toHaveBeenCalled();
     expect(mockLoadToBuy).not.toHaveBeenCalled();
     expect(textContent(root)).toContain(t().signInPrompt.shoppingList);

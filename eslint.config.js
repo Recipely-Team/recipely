@@ -3,6 +3,14 @@ const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 const oneDeclarationPerFile = require('./eslint-rules/one-declaration-per-file');
 
+// Expo inlines EXPO_PUBLIC_* variables only when read with a dot (`process.env.EXPO_PUBLIC_X`); a
+// bracket read compiles and ships undefined. They are declared in process-env.d.ts, so the dot form type-checks.
+const EXPO_PUBLIC_BRACKET_READ = {
+  selector:
+    "MemberExpression[computed=true][object.type='MemberExpression'][object.object.name='process'][object.property.name='env'][property.value=/^EXPO_PUBLIC_/]",
+  message: 'Read EXPO_PUBLIC_* with a dot (process.env.EXPO_PUBLIC_X): Expo does not inline bracket reads.',
+};
+
 const VECTOR_ICONS_ROOT = {
   name: '@expo/vector-icons',
   message: "Import the family's own path, e.g. '@expo/vector-icons/Ionicons' — the root index bundles every icon font.",
@@ -27,6 +35,10 @@ module.exports = defineConfig([
     },
   },
   {
+    files: ['*.ts'],
+    rules: { 'no-restricted-syntax': ['error', EXPO_PUBLIC_BRACKET_READ] },
+  },
+  {
     // An assistant action's failure reason is a vocabulary the model reads and
     // the app branches on (AssistantActionError / DiaryArgError); spelled as a
     // string at a call site, a typo was a silently different reason. Tests may
@@ -36,6 +48,7 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-syntax': [
         'error',
+        EXPO_PUBLIC_BRACKET_READ,
         {
           selector: "Property[key.name='error'] > Literal[value=/^[a-z]+(_[a-z]+)*$/]",
           message: 'Use AssistantActionError.* (or the feature vocabulary) instead of a string literal for an error reason.',

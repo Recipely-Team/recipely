@@ -5,8 +5,8 @@ import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { t } from '@presentation/i18n';
 
 const press = (root: ReturnType<typeof renderComponent>['root'], label: string): void => {
-  const button = root.find((n) => n.props.accessibilityRole === 'button' && typeof n.props.onPress === 'function' && textContent(n).includes(label));
-  act(() => (button.props.onPress as () => void)());
+  const button = root.find((n) => n.props['accessibilityRole'] === 'button' && typeof n.props['onPress'] === 'function' && textContent(n).includes(label));
+  act(() => (button.props['onPress'] as () => void)());
 };
 
 /** An empty My Recipes tab stopped at a sentence; it now offers the action that fills it. */

@@ -36,10 +36,10 @@ describe('mountAdsenseUnit', () => {
     // element in the document, so the element has to be there first.
     const unit = node.querySelector('ins');
     expect(unit?.className).toBe('adsbygoogle');
-    expect(unit?.dataset.adClient).toBe(ADSENSE_CLIENT_ID);
-    expect(unit?.dataset.adSlot).toBe(SLOT);
-    expect(unit?.dataset.adFormat).toBe('auto');
-    expect(unit?.dataset.fullWidthResponsive).toBe('true');
+    expect(unit?.dataset['adClient']).toBe(ADSENSE_CLIENT_ID);
+    expect(unit?.dataset['adSlot']).toBe(SLOT);
+    expect(unit?.dataset['adFormat']).toBe('auto');
+    expect(unit?.dataset['fullWidthResponsive']).toBe('true');
 
     await Promise.resolve();
     expect(window.adsbygoogle).toBeUndefined();

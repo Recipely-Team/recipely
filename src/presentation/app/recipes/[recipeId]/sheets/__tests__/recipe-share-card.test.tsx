@@ -15,7 +15,7 @@ describe('RecipeShareCard', () => {
   it('does not hand the native-only collapsable prop to the web DOM', () => {
     const platform = jest.replaceProperty(Platform, 'OS', 'web');
     try {
-      expect(cardView(render().root)?.props.collapsable).toBeUndefined();
+      expect(cardView(render().root)?.props['collapsable']).toBeUndefined();
     } finally {
       platform.restore();
     }
@@ -24,7 +24,7 @@ describe('RecipeShareCard', () => {
   it('keeps the view un-flattened on native so it can be captured as an image', () => {
     const platform = jest.replaceProperty(Platform, 'OS', 'ios');
     try {
-      expect(cardView(render().root)?.props.collapsable).toBe(false);
+      expect(cardView(render().root)?.props['collapsable']).toBe(false);
     } finally {
       platform.restore();
     }

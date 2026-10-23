@@ -19,8 +19,8 @@ describe('FeedFooter', () => {
     );
 
     expect(textContent(root)).toEqual([t().errors.loadMoreFailed, t().errors.retry]);
-    const retry = root.find((node) => node.props.accessibilityRole === 'button' && typeof node.props.onPress === 'function');
-    act(() => (retry.props.onPress as () => void)());
+    const retry = root.find((node) => node.props['accessibilityRole'] === 'button' && typeof node.props['onPress'] === 'function');
+    act(() => (retry.props['onPress'] as () => void)());
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
@@ -48,7 +48,7 @@ describe('FeedFooter', () => {
  */
 describe('FeedFooter — the bottom of a paged list', () => {
   const spinners = (root: ReturnType<typeof renderComponent>['root']) =>
-    root.findAll((n) => n.props.accessibilityLabel === t().common.loadingMore);
+    root.findAll((n) => n.props['accessibilityLabel'] === t().common.loadingMore);
 
   it('already shows a spinner when more exists, before the next fetch starts', () => {
     const { root } = renderComponent(<FeedFooter isLoadingMore={false} hasMore />);

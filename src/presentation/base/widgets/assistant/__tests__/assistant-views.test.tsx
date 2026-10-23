@@ -72,15 +72,15 @@ afterEach(() => {
 /** Presses the control a user would find by its accessibility label. */
 const press = (root: ReactTestInstance, label: string): void => {
   const target = root.findAll(
-    (node) => node.props.accessibilityLabel === label && typeof node.props.onPress === 'function',
+    (node) => node.props['accessibilityLabel'] === label && typeof node.props['onPress'] === 'function',
   )[0];
   if (target === undefined) throw new Error(`no pressable labelled "${label}"`);
-  const onPress = target.props.onPress as () => void;
+  const onPress = target.props['onPress'] as () => void;
   act(() => onPress());
 };
 
 const texts = (root: ReactTestInstance): string[] =>
-  root.findAll((node) => typeof node.props.children === 'string').map((node) => String(node.props.children));
+  root.findAll((node) => typeof node.props['children'] === 'string').map((node) => String(node.props['children']));
 
 describe('assistant views', () => {
   describe('launcher', () => {
@@ -146,9 +146,9 @@ describe('assistant views', () => {
   describe('waveform', () => {
     const opacities = (root: ReactTestInstance): number[] =>
       root
-        .findAll((node) => Array.isArray(node.props.style))
+        .findAll((node) => Array.isArray(node.props['style']))
         .map((node) => {
-          const style = node.props.style as { opacity?: number }[];
+          const style = node.props['style'] as { opacity?: number }[];
           return Number(style[style.length - 1]?.opacity);
         })
         .filter((value) => !Number.isNaN(value));

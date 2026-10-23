@@ -160,7 +160,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ...config.extra,
       variant,
       eas: {
-        ...(config.extra?.eas ?? {}),
+        ...(config.extra?.['eas'] ?? {}),
       },
     },
   };

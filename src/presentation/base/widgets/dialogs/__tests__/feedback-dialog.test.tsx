@@ -23,9 +23,9 @@ const SECONDARY_LABEL = 'Done';
 const buttonByLabel = (root: RenderResult['root'], label: string) =>
   root.findAll(
     (node) =>
-      node.props.accessibilityRole === 'button' &&
-      node.props.accessibilityLabel === label &&
-      typeof node.props.onPress === 'function',
+      node.props['accessibilityRole'] === 'button' &&
+      node.props['accessibilityLabel'] === label &&
+      typeof node.props['onPress'] === 'function',
   )[0];
 
 const renderSheet = (overrides: Partial<React.ComponentProps<typeof FeedbackDialog>> = {}) =>
@@ -55,7 +55,7 @@ describe('FeedbackDialog', () => {
     const onPrimary = jest.fn();
     const { root } = renderSheet({ onPrimary });
 
-    act(() => (buttonByLabel(root, PRIMARY_LABEL)!.props.onPress as () => void)());
+    act(() => (buttonByLabel(root, PRIMARY_LABEL)!.props['onPress'] as () => void)());
 
     expect(onPrimary).toHaveBeenCalledTimes(1);
   });
@@ -67,7 +67,7 @@ describe('FeedbackDialog', () => {
       onSecondary,
     });
 
-    act(() => (buttonByLabel(root, SECONDARY_LABEL)!.props.onPress as () => void)());
+    act(() => (buttonByLabel(root, SECONDARY_LABEL)!.props['onPress'] as () => void)());
 
     expect(onSecondary).toHaveBeenCalledTimes(1);
   });
@@ -84,7 +84,7 @@ describe('FeedbackDialog', () => {
     const discIcon = (r: ReturnType<typeof renderSheet>): string | undefined =>
       r.root
         .findAllByType(Ionicons)
-        .map((node) => String(node.props.name))
+        .map((node) => String(node.props['name']))
         .find((name) => name !== 'close');
 
     expect(discIcon(renderSheet())).toBe('checkmark');
@@ -104,7 +104,7 @@ describe('FeedbackDialog', () => {
     const close = buttonByLabel(root, t().common.close);
     expect(close).toBeDefined();
 
-    (close?.props.onPress as () => void)();
+    (close?.props['onPress'] as () => void)();
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -120,7 +120,7 @@ describe('FeedbackDialog', () => {
     // Both stretch to equal halves of the same row. `Pressable.style` is a
     // FUNCTION of the press state, so it has to be resolved before flattening.
     const flexOf = (node: ReactTestInstance | undefined): unknown => {
-      const style = node?.props.style as
+      const style = node?.props['style'] as
         | ViewStyle
         | ((state: { pressed: boolean }) => ViewStyle)
         | undefined;
