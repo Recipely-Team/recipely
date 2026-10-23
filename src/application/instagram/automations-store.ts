@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import type { BoundStore } from '@application/store/bound-store';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
 import { ok } from '@core/result/result-helpers';
 import { FoodSearchGroup } from '@domain/diary/foods/search/food-search-group';
@@ -52,11 +52,11 @@ const replacing = (list: PagedList<DmRuleEntity>, rule: DmRuleEntity): PagedList
  *   the shifted offset, so no rule is skipped.
  * - **User-scoped**: cleared on sign-out.
  */
-export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStore<AutomationsStore> => {
+export const configureAutomationsStore = (deps: AutomationsStoreDeps): StoreApi<AutomationsStore> => {
   const flips = new KeyedRequestEpoch();
   const opening = new RequestEpoch();
 
-  return create<AutomationsStore>((set, get) => {
+  return createStore<AutomationsStore>((set, get) => {
     const rules = new PagedListLoader<DmRuleEntity>(() => get().rules, (list) => set({ rules: list }), (r) => r.id);
     const media = new PagedListLoader<InstagramMedia>(() => get().media, (list) => set({ media: list }), (m) => m.id);
     const recipes = new PagedListLoader<RecipeFoodHit>(() => get().recipes, (list) => set({ recipes: list }), (h) => h.key);

@@ -7,7 +7,7 @@ import { IngredientCard } from '@presentation/app/recipes/[recipeId]/items/steps
 import { IngredientGroupHeading } from '@presentation/app/recipes/[recipeId]/items/steps/ingredient-group-heading';
 import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/steps/instruction-card';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
@@ -45,12 +45,13 @@ const RecipeStepsComponent = ({
   onToggleStep,
   onDelete,
 }: RecipeStepsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const ingredients = IngredientList.of(portions.ingredients);
 
   return (
     <>
-      <SectionHeader title={t().recipes.ingredients} count={ingredients.filledCount} />
+      <SectionHeader title={t.recipes.ingredients} count={ingredients.filledCount} />
       <View style={styles.cardsList}>
         <UnitSystemToggle portions={portions} />
         {ingredients.lines.map((line, i) =>
@@ -72,7 +73,7 @@ const RecipeStepsComponent = ({
         <AddToShoppingButton source={{ recipeId, recipeName: recipe.name, lines: portions.ingredients }} inCard={false} />
       </View>
 
-      <SectionHeader title={t().recipes.instructions} count={recipe.instructions.length} />
+      <SectionHeader title={t.recipes.instructions} count={recipe.instructions.length} />
       <View style={styles.cardsList}>
         {recipe.instructions.map((step, i) => (
           <InstructionCard
@@ -91,7 +92,7 @@ const RecipeStepsComponent = ({
           <View style={styles.ownerActionsWeb}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t().myRecipes.deleteRecipe}
+              accessibilityLabel={t.myRecipes.deleteRecipe}
               onPress={onDelete}
               style={({ pressed }) => [
                 styles.ghostPill,
@@ -100,7 +101,7 @@ const RecipeStepsComponent = ({
             >
               <Ionicons name="trash-outline" size={iconSizes.md} color={colors.danger} />
               <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
-                {t().myRecipes.deleteRecipe}
+                {t.myRecipes.deleteRecipe}
               </ThemedText>
             </Pressable>
           </View>
@@ -109,7 +110,7 @@ const RecipeStepsComponent = ({
           <View style={styles.ownerActions}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t().myRecipes.deleteRecipe}
+              accessibilityLabel={t.myRecipes.deleteRecipe}
               onPress={onDelete}
               style={({ pressed }) => [
                 styles.ownerBtn,
@@ -118,7 +119,7 @@ const RecipeStepsComponent = ({
             >
               <Ionicons name="trash-outline" size={iconSizes.md} color={colors.danger} />
               <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
-                {t().myRecipes.deleteRecipe}
+                {t.myRecipes.deleteRecipe}
               </ThemedText>
             </Pressable>
           </View>

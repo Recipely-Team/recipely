@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import type { BoundStore } from '@application/store/bound-store';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand/vanilla';
 import { ok } from '@core/result/result-helpers';
 import type { Failure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
@@ -63,7 +63,7 @@ const allIdle = (): Record<DiaryConcernType, DiaryLoadState> => ({
  *   saved goals; `clear()` bumps `session` so nothing started under a previous
  *   account publishes.
  */
-export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore> => {
+export const configureDiaryStore = (deps: DiaryStoreDeps): StoreApi<DiaryStore> => {
   const today = deps.today ?? (() => CalendarDate.today());
   const water = new WaterTapLedger();
   let session = ValueConstants.zero;
@@ -71,7 +71,7 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
   /** Entry ids per date in the order the server last listed them — where a failed delete goes back. */
   const serverOrder = new Map<string, readonly string[]>();
 
-  return create<DiaryStore>((set, get) => {
+  return createStore<DiaryStore>((set, get) => {
     /** Moves one concern's load to its next state. */
     const mark = (concern: DiaryConcernType, loading: boolean, failure: Failure | null = null): void => {
       const next: DiaryLoadState = loading

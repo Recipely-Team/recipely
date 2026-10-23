@@ -1,4 +1,5 @@
-import type { BoundStore } from '@application/store/bound-store';
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
+import type { StoreApi } from 'zustand/vanilla';
 /**
  * Regression tests for the failure path of `useRecipeGeneration.runGenerate`.
  *
@@ -237,12 +238,12 @@ const makeStores = (
 ): ApplicationStores => {
   const recipeAuthoringStore = configureRecipeAuthoringStore({
     createRecipeUseCase: unusedUseCase<CreateRecipeUseCase>(),
-    myRecipesStore: { getState: () => ({ addLocal: jest.fn(), removeLocal: jest.fn() }) } as unknown as BoundStore<MyRecipesStore>,
+    myRecipesStore: { getState: () => ({ addLocal: jest.fn(), removeLocal: jest.fn() }) } as unknown as StoreApi<MyRecipesStore>,
     generateRecipeUseCase: new GenerateRecipeUseCase(new FakeRecipeRepository(config)),
     refineRecipeUseCase: new RefineRecipeUseCase(new FakeRecipeRepository(config)),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
-    recipeListStore: noopCacheStore<BoundStore<RecipeListStore>>(),
-    recipeDetailStore: noopCacheStore<BoundStore<RecipeDetailStore>>(),
+    recipeListStore: noopCacheStore<StoreApi<RecipeListStore>>(),
+    recipeDetailStore: noopCacheStore<StoreApi<RecipeDetailStore>>(),
   });
 
   const draftsStore = configureDraftsStore({
@@ -265,8 +266,7 @@ const makeStores = (
   // The screen can also be opened seeded from an existing recipe, so it reads
   // the detail store by id. Nothing in these tests copies one, so it answers
   // with an empty cache rather than a stub that would have to be kept in step.
-  const recipeDetailStore = ((select: (st: unknown) => unknown) =>
-    select({ byId: {}, load: async () => undefined })) as unknown as ApplicationStores['recipeDetailStore'];
+  const recipeDetailStore = (mockStoreReading(() => ({ byId: {}, load: async () => undefined }))) as unknown as ApplicationStores['recipeDetailStore'];
 
   return { recipeAuthoringStore, draftsStore, recipeDetailStore } as unknown as ApplicationStores;
 };

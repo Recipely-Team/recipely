@@ -1,6 +1,6 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import type { LoadLikedRecipesUseCase } from '@application/likes/load-liked-recipes-use-case';
 import type { LikedRecipesStore } from '@application/recipes/liked/liked-recipes-store-contract';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
@@ -15,8 +15,8 @@ interface LikedRecipesStoreDeps {
  * (see `configureSavedRecipesStore` for why). `clear()` resets the loader, so
  * a load from the previous session cannot put its rows back.
  */
-export const configureLikedRecipesStore = (deps: LikedRecipesStoreDeps): BoundStore<LikedRecipesStore> =>
-  create<LikedRecipesStore>((set, get) => {
+export const configureLikedRecipesStore = (deps: LikedRecipesStoreDeps): StoreApi<LikedRecipesStore> =>
+  createStore<LikedRecipesStore>((set, get) => {
     const loader = new PagedListLoader<RecipeSummaryEntity>(() => get().liked, (liked) => set({ liked }), (r) => r.id);
     const fetchPage = (page: number) => deps.loadLikedRecipesUseCase.execute(page);
     return {

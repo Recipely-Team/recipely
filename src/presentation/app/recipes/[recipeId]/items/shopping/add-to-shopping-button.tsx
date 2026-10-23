@@ -6,7 +6,7 @@ import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-pro
 import { controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
 import { useAddToShoppingList } from '@presentation/app/recipes/[recipeId]/hooks/shopping/use-add-to-shopping-list';
 import type { ShoppingSource } from '@presentation/app/recipes/[recipeId]/model/shopping/shopping-source';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AddToShoppingButtonProps {
   source: ShoppingSource;
@@ -20,6 +20,7 @@ export interface AddToShoppingButtonProps {
  * nothing but the lines it shows.
  */
 export const AddToShoppingButton = ({ source, inCard }: AddToShoppingButtonProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const shopping = useAddToShoppingList(source);
   if (!shopping.canAdd) return null;
@@ -44,7 +45,7 @@ export const AddToShoppingButton = ({ source, inCard }: AddToShoppingButtonProps
           <Ionicons name="cart-outline" size={iconSizes.lg} color={ink} />
         )}
         <SizedText size={inCard ? fontSizes.medium : fontSizes.body} weight={fontWeights.bold} color={ink}>
-          {t().shopping.addIngredients}
+          {t.shopping.addIngredients}
         </SizedText>
       </Pressable>
       <SignInPromptSheet

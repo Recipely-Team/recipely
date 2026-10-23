@@ -5,7 +5,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { FridgeProgress } from '@presentation/app/fridge/model/flow/fridge-progress';
 import { controlSizes, fontSizes, fontWeights, fridgeSizes, radii, spacing } from '@presentation/base/theme';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface FridgeHeaderProps {
@@ -23,15 +23,16 @@ export interface FridgeHeaderProps {
  * column as the body.
  */
 export const FridgeHeader = ({ step, isClose, onBack }: FridgeHeaderProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().fridge;
+  const strings = t.fridge;
   return (
     <View style={styles.root}>
       <View style={styles.column}>
         <View style={styles.row}>
           <RoundIconButton
             icon={isClose ? 'close' : 'arrow-back'}
-            accessibilityLabel={isClose ? t().common.close : t().common.back}
+            accessibilityLabel={isClose ? t.common.close : t.common.back}
             onPress={onBack}
             size={controlSizes.iconBtn}
             padToTouchTarget

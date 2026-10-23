@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import { useStore } from 'zustand';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { spacing, controlSizes, zIndices, layoutSizes } from '@presentation/base/theme';
 import { Toast } from '@presentation/base/feedback/toast';
@@ -13,8 +14,8 @@ const MAX_WIDTH = layoutSizes.maxContentXl;
  * touches pass through everywhere except the toasts themselves.
  */
 export const ToastHost = (): React.JSX.Element | null => {
-  const toasts = toastStore((s) => s.toasts);
-  const dismiss = toastStore((s) => s.dismiss);
+  const toasts = useStore(toastStore, (s) => s.toasts);
+  const dismiss = useStore(toastStore, (s) => s.dismiss);
   const insets = useSafeAreaInsets();
 
   if (toasts.length === ValueConstants.zero) return null;

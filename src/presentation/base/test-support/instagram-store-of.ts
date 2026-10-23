@@ -1,5 +1,5 @@
 import { ok } from '@core/result/result-helpers';
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import type { InstagramStore } from '@application/instagram/instagram-store-contract';
 import { configureInstagramStore } from '@application/instagram/instagram-store';
 import { GetInstagramConnectionUseCase } from '@application/instagram/connect/get-instagram-connection-use-case';
@@ -17,7 +17,7 @@ import { connectionOf, fakeInstagramRepository } from '@application/instagram/__
  */
 export const instagramStoreOf = (
   connection: InstagramConnection = connectionOf({ available: false, connected: false, status: null }),
-): { store: BoundStore<InstagramStore>; repo: jest.Mocked<InstagramRepositoryInterface> } => {
+): { store: StoreApi<InstagramStore>; repo: jest.Mocked<InstagramRepositoryInterface> } => {
   const repo = fakeInstagramRepository();
   repo.getConnection.mockResolvedValue(ok(connection));
   const store = configureInstagramStore({

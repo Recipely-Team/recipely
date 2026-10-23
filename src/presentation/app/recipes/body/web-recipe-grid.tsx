@@ -12,7 +12,7 @@ import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, zIndices } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
@@ -72,13 +72,14 @@ export const WebRecipeGrid = ({
   onOpenFilter, activeFilterCount, activeDifficulty, onDifficultyChange,
   gridColumns, gridCellMaxWidth, isLoading, isRefreshing, onOpenRecipe, onToggleSave, query, onCreateWithAi, total,
 }: WebRecipeGridProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   const title = isSearching
-    ? t().recipes.webSearchResults
+    ? t.recipes.webSearchResults
     : activeCuisineLabel !== null
-      ? t().recipes.webCuisineRecipes.replace('{cuisine}', activeCuisineLabel)
-      : t().recipes.webAllRecipes;
+      ? t.recipes.webCuisineRecipes.replace('{cuisine}', activeCuisineLabel)
+      : t.recipes.webAllRecipes;
 
   const renderItem = useCallback(
     ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => (
@@ -114,24 +115,24 @@ export const WebRecipeGrid = ({
           size="small"
           color={colors.primary}
           testID="web-recipe-grid-refresh-indicator"
-          accessibilityLabel={t().recipes.refreshing}
+          accessibilityLabel={t.recipes.refreshing}
         />
       ) : null}
       <View style={[styles.segment, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-        {segButton('ALL', t().recipes.difficultyAll, activeDifficulty === null, () => onDifficultyChange(null))}
+        {segButton('ALL', t.recipes.difficultyAll, activeDifficulty === null, () => onDifficultyChange(null))}
         {DIFFICULTY_VALUES.map((d) =>
-          segButton(d, difficultyLabel(d), activeDifficulty === d, () => onDifficultyChange(d)),
+          segButton(d, difficultyLabel(t, d), activeDifficulty === d, () => onDifficultyChange(d)),
         )}
       </View>
       <Pressable
         onPress={onOpenFilter}
         accessibilityRole="button"
-        accessibilityLabel={t().recipes.filter}
+        accessibilityLabel={t.recipes.filter}
         style={[styles.filterBtn, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
       >
         <Ionicons name="funnel-outline" size={iconSizes.md} color={colors.textMuted} />
         <ThemedText style={[styles.filterLabel, { color: colors.text }]}>
-          {t().recipes.filter}
+          {t.recipes.filter}
         </ThemedText>
         {activeFilterCount > ValueConstants.zero ? (
           <View style={[styles.filterBadge, { backgroundColor: colors.primary }]}>
@@ -157,7 +158,7 @@ export const WebRecipeGrid = ({
         <WebSectionHead
           title={title}
           // No count while reloading.
-          sub={isLoading ? undefined : t().recipes.webRecipesCount.replace('{n}', String(total ?? recipes.length))}
+          sub={isLoading ? undefined : t.recipes.webRecipesCount.replace('{n}', String(total ?? recipes.length))}
           right={right}
         />
       </View>

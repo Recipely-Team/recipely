@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { Pressable } from 'react-native';
 import { useOnboardingAutoplay } from '@presentation/app/onboarding/hooks/use-onboarding-autoplay';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { scrollThrottleMs } from '@presentation/base/constants';
 import {
   type LayoutChangeEvent,
@@ -34,6 +34,7 @@ export interface OnboardingMobileProps {
 
 /** Full-screen mobile welcome gate: brand mark, swipeable carousel, entry actions. */
 export const OnboardingMobile = ({ slides, actions }: OnboardingMobileProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
@@ -78,8 +79,8 @@ export const OnboardingMobile = ({ slides, actions }: OnboardingMobileProps): Re
           <RecipelyLogo size={LOGO_SIZE} />
           <ThemedText style={styles.wordmark}>{SiteMetadata.appName}</ThemedText>
         </View>
-        <Pressable onPress={actions.onSkip} accessibilityRole="button" accessibilityLabel={t().onboarding.skip} style={styles.skip} hitSlop={spacing.sm}>
-          <ThemedText style={[styles.skipLabel, { color: colors.textSubtle }]}>{t().onboarding.skip}</ThemedText>
+        <Pressable onPress={actions.onSkip} accessibilityRole="button" accessibilityLabel={t.onboarding.skip} style={styles.skip} hitSlop={spacing.sm}>
+          <ThemedText style={[styles.skipLabel, { color: colors.textSubtle }]}>{t.onboarding.skip}</ThemedText>
         </Pressable>
       </View>
 

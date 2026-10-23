@@ -9,7 +9,7 @@ import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-n
 import { formatMacroLine } from '@presentation/base/utils/diary/format-macro-line';
 import type { MealReviewRow } from '@presentation/base/widgets/diary/add-food/meal/state/meal-review-row';
 import { borderWidths, controlSizes, diarySizes, fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface MealCandidateRowProps {
   row: MealReviewRow;
@@ -24,13 +24,14 @@ export interface MealCandidateRowProps {
  * so a screen reader says "Include menemen, checkbox, checked".
  */
 export const MealCandidateRow = ({ row, onToggle, onGramsChange }: MealCandidateRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   const { candidate } = row;
-  const nutrients = candidate.nutrients;
-  const macros = formatMacroLine(nutrients, locale);
-  const kcal = `${formatWholeNumber(nutrients.calories, locale)} ${t().nutrition.kcal}`;
+  const nutrients = candidate.nutrients();
+  const macros = formatMacroLine(t, nutrients, locale);
+  const kcal = `${formatWholeNumber(nutrients.calories, locale)} ${t.nutrition.kcal}`;
   return (
     <View style={[styles.row, { borderBottomColor: colors.cardBorder }]}>
       <Pressable
@@ -57,7 +58,7 @@ export const MealCandidateRow = ({ row, onToggle, onGramsChange }: MealCandidate
         value={row.gramsText}
         onChangeText={(text) => onGramsChange(row.key, text)}
         accessibilityLabel={strings.mealLogGrams.replace('{name}', candidate.label)}
-        suffix={t().nutrition.g}
+        suffix={t.nutrition.g}
         numeric
         style={styles.grams}
       />

@@ -11,6 +11,7 @@
  * on the layout that did not have it.
  */
 
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
 
 // "Add to diary" carries its own sheet and reads the auth and diary stores; not under test here.
@@ -38,11 +39,10 @@ jest.mock('expo-router', () => ({
 // shaped like one.
 jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: () => ({
-    taxonomyStore: (select: (s: unknown) => unknown) => select({ cuisines: [], categories: [] }),
+    taxonomyStore: mockStoreReading(() => ({ cuisines: [], categories: [] })),
     // The owner also gets the status panel, which reads these two.
-    recipeDetailStore: (select: (s: unknown) => unknown) =>
-      select({ removePhoto: jest.fn(), isPhotoBusy: false }),
-    recipePublishingStore: (select: (s: unknown) => unknown) => select({ isBusy: false }),
+    recipeDetailStore: mockStoreReading(() => ({ removePhoto: jest.fn(), isPhotoBusy: false })),
+    recipePublishingStore: mockStoreReading(() => ({ isBusy: false })),
   }),
 }));
 

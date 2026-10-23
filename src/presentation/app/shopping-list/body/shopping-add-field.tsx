@@ -4,7 +4,7 @@ import { isBlank } from '@core/guards/type-guards';
 import { ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontSizes, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useShoppingAddDraft } from '@presentation/app/shopping-list/hooks/use-shopping-add-draft';
 
 /**
@@ -12,8 +12,9 @@ import { useShoppingAddDraft } from '@presentation/app/shopping-list/hooks/use-s
  * It holds its own draft (`useShoppingAddDraft`), so typing re-renders this field only.
  */
 export const ShoppingAddField = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().shopping;
+  const copy = t.shopping;
   const { draft: value, onChangeDraft: onChangeText, onAdd: onSubmit, isAdding } = useShoppingAddDraft();
   const disabled = isAdding || isBlank(value);
   return (

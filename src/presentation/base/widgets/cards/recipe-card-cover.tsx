@@ -10,7 +10,7 @@ import { cardCoverScrim } from '@presentation/base/widgets/cards/card-cover-scri
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { BrandColors } from '@presentation/base/theme/colors/palette/brand-colors';
 import { aspectRatios, fontWeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
 import type { OwnerStatusType } from '@domain/recipes/publishing/owner-status';
 import type { FocalPoint } from '@domain/recipes/media/focal-point';
@@ -37,11 +37,12 @@ export interface RecipeCardCoverProps {
 export const RecipeCardCover = ({
   name, image, imageFocus, cuisine, difficulty, provenance, ownerStatus,
 }: RecipeCardCoverProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <View style={[styles.cover, { backgroundColor: colors.skeleton }]}>
-      <RecipeImage uri={image} focus={imageFocus} style={styles.image} accessibilityLabel={name} placeholderLabel={t().recipes.noPhoto} />
+      <RecipeImage uri={image} focus={imageFocus} style={styles.image} accessibilityLabel={name} placeholderLabel={t.recipes.noPhoto} />
       <LinearGradient
         pointerEvents="none"
         colors={[BrandColors.photoScrimClear, colors.overlay]}

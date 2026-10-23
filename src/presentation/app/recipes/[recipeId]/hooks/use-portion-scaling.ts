@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
+import { useStore } from 'zustand';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
 import { RecipeServings } from '@domain/recipes/ingredients/recipe-servings';
 import { UnitSystem, type UnitSystemType } from '@domain/recipes/ingredients/unit-system';
 import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ValueConstants } from '@core/constants';
 
@@ -29,16 +30,17 @@ const servingsOf = (count: number): RecipeServings | null => {
  *   stepper buttons are inert and the lines stay as written.
  */
 export const usePortionScaling = (recipe: RecipeEntity | null): PortionScaling => {
+  const t = useTranslations();
   const recipeId = recipe?.id ?? null;
   const { portionChoiceStore } = useStores();
-  const chosenServings = portionChoiceStore((s) => (recipeId === null ? null : s.byRecipe[recipeId]?.servings ?? null));
-  const system: UnitSystemType = portionChoiceStore((s) => (recipeId === null ? undefined : s.byRecipe[recipeId]?.system) ?? UnitSystem.Original);
-  const setServings = portionChoiceStore((s) => s.setServings);
-  const setUnitSystem = portionChoiceStore((s) => s.setUnitSystem);
+  const chosenServings = useStore(portionChoiceStore, (s) => (recipeId === null ? null : s.byRecipe[recipeId]?.servings ?? null));
+  const system: UnitSystemType = useStore(portionChoiceStore, (s) => (recipeId === null ? undefined : s.byRecipe[recipeId]?.system) ?? UnitSystem.Original);
+  const setServings = useStore(portionChoiceStore, (s) => s.setServings);
+  const setUnitSystem = useStore(portionChoiceStore, (s) => s.setUnitSystem);
   const base = useMemo(() => servingsOf(recipe?.servings ?? ValueConstants.zero), [recipe?.servings]);
   const chosen = useMemo(() => (chosenServings === null ? null : servingsOf(chosenServings)), [chosenServings]);
   const servings = base === null ? null : chosen ?? base;
-  const decimalMark = t().recipes.portions.decimalMark;
+  const decimalMark = t.recipes.portions.decimalMark;
 
   const ingredients = useMemo(() => {
     const factor = servings !== null && base !== null ? servings.factorFrom(base) : ValueConstants.one;

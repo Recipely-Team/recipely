@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { act } from 'react-test-renderer';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
@@ -9,7 +10,7 @@ import type { ApplicationStores } from '@application/di/application-stores';
 import { useAssistantListRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-list-recipe-actions';
 import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
 import type { LikedRecipesStore } from '@application/recipes/liked/liked-recipes-store-contract';
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { ok } from '@core/result/result-helpers';
 
 /**
@@ -25,7 +26,7 @@ const mount = (seeded: { count: number; liked: boolean } | null) => {
   const calls: string[] = [];
   const likes = configureLikesStore({
     setRecipeLike: { execute: async (id: string, like: boolean) => { calls.push(`${like ? 'like' : 'unlike'}:${id}`); return ok(undefined); } } as unknown as SetRecipeLikeUseCase,
-    likedRecipesStore: { getState: () => ({ removeLocal: () => undefined }) } as unknown as BoundStore<LikedRecipesStore>,
+    likedRecipesStore: { getState: () => ({ removeLocal: () => undefined }) } as unknown as StoreApi<LikedRecipesStore>,
   });
   if (seeded !== null) likes.getState().seed(ROWS[0]!.id, seeded.count, seeded.liked);
 
@@ -33,13 +34,10 @@ const mount = (seeded: { count: number; liked: boolean } | null) => {
   const stores = {
     assistantActionRegistry: registry,
     likesStore: likes,
-    authStore: (select: (s: { state: unknown }) => unknown) =>
-      select({ state: { status: StoreStatus.Authenticated, session: { user: { id: 'u1' } } } }),
+    authStore: mockStoreReading(() => ({ state: { status: StoreStatus.Authenticated, session: { user: { id: 'u1' } } } })),
     // Saving rides in the same hook; stubbed so the like path can be exercised.
-    savedRecipesStore: (select: (s: unknown) => unknown) =>
-      select({ savedIds: new Set<string>(), listState: { status: StoreStatus.Loaded } }),
-    favoritesStore: (select: (s: unknown) => unknown) =>
-      select({ addFavorite: async () => undefined, removeFavorite: async () => undefined }),
+    savedRecipesStore: mockStoreReading(() => ({ savedIds: new Set<string>(), listState: { status: StoreStatus.Loaded } })),
+    favoritesStore: mockStoreReading(() => ({ addFavorite: async () => undefined, removeFavorite: async () => undefined })),
   } as unknown as ApplicationStores;
 
   const Probe = (): null => {

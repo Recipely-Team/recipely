@@ -18,7 +18,7 @@ import { formatOneDecimal } from '@presentation/base/utils/diary/format-one-deci
 import { formatFoodPortion } from '@presentation/base/utils/diary/units/format-food-portion';
 import { unitWord } from '@presentation/base/utils/diary/units/unit-word';
 import { fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface AddFoodProductStepProps {
   model: ProductStepModelType;
@@ -40,8 +40,9 @@ export interface AddFoodProductStepProps {
  * branded pack, where the figures come from.
  */
 export const AddFoodProductStep = (props: AddFoodProductStepProps): React.JSX.Element => {
+  const t = useTranslations();
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   const { model } = props;
   if (model.status === StoreStatus.Loading) return <PickSkeleton />;
   if (model.status === StoreStatus.Error) {
@@ -70,10 +71,10 @@ export const AddFoodProductStep = (props: AddFoodProductStepProps): React.JSX.El
           <SizedText size={fontSizes.caption} muted style={styles.equals}>
             {quantity.isBaseUnit || product.baseUnit === null
               ? null
-              : strings.equals.replace('{v}', formatFoodPortion({ key: product.baseUnit, amount: ValueConstants.one }, quantity.baseAmount, product.baseUnit, locale))}
+              : strings.equals.replace('{v}', formatFoodPortion(t, { key: product.baseUnit, amount: ValueConstants.one }, quantity.baseAmount, product.baseUnit, locale))}
           </SizedText>
           <AmountStepper
-            value={quantity.isBaseUnit ? formatFoodPortion(quantity.unit, quantity.value, product.baseUnit, locale) : formatOneDecimal(quantity.value, locale)}
+            value={quantity.isBaseUnit ? formatFoodPortion(t, quantity.unit, quantity.value, product.baseUnit, locale) : formatOneDecimal(quantity.value, locale)}
             canDecrement={quantity.canDecrement}
             canIncrement={quantity.canIncrement}
             onIncrement={props.onIncrement}
@@ -87,7 +88,7 @@ export const AddFoodProductStep = (props: AddFoodProductStepProps): React.JSX.El
       </View>
       {product.isBranded && product.baseUnit !== null ? (
         <SizedText size={fontSizes.micro} muted>
-          {strings.sourceNote.replace('{u}', unitWord(product.baseUnit, ValueConstants.zero))}
+          {strings.sourceNote.replace('{u}', unitWord(t, product.baseUnit, ValueConstants.zero))}
         </SizedText>
       ) : null}
     </ScrollView>

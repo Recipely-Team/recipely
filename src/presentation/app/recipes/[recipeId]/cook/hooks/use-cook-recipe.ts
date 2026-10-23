@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import type { CookRecipeState } from '@presentation/app/recipes/[recipeId]/cook/model/cook-recipe-state';
@@ -17,9 +18,9 @@ import { ValueConstants } from '@core/constants';
  */
 export const useCookRecipe = (recipeId: string): CookRecipeState => {
   const { recipeDetailStore, recipeAuthoringStore } = useStores();
-  const networkState = recipeDetailStore((s) => s.byId[recipeId]);
-  const load = recipeDetailStore((s) => s.load);
-  const localRecipe = recipeAuthoringStore((s) => s.findById(recipeId));
+  const networkState = useStore(recipeDetailStore, (s) => s.byId[recipeId]);
+  const load = useStore(recipeDetailStore, (s) => s.load);
+  const localRecipe = useStore(recipeAuthoringStore, (s) => s.findById(recipeId));
 
   const needsLoad = localRecipe === undefined && networkState === undefined && recipeId.length > ValueConstants.zero;
   useEffect(() => {

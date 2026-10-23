@@ -1,6 +1,6 @@
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { isBlank } from '@core/guards/type-guards';
 
 export interface NoResultsStateProps {
@@ -21,15 +21,18 @@ export interface NoResultsStateProps {
  *   to create from, so it keeps the plain "no recipes match" line.
  */
 export const NoResultsState = ({ query, onCreateWithAi }: NoResultsStateProps): React.JSX.Element =>
-  isBlank(query) ? (
-    <ErrorState icon="search" severity={SeverityType.Neutral} title={t().recipes.noResults} body={t().recipes.webEmptyBody} />
+  {
+  const t = useTranslations();
+  return isBlank(query) ? (
+    <ErrorState icon="search" severity={SeverityType.Neutral} title={t.recipes.noResults} body={t.recipes.webEmptyBody} />
   ) : (
     <ErrorState
       icon="sparkles"
       severity={SeverityType.Neutral}
-      title={t().recipes.noResultsQuery.replace('{q}', query)}
-      body={t().recipes.createWithAiBody}
-      primaryLabel={t().recipes.createWithAi.replace('{q}', query)}
+      title={t.recipes.noResultsQuery.replace('{q}', query)}
+      body={t.recipes.createWithAiBody}
+      primaryLabel={t.recipes.createWithAi.replace('{q}', query)}
       onPrimary={() => onCreateWithAi(query)}
     />
   );
+};

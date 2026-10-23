@@ -18,7 +18,7 @@ describe('MealPlanWeek', () => {
 
   it('snaps any day to its Monday and keeps only that week, in plan order', () => {
     expect(week.start.value).toBe('2026-10-12');
-    expect(week.end.value).toBe('2026-10-18');
+    expect(week.end().value).toBe('2026-10-18');
     expect(week.entries.map((entry) => entry.id)).toEqual(['b', 'a']);
   });
 

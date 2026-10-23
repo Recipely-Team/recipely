@@ -8,7 +8,7 @@ import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-
 import { InstagramConnectPhase, type InstagramConnectPhaseType } from '@presentation/base/widgets/instagram/instagram-connect-phase';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { controlSizes, fontSizes, fontWeights, lineHeights, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface InstagramConnectBlockProps {
   phase: InstagramConnectPhaseType;
@@ -28,8 +28,9 @@ export interface InstagramConnectBlockProps {
  * handle form as a quiet text link below.
  */
 export const InstagramConnectBlock = ({ phase, onConnect, label, showBody, onManual }: InstagramConnectBlockProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().instagram;
+  const copy = t.instagram;
   const waiting = phase === InstagramConnectPhase.Waiting;
   return (
     <View style={styles.block}>

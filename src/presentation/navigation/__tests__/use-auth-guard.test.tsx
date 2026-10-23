@@ -9,6 +9,7 @@
  * still redirect to `/login`.
  */
 
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
 
@@ -25,9 +26,7 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: jest.fn(() => ({
-    authStore: jest.fn((selector: (state: { state: { status: string } }) => unknown) =>
-      selector({ state: { status: mockStatus } }),
-    ),
+    authStore: mockStoreReading(() => ({ state: { status: mockStatus } })),
   })),
 }));
 

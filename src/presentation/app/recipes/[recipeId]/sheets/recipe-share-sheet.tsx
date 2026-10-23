@@ -7,7 +7,7 @@ import { ShareChannels } from '@presentation/app/recipes/[recipeId]/sheets/share
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, mediaSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface RecipeShareSheetProps {
@@ -37,6 +37,7 @@ export const RecipeShareSheet = ({
   servings,
   ingredients,
 }: RecipeShareSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const [copied, setCopied] = useState(false);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -70,7 +71,7 @@ export const RecipeShareSheet = ({
   return (
     <BottomSheet
       visible={visible}
-      title={t().recipes.shareTitle}
+      title={t.recipes.shareTitle}
       onClose={onClose}
     >
       {/* Recipe preview card */}
@@ -121,7 +122,7 @@ export const RecipeShareSheet = ({
 
       {/* Link section */}
       <ThemedText variant="label" muted style={styles.linkSectionLabel}>
-        {t().recipes.shareLink}
+        {t.recipes.shareLink}
       </ThemedText>
       <View style={styles.linkRow}>
         <View
@@ -137,7 +138,7 @@ export const RecipeShareSheet = ({
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={copied ? t().recipes.shareCopied : t().recipes.shareCopy}
+          accessibilityLabel={copied ? t.recipes.shareCopied : t.recipes.shareCopy}
           onPress={() => void handleCopy()}
           style={[
             styles.copyBtn,
@@ -159,7 +160,7 @@ export const RecipeShareSheet = ({
               { color: copied ? colors.onSuccess : colors.primaryText },
             ]}
           >
-            {copied ? t().recipes.shareCopied : t().recipes.shareCopy}
+            {copied ? t.recipes.shareCopied : t.recipes.shareCopy}
           </ThemedText>
         </Pressable>
       </View>

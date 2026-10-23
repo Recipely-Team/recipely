@@ -11,7 +11,7 @@ import {
 
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import {
   ACTION_TOAST_DURATION_MS,
   DEFAULT_TOAST_DURATION_MS,
@@ -46,6 +46,7 @@ export interface ToastProps {
  *   reader, and a long message gets three lines (WCAG 2.2.1).
  */
 export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
+  const t = useTranslations();
   const { scheme } = useTheme();
   const surfaces = useSeveritySurfaces();
   const accent = surfaces[item.severity].icon;
@@ -121,7 +122,7 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
           onPress={dismiss}
           hitSlop={spacing.sm}
           accessibilityRole="button"
-          accessibilityLabel={t().errors.dismiss}
+          accessibilityLabel={t.errors.dismiss}
         >
           <Ionicons name="close" size={iconSizes.md} color={TOAST_FOREGROUND} style={styles.close} />
         </Pressable>

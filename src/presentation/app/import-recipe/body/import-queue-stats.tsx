@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface ImportQueueStatsProps {
@@ -18,8 +18,9 @@ export interface ImportQueueStatsProps {
  * tells two sites apart.
  */
 export const ImportQueueStats = ({ isWeb, host }: ImportQueueStatsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().importRecipe;
+  const copy = t.importRecipe;
   const card = [styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }];
 
   if (!isWeb) {

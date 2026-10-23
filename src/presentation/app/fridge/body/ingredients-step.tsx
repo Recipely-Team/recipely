@@ -4,7 +4,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, fontSizes, fontWeights, iconSizes, lineHeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { IngredientChip } from '@presentation/app/fridge/items/ingredients/ingredient-chip';
 import { AddIngredientChip } from '@presentation/app/fridge/items/ingredients/add-ingredient-chip';
 import { FiltersCard } from '@presentation/app/fridge/body/filters-card';
@@ -31,14 +31,15 @@ export interface IngredientsStepProps {
  * scan was unsure of, "+ Add" to type more) and the optional filters.
  */
 export const IngredientsStep = ({ chips, source, filters, failure, startAdding, dense, onRemoveChip, onAddChip, onChangeFilters }: IngredientsStepProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().fridge;
+  const copy = t.fridge;
   const scanned = source === IngredientSource.Scan;
   const anyUnsure = chips.some((chip) => !chip.sure);
 
   return (
     <View style={styles.root}>
-      {failure === null ? null : <FormBanner severity="danger" message={fridgeFailureMessage(failure)} />}
+      {failure === null ? null : <FormBanner severity="danger" message={fridgeFailureMessage(t, failure)} />}
       <View style={styles.heading}>
         <SizedText accessibilityRole="header" accessibilityLiveRegion="polite" size={fontSizes.display} weight={fontWeights.heavy} ratio={lineHeights.tight}>
           {scanned ? copy.foundTitle.replace('{n}', String(chips.length)) : copy.typedTitle}

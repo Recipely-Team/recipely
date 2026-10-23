@@ -1,4 +1,6 @@
+import { type TranslationsType, useTranslations } from '@presentation/i18n';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
+import { useStore } from 'zustand';
 import { machineUpper } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolving/resolve-taxonomy-key';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
@@ -68,9 +70,10 @@ const SEARCH = 'search';
  *   need a table that goes stale every time the backend adds one.
  */
 export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void => {
+  const t = useTranslations();
   const { taxonomyStore } = useStores();
-  const cuisineOptions = taxonomyStore((state) => state.cuisines);
-  const categoryOptions = taxonomyStore((state) => state.categories);
+  const cuisineOptions = useStore(taxonomyStore, (state) => state.cuisines);
+  const categoryOptions = useStore(taxonomyStore, (state) => state.categories);
 
   const {
     filters,
@@ -111,7 +114,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
             return { ok: true, n: filterCounts(filters, CATEGORY, ValueConstants.one) };
           }
           case DIFFICULTY: {
-            const difficulty = asDifficulty(parsed.value);
+            const difficulty = asDifficulty(t, parsed.value);
             if (difficulty === null) return { ok: false, error: AssistantActionError.UnknownDifficulty };
             onDifficultyChange(difficulty);
             return { ok: true, n: filterCounts(filters) };
@@ -126,7 +129,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
             return { ok: false, error: AssistantActionError.UnknownFilter };
         }
       },
-      [filters, onToggleCuisineQuick, onToggleCategory, onDifficultyChange, onSetMaxTime, cuisineOptions, categoryOptions],
+      [filters, onToggleCuisineQuick, onToggleCategory, onDifficultyChange, onSetMaxTime, cuisineOptions, categoryOptions, t],
     ),
   );
 
@@ -153,7 +156,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
             return { ok: true, n: filterCounts(filters, CATEGORY, ValueConstants.minusOne) };
           }
           case DIFFICULTY: {
-            const difficulty = asDifficulty(parsed.value);
+            const difficulty = asDifficulty(t, parsed.value);
             if (difficulty === null) return { ok: false, error: AssistantActionError.UnknownDifficulty };
             onRemoveDifficulty(difficulty);
             return { ok: true, n: filterCounts(filters) };
@@ -169,7 +172,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
             return { ok: false, error: AssistantActionError.UnknownFilter };
         }
       },
-      [filters, onToggleCuisineQuick, onRemoveCategory, onRemoveDifficulty, onRemoveMaxTime, onClearSearch, cuisineOptions, categoryOptions],
+      [filters, onToggleCuisineQuick, onRemoveCategory, onRemoveDifficulty, onRemoveMaxTime, onClearSearch, cuisineOptions, categoryOptions, t],
     ),
   );
 
@@ -186,12 +189,12 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
     AssistantAction.Sort,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const key = asSortKey(arg ?? CharConstants.empty);
+        const key = asSortKey(t, arg ?? CharConstants.empty);
         if (key === null) return { ok: false, error: AssistantActionError.UnknownSort };
         onChangeSort(key);
         return { ok: true };
       },
-      [onChangeSort],
+      [onChangeSort, t],
     ),
   );
 
@@ -213,13 +216,13 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
  * the screen, because the enum was the only vocabulary consulted. The label is
  * what the user can see, so it is what they say.
  */
-function asDifficulty(value: string): Difficulty | null {
+function asDifficulty(t: TranslationsType, value: string): Difficulty | null {
   const wanted = machineUpper(value);
   const byWire = Object.values(Difficulty).find((d) => d === wanted);
   if (byWire !== undefined) return byWire;
 
   const matched = resolveTaxonomyKey(
-    DIFFICULTY_VALUES.map((d) => ({ key: d, name: difficultyLabel(d) })),
+    DIFFICULTY_VALUES.map((d) => ({ key: d, name: difficultyLabel(t, d) })),
     value,
   );
   return DIFFICULTY_VALUES.find((d) => d === matched) ?? null;
@@ -230,12 +233,12 @@ function asDifficulty(value: string): Difficulty | null {
  * "puana göre sıralayamıyorum" — by a screen holding a `rating` sort whose
  * label is exactly the phrase the user had just said.
  */
-function asSortKey(value: string): SortKey | null {
+function asSortKey(t: TranslationsType, value: string): SortKey | null {
   // The key first, however cased or spaced: "most_liked" and "Most Liked" are `mostLiked`.
   const byKey = resolveTargetName(value, Object.values(SortKey));
   if (byKey !== null) return byKey;
 
-  const labels = sortKeyLabels();
+  const labels = sortKeyLabels(t);
   const matched = resolveTaxonomyKey(
     (Object.values(SortKey) as SortKey[]).map((key) => ({ key, name: labels[key] })),
     value,

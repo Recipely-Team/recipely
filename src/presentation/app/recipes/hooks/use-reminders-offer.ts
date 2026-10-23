@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { isWeb } from '@infrastructure/constants/platform';
 import { showWarningToast } from '@presentation/base/feedback/show-toast';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 interface RemindersOffer {
   visible: boolean;
@@ -22,6 +22,7 @@ interface RemindersOffer {
  *   switch is the way back, which the question itself says.
  */
 export const useRemindersOffer = (blocked: boolean): RemindersOffer => {
+  const t = useTranslations();
   const { shouldOfferReminders, setRemindersChoice } = useStores();
   const [offered, setOffered] = useState(false);
 
@@ -43,13 +44,13 @@ export const useRemindersOffer = (blocked: boolean): RemindersOffer => {
     (yes: boolean): void => {
       setOffered(false);
       void setRemindersChoice
-        .execute(yes, t().reminders.messages, Date.now())
+        .execute(yes, t.reminders.messages, Date.now())
         .then((on) => {
-          if (yes && !on) showWarningToast(t().reminders.permissionDenied);
+          if (yes && !on) showWarningToast(t.reminders.permissionDenied);
         })
         .catch(() => undefined);
     },
-    [setRemindersChoice],
+    [setRemindersChoice, t],
   );
 
   return { visible: offered && !blocked, onAccept: () => answer(true), onDecline: () => answer(false) };

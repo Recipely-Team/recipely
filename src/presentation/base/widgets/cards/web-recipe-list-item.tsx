@@ -1,4 +1,5 @@
 import { memo, useEffect } from 'react';
+import { useStore } from 'zustand';
 import { WebRecipeCard, type WebRecipeCardProps } from '@presentation/base/widgets/cards/web-recipe-card';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
@@ -22,9 +23,9 @@ export type WebRecipeListItemProps = Omit<WebRecipeCardProps, 'saved'>;
 const WebRecipeListItemComponent = (props: WebRecipeListItemProps): React.JSX.Element => {
   const { likesStore, savedRecipesStore } = useStores();
   const { recipe } = props;
-  const saved = savedRecipesStore((state) => state.savedIds.has(recipe.id));
-  const likeState = likesStore((state) => state.byRecipe[recipe.id]);
-  const seed = likesStore((state) => state.seed);
+  const saved = useStore(savedRecipesStore, (state) => state.savedIds.has(recipe.id));
+  const likeState = useStore(likesStore, (state) => state.byRecipe[recipe.id]);
+  const seed = useStore(likesStore, (state) => state.seed);
 
   useEffect(() => {
     seed(recipe.id, recipe.likeCount, recipe.likedByMe);

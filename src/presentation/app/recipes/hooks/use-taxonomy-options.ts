@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useStore } from 'zustand';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { CUISINE_KEY_VALUES } from '@domain/recipes/taxonomy/cuisine-key';
 import { RECIPE_CATEGORY_VALUES } from '@domain/recipes/taxonomy/recipe-category';
@@ -20,9 +21,9 @@ interface TaxonomyOptions {
  */
 export const useTaxonomyOptions = (): TaxonomyOptions => {
   const { taxonomyStore } = useStores();
-  const status = taxonomyStore((s) => s.status);
-  const cuisines = taxonomyStore((s) => s.cuisines);
-  const categories = taxonomyStore((s) => s.categories);
+  const status = useStore(taxonomyStore, (s) => s.status);
+  const cuisines = useStore(taxonomyStore, (s) => s.cuisines);
+  const categories = useStore(taxonomyStore, (s) => s.categories);
 
   return useMemo(() => {
     const ready = status === StoreStatus.Ready;

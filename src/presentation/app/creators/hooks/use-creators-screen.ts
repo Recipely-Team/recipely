@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useStore } from 'zustand';
 import { type Href, useFocusEffect, useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import { loadedItems } from '@application/store/paging/loaded-items';
@@ -28,10 +29,10 @@ export const useCreatorsScreen = (): UseCreatorsScreenResult => {
   const router = useRouter();
   const { width, isExpanded } = useLayout();
   const { creatorsStore } = useStores();
-  const listState = creatorsStore((s) => s.creators);
-  const load = creatorsStore((s) => s.load);
-  const refresh = creatorsStore((s) => s.refresh);
-  const loadMore = creatorsStore((s) => s.loadMore);
+  const listState = useStore(creatorsStore, (s) => s.creators);
+  const load = useStore(creatorsStore, (s) => s.load);
+  const refresh = useStore(creatorsStore, (s) => s.refresh);
+  const loadMore = useStore(creatorsStore, (s) => s.loadMore);
   const [isPullRefreshing, setPullRefreshing] = useState(false);
 
   useFocusEffect(

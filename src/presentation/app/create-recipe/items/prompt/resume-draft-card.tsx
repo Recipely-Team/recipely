@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { ValueConstants } from '@core/constants';
 
@@ -14,22 +14,23 @@ export interface ResumeDraftCardProps {
 
 /** "Resume your draft" card shown on the prompt phase when a draft exists. */
 export const ResumeDraftCard = ({ draftName, onPress }: ResumeDraftCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const name = draftName !== undefined && draftName.length > ValueConstants.zero ? draftName : t().drafts.untitled;
+  const name = draftName !== undefined && draftName.length > ValueConstants.zero ? draftName : t.drafts.untitled;
 
   return (
     <Pressable
       onPress={onPress}
       style={[styles.resumeCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
       accessibilityRole="button"
-      accessibilityLabel={upperCase(t().createRecipe.resumeDraft)}
+      accessibilityLabel={upperCase(t.createRecipe.resumeDraft)}
     >
       <View style={[styles.resumeIcon, { backgroundColor: colors.chipBackground }]}>
         <Ionicons name="bookmark" size={iconSizes.md} color={colors.primary} />
       </View>
       <View style={styles.resumeBody}>
         <ThemedText variant="caption" style={[styles.resumeKicker, { color: colors.primary }]}>
-          {upperCase(t().createRecipe.resumeDraft)}
+          {upperCase(t.createRecipe.resumeDraft)}
         </ThemedText>
         <ThemedText variant="body" style={[styles.resumeName, { color: colors.text }]} numberOfLines={ValueConstants.one}>
           {name}

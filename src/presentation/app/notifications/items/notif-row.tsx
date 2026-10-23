@@ -1,10 +1,11 @@
+import type { TranslationsType } from '@presentation/i18n';
 import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, avatarSizes, borderWidths, opacities, colorAlphas } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import { useKindMeta } from '@presentation/app/notifications/hooks/use-kind-meta';
@@ -16,8 +17,8 @@ import { CreatorHandleRules } from '@domain/creators/creator-handle-rules';
 import { creatorPlatformName } from '@presentation/base/widgets/creators/creator-platform-name';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 
-const actionText = (n: NotifItem): string => {
-  const labels = t().notifications;
+const actionText = (t: TranslationsType, n: NotifItem): string => {
+  const labels = t.notifications;
   switch (n.kind) {
     case NotifKind.Comment: return `${labels.commented} ${n.recipeName ?? CharConstants.empty}`;
     case NotifKind.Like: return `${labels.liked} ${n.recipeName ?? CharConstants.empty}`;
@@ -28,8 +29,8 @@ const actionText = (n: NotifItem): string => {
     case NotifKind.ModerationApproved: return `${labels.modOk} ${n.recipeName ?? CharConstants.empty}`;
     case NotifKind.ModerationPending: return `${labels.modPending} ${n.recipeName ?? CharConstants.empty}`;
     case NotifKind.Follow: return labels.followed;
-    case NotifKind.CreatorApproved: return creatorLine(labels.creatorApproved, n);
-    case NotifKind.CreatorRejected: return creatorLine(labels.creatorRejected, n);
+    case NotifKind.CreatorApproved: return creatorLine(t, labels.creatorApproved, n);
+    case NotifKind.CreatorRejected: return creatorLine(t, labels.creatorRejected, n);
     case NotifKind.CreatorRecipe: return labels.newRecipeFrom.replace(CREATOR_SLOT, n.actor);
     // Never empty: unknown kinds fall back to the generic label.
     case NotifKind.Generic: return n.recipeName ?? labels.genericLabel;
@@ -45,14 +46,14 @@ const splitAround = (template: string, slot: string): string[] => template.split
 
 /** What a screen reader says for the row; a new recipe reads "New recipe from Refika: Menemen". */
 const LABEL_JOIN = CharConstants.colonSpace;
-const rowLabel = (item: NotifItem, sourceLine: string | undefined): string =>
+const rowLabel = (t: TranslationsType, item: NotifItem, sourceLine: string | undefined): string =>
   item.kind === NotifKind.CreatorRecipe
-    ? [actionText(item), item.recipeName].filter(Boolean).join(LABEL_JOIN)
-    : [item.actor, actionText(item), sourceLine].filter(Boolean).join(CharConstants.space);
+    ? [actionText(t, item), item.recipeName].filter(Boolean).join(LABEL_JOIN)
+    : [item.actor, actionText(t, item), sourceLine].filter(Boolean).join(CharConstants.space);
 
-const creatorLine = (template: string, n: NotifItem): string =>
+const creatorLine = (t: TranslationsType, template: string, n: NotifItem): string =>
   // A platform this build cannot name: the row still says something, never blank.
-  n.creator === undefined ? t().notifications.genericLabel : template.replace('{platform}', creatorPlatformName(n.creator.platform));
+  n.creator === undefined ? t.notifications.genericLabel : template.replace('{platform}', creatorPlatformName(t, n.creator.platform));
 
 export interface NotifRowProps {
   item: NotifItem;
@@ -70,6 +71,7 @@ const PRESSED_OPACITY = opacities.pressedLight;
  * Memoised: the screen passes one stable `onTap` to every row.
  */
 const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
+  const t = useTranslations();
   // Memoised: subscribe to the language so a switch still re-renders the row's copy.
   useLocale();
   const colors = useTheme().colors;
@@ -77,7 +79,7 @@ const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element =>
   const tappable = item.target !== null || !item.read;
   const sourceLine =
     item.source !== undefined
-      ? importSourceLine(item.source)
+      ? importSourceLine(t, item.source)
       : item.creator !== undefined && item.creator.handle !== null
         ? `${CreatorHandleRules.Prefix}${item.creator.handle}`
         : undefined;
@@ -96,10 +98,10 @@ const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element =>
         },
       ]}
       accessibilityRole={tappable ? 'button' : 'text'}
-      accessibilityLabel={rowLabel(item, sourceLine)}
+      accessibilityLabel={rowLabel(t, item, sourceLine)}
       // Target-less unread rows only mark read; say so.
       accessibilityHint={
-        item.target === null && !item.read ? t().notifications.markOneHint : undefined
+        item.target === null && !item.read ? t.notifications.markOneHint : undefined
       }
     >
       {item.kind === NotifKind.CreatorRecipe ? (
@@ -119,7 +121,7 @@ const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element =>
         {item.kind === NotifKind.CreatorRecipe ? (
           <>
             <ThemedText variant="body" muted style={styles.actionLine} numberOfLines={ValueConstants.two}>
-              {splitAround(t().notifications.newRecipeFrom, CREATOR_SLOT).map((part, i) =>
+              {splitAround(t.notifications.newRecipeFrom, CREATOR_SLOT).map((part, i) =>
                 part === CREATOR_SLOT ? (
                   <ThemedText key={i} variant="body" style={{ fontWeight: fontWeights.bold }}>{item.actor}</ThemedText>
                 ) : (
@@ -136,7 +138,7 @@ const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element =>
         ) : (
           <ThemedText variant="body" style={styles.actionLine} numberOfLines={ValueConstants.two}>
             <ThemedText variant="body" style={{ fontWeight: fontWeights.bold }}>{item.actor}</ThemedText>
-            {CharConstants.space}{actionText(item)}
+            {CharConstants.space}{actionText(t, item)}
           </ThemedText>
         )}
         {sourceLine !== undefined ? (
@@ -151,8 +153,8 @@ const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element =>
         ) : null}
         <ThemedText variant="caption" muted style={styles.timestamp}>
           {item.daysAgo === ValueConstants.zero
-            ? t().notifications.today
-            : t().notifications.daysShort.replace('{n}', String(item.daysAgo))}
+            ? t.notifications.today
+            : t.notifications.daysShort.replace('{n}', String(item.daysAgo))}
         </ThemedText>
       </View>
       {!item.read && (

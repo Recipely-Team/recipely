@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { type Href, useGlobalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -92,7 +93,7 @@ const withParams = (pathname: string, params: Record<string, unknown>): string =
  */
 export const useAuthGuard = (): void => {
   const { authStore } = useStores();
-  const status = authStore((s) => s.state.status);
+  const status = useStore(authStore, (s) => s.state.status);
   const pathname = usePathname();
   const params = useGlobalSearchParams();
   const router = useRouter();

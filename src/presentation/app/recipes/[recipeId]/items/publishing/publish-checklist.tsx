@@ -4,7 +4,7 @@ import { PublishBlocker, type PublishBlockerType } from '@domain/recipes/publish
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, iconSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { blockerLook } from '@presentation/app/recipes/[recipeId]/model/publishing/blocker-look';
 import { PanelAction } from '@presentation/app/recipes/[recipeId]/items/publishing/panel-action';
@@ -35,36 +35,37 @@ export const PublishChecklist = ({
   onRemoveCover,
   onEdit,
 }: PublishChecklistProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <View style={styles.list}>
       <ThemedText variant="caption" muted>
-        {t().publishing.checklistIntro}
+        {t.publishing.checklistIntro}
       </ThemedText>
       {blockers.map((blocker) => (
         <View key={blocker} style={styles.row}>
           <View style={styles.rowLabel}>
             <Ionicons name={blockerLook[blocker].icon} size={iconSizes.md} color={colors.textMuted} />
             <ThemedText variant="body" style={styles.rowText}>
-              {blockerLook[blocker].label()}
+              {blockerLook[blocker].label(t)}
             </ThemedText>
           </View>
           <View style={styles.rowActions}>
             {blocker === PublishBlocker.Photo ? (
               <>
-                <PanelAction icon="camera" label={t().publishing.addPhoto} onPress={onAddPhoto} disabled={isBusy} />
+                <PanelAction icon="camera" label={t.publishing.addPhoto} onPress={onAddPhoto} disabled={isBusy} />
                 {hasCover ? (
                   <PanelAction
                     icon="trash-outline"
-                    label={t().publishing.removeSitePhoto}
+                    label={t.publishing.removeSitePhoto}
                     onPress={onRemoveCover}
                     disabled={isBusy}
                   />
                 ) : null}
               </>
             ) : (
-              <PanelAction icon="create-outline" label={t().publishing.edit} onPress={onEdit} disabled={isBusy} />
+              <PanelAction icon="create-outline" label={t.publishing.edit} onPress={onEdit} disabled={isBusy} />
             )}
           </View>
         </View>

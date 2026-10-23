@@ -5,8 +5,7 @@ import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { fontWeights } from '@presentation/base/theme';
 import { SiteMetadata } from '@presentation/base/constants/site-metadata';
-import { t } from '@presentation/i18n';
-import { getLocale } from '@presentation/i18n/i18n';
+import { useTranslations, useLocale } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { PROD_WEB_APP_DOMAIN } from '@infrastructure/constants/api/api-hosts';
 import { isWeb } from '@infrastructure/constants/platform';
@@ -45,6 +44,8 @@ const FIXED_TEXT = { allowFontScaling: false, maxFontSizeMultiplier: L.fontScale
  */
 export const RecipeShareCard = forwardRef<View, RecipeShareCardProps>(
   ({ recipeName, cuisine, totalMinutes, servings, ingredients, imageUrl, onReady }, ref) => {
+    const t = useTranslations();
+  const locale = useLocale();
     const colors = useTheme().colors;
     const [photoFailed, setPhotoFailed] = useState(false);
     const hasPhoto = imageUrl !== undefined && !photoFailed;
@@ -58,9 +59,9 @@ export const RecipeShareCard = forwardRef<View, RecipeShareCardProps>(
     const fade = [paper + clear, paper + quarter, paper + most, paper + almost, paper] as const;
     const accent = { color: colors.primary };
     const tier = shareCardNameTier(recipeName);
-    const meta = shareCardMeta(cuisine, totalMinutes, servings);
+    const meta = shareCardMeta(t, cuisine, totalMinutes, servings);
     const { shown, hidden } = shareCardIngredients(ingredients);
-    const [footerBefore, footerAfter = CharConstants.empty] = t().recipes.shareCardFooter.split(DOMAIN_PLACEHOLDER);
+    const [footerBefore, footerAfter = CharConstants.empty] = t.recipes.shareCardFooter.split(DOMAIN_PLACEHOLDER);
 
     return (
       <View
@@ -106,7 +107,7 @@ export const RecipeShareCard = forwardRef<View, RecipeShareCardProps>(
               <>
                 <View style={[styles.rule, { backgroundColor: rule }]} />
                 <Text {...FIXED_TEXT} style={[styles.label, { color: colors.textSubtle }]}>
-                  {t().recipes.shareCardNeed.toLocaleUpperCase(getLocale())}
+                  {t.recipes.shareCardNeed.toLocaleUpperCase(locale)}
                 </Text>
                 <Text {...FIXED_TEXT} numberOfLines={L.ingredients.lines} style={[styles.ingredients, { color: colors.text }]}>
                   {shown.map((name, index) => (
@@ -117,7 +118,7 @@ export const RecipeShareCard = forwardRef<View, RecipeShareCardProps>(
                   ))}
                   {hidden > ValueConstants.zero ? (
                     <Text style={[styles.strong, accent]}>
-                      {CharConstants.space + CharConstants.space + t().recipes.shareCardMore.replace('{n}', String(hidden))}
+                      {CharConstants.space + CharConstants.space + t.recipes.shareCardMore.replace('{n}', String(hidden))}
                     </Text>
                   ) : null}
                 </Text>

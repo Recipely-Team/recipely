@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { useLocale } from '@presentation/i18n/use-locale';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -29,7 +30,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 export const useOsAssistantCredentials = (): void => {
   const { osAssistant, authStore, assistantTokens } = useStores();
   const locale = useLocale();
-  const isSignedIn = authStore((state) => state.state.status === StoreStatus.Authenticated);
+  const isSignedIn = useStore(authStore, (state) => state.state.status === StoreStatus.Authenticated);
 
   useEffect(() => {
     if (!osAssistant.isAvailable) return;

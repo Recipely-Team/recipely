@@ -8,7 +8,7 @@ import { FoodThumbIcon } from '@presentation/base/widgets/diary/food-thumb-icon'
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { formatPerServing } from '@presentation/base/utils/meal-plan/format-per-serving';
 import { fontSizes, fontWeights, iconSizes, mealPlanSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface PlanPickRowProps {
@@ -18,13 +18,14 @@ export interface PlanPickRowProps {
 
 /** One recipe in the add sheet's list: thumb 48, name, "350 kcal per serving" and a plus disc. */
 const PlanPickRowComponent = ({ hit, onPress }: PlanPickRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
   return (
     <Pressable
       onPress={() => onPress(hit)}
       accessibilityRole="button"
-      accessibilityLabel={t().mealPlan.pickA11y.replace('{name}', hit.name)}
+      accessibilityLabel={t.mealPlan.pickA11y.replace('{name}', hit.name)}
       style={({ pressed }) => [styles.row, { opacity: pressed ? opacities.pressedSubtle : opacities.full }]}
     >
       <FoodThumb imageUrl={hit.imageUrl} icon={hit.imageUrl === null ? FoodThumbIcon.Food : null} size={mealPlanSizes.pickThumb} />
@@ -33,7 +34,7 @@ const PlanPickRowComponent = ({ hit, onPress }: PlanPickRowProps): React.JSX.Ele
           {hit.name}
         </SizedText>
         <SizedText size={fontSizes.caption} color={colors.textMuted} numberOfLines={ValueConstants.one}>
-          {formatPerServing(hit.perServing.calories, locale)}
+          {formatPerServing(t, hit.perServing.calories, locale)}
         </SizedText>
       </View>
       <View style={[styles.plus, { backgroundColor: colors.chipBackground }]}>

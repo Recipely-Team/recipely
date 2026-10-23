@@ -1,5 +1,5 @@
 import { waitForRecipeListQuery } from '@application/recipes/list/wait-for-recipe-list-query';
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 
 /** A feed whose state the test moves by hand. */
@@ -14,7 +14,7 @@ function fakeStore(initial: unknown) {
     },
   };
   return {
-    store: store as unknown as BoundStore<RecipeListStore>,
+    store: store as unknown as StoreApi<RecipeListStore>,
     move: (next: unknown) => {
       state = next;
       for (const listener of listeners) listener({ state });

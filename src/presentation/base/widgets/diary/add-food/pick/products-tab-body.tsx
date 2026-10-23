@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import { CharConstants } from '@core/constants';
@@ -11,7 +12,7 @@ import { pagedRows } from '@presentation/base/widgets/diary/add-food/list/paged-
 import { phaseOfLists } from '@presentation/base/widgets/diary/add-food/list/phase-of-lists';
 import { PickPhase } from '@presentation/base/widgets/diary/add-food/list/pick-phase';
 import { PickRowType } from '@presentation/base/widgets/diary/add-food/list/pick-row-type';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface ProductsTabBodyProps {
   onChooseProduct: (product: FoodProduct) => void;
@@ -26,11 +27,12 @@ const NO_CATEGORIES: readonly never[] = [];
  * packs are not browsable; they come from the search.
  */
 export const ProductsTabBody = ({ onChooseProduct }: ProductsTabBodyProps): React.JSX.Element => {
+  const t = useTranslations();
   const { foodCatalogStore } = useStores();
-  const categories = foodCatalogStore((s) => s.categories);
-  const category = foodCatalogStore((s) => s.category);
-  const products = foodCatalogStore((s) => s.products);
-  const strings = t().diary;
+  const categories = useStore(foodCatalogStore, (s) => s.categories);
+  const category = useStore(foodCatalogStore, (s) => s.category);
+  const products = useStore(foodCatalogStore, (s) => s.products);
+  const strings = t.diary;
 
   useEffect(() => {
     void foodCatalogStore.getState().loadProducts();

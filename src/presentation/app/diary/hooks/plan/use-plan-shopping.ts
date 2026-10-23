@@ -9,7 +9,7 @@ import { RoutePaths } from '@presentation/base/constants';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { toastStore } from '@presentation/base/feedback/toast-store';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 interface PlanShoppingModel {
   /** Null while the week's ingredients load. */
@@ -41,6 +41,7 @@ interface PlanShoppingAnswer {
  * Read again each time the sheet opens, so it follows the plan.
  */
 export const usePlanShopping = (open: boolean, weekStart: CalendarDate, onDone: () => void): PlanShoppingModel => {
+  const t = useTranslations();
   const router = useRouter();
   const { mealPlanStore, shoppingListStore } = useStores();
   // The answer, tagged with the week and attempt it answers: anything else reads as loading.
@@ -90,14 +91,14 @@ export const usePlanShopping = (open: boolean, weekStart: CalendarDate, onDone: 
       return;
     }
     onDone();
-    const strings = t().mealPlan;
+    const strings = t.mealPlan;
     toastStore.getState().show({
       severity: SeverityType.Success,
       message: strings.itemsAdded.replace('{n}', String(chosen.length)),
       actionLabel: strings.viewList,
       onAction: () => router.push(RoutePaths.shoppingList),
     });
-  }, [lines, onDone, router, selected, shoppingListStore]);
+  }, [lines, onDone, router, selected, shoppingListStore, t]);
 
   return {
     lines,

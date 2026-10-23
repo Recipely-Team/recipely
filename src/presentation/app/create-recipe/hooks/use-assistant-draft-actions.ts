@@ -1,4 +1,5 @@
 import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
+import { useStore } from 'zustand';
 import { resolveTargetName } from '@presentation/base/hooks/assistant/args/resolving/resolve-target-name';
 import { machineLower, machineUpper } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
@@ -171,8 +172,8 @@ const DRAFT_FIELDS: readonly string[] = [
  */
 export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void => {
   const { taxonomyStore } = useStores();
-  const cuisines = taxonomyStore((state) => state.cuisines);
-  const categories = taxonomyStore((state) => state.categories);
+  const cuisines = useStore(taxonomyStore, (state) => state.cuisines);
+  const categories = useStore(taxonomyStore, (state) => state.categories);
 
   const {
     isDraftVisible,

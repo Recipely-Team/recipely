@@ -8,7 +8,7 @@ import { formatPerServing } from '@presentation/base/utils/meal-plan/format-per-
 import { mealLabel } from '@presentation/base/utils/diary/meal-label';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { borderWidths, fontSizes, fontWeights, iconSizes, mealPlanSizes, radii, spacing, controlSizes } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import type { ProposalRow } from '@presentation/app/diary/model/plan/proposal-row';
 
@@ -25,10 +25,11 @@ const META_JOIN = CharConstants.middotSpaced;
  * a dashed row when no saved recipe fits.
  */
 export const PlanProposalRow = ({ row, onSwap }: PlanProposalRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().mealPlan.planWeek;
-  const slot = upperCase(mealLabel(row.meal));
+  const strings = t.mealPlan.planWeek;
+  const slot = upperCase(mealLabel(t, row.meal));
 
   if (row.shown === null) {
     return (
@@ -40,8 +41,8 @@ export const PlanProposalRow = ({ row, onSwap }: PlanProposalRowProps): React.JS
   }
   const recipe = row.shown;
   const meta = [
-    formatPerServing(recipe.caloriesPerServing, locale),
-    recipe.totalTimeMinutes !== null ? `${recipe.totalTimeMinutes} ${t().recipes.minutes}` : CharConstants.empty,
+    formatPerServing(t, recipe.caloriesPerServing, locale),
+    recipe.totalTimeMinutes !== null ? `${recipe.totalTimeMinutes} ${t.recipes.minutes}` : CharConstants.empty,
   ].filter((part) => part.length > ValueConstants.zero).join(META_JOIN);
 
   return (

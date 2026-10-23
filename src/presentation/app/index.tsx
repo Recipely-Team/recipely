@@ -1,4 +1,5 @@
 import { isWeb } from '@infrastructure/constants/platform';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { Redirect } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -21,9 +22,9 @@ import { RoutePaths } from '@presentation/base/constants';
  */
 export const IndexRedirect = (): React.JSX.Element | null => {
   const { authStore } = useStores();
-  const authStatus = authStore((s) => s.state.status);
-  const onboardingHydrated = onboardingStore((s) => s.hydrated);
-  const onboardingDismissed = onboardingStore((s) => s.dismissed);
+  const authStatus = useStore(authStore, (s) => s.state.status);
+  const onboardingHydrated = useStore(onboardingStore, (s) => s.hydrated);
+  const onboardingDismissed = useStore(onboardingStore, (s) => s.dismissed);
 
   if (authStatus === StoreStatus.Idle || authStatus === StoreStatus.Loading) {
     return null;

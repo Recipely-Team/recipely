@@ -1,6 +1,6 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import { ErrorMessageKey, type Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
 import type { PublishOutcome } from '@domain/recipes/publishing/publish-outcome';
@@ -14,7 +14,7 @@ interface RecipePublishingStoreDeps {
   publishRecipe: PublishRecipeUseCase;
   unpublishRecipe: UnpublishRecipeUseCase;
   editRecipe: EditRecipeUseCase;
-  recipeDetailStore: BoundStore<RecipeDetailStore>;
+  recipeDetailStore: StoreApi<RecipeDetailStore>;
 }
 
 /**
@@ -29,14 +29,14 @@ interface RecipePublishingStoreDeps {
  */
 export const configureRecipePublishingStore = (
   deps: RecipePublishingStoreDeps,
-): BoundStore<RecipePublishingStore> => {
+): StoreApi<RecipePublishingStore> => {
   const applyOutcome = (recipeId: string, outcome: PublishOutcome): void => {
     const cached = deps.recipeDetailStore.getState().byId[recipeId];
     if (cached?.status !== StoreStatus.Loaded) return;
     deps.recipeDetailStore.getState().put(cached.recipe.withPublishOutcome(outcome));
   };
 
-  return create<RecipePublishingStore>((set) => {
+  return createStore<RecipePublishingStore>((set) => {
     const run = async (
       recipeId: string,
       request: () => Promise<Result<PublishOutcome, Failure>>,

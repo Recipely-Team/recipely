@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { borderWidths, fontSizes, fontWeights, lineHeights, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface MonthStatsTilesProps {
@@ -14,9 +14,10 @@ export interface MonthStatsTilesProps {
 
 /** Daily average · days on target · logging streak, with the footnote on what counts (design spec → Food Diary §5). */
 export const MonthStatsTiles = ({ stats }: MonthStatsTilesProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   const streak = stats?.streak ?? ValueConstants.zero;
   const tiles = [
     {
@@ -25,7 +26,7 @@ export const MonthStatsTiles = ({ stats }: MonthStatsTilesProps): React.JSX.Elem
       value:
         stats === null || stats.dailyAverage === null
           ? CharConstants.emDash
-          : `${formatWholeNumber(stats.dailyAverage, locale)} ${t().nutrition.kcal}`,
+          : `${formatWholeNumber(stats.dailyAverage, locale)} ${t.nutrition.kcal}`,
     },
     {
       key: 'target',

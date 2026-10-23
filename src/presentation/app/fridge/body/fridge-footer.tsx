@@ -8,7 +8,7 @@ import type { FridgeFlowState } from '@presentation/app/fridge/model/flow/fridge
 import { borderWidths, controlSizes, spacing } from '@presentation/base/theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface FridgeFooterProps {
@@ -26,10 +26,11 @@ export interface FridgeFooterProps {
  * The ideas step and the full-screen states carry their own actions.
  */
 export const FridgeFooter = ({ state, onFindIngredients, onCancel, onShowIdeas }: FridgeFooterProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isExpanded } = useLayout();
-  const strings = t().fridge;
+  const strings = t.fridge;
   const { view } = state;
 
   let action: React.JSX.Element | null = null;

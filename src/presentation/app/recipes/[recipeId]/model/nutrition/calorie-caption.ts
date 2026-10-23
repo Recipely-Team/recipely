@@ -1,15 +1,15 @@
+import type { TranslationsType } from '@presentation/i18n';
 import type { NutritionReading } from '@domain/recipes/nutrition/nutrition-reading';
 import { NutritionBasis } from '@domain/recipes/nutrition/nutrition-basis';
 import { formatNutritionNumber } from '@presentation/app/recipes/[recipeId]/model/nutrition/format-nutrition-number';
-import { t } from '@presentation/i18n';
 
 /**
  * The line under "Calories": on 100 g it says what one serving weighs and
  * holds; per serving it multiplies out the whole recipe. `undefined` when no
  * calories were reported, since both sentences are about calories.
  */
-export const calorieCaption = (reading: NutritionReading, locale: string): string | undefined => {
-  const strings = t().nutrition;
+export const calorieCaption = (t: TranslationsType, reading: NutritionReading, locale: string): string | undefined => {
+  const strings = t.nutrition;
   const perServing = reading.caloriesPerServing;
   if (perServing === undefined) return undefined;
   const kcal = formatNutritionNumber(perServing, locale);

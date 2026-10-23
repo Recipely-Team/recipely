@@ -1,4 +1,4 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 /**
  * Reported: like a recipe on its detail screen, go back, open it again — the
  * heart is empty. Re-entering re-renders the recipe from the detail cache, a
@@ -16,7 +16,7 @@ import type { LoadLikedRecipesUseCase } from '@application/likes/load-liked-reci
 
 const RECIPE_ID = 'r-1';
 
-const makeStore = (): BoundStore<LikesStore> =>
+const makeStore = (): StoreApi<LikesStore> =>
   configureLikesStore({
     setRecipeLike: { execute: () => Promise.resolve(ok(undefined)) } as unknown as SetRecipeLikeUseCase,
     likedRecipesStore: configureLikedRecipesStore({

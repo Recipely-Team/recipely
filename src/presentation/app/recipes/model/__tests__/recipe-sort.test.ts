@@ -7,6 +7,7 @@
  * `currentLang` to 'en').
  */
 
+import { t } from '@presentation/i18n';
 import { SORT_TO_FILTER, sortKeyLabels } from '@presentation/app/recipes/model/sorting/recipe-sort';
 import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
@@ -80,7 +81,7 @@ describe('SORT_TO_FILTER', () => {
 
 describe('sortKeyLabels()', () => {
   it('returns a non-empty label for every SortKey', () => {
-    const labels = sortKeyLabels();
+    const labels = sortKeyLabels(t());
 
     for (const key of ALL_SORT_KEYS) {
       expect(typeof labels[key]).toBe('string');
@@ -89,7 +90,7 @@ describe('sortKeyLabels()', () => {
   });
 
   it('has exactly the same keys as SortKey — no missing keys', () => {
-    const labels = sortKeyLabels();
+    const labels = sortKeyLabels(t());
     const labelKeys = Object.keys(labels) as SortKey[];
 
     const missingKeys = ALL_SORT_KEYS.filter((k) => !labelKeys.includes(k));
@@ -98,37 +99,37 @@ describe('sortKeyLabels()', () => {
   });
 
   it("returns 'Popular' for the 'popular' key in the English locale", () => {
-    const labels = sortKeyLabels();
+    const labels = sortKeyLabels(t());
 
     expect(labels['popular']).toBe('Popular');
   });
 
   it("returns 'Top rated' for the 'rating' key in the English locale", () => {
-    const labels = sortKeyLabels();
+    const labels = sortKeyLabels(t());
 
     expect(labels['rating']).toBe('Top rated');
   });
 
   it("returns 'Quickest' for the 'time' key in the English locale", () => {
-    const labels = sortKeyLabels();
+    const labels = sortKeyLabels(t());
 
     expect(labels['time']).toBe('Quickest');
   });
 
   it("returns 'Newest' for the 'newest' key in the English locale", () => {
-    const labels = sortKeyLabels();
+    const labels = sortKeyLabels(t());
 
     expect(labels['newest']).toBe('Newest');
   });
 
   it("returns 'Most liked' for the 'mostLiked' key in the English locale", () => {
-    const labels = sortKeyLabels();
+    const labels = sortKeyLabels(t());
 
     expect(labels['mostLiked']).toBe('Most liked');
   });
 
   it('produces distinct labels so no two sort options look the same to users', () => {
-    const labels = sortKeyLabels();
+    const labels = sortKeyLabels(t());
     const values = Object.values(labels);
     const uniqueValues = new Set(values);
 

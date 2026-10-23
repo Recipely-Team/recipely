@@ -9,7 +9,7 @@ import type { AddFoodRequestType } from '@presentation/base/widgets/diary/add-fo
 import { useAssistantLogFood } from '@presentation/base/hooks/diary/use-assistant-log-food';
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import type { UseAddToDiaryResult } from '@presentation/app/recipes/[recipeId]/model/use-add-to-diary-result';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-user-id';
 
 /** Recipe Detail does not move anywhere when the assistant logs from it. */
@@ -28,6 +28,7 @@ const today = (): CalendarDate => CalendarDate.today();
  * - Logged to today; the sheet's toast offers a way to the Diary tab.
  */
 export const useAddToDiary = (recipe: RecipeEntity): UseAddToDiaryResult => {
+  const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
   const { buildLoggableFoodFromRecipe } = useStores();
@@ -47,9 +48,9 @@ export const useAddToDiary = (recipe: RecipeEntity): UseAddToDiaryResult => {
     if (food === null) return;
     requestGate(
       () => setRequest({ kind: AddFoodRequestKind.Food, date: CalendarDate.today(), meal: null, food }),
-      t().diary.signInToLog,
+      t.diary.signInToLog,
     );
-  }, [food, requestGate]);
+  }, [food, requestGate, t]);
 
   const goToSignIn = useCallback(() => {
     closePrompt();

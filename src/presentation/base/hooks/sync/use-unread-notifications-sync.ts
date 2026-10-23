@@ -1,4 +1,4 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { AppStateStatusValue } from '@infrastructure/constants/app-state-status';
 import { StoreStatus } from '@application/store/store-status';
 import { useEffect } from 'react';
@@ -26,8 +26,8 @@ const POLL_INTERVAL_MS = 30_000;
  * `document.visibilityState` — and the return to `active` catches up at once.
  */
 export const useUnreadNotificationsSync = (
-  notificationsStore: BoundStore<NotificationsStore>,
-  authStore: BoundStore<AuthStore>,
+  notificationsStore: StoreApi<NotificationsStore>,
+  authStore: StoreApi<AuthStore>,
 ): void => {
   useEffect(() => {
     const tick = (): void => {

@@ -129,7 +129,7 @@ export const useMealLog = ({ initialText, onLog }: MealLogOptions): MealLog => {
         return { ...row, candidate, gramsText: value };
       }),
     selectedCount: chosen.length,
-    selectedCalories: chosen.reduce((sum, row) => sum + row.candidate.nutrients.calories, ValueConstants.zero),
+    selectedCalories: chosen.reduce((sum, row) => sum + row.candidate.nutrients().calories, ValueConstants.zero),
     add: async (meal) => {
       if (chosen.length === ValueConstants.zero) return;
       const saved = await onLog(chosen.map((row) => row.candidate), meal);

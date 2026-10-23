@@ -14,7 +14,7 @@ import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, iconSizes, avatarSizes, borderWidths, opacities, targetSizes } from '@presentation/base/theme';
 import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { CommentNodeType } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
 import { ValueConstants } from '@core/constants';
 import { AnimationConstants } from '@presentation/base/constants';
@@ -57,6 +57,7 @@ export const CommentCard = ({
   highlighted = false,
   nodeRef,
 }: CommentCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const flash = useSharedValue(ValueConstants.zero);
 
@@ -94,14 +95,14 @@ export const CommentCard = ({
             {authorDisplayName}
           </ThemedText>
           <ThemedText variant="caption" muted>
-            {formatTimeAgo(createdAt)}
+            {formatTimeAgo(t, createdAt)}
           </ThemedText>
         </View>
         {isOwn ? (
           <Pressable
             onPress={onDelete}
             accessibilityRole="button"
-            accessibilityLabel={t().comments.delete}
+            accessibilityLabel={t.comments.delete}
             hitSlop={spacing.sm}
             style={styles.deleteBtn}
           >
@@ -117,7 +118,7 @@ export const CommentCard = ({
           onPress={onToggleLike}
           disabled={!canLike}
           accessibilityRole="button"
-          accessibilityLabel={likedByMe ? t().comments.unlike : t().comments.like}
+          accessibilityLabel={likedByMe ? t.comments.unlike : t.comments.like}
           hitSlop={spacing.sm}
           style={[styles.likeBtn, { opacity: canLike ? opacities.full : opacities.disabled }]}
         >

@@ -11,7 +11,7 @@ export class LoadMealPlanWeekUseCase {
 
   async execute(day: CalendarDate): Promise<Result<MealPlanWeek, Failure>> {
     const empty = MealPlanWeek.of(day, []);
-    const result = await this.repo.list(empty.start, empty.end);
+    const result = await this.repo.list(empty.start, empty.end());
     return result.ok ? ok(MealPlanWeek.of(day, result.value)) : result;
   }
 }

@@ -10,7 +10,7 @@ import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { formatRating } from '@presentation/base/utils/format-rating';
 import { CreatorProfileMetrics } from '@presentation/app/creators/[userId]/model/creator-profile-metrics';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface CreatorRecipeTileProps {
   recipe: RecipeSummaryEntity;
@@ -25,10 +25,11 @@ const STAR = '★';
  * (design spec → Creators §6.8).
  */
 const CreatorRecipeTileComponent = ({ recipe, onOpen }: CreatorRecipeTileProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const meta = [
     recipe.rating > ValueConstants.zero ? `${STAR} ${formatRating(recipe.rating)}` : null,
-    recipe.totalTimeMinutes === null ? null : t().recipes.heroTotalMin.replace('{n}', String(recipe.totalTimeMinutes)),
+    recipe.totalTimeMinutes === null ? null : t.recipes.heroTotalMin.replace('{n}', String(recipe.totalTimeMinutes)),
   ]
     .filter((part): part is string => part !== null)
     .join(CharConstants.middotSpaced);
@@ -41,9 +42,9 @@ const CreatorRecipeTileComponent = ({ recipe, onOpen }: CreatorRecipeTileProps):
       style={({ pressed }) => [styles.tile, { opacity: pressed ? opacities.pressedSubtle : opacities.full }]}
     >
       <View style={[styles.photo, { backgroundColor: colors.skeleton, borderColor: colors.cardBorder }]}>
-        <RecipeImage accessibilityLabel={null} uri={recipe.image} focus={recipe.imageFocus} style={styles.image} placeholderLabel={t().recipes.noPhoto} />
+        <RecipeImage accessibilityLabel={null} uri={recipe.image} focus={recipe.imageFocus} style={styles.image} placeholderLabel={t.recipes.noPhoto} />
         <View style={styles.seal}>
-          <ProvenanceSeal marks={recipe.provenanceMarks} surface={SealSurface.Photo} size={CreatorProfileMetrics.tileSeal} />
+          <ProvenanceSeal marks={recipe.provenanceMarks()} surface={SealSurface.Photo} size={CreatorProfileMetrics.tileSeal} />
         </View>
       </View>
       <SizedText size={fontSizes.caption} weight={fontWeights.bold} numberOfLines={ValueConstants.two}>

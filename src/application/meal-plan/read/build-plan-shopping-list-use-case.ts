@@ -17,7 +17,7 @@ export class BuildPlanShoppingListUseCase {
 
   async execute(day: CalendarDate): Promise<Result<PlanShoppingLine[], Failure>> {
     const week = MealPlanWeek.of(day, []);
-    const result = await this.repo.ingredients(week.start, week.end);
+    const result = await this.repo.ingredients(week.start, week.end());
     return result.ok ? ok(mergePlanIngredients(result.value)) : result;
   }
 }

@@ -1,4 +1,5 @@
 import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
+import { useStore } from 'zustand';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { useCallback } from 'react';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -108,12 +109,12 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   } = deps;
   const { favoritesStore, savedRecipesStore, likesStore } = useStores();
   const userId = useSignedInUserId();
-  const addFavorite = favoritesStore((s) => s.addFavorite);
-  const removeFavorite = favoritesStore((s) => s.removeFavorite);
-  const setLikedInStore = likesStore((s) => s.setLiked);
-  const isSaved = savedRecipesStore((s) => s.savedIds.has(recipeId));
-  const savedListState = savedRecipesStore((s) => s.saved);
-  const likeState = likesStore((s) => s.byRecipe[recipeId]);
+  const addFavorite = useStore(favoritesStore, (s) => s.addFavorite);
+  const removeFavorite = useStore(favoritesStore, (s) => s.removeFavorite);
+  const setLikedInStore = useStore(likesStore, (s) => s.setLiked);
+  const isSaved = useStore(savedRecipesStore, (s) => s.savedIds.has(recipeId));
+  const savedListState = useStore(savedRecipesStore, (s) => s.saved);
+  const likeState = useStore(likesStore, (s) => s.byRecipe[recipeId]);
 
   const setSaved = useCallback(
     async (wanted: boolean): Promise<AssistantActionResultType> => {

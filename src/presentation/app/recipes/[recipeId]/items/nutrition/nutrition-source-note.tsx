@@ -5,7 +5,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { borderWidths, fontSizes, fontWeights, letterSpacings, lineHeights, radii, spacing } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface NutritionSourceNoteProps {
   source: NutritionSourceType | null;
@@ -17,6 +17,7 @@ export interface NutritionSourceNoteProps {
  * Nothing for estimated figures.
  */
 export const NutritionSourceNote = ({ source }: NutritionSourceNoteProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const lineHeight = useTextLineHeight(fontSizes.small, lineHeights.snug);
   if (source !== NutritionSource.Usda) return null;
@@ -24,9 +25,9 @@ export const NutritionSourceNote = ({ source }: NutritionSourceNoteProps): React
   return (
     <View style={styles.row}>
       <View style={[styles.tag, { borderColor: colors.border }]}>
-        <ThemedText style={[styles.tagText, { color: colors.textSubtle }]}>{t().nutrition.usdaTag}</ThemedText>
+        <ThemedText style={[styles.tagText, { color: colors.textSubtle }]}>{t.nutrition.usdaTag}</ThemedText>
       </View>
-      <ThemedText style={[styles.text, { color: colors.textSubtle, lineHeight }]}>{t().nutrition.usdaSource}</ThemedText>
+      <ThemedText style={[styles.text, { color: colors.textSubtle, lineHeight }]}>{t.nutrition.usdaSource}</ThemedText>
     </View>
   );
 };

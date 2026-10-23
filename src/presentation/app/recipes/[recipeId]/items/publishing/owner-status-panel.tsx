@@ -8,7 +8,7 @@ import { ownerStatusLook } from '@presentation/base/widgets/badges/owner-status-
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import { spacing, radii, iconSizes, fontWeights, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { useOwnerStatusPanel } from '@presentation/app/recipes/[recipeId]/hooks/use-owner-status-panel';
 import { PanelConfirm } from '@presentation/app/recipes/[recipeId]/model/publishing/panel-confirm';
@@ -37,6 +37,7 @@ export interface OwnerStatusPanelProps {
  *   publish question is the assistant's own copy, so it reads the same spoken.
  */
 export const OwnerStatusPanel = ({ recipe, onAddPhoto }: OwnerStatusPanelProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const danger = useSeveritySurfaces().danger;
   const panel = useOwnerStatusPanel(recipe);
@@ -62,11 +63,11 @@ export const OwnerStatusPanel = ({ recipe, onAddPhoto }: OwnerStatusPanelProps):
         />
         <View style={styles.headerText}>
           <ThemedText variant="body" style={[styles.note, rejected ? { color: danger.text } : null]}>
-            {statusNote[panel.status]()}
+            {statusNote[panel.status](t)}
           </ThemedText>
           {rejected ? (
             <ThemedText variant="caption" muted>
-              {t().publishing.rejectedNote}
+              {t.publishing.rejectedNote}
             </ThemedText>
           ) : null}
         </View>
@@ -88,18 +89,18 @@ export const OwnerStatusPanel = ({ recipe, onAddPhoto }: OwnerStatusPanelProps):
           <PanelAction
             primary
             icon="globe-outline"
-            label={remaining > ValueConstants.zero ? thingsLeftLabel(remaining) : t().publishing.publish}
+            label={remaining > ValueConstants.zero ? thingsLeftLabel(t, remaining) : t.publishing.publish}
             onPress={panel.onRequestPublish}
             disabled={!panel.canPublish || panel.isBusy}
           />
-          <PanelAction icon="create-outline" label={t().publishing.edit} onPress={panel.onEdit} disabled={panel.isBusy} />
+          <PanelAction icon="create-outline" label={t.publishing.edit} onPress={panel.onEdit} disabled={panel.isBusy} />
         </View>
       ) : null}
       {inReview || panel.status === OwnerStatus.Published ? (
         <View style={styles.actions}>
           <PanelAction
             icon={inReview ? 'lock-closed' : 'eye-off-outline'}
-            label={inReview ? t().publishing.makePrivate : t().publishing.unpublish}
+            label={inReview ? t.publishing.makePrivate : t.publishing.unpublish}
             onPress={panel.onRequestUnpublish}
             disabled={panel.isBusy}
           />
@@ -108,17 +109,17 @@ export const OwnerStatusPanel = ({ recipe, onAddPhoto }: OwnerStatusPanelProps):
 
       <ConfirmSheet
         visible={panel.confirm === PanelConfirm.Publish}
-        title={t().assistant.publishTitle}
-        message={t().assistant.publishMessage}
-        confirmLabel={t().assistant.publishConfirm}
+        title={t.assistant.publishTitle}
+        message={t.assistant.publishMessage}
+        confirmLabel={t.assistant.publishConfirm}
         onConfirm={panel.onConfirm}
         onClose={panel.onCancelConfirm}
       />
       <ConfirmSheet
         visible={panel.confirm === PanelConfirm.Unpublish}
-        title={inReview ? t().publishing.makePrivateTitle : t().publishing.unpublishTitle}
-        message={inReview ? t().publishing.makePrivateMessage : t().publishing.unpublishMessage}
-        confirmLabel={inReview ? t().publishing.makePrivate : t().publishing.unpublish}
+        title={inReview ? t.publishing.makePrivateTitle : t.publishing.unpublishTitle}
+        message={inReview ? t.publishing.makePrivateMessage : t.publishing.unpublishMessage}
+        confirmLabel={inReview ? t.publishing.makePrivate : t.publishing.unpublish}
         onConfirm={panel.onConfirm}
         onClose={panel.onCancelConfirm}
       />

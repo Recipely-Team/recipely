@@ -13,7 +13,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { ValueConstants } from '@core/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AssistantMiniBarProps {
   status: AssistantStatusType;
@@ -44,6 +44,7 @@ export const AssistantMiniBar = ({
   onToggleMute,
   onEnd,
 }: AssistantMiniBarProps): React.JSX.Element => {
+  const t = useTranslations();
   const { colors } = useTheme();
   const isSounding = assistantIsSounding(status, isMuted);
 
@@ -55,7 +56,7 @@ export const AssistantMiniBar = ({
         { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder },
       ]}
     >
-      <Pressable onPress={onExpand} accessibilityRole="button" accessibilityLabel={t().assistant.expand}>
+      <Pressable onPress={onExpand} accessibilityRole="button" accessibilityLabel={t.assistant.expand}>
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={assistantGradient.start}
@@ -69,12 +70,12 @@ export const AssistantMiniBar = ({
       <Pressable
         onPress={onExpand}
         accessibilityRole="button"
-        accessibilityLabel={t().assistant.expand}
-        accessibilityValue={{ text: assistantStatusLabel(status) }}
+        accessibilityLabel={t.assistant.expand}
+        accessibilityValue={{ text: assistantStatusLabel(t, status) }}
         style={styles.status}
       >
         <ThemedText variant="caption" muted numberOfLines={1} style={styles.statusLabel}>
-          {assistantStatusLabel(status)}
+          {assistantStatusLabel(t, status)}
         </ThemedText>
         <AssistantWave
           active={isSounding}
@@ -87,7 +88,7 @@ export const AssistantMiniBar = ({
       <Pressable
         onPress={onToggleMute}
         accessibilityRole="button"
-        accessibilityLabel={isMuted ? t().assistant.unmute : t().assistant.mute}
+        accessibilityLabel={isMuted ? t.assistant.unmute : t.assistant.mute}
         style={[
           styles.round,
           {
@@ -106,7 +107,7 @@ export const AssistantMiniBar = ({
       <Pressable
         onPress={onEnd}
         accessibilityRole="button"
-        accessibilityLabel={t().assistant.end}
+        accessibilityLabel={t.assistant.end}
         style={[styles.round, { backgroundColor: colors.danger, borderColor: colors.danger }]}
       >
         <Ionicons name="close" size={iconSizes.md} color={colors.onOverlay} />

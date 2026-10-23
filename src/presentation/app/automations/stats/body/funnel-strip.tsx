@@ -9,7 +9,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { FunnelCell } from '@presentation/app/automations/stats/items/funnel-cell';
 import { borderWidths, fontSizes, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface FunnelStripProps {
   stats: CreatorStats;
@@ -24,9 +24,10 @@ const PAIR = 2;
 
 /** The range's funnel (spec "Funnel strip"): comments matched → DMs sent → recipe opened → recipe saved. */
 export const FunnelStrip = ({ stats, inRow, wide }: FunnelStripProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const copy = t().creatorStats;
+  const copy = t.creatorStats;
   const posts = stats.posts.filter((post) => post.sent > ValueConstants.zero).length;
   const caption = (step: Step, index: number): string => {
     const prev = STEPS[index - ValueConstants.one];

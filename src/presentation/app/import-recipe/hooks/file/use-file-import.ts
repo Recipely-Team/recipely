@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import { type Href, useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import type { Failure } from '@core/failure';
@@ -8,7 +9,7 @@ import { RoutePaths } from '@presentation/base/constants';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { askPickSource } from '@presentation/base/utils/ask-pick-source';
 import type { PickSource } from '@presentation/base/utils/pick-source';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useFilePages } from '@presentation/app/import-recipe/hooks/file/use-file-pages';
 import { usePickImportFiles } from '@presentation/app/import-recipe/hooks/file/use-pick-import-files';
 import { useFileDrop } from '@presentation/app/import-recipe/hooks/file/use-file-drop';
@@ -63,10 +64,11 @@ const STAGE_COUNT = FILE_STAGE_KEYS.length;
  *   dropped, so it cannot navigate from behind whatever they opened next.
  */
 export const useFileImport = (): UseFileImportResult => {
+  const t = useTranslations();
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
   const { fileImportStore } = useStores();
-  const state = fileImportStore((s) => s.state);
+  const state = useStore(fileImportStore, (s) => s.state);
   const pages = useFilePages();
   const pick = usePickImportFiles();
   const isDragging = useFileDrop(pages.add);
@@ -107,10 +109,10 @@ export const useFileImport = (): UseFileImportResult => {
   );
 
   const onAddPage = useCallback((): void => {
-    void askPickSource(t().fileImport.addSheet).then((source) => {
+    void askPickSource(t.fileImport.addSheet).then((source) => {
       if (source !== null) onPick(source);
     });
-  }, [onPick]);
+  }, [onPick, t]);
 
   const onRemove = useCallback(
     (index: number): void => {

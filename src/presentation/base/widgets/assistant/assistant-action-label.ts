@@ -1,5 +1,5 @@
+import type { TranslationsType } from '@presentation/i18n';
 import type { AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
-import { t } from '@presentation/i18n';
 
 /**
  * What the assistant just did, in the user's language.
@@ -13,6 +13,6 @@ import { t } from '@presentation/i18n';
  *   `openSavedRecipes` — the chip is a receipt, and a raw identifier on it is
  *   worse than a vaguer truth.
  */
-export function assistantActionLabel(action: AssistantActionType): string {
-  return t().assistant.actions[action] ?? t().assistant.actionDone;
+export function assistantActionLabel(t: TranslationsType, action: AssistantActionType): string {
+  return t.assistant.actions[action] ?? t.assistant.actionDone;
 }

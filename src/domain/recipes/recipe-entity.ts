@@ -26,6 +26,9 @@ import { RecipeLimits } from '@domain/recipes/recipe-limits';
 import { isBlank } from '@core/guards/type-guards';
 
 
+/** Shared, so a recipe with nothing blocking it answers with the same empty list every time. */
+const NO_BLOCKERS: readonly PublishBlockerType[] = [];
+
 /**
  * Domain entity representing a recipe. Validates that `id` and `name` are
  * non-empty before construction; use `RecipeEntity.create` to obtain an instance.
@@ -90,7 +93,7 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
     return this.props.nutrition;
   }
   /** The nutrition figures with their basis conversion and daily-value rules. */
-  get nutritionFacts(): NutritionFacts {
+  nutritionFacts(): NutritionFacts {
     return NutritionFacts.of({
       caloriesPerServing: this.props.caloriesPerServing,
       servings: this.props.servings,
@@ -119,7 +122,7 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
    * alone (with its focus) when the gallery has none. A blank cover is no photo,
    * so a recipe without one yields an empty list — the "add first photo" state.
    */
-  get heroPhotos(): readonly MediaItem[] {
+  heroPhotos(): readonly MediaItem[] {
     const images = this.props.media.filter((m) => m.type === MediaType.Image);
     if (images.length > ValueConstants.zero) return images;
     if (isBlank(this.props.image)) return [];
@@ -128,7 +131,7 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   }
   /** How many photos the hero pages through; trims the cover like the backend's `Recipe.photoCount()`. */
   get photoCount(): number {
-    return this.heroPhotos.length;
+    return this.heroPhotos().length;
   }
   get rating(): number {
     return this.props.rating;
@@ -180,7 +183,7 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
     return this.props.origin === RecipeOrigin.Curated;
   }
   /** What the provenance seal carries; empty when a person wrote the recipe. */
-  get provenanceMarks(): readonly ProvenanceMarkType[] {
+  provenanceMarks(): readonly ProvenanceMarkType[] {
     return toProvenanceMarks(this.props.origin, this.props.sourcePlatform, this.props.aiWritten);
   }
   get moderationStatus(): string {
@@ -191,7 +194,7 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   }
   /** What still keeps a website import private; empty when nothing does or nobody said. */
   get publishBlockers(): readonly PublishBlockerType[] {
-    return this.props.publishBlockers ?? [];
+    return this.props.publishBlockers ?? NO_BLOCKERS;
   }
   /** How the recipe reads to its owner. */
   get ownerStatus(): OwnerStatusType {

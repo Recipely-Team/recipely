@@ -5,7 +5,7 @@ import { isWeb } from '@infrastructure/constants/platform';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { BrandColors, fontSizes, fontWeights, radii, spacing, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ArtCard } from '@presentation/app/onboarding/items/art-card';
 import { ArtChip } from '@presentation/app/onboarding/items/art-chip';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
@@ -29,8 +29,9 @@ const ART_WIDTH = 270;
 
 /** Slide 4, "Cook with what you have": a fridge scan finding ingredients, an idea that uses them, the meal logged. */
 export const HeroFridge = ({ active = true }: HeroProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const a = t().onboarding.art;
+  const a = t.onboarding.art;
   const reducedMotion = useReducedMotion();
   const [frameHeight, setFrameHeight] = useState(ValueConstants.zero);
   const [sweep] = useState(() => new Animated.Value(ValueConstants.zero));

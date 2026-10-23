@@ -1,3 +1,4 @@
+import { t } from '@presentation/i18n';
 import {
   ErrorMessageKey,
   type Failure,
@@ -32,13 +33,13 @@ const unusableResponse = new ValidationFailure(
 
 describe('failure-content resolver — messageKey tier', () => {
   it('gives two failures sharing one code different copy when their keys differ', () => {
-    expect(failureToastMessage(refusedPrompt)).toBe(en.errors.aiPromptRejected.short);
-    expect(failureToastMessage(unusableResponse)).toBe(en.errors.aiInvalidResponse.short);
-    expect(failureContent(refusedPrompt)).toEqual({
+    expect(failureToastMessage(t(), refusedPrompt)).toBe(en.errors.aiPromptRejected.short);
+    expect(failureToastMessage(t(), unusableResponse)).toBe(en.errors.aiInvalidResponse.short);
+    expect(failureContent(t(), refusedPrompt)).toEqual({
       title: en.errors.aiPromptRejected.title,
       body: en.errors.aiPromptRejected.body,
     });
-    expect(failureContent(unusableResponse)).not.toEqual(failureContent(refusedPrompt));
+    expect(failureContent(t(), unusableResponse)).not.toEqual(failureContent(t(), refusedPrompt));
   });
 
   it('derives severity and icon from the same key, not from the code', () => {
@@ -60,17 +61,17 @@ describe('failure-content resolver — messageKey tier', () => {
   it('falls back to the code copy for a key it has no dedicated copy for', () => {
     // Purely internal keys stay generic on purpose — never scary technical copy.
     const internal = new ServerFailure('boom', 500, 'errors.internal.unexpected');
-    expect(failureToastMessage(internal)).toBe(en.errors.server.short);
-    expect(failureKeyMessage(internal)).toBeUndefined();
+    expect(failureToastMessage(t(), internal)).toBe(en.errors.server.short);
+    expect(failureKeyMessage(t(), internal)).toBeUndefined();
 
     const missingToken = new UnauthorizedFailure('Missing bearer token', 'errors.unauthorized.missing_token');
-    expect(failureToastMessage(missingToken)).toBe(en.errors.unauthorized.short);
+    expect(failureToastMessage(t(), missingToken)).toBe(en.errors.unauthorized.short);
   });
 
   it('reports whether a failure carries copy of its own (older backend sends none)', () => {
-    expect(failureKeyMessage(refusedPrompt)).toBe(en.errors.aiPromptRejected.short);
-    expect(failureKeyMessage(new ValidationFailure('HTTP 400'))).toBeUndefined();
-    expect(failureKeyMessage(new NetworkFailure())).toBeUndefined();
+    expect(failureKeyMessage(t(), refusedPrompt)).toBe(en.errors.aiPromptRejected.short);
+    expect(failureKeyMessage(t(), new ValidationFailure('HTTP 400'))).toBeUndefined();
+    expect(failureKeyMessage(t(), new NetworkFailure())).toBeUndefined();
   });
 });
 
@@ -81,7 +82,7 @@ describe('failure-content resolver — a recipe web page', () => {
   it('says a page had no recipe on it, as the backend key asks', () => {
     const failure = new ValidationFailure('no recipe', undefined, 'errors.import.no_recipe_on_page');
 
-    expect(failureContent(failure)).toEqual({
+    expect(failureContent(t(), failure)).toEqual({
       title: en.errors.importNoRecipeOnPage.title,
       body: en.errors.importNoRecipeOnPage.body,
     });
@@ -91,11 +92,11 @@ describe('failure-content resolver — a recipe web page', () => {
   it('says a page could not be opened, as the backend key asks', () => {
     const failure = new ServerFailure('unreachable', 502, 'errors.import.page_unreachable');
 
-    expect(failureContent(failure)).toEqual({
+    expect(failureContent(t(), failure)).toEqual({
       title: en.errors.importPageUnreachable.title,
       body: en.errors.importPageUnreachable.body,
     });
-    expect(failureKeyMessage(failure)).toBe(en.errors.importPageUnreachable.short);
+    expect(failureKeyMessage(t(), failure)).toBe(en.errors.importPageUnreachable.short);
   });
 
   it('keys the wire strings through ErrorMessageKey', () => {
@@ -107,11 +108,11 @@ describe('failure-content resolver — a recipe web page', () => {
 describe('failure-content resolver', () => {
   it('selects localized title/body from the failure class (not its raw message)', () => {
     const failure = new NetworkFailure('axios ECONNREFUSED 127.0.0.1');
-    expect(failureContent(failure)).toEqual({
+    expect(failureContent(t(), failure)).toEqual({
       title: en.errors.network.title,
       body: en.errors.network.body,
     });
-    expect(failureToastMessage(failure)).toBe(en.errors.network.short);
+    expect(failureToastMessage(t(), failure)).toBe(en.errors.network.short);
   });
 
   it('selects severity from the failure class', () => {
@@ -123,11 +124,11 @@ describe('failure-content resolver', () => {
 
   it('falls back to the unknown copy for an unrecognized code', () => {
     const weird = { code: 'totally_new', message: 'boom' } as unknown as Failure;
-    expect(failureContent(weird)).toEqual({
+    expect(failureContent(t(), weird)).toEqual({
       title: en.errors.unknown.title,
       body: en.errors.unknown.body,
     });
-    expect(failureToastMessage(weird)).toBe(en.errors.unknown.short);
+    expect(failureToastMessage(t(), weird)).toBe(en.errors.unknown.short);
   });
 
   it('always resolves an icon name', () => {
@@ -143,7 +144,7 @@ describe('the unsupported-source import key after its rename', () => {
   it('a backend that still sends the old key gets the unsupported-source copy', () => {
     const legacy = new ValidationFailure('unsupported', undefined, 'errors.import.not_instagram');
 
-    expect(failureContent(legacy)).toEqual({
+    expect(failureContent(t(), legacy)).toEqual({
       title: en.errors.importUnsupportedSource.title,
       body: en.errors.importUnsupportedSource.body,
     });
@@ -152,6 +153,6 @@ describe('the unsupported-source import key after its rename', () => {
   it('the new key reads the same copy', () => {
     const renamed = new ValidationFailure('unsupported', undefined, ErrorMessageKey.importUnsupportedSource);
 
-    expect(failureToastMessage(renamed)).toBe(en.errors.importUnsupportedSource.short);
+    expect(failureToastMessage(t(), renamed)).toBe(en.errors.importUnsupportedSource.short);
   });
 });

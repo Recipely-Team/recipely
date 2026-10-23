@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useStore } from 'zustand';
 import { ChatRole } from '@domain/drafts/chat-role';
 import { StoreStatus } from '@application/store/store-status';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useLeaveGuard } from '@presentation/base/hooks/navigation/use-leave-guard';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { ImportTrail } from '@presentation/base/errors/import-trail';
@@ -84,6 +85,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   draftId,
   editRecipeId,
 }: UseRecipeGenerationArgs) => {
+  const t = useTranslations();
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
   // ?? {} only for test stubs; the real hook returns {} without params.
@@ -92,18 +94,16 @@ const GEN_STEP_INTERVAL_MS = 620;
   const fromRecipeId = params.fromRecipeId;
 
   const { recipeAuthoringStore, draftsStore, recipeDetailStore } = useStores();
-  const loadRecipeDetail = recipeDetailStore((st) => st.load);
-  const copiedFrom = recipeDetailStore((st) =>
-    fromRecipeIdOf(st.byId, fromRecipeId),
-  );
-  const editing = recipeDetailStore((st) => fromRecipeIdOf(st.byId, editRecipeId));
-  const editState = recipeDetailStore((st) =>
-    editRecipeId === undefined ? undefined : st.byId[editRecipeId],
-  );
-  const refineState = recipeAuthoringStore((s) => s.refineState);
-  const latestDraft = draftsStore((s) => s.latestDraft);
-  const loadLatestDraft = draftsStore((s) => s.loadLatestDraft);
-  const upsertDraft = draftsStore((s) => s.upsertDraft);
+  const loadRecipeDetail = useStore(recipeDetailStore, (st) => st.load);
+  const copiedFrom = useStore(recipeDetailStore, (st) =>
+    fromRecipeIdOf(st.byId, fromRecipeId));
+  const editing = useStore(recipeDetailStore, (st) => fromRecipeIdOf(st.byId, editRecipeId));
+  const editState = useStore(recipeDetailStore, (st) =>
+    editRecipeId === undefined ? undefined : st.byId[editRecipeId]);
+  const refineState = useStore(recipeAuthoringStore, (s) => s.refineState);
+  const latestDraft = useStore(draftsStore, (s) => s.latestDraft);
+  const loadLatestDraft = useStore(draftsStore, (s) => s.loadLatestDraft);
+  const upsertDraft = useStore(draftsStore, (s) => s.upsertDraft);
 
   // A draft opens in Resuming: it is fetched asynchronously.
   const [phase, setPhase] = useState<PhaseType>(
@@ -165,7 +165,7 @@ const GEN_STEP_INTERVAL_MS = 620;
         FailureReporter.trail(ImportTrail.draftFetchFailed);
         // Gone is not unreadable — see the "dead pointer" remark above.
         if (result.failure.code === FailureCode.NotFound) {
-          showDangerToast(t().createRecipe.draftGone);
+          showDangerToast(t.createRecipe.draftGone);
           router.replace({
             pathname: RoutePaths.myRecipes,
             params: { tab: RoutePaths.myRecipesDraftsTab },
@@ -194,7 +194,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     return () => {
       cancelled = true;
     };
-  }, [draftId, draftsStore, setRecipe, router]);
+  }, [draftId, draftsStore, setRecipe, router, t]);
 
   // Surface a "Resume your draft" card on a fresh prompt phase.
   useEffect(() => {
@@ -275,7 +275,7 @@ const GEN_STEP_INTERVAL_MS = 620;
         setRecipe((prev) => recipeToEditable(state.recipe, prev.media));
         setChatHistory([
           { role: ChatRole.User, content: trimmed },
-          { role: ChatRole.Assistant, content: t().createRecipe.aiFirstReply },
+          { role: ChatRole.Assistant, content: t.createRecipe.aiFirstReply },
         ]);
         recipeAuthoringStore.getState().resetGenerateState();
         setPhase(PhaseType.Preview);
@@ -284,10 +284,10 @@ const GEN_STEP_INTERVAL_MS = 620;
       if (state.status === StoreStatus.Error) {
         const { failure } = state;
         const unnamed4xx =
-          failure instanceof ValidationFailure && failureKeyMessage(failure) === undefined;
+          failure instanceof ValidationFailure && failureKeyMessage(t, failure) === undefined;
         const message = unnamed4xx
-          ? t().createRecipe.aiPromptFailed
-          : failureToastMessage(failure);
+          ? t.createRecipe.aiPromptFailed
+          : failureToastMessage(t, failure);
         if (unnamed4xx) showDangerToast(message);
         else showErrorToast(failure);
         setGenerateError(message);
@@ -295,7 +295,7 @@ const GEN_STEP_INTERVAL_MS = 620;
       recipeAuthoringStore.getState().resetGenerateState();
       setPhase(PhaseType.Prompt);
     },
-    [recipeAuthoringStore, setRecipe],
+    [recipeAuthoringStore, setRecipe, t],
   );
 
   // Any prompt edit clears the stale error.

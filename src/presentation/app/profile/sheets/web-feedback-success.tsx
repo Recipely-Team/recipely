@@ -3,11 +3,12 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, iconSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 /** Success panel shown after a feedback message is sent (shared between web modal and could mirror the sheet). */
 export const WebFeedbackSuccess = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -16,10 +17,10 @@ export const WebFeedbackSuccess = (): React.JSX.Element => {
         <Ionicons name="checkmark-circle" size={iconSizes.xxxl} color={colors.success} />
       </View>
       <ThemedText variant="subtitle" style={styles.center}>
-        {t().support.sentTitle}
+        {t.support.sentTitle}
       </ThemedText>
       <ThemedText variant="body" muted style={styles.center}>
-        {t().support.sentSub}
+        {t.support.sentSub}
       </ThemedText>
     </View>
   );

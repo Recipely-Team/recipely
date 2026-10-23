@@ -5,7 +5,7 @@ import { shoppingAmountText } from '@domain/shopping/items/shopping-amount-text'
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, fontSizes, fontWeights, iconSizes, mealPlanSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface PlanShoppingRowProps {
@@ -20,9 +20,10 @@ export interface PlanShoppingRowProps {
  * a "Staple" tag, and the recipes it came from on one line.
  */
 export const PlanShoppingRow = ({ line, checked, onToggle }: PlanShoppingRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().mealPlan;
-  const decimalMark = t().recipes.portions.decimalMark;
+  const strings = t.mealPlan;
+  const decimalMark = t.recipes.portions.decimalMark;
   const amount = line.drafts
     .map((draft) => shoppingAmountText(draft.quantity, draft.unit, decimalMark))
     .filter((text) => text !== CharConstants.empty)

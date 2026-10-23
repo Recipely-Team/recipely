@@ -3,7 +3,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, controlSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { BIO_MAX } from '@presentation/app/edit-profile/model/edit-profile-limits';
 import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
@@ -26,18 +26,19 @@ export const EditProfileForm = ({
   onChangeBio,
   bioAtLimit,
 }: EditProfileFormProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
       <View style={styles.field}>
         <ThemedText variant="caption" muted style={styles.label}>
-          {upperCase(t().editProfile.displayName)}
+          {upperCase(t.editProfile.displayName)}
         </ThemedText>
         <TextInput
           value={displayName}
           onChangeText={onChangeName}
-          placeholder={t().editProfile.displayNamePlaceholder}
+          placeholder={t.editProfile.displayNamePlaceholder}
           placeholderTextColor={colors.textMuted}
           style={[
             styles.input,
@@ -49,19 +50,19 @@ export const EditProfileForm = ({
         />
         {showNameError ? (
           <ThemedText variant="caption" style={[styles.errorLine, { color: colors.danger }]}>
-            {t().editProfile.displayNameRequired}
+            {t.editProfile.displayNameRequired}
           </ThemedText>
         ) : null}
       </View>
 
       <View style={styles.field}>
         <ThemedText variant="caption" muted style={styles.label}>
-          {upperCase(t().editProfile.bio)}
+          {upperCase(t.editProfile.bio)}
         </ThemedText>
         <AutoGrowTextInput
           value={bio}
           onChangeText={onChangeBio}
-          placeholder={t().editProfile.bioPlaceholder}
+          placeholder={t.editProfile.bioPlaceholder}
           placeholderTextColor={colors.textMuted}
           style={[
             styles.input,

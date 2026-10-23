@@ -69,7 +69,7 @@
  *      Segmenter, DisplayNames, Locale, DurationFormat) outside tests (§24).
  *   AV. No bare separator or character literal ('@', ', ', '\n', '', …) where
  *      CharConstants names it (§5).
- *   AW. No `authStore((s) => s.state)` in presentation — select what is used
+ *   AW. No `useStore(authStore, (s) => s.state)` in presentation — select what is used
  *      (useSignedInUserId / useIsSignedIn / useSignedInUser, or s.state.status).
  *   AX. Every state a store can be in is a named type in a `states/` folder;
  *      no anonymous `| { status: typeof StoreStatus.X; … }` union members.
@@ -1427,7 +1427,7 @@ function openingTag(src, at) {
 // an id or "signed in?", so every replacement of the session (a profile edit,
 // a creator-claim refresh) re-rendered all of them, each feed row included.
 {
-  const WHOLE_AUTH_STATE = /\bauthStore\(\s*\(s\)\s*=>\s*s\.state\s*\)/;
+  const WHOLE_AUTH_STATE = /\buseStore\(\s*authStore\s*,\s*\(s\)\s*=>\s*s\.state\s*\)/;
   for (const file of files) {
     if (isTest(file) || !file.startsWith('presentation/')) continue;
     const src = fs.readFileSync(path.join(SRC, file), 'utf8');

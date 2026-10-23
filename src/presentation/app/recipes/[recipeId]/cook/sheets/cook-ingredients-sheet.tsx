@@ -7,7 +7,7 @@ import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
 import { ValueConstants } from '@core/constants';
 import { IngredientGroupHeading } from '@presentation/app/recipes/[recipeId]/items/steps/ingredient-group-heading';
 import { AddToShoppingButton } from '@presentation/app/recipes/[recipeId]/items/shopping/add-to-shopping-button';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface CookIngredientsSheetProps {
   visible: boolean;
@@ -27,13 +27,14 @@ export interface CookIngredientsSheetProps {
  * "Add to shopping list" puts these same lines on the list.
  */
 export const CookIngredientsSheet = ({ visible, recipeId, recipeName, ingredients, onClose }: CookIngredientsSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const lines = IngredientList.of(ingredients).lines;
 
   return (
     <BottomSheet
       visible={visible}
-      title={t().cookMode.ingredients}
+      title={t.cookMode.ingredients}
       onClose={onClose}
       showCloseButton
       footer={<AddToShoppingButton source={{ recipeId, recipeName, lines: ingredients }} inCard={false} />}

@@ -5,7 +5,7 @@ import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface PhotoGridTileProps {
@@ -28,6 +28,7 @@ export interface PhotoGridTileProps {
  * moves it to the front and makes it the 2×2 tile.
  */
 export const PhotoGridTile = ({ url, focus, isCover, size, x, y, onRemove, onSetCover }: PhotoGridTileProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -37,23 +38,23 @@ export const PhotoGridTile = ({ url, focus, isCover, size, x, y, onRemove, onSet
         <RecipeImage accessibilityLabel={null} uri={url} focus={focus} style={styles.image} placeholderCompact />
         {isCover ? (
           <View style={[styles.coverLabel, { backgroundColor: colors.primary }]}>
-            <ThemedText style={[styles.coverText, { color: colors.primaryText }]}>{t().mediaPicker.cover}</ThemedText>
+            <ThemedText style={[styles.coverText, { color: colors.primaryText }]}>{t.mediaPicker.cover}</ThemedText>
           </View>
         ) : (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t().mediaPicker.setCover}
+            accessibilityLabel={t.mediaPicker.setCover}
             onPress={onSetCover}
             style={[styles.setCover, { backgroundColor: colors.overlay }]}
           >
             <ThemedText numberOfLines={ValueConstants.one} style={[styles.setCoverText, { color: colors.onOverlay }]}>
-              {t().mediaPicker.setCover}
+              {t.mediaPicker.setCover}
             </ThemedText>
           </Pressable>
         )}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t().mediaPicker.remove}
+          accessibilityLabel={t.mediaPicker.remove}
           onPress={onRemove}
           style={[styles.remove, { backgroundColor: colors.overlay }]}
         >

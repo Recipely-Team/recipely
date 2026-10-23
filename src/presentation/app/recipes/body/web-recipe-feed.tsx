@@ -12,7 +12,7 @@ import { feedGutter } from '@presentation/app/recipes/model/feed-content-width';
 import { WebRecipeGrid } from '@presentation/app/recipes/body/web-recipe-grid';
 import { WebBannerAd } from '@presentation/base/widgets/ads/web-banner-ad';
 import { webFeedSlotId } from '@infrastructure/constants/ads';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 
 export interface WebRecipeFeedProps {
@@ -30,6 +30,7 @@ export interface WebRecipeFeedProps {
  * made a 300-line component whose top half a mobile reader had to skip past.
  */
 export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => {
+  const t = useTranslations();
   const { width } = useLayout();
   const [allCuisinesOpen, setAllCuisinesOpen] = useState(false);
   const recipesLoaded =
@@ -71,7 +72,7 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
             violation this placement exists to avoid, and on a failed load the
             unit was thrown away unread when the error state replaced the feed. */}
         {recipesLoaded ? (
-          <WebBannerAd slotId={webFeedSlotId()} accessibilityLabel={t().createRecipe.adLabel} />
+          <WebBannerAd slotId={webFeedSlotId()} accessibilityLabel={t.createRecipe.adLabel} />
         ) : null}
       </>
     )}

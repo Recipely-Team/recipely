@@ -18,7 +18,7 @@ import {
   durations,
 } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { ValueConstants } from '@core/constants';
 import { CARD_HOVER_LIFT } from '@presentation/base/widgets/cards/card-hover-lift';
@@ -78,6 +78,7 @@ export const RecipeCard = ({
   likeCount = ValueConstants.zero, likedByMe = false,
   onPress, onLike, hoverEffect = false, provenance = [], ownerStatus, photoCount = ValueConstants.zero, onEditPhotos,
 }: RecipeCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const scale = useSharedValue(ValueConstants.one);
   const opacity = useSharedValue(ValueConstants.one);
@@ -160,7 +161,7 @@ export const RecipeCard = ({
               <Pressable
                 onPress={handleLike}
                 accessibilityRole="button"
-                accessibilityLabel={likedByMe ? t().recipes.unlike : t().recipes.like}
+                accessibilityLabel={likedByMe ? t.recipes.unlike : t.recipes.like}
                 hitSlop={spacing.sm}
                 style={styles.likeBtn}
               >

@@ -8,7 +8,7 @@ import {
   failureIcon,
   failureSeverity,
 } from '@presentation/base/errors/failure-lookups';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
 import { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
@@ -59,6 +59,7 @@ export const StateView = ({
   emptyIcon,
   children,
 }: StateViewProps): React.JSX.Element => {
+  const t = useTranslations();
   switch (status) {
     case StateViewStatus.Loading:
       return (
@@ -66,7 +67,7 @@ export const StateView = ({
       );
     case StateViewStatus.Error: {
       const f = failure ?? new UnknownFailure();
-      const content = failureContent(f);
+      const content = failureContent(t, f);
       // A recipe that is gone stays gone: retrying cannot succeed, so the way out becomes the primary action.
       if (f.code === FailureCode.NotFound && onSecondary !== undefined && secondaryLabel !== undefined) {
         return (
@@ -87,7 +88,7 @@ export const StateView = ({
           icon={failureIcon(f)}
           title={content.title}
           body={content.body}
-          primaryLabel={onRetry !== undefined ? (retryLabel ?? t().errors.retry) : undefined}
+          primaryLabel={onRetry !== undefined ? (retryLabel ?? t.errors.retry) : undefined}
           onPrimary={onRetry}
           secondaryLabel={secondaryLabel}
           onSecondary={onSecondary}
@@ -100,9 +101,9 @@ export const StateView = ({
         <ErrorState
           severity={SeverityType.Neutral}
           icon={emptyIcon ?? FALLBACK_EMPTY_ICON}
-          title={emptyTitle ?? t().common.empty}
+          title={emptyTitle ?? t.common.empty}
           body={emptyMessage}
-          primaryLabel={onRetry !== undefined ? (retryLabel ?? t().common.retry) : undefined}
+          primaryLabel={onRetry !== undefined ? (retryLabel ?? t.common.retry) : undefined}
           onPrimary={onRetry}
         />
       );

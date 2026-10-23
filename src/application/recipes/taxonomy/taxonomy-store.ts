@@ -1,6 +1,6 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import type { TaxonomyStore } from '@application/recipes/taxonomy/taxonomy-store-contract';
 
 import type { LoadTaxonomyUseCase } from '@application/recipes/taxonomy/load-taxonomy-use-case';
@@ -9,7 +9,7 @@ interface TaxonomyStoreDeps {
   loadTaxonomyUseCase: LoadTaxonomyUseCase;
 }
 
-export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): BoundStore<TaxonomyStore> => {
+export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): StoreApi<TaxonomyStore> => {
   const fetchCatalogs = async (
     set: (partial: Partial<TaxonomyStore>) => void,
   ): Promise<void> => {
@@ -27,7 +27,7 @@ export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): BoundStore<Taxo
     });
   };
 
-  return create<TaxonomyStore>((set, get) => ({
+  return createStore<TaxonomyStore>((set, get) => ({
     cuisines: [],
     categories: [],
     status: StoreStatus.Idle,

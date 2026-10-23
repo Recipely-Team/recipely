@@ -5,7 +5,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { useReportFailure } from '@presentation/base/errors/use-report-failure';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { StateView } from '@presentation/app/recipes/[recipeId]/items/state-view';
 import { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
@@ -41,6 +41,7 @@ const VIEW_STATUS = {
  * - **Safe-area insets only off the web shell**, which has no notch to clear.
  */
 export const CookModeScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
@@ -68,7 +69,7 @@ export const CookModeScreen = (): React.JSX.Element => {
           status={VIEW_STATUS[state.status]}
           failure={state.status === CookRecipeStatus.Error ? state.failure : undefined}
           onRetry={state.status === CookRecipeStatus.Error ? vm.onRetry : undefined}
-          emptyMessage={t().cookMode.noSteps}
+          emptyMessage={t.cookMode.noSteps}
           emptyIcon="restaurant-outline"
         >
           <View style={styles.body}>

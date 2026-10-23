@@ -22,7 +22,7 @@ import {
   radii,
   spacing,
 } from "@presentation/base/theme";
-import { t, useLocale } from "@presentation/i18n";
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface RuleCardProps {
   rule: DmRuleEntity;
@@ -41,6 +41,7 @@ const RuleCardComponent = ({
   onToggle,
   onDelete,
 }: RuleCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
   const { isExpanded } = useLayout();
@@ -96,7 +97,7 @@ const RuleCardComponent = ({
           color={isPaused ? colors.danger : colors.textSubtle}
           numberOfLines={ValueConstants.one}
         >
-          {ruleMeta(rule, isPaused, (n) => formatWholeNumber(n, locale))}
+          {ruleMeta(t, rule, isPaused, (n) => formatWholeNumber(n, locale))}
         </SizedText>
       </View>
       <View style={styles.actions}>
@@ -108,7 +109,7 @@ const RuleCardComponent = ({
         <Pressable
           onPress={() => onDelete(rule)}
           accessibilityRole="button"
-          accessibilityLabel={t().instagram.deleteRule}
+          accessibilityLabel={t.instagram.deleteRule}
           hitSlop={spacing.sm}
           style={({ pressed }) => [
             styles.delete,

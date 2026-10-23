@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import { useStore } from 'zustand';
 import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { StoreStatus } from '@application/store/store-status';
@@ -11,7 +12,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { PostTile } from '@presentation/app/automations/edit/items/post-tile';
 import { fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 
 export interface PostStepProps {
@@ -28,17 +29,18 @@ export interface PostStepProps {
  * serves twenty pages at most). Posts another automation watches say so.
  */
 export const PostStep = ({ handle, selected, onSelect, scrollable }: PostStepProps): React.JSX.Element => {
+  const t = useTranslations();
   // Stable, so a memoized PostTile is not re-rendered by a new arrow on every render.
   const onPressTile = useCallback((media: { id: string }) => onSelect(media.id), [onSelect]);
   const colors = useTheme().colors;
   const { isExpanded } = useLayout();
   const { automationsStore } = useStores();
-  const media = automationsStore((s) => s.media);
-  const rules = automationsStore((s) => s.rules);
+  const media = useStore(automationsStore, (s) => s.media);
+  const rules = useStore(automationsStore, (s) => s.rules);
   const loadMoreMedia = (): void => void automationsStore.getState().loadMoreMedia();
   const watched = new Set(rules.status === StoreStatus.Loaded ? rules.items.map((rule) => rule.mediaId) : []);
   const columns = isExpanded ? AutomationMetrics.gridColumnsWeb : AutomationMetrics.gridColumns;
-  const copy = t().instagram;
+  const copy = t.instagram;
 
   useEffect(() => {
     void automationsStore.getState().loadMedia();

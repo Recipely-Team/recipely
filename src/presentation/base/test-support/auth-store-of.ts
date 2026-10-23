@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import type { AuthStore } from '@application/auth/auth-store-contract';
 import { StoreStatus } from '@application/store/store-status';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
@@ -13,7 +13,7 @@ const SESSION_TTL_MS = 3_600_000;
  * `null`. Every action is a `jest.fn` answering "no failure" unless the test
  * overrides it.
  */
-export const authStoreOf = (user: UserEntity | null, overrides: Partial<AuthStore> = {}): BoundStore<AuthStore> => {
+export const authStoreOf = (user: UserEntity | null, overrides: Partial<AuthStore> = {}): StoreApi<AuthStore> => {
   const session =
     user === null
       ? null

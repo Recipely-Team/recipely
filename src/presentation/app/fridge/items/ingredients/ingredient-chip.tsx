@@ -4,7 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, durations, fontSizes, fontWeights, fridgeSizes, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { FridgeChip } from '@presentation/app/fridge/model/flow/fridge-chip';
 import { CharConstants, ValueConstants } from '@core/constants';
 
@@ -27,9 +27,10 @@ const shown = (name: string): string => (name.length > NAME_MAX ? name.slice(Val
  * "not sure" to a screen reader. Neighbours slide into the gap it leaves.
  */
 export const IngredientChip = ({ chip, dense, onRemove }: IngredientChipProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const reduceMotion = useReducedMotion();
-  const copy = t().fridge;
+  const copy = t.fridge;
   const label = chip.sure ? copy.removeIngredient.replace('{name}', chip.name) : `${copy.notSure.replace('{name}', chip.name)}, ${copy.removeIngredient.replace('{name}', chip.name)}`;
 
   return (

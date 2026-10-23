@@ -1,6 +1,6 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import { ValueConstants } from '@core/constants';
 import { withFollowing } from '@domain/user-profile/with-following';
 import { RequestEpoch } from '@application/store/request-epoch';
@@ -33,12 +33,12 @@ interface CreatorProfileStoreDeps {
  * - **Follow is optimistic.** The button flips at once through `withFollowing`
  *   and flips back if the server refuses; the refusal is returned for a toast.
  */
-export const configureCreatorProfileStore = (deps: CreatorProfileStoreDeps): BoundStore<CreatorProfileStore> => {
+export const configureCreatorProfileStore = (deps: CreatorProfileStoreDeps): StoreApi<CreatorProfileStore> => {
   const profileEpoch = new RequestEpoch();
   // Bumped only when the page is replaced (another user, or clear): a same-user re-read keeps it.
   let pageShown = ValueConstants.zero;
 
-  return create<CreatorProfileStore>((set, get) => {
+  return createStore<CreatorProfileStore>((set, get) => {
     const recipes = new PagedListLoader(
       () => get().recipes,
       (list) => set({ recipes: list }),

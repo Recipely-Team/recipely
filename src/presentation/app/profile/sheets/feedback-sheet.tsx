@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useStore } from 'zustand';
 import type { Failure } from '@core/failure';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
@@ -8,7 +9,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { CharConstants, ValueConstants } from '@core/constants';
 
@@ -19,10 +20,11 @@ export interface FeedbackSheetProps {
 
 /** Mobile bottom sheet for the Help & Feedback form. Shows a form on open and a success state after submission. */
 export const FeedbackSheet = ({ visible, onClose }: FeedbackSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { feedbackStore } = useStores();
-  const submit = feedbackStore((s) => s.submit);
-  const isSubmitting = feedbackStore((s) => s.isSubmitting);
+  const submit = useStore(feedbackStore, (s) => s.submit);
+  const isSubmitting = useStore(feedbackStore, (s) => s.isSubmitting);
 
   const [subject, setSubject] = useState(CharConstants.empty);
   const [message, setMessage] = useState(CharConstants.empty);
@@ -48,40 +50,40 @@ export const FeedbackSheet = ({ visible, onClose }: FeedbackSheetProps): React.J
   };
 
   return (
-    <BottomSheet visible={visible} title={t().support.sheetTitle} onClose={handleClose}>
+    <BottomSheet visible={visible} title={t.support.sheetTitle} onClose={handleClose}>
       {sent ? (
         <View style={styles.successWrap}>
           <View style={[styles.iconChip, { backgroundColor: colors.successLight }]}>
             <Ionicons name="checkmark-circle" size={iconSizes.xxxl} color={colors.success} />
           </View>
           <ThemedText variant="subtitle" style={styles.center}>
-            {t().support.sentTitle}
+            {t.support.sentTitle}
           </ThemedText>
           <ThemedText variant="body" muted style={styles.center}>
-            {t().support.sentSub}
+            {t.support.sentSub}
           </ThemedText>
           <Pressable
             onPress={handleClose}
             style={[styles.actionBtn, { backgroundColor: colors.primary }]}
             accessibilityRole="button"
-            accessibilityLabel={t().support.sentDone}
+            accessibilityLabel={t.support.sentDone}
           >
             <ThemedText variant="subtitle" style={{ color: colors.primaryText }}>
-              {t().support.sentDone}
+              {t.support.sentDone}
             </ThemedText>
           </Pressable>
         </View>
       ) : (
         <View style={styles.form}>
-          <ThemedText variant="body" muted>{t().support.subtitle}</ThemedText>
+          <ThemedText variant="body" muted>{t.support.subtitle}</ThemedText>
           <View style={styles.field}>
             <ThemedText variant="caption" muted style={styles.fieldLabel}>
-              {upperCase(t().support.subject)}
+              {upperCase(t.support.subject)}
             </ThemedText>
             <TextInput
               value={subject}
               onChangeText={setSubject}
-              placeholder={t().support.subjectPlaceholder}
+              placeholder={t.support.subjectPlaceholder}
               placeholderTextColor={colors.textMuted}
               returnKeyType="next"
               style={[
@@ -92,12 +94,12 @@ export const FeedbackSheet = ({ visible, onClose }: FeedbackSheetProps): React.J
           </View>
           <View style={styles.field}>
             <ThemedText variant="caption" muted style={styles.fieldLabel}>
-              {upperCase(t().support.message)}
+              {upperCase(t.support.message)}
             </ThemedText>
             <AutoGrowTextInput
               value={message}
               onChangeText={setMessage}
-              placeholder={t().support.messagePlaceholder}
+              placeholder={t.support.messagePlaceholder}
               placeholderTextColor={colors.textMuted}
               minHeight={controlSizes.messageField}
               style={[
@@ -109,7 +111,7 @@ export const FeedbackSheet = ({ visible, onClose }: FeedbackSheetProps): React.J
           </View>
           {error !== null ? (
             <ThemedText variant="caption" style={[styles.errorText, { color: colors.danger }]}>
-              {t().support.error}
+              {t.support.error}
             </ThemedText>
           ) : null}
           <Pressable
@@ -120,13 +122,13 @@ export const FeedbackSheet = ({ visible, onClose }: FeedbackSheetProps): React.J
               { backgroundColor: canSend && !isSubmitting ? colors.primary : colors.border },
             ]}
             accessibilityRole="button"
-            accessibilityLabel={t().support.send}
+            accessibilityLabel={t.support.send}
           >
             {isSubmitting ? (
               <ActivityIndicator color={colors.primaryText} />
             ) : (
               <ThemedText variant="subtitle" style={{ color: colors.primaryText }}>
-                {t().support.send}
+                {t.support.send}
               </ThemedText>
             )}
           </Pressable>

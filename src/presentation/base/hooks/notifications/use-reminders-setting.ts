@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showWarningToast } from '@presentation/base/feedback/show-toast';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 interface RemindersSetting {
   enabled: boolean;
@@ -19,6 +19,7 @@ interface RemindersSetting {
  *   prompt at all), snaps the switch back to off and says where to turn notifications on.
  */
 export const useRemindersSetting = (): RemindersSetting => {
+  const t = useTranslations();
   const { getRemindersEnabled, setRemindersChoice } = useStores();
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -38,15 +39,15 @@ export const useRemindersSetting = (): RemindersSetting => {
       setEnabled(next);
       setBusy(true);
       void setRemindersChoice
-        .execute(next, t().reminders.messages, Date.now())
+        .execute(next, t.reminders.messages, Date.now())
         .then((on) => {
           setEnabled(on);
-          if (next && !on) showWarningToast(t().reminders.permissionDenied);
+          if (next && !on) showWarningToast(t.reminders.permissionDenied);
         })
         .catch(() => setEnabled(false))
         .finally(() => setBusy(false));
     },
-    [setRemindersChoice],
+    [setRemindersChoice, t],
   );
 
   return { enabled, busy, onChange };

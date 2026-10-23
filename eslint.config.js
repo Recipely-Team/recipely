@@ -3,6 +3,11 @@ const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 const oneDeclarationPerFile = require('./eslint-rules/one-declaration-per-file');
 
+const VECTOR_ICONS_ROOT = {
+  name: '@expo/vector-icons',
+  message: "Import the family's own path, e.g. '@expo/vector-icons/Ionicons' — the root index bundles every icon font.",
+};
+
 module.exports = defineConfig([
   expoConfig,
   {
@@ -83,14 +88,40 @@ module.exports = defineConfig([
     // Import the family from its own path: `@expo/vector-icons/Ionicons`.
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
+      'no-restricted-imports': ['error', { paths: [VECTOR_ICONS_ROOT] }],
+    },
+  },
+  {
+    // The language is state. A component, hook or text helper that reads it
+    // from the global `t()` during render is cached by the React Compiler on
+    // its other inputs and keeps the old language after a switch. Components
+    // and hooks read `useTranslations()`; helpers take the catalogue as their
+    // first parameter. Only code that runs at event time — toasts, alerts, the
+    // alarm notifications, the class error boundary — reads the global.
+    files: ['src/presentation/**/*.ts', 'src/presentation/**/*.tsx'],
+    ignores: [
+      '**/__tests__/**',
+      '**/__mocks__/**',
+      'src/presentation/base/test-support/**',
+      'src/presentation/i18n/**',
+      'src/presentation/base/feedback/show-toast.ts',
+      'src/presentation/base/feedback/photo-pick-feedback.ts',
+      'src/presentation/base/hooks/recipes/owner-status-toast.ts',
+      'src/presentation/base/timers/timer-controls.ts',
+      'src/presentation/base/utils/ask-pick-source.ts',
+      'src/presentation/base/widgets/feedback/app-error-boundary.tsx',
+    ],
+    rules: {
       'no-restricted-imports': [
         'error',
         {
           paths: [
-            {
-              name: '@expo/vector-icons',
-              message: "Import the family's own path, e.g. '@expo/vector-icons/Ionicons' — the root index bundles every icon font.",
-            },
+            VECTOR_ICONS_ROOT,
+            ...['@presentation/i18n', '@presentation/i18n/i18n'].map((name) => ({
+              name,
+              importNames: ['t'],
+              message: 'Read text with useTranslations() in a component or hook, or take the catalogue as a parameter in a helper.',
+            })),
           ],
         },
       ],

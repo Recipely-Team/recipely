@@ -5,7 +5,7 @@ import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, borderWidths } from '@presentation/base/theme';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { ImportProgressRing } from '@presentation/app/import-recipe/body/import-progress-ring';
 import { ImportStageList } from '@presentation/app/import-recipe/body/import-stage-list';
@@ -40,11 +40,12 @@ export const FileReadingView = ({
   pagesLabel,
   onClose,
 }: FileReadingViewProps): React.JSX.Element => {
+  const t = useTranslations();
   const scrollEndPadding = useScrollEndPadding();
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
-  const copy = t().fileImport;
-  const importCopy = t().importRecipe;
+  const copy = t.fileImport;
+  const importCopy = t.importRecipe;
   const look = appImportLook(colors);
   const card = [styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }];
   const stats = [
@@ -88,7 +89,7 @@ export const FileReadingView = ({
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: scrollEndPadding }]}>
-        <PrimaryButton label={t().common.close} onPress={onClose} disabled={isDone} />
+        <PrimaryButton label={t.common.close} onPress={onClose} disabled={isDone} />
       </View>
     </>
   );

@@ -5,7 +5,7 @@ import { RoundIconButton } from '@presentation/base/widgets/buttons/round-icon-b
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { formatWeekRange } from '@presentation/base/utils/meal-plan/format-week-range';
 import { borderWidths, controlSizes, fontSizes, fontWeights, mealPlanSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface PlanWeekBarProps {
@@ -26,9 +26,10 @@ export interface PlanWeekBarProps {
  * with the week's summary in the middle.
  */
 export const PlanWeekBar = ({ weekStart, isCurrentWeek, summary, wide, onPage, onThisWeek, onMenu }: PlanWeekBarProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const arrow = (icon: 'chevron-back' | 'chevron-forward', direction: number, label: string): React.JSX.Element => (
     <RoundIconButton icon={icon} accessibilityLabel={label} onPress={() => onPage(direction)} size={controlSizes.iconBtnSm} padToTouchTarget />
   );

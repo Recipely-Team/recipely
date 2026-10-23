@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useStore } from 'zustand';
 import { useDeleteAccount } from '@presentation/base/hooks/auth/use-delete-account';
 import { isWeb } from '@infrastructure/constants/platform';
 import { StyleSheet, View, Linking } from 'react-native';
@@ -15,7 +16,7 @@ import { SettingsNotificationsSection } from '@presentation/base/widgets/setting
 import { LanguageSelector } from '@presentation/base/widgets/settings/language-selector';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, iconSizes, controlSizes } from '@presentation/base/theme';
-import { t, useLocale, setLocale } from '@presentation/i18n';
+import { useLocale, setLocale, useTranslations } from '@presentation/i18n';
 
 import { FeedbackSheet } from '@presentation/app/profile/sheets/feedback-sheet';
 import { WebFeedbackModal } from '@presentation/app/profile/sheets/web-feedback-modal';
@@ -38,10 +39,11 @@ import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/act
  *   reminders offer had no way to turn them off again.
  */
 export const ProfileSettingsSections = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const { themeId, preference, setThemeId, setPreference, colors } = useTheme();
   const { authStore } = useStores();
-  const signOut = authStore((s) => s.signOut);
+  const signOut = useStore(authStore, (s) => s.signOut);
 
   const language = useLocale() as 'en' | 'tr';
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -53,7 +55,7 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
     await signOut();
     // Guest-first: back to the feed, not a login wall.
     enterApp(router, RoutePaths.recipes);
-    showSuccessToast(t().settings.signedOut);
+    showSuccessToast(t.settings.signedOut);
   };
 
   // The voice assistant's settings words live here since /settings became a redirect to Profile.
@@ -71,13 +73,13 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
 
   return (
     <View>
-      <SectionHeader title={t().settings.appearance} />
+      <SectionHeader title={t.settings.appearance} />
       <View style={[styles.group, { backgroundColor: colors.cardBackground }]}>
         <View style={styles.stackedRow}>
           <View style={styles.stackedHeader}>
             <Ionicons name="contrast-outline" size={iconSizes.xl} color={colors.primary} />
             <ThemedText variant="body" style={styles.stackedLabel}>
-              {t().settings.mode}
+              {t.settings.mode}
             </ThemedText>
           </View>
           <ThemeToggle value={preference} onChange={setPreference} />
@@ -85,47 +87,47 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
         <View style={[styles.rowSeparator, { backgroundColor: colors.border }]} />
         <SettingsRow
           icon="language-outline"
-          label={t().settings.language}
+          label={t.settings.language}
           rightElement={<LanguageSelector value={language} onChange={setLocale} />}
         />
       </View>
 
-      <SectionHeader title={t().settings.themePalette} />
+      <SectionHeader title={t.settings.themePalette} />
       <ThemeGrid selectedThemeId={themeId} onSelect={setThemeId} />
 
       <SettingsNotificationsSection />
 
-      <SectionHeader title={t().settings.account} />
+      <SectionHeader title={t.settings.account} />
       <View style={[styles.group, { backgroundColor: colors.cardBackground }]}>
         <SettingsRow
           icon="log-out-outline"
-          label={t().settings.signOut}
+          label={t.settings.signOut}
           destructive
           onPress={() => setSignOutVisible(true)}
         />
         <View style={[styles.rowSeparator, { backgroundColor: colors.border }]} />
         <SettingsRow
           icon="trash-outline"
-          label={t().settings.deleteAccount}
+          label={t.settings.deleteAccount}
           destructive
           onPress={deleteAccountFlow.open}
         />
       </View>
 
-      <SectionHeader title={t().support.section} />
+      <SectionHeader title={t.support.section} />
       <View style={[styles.group, { backgroundColor: colors.cardBackground }]}>
         <SettingsRow
           icon="help-buoy-outline"
-          label={t().support.sendFeedback}
+          label={t.support.sendFeedback}
           onPress={() => setFeedbackOpen(true)}
         />
       </View>
 
-      <SectionHeader title={t().settings.about} />
+      <SectionHeader title={t.settings.about} />
       <View style={[styles.group, { backgroundColor: colors.cardBackground }]}>
         <SettingsRow
           icon="information-circle-outline"
-          label={t().settings.version}
+          label={t.settings.version}
           rightElement={
             <ThemedText variant="body" muted>
               {appVersion}
@@ -135,12 +137,12 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
         />
         <SettingsRow
           icon="shield-checkmark-outline"
-          label={t().settings.privacyPolicy}
+          label={t.settings.privacyPolicy}
           onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
         />
         <SettingsRow
           icon="document-text-outline"
-          label={t().settings.termsOfUse}
+          label={t.settings.termsOfUse}
           onPress={() => void Linking.openURL(TERMS_OF_USE_URL)}
         />
       </View>
@@ -154,18 +156,18 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
           the session; it asks first, like account deletion does. */}
       <ConfirmSheet
         visible={signOutVisible}
-        title={t().settings.signOut}
-        message={t().settings.signOutConfirm}
-        confirmLabel={t().settings.signOut}
+        title={t.settings.signOut}
+        message={t.settings.signOutConfirm}
+        confirmLabel={t.settings.signOut}
         destructive
         onConfirm={() => void handleSignOut()}
         onClose={() => setSignOutVisible(false)}
       />
       <ConfirmSheet
         visible={deleteAccountFlow.visible}
-        title={t().settings.deleteAccountConfirmTitle}
-        message={t().settings.deleteAccountConfirmMessage}
-        confirmLabel={t().settings.deleteAccount}
+        title={t.settings.deleteAccountConfirmTitle}
+        message={t.settings.deleteAccountConfirmMessage}
+        confirmLabel={t.settings.deleteAccount}
         destructive
         loading={deleteAccountFlow.deleting}
         error={deleteAccountFlow.error}

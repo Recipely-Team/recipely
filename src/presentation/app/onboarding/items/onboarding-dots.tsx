@@ -1,7 +1,7 @@
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { opacities, radii, targetSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 const DOT_SIZE = 6;
@@ -21,6 +21,7 @@ export interface OnboardingDotsProps {
 
 /** Page dots: tap to go to a slide; the active one fills as autoplay counts down. */
 export const OnboardingDots = ({ count, index, onSelect, progress }: OnboardingDotsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <View style={styles.row}>
@@ -31,7 +32,7 @@ export const OnboardingDots = ({ count, index, onSelect, progress }: OnboardingD
             key={i}
             onPress={() => onSelect(i)}
             accessibilityRole="tab"
-            accessibilityLabel={`${t().onboarding.slideLabel} ${i + ValueConstants.one} / ${count}`}
+            accessibilityLabel={`${t.onboarding.slideLabel} ${i + ValueConstants.one} / ${count}`}
             accessibilityState={{ selected: active }}
             style={styles.target}
           >

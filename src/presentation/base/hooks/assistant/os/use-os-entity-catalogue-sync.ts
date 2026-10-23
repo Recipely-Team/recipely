@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { useStore } from 'zustand';
 import { ValueConstants } from '@core/constants';
 import { StoreStatus } from '@application/store/store-status';
 import type { OsRecipeHandle } from '@domain/assistant/os/os-recipe-handle';
@@ -26,11 +27,11 @@ const CATALOGUE_LIMIT = 24;
  */
 export const useOsEntityCatalogueSync = (): void => {
   const { osAssistant, savedRecipesStore, myRecipesStore, authStore } = useStores();
-  const saved = savedRecipesStore((state) => state.saved);
-  const mine = myRecipesStore((state) => state.mine);
+  const saved = useStore(savedRecipesStore, (state) => state.saved);
+  const mine = useStore(myRecipesStore, (state) => state.mine);
   const savedRecipes = useMemo(() => loadedItems(saved), [saved]);
   const createdRecipes = useMemo(() => loadedItems(mine), [mine]);
-  const isSignedIn = authStore((state) => state.state.status === StoreStatus.Authenticated);
+  const isSignedIn = useStore(authStore, (state) => state.state.status === StoreStatus.Authenticated);
 
   useEffect(() => {
     if (!osAssistant.isAvailable) return;

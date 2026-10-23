@@ -1,5 +1,5 @@
 import { useRootNavigationState } from 'expo-router';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { RoutePaths } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
 
@@ -13,7 +13,8 @@ import { ValueConstants } from '@core/constants';
  * shared link) gets the plain one.
  */
 export const useBackLabel = (): string => {
+  const t = useTranslations();
   const state = useRootNavigationState();
   const previous = state?.routes[state.index - ValueConstants.one]?.name;
-  return previous === RoutePaths.recipesRouteName ? t().recipes.backToRecipes : t().common.back;
+  return previous === RoutePaths.recipesRouteName ? t.recipes.backToRecipes : t.common.back;
 };

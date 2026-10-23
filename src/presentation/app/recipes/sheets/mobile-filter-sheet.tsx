@@ -10,7 +10,7 @@ import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-fil
 import { TIME_OPTIONS } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/app/recipes/hooks/use-taxonomy-options';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { spacing } from '@presentation/base/theme';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
@@ -49,26 +49,27 @@ export const MobileFilterSheet = ({
   onReset,
   onClose,
 }: MobileFilterSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
   const { cuisineKeys, categoryKeys } = useTaxonomyOptions();
-  const sortLabels = sortKeyLabels();
+  const sortLabels = sortKeyLabels(t);
 
   return (
     <BottomSheet
       visible={visible}
-      title={t().recipes.filter}
+      title={t.recipes.filter}
       onClose={onClose}
       rightAction={
         activeFilterCount > ValueConstants.zero
-          ? { label: t().recipes.clearFilters, onPress: onReset }
+          ? { label: t.recipes.clearFilters, onPress: onReset }
           : undefined
       }
       // Pinned: the chip sections exceed the sheet's height cap.
-      footer={<PrimaryButton label={t().recipes.showResults} onPress={onApply} />}
+      footer={<PrimaryButton label={t.recipes.showResults} onPress={onApply} />}
     >
       <View style={styles.sheetSection}>
         <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
-          {t().recipes.sortBy}
+          {t.recipes.sortBy}
         </ThemedText>
         <View style={styles.chipsWrap}>
           {(Object.keys(sortLabels) as SortKey[]).map((key) => (
@@ -84,7 +85,7 @@ export const MobileFilterSheet = ({
 
       <View style={styles.sheetSection}>
         <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
-          {t().recipes.cuisine}
+          {t.recipes.cuisine}
         </ThemedText>
         <View style={styles.chipsWrap}>
           {cuisineKeys.map((c) => (
@@ -100,7 +101,7 @@ export const MobileFilterSheet = ({
 
       <View style={styles.sheetSection}>
         <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
-          {t().recipes.category}
+          {t.recipes.category}
         </ThemedText>
         <View style={styles.chipsWrap}>
           {categoryKeys.map((c) => (
@@ -116,7 +117,7 @@ export const MobileFilterSheet = ({
 
       <View style={styles.sheetSection}>
         <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
-          {t().recipes.difficulty}
+          {t.recipes.difficulty}
         </ThemedText>
         <View style={styles.chipsRow}>
           {DIFFICULTY_VALUES.map((d) => (
@@ -133,13 +134,13 @@ export const MobileFilterSheet = ({
 
       <View style={styles.sheetSection}>
         <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
-          {t().recipes.maxTime}
+          {t.recipes.maxTime}
         </ThemedText>
         <View style={styles.chipsWrap}>
           {TIME_OPTIONS.map((m) => (
             <SelectChip
               key={m}
-              label={m === ValueConstants.zero ? t().recipes.any : `≤ ${m} ${t().recipes.minutes}`}
+              label={m === ValueConstants.zero ? t.recipes.any : `≤ ${m} ${t.recipes.minutes}`}
               selected={pendingFilters.maxTime === m}
               onToggle={() => onSetMaxTime(m)}
             />

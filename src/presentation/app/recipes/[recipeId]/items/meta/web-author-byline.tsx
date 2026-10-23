@@ -6,7 +6,7 @@ import { KitchenAvatar } from '@presentation/app/recipes/[recipeId]/items/meta/k
 import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/author/resolved-author';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { avatarSizes, fontWeights, iconSizes, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface WebAuthorBylineProps {
   author: ResolvedAuthor;
@@ -17,6 +17,7 @@ export interface WebAuthorBylineProps {
  * Kitchen recipe shows the logo, "Recipely Kitchen" and a verified check.
  */
 export const WebAuthorByline = ({ author }: WebAuthorBylineProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const kitchen = author.isKitchen === true;
   return (
@@ -27,14 +28,14 @@ export const WebAuthorByline = ({ author }: WebAuthorBylineProps): React.JSX.Ele
         <AvatarImage uri={author.authorPhotoUrl} name={author.authorName} size={avatarSizes.xs} />
       )}
       <ThemedText variant="body" style={styles.name}>
-        {kitchen ? t().recipes.originCuratedDetailLabel : author.authorName}
+        {kitchen ? t.recipes.originCuratedDetailLabel : author.authorName}
       </ThemedText>
       {kitchen ? (
         <Ionicons
           name="checkmark-circle"
           size={iconSizes.md}
           color={colors.primary}
-          accessibilityLabel={t().creators.verified}
+          accessibilityLabel={t.creators.verified}
         />
       ) : null}
     </View>

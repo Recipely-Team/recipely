@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { useStore } from 'zustand';
 import { router, type Href } from 'expo-router';
 import { AssistantAction, type AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
@@ -40,7 +41,7 @@ const SCREEN_ARRIVAL_TIMEOUT_MS = 4_000;
  */
 export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[]): void => {
   const { assistantActionRegistry: registry, likesStore, savedRecipesStore } = useStores();
-  const setLikedInStore = likesStore((s) => s.setLiked);
+  const setLikedInStore = useStore(likesStore, (s) => s.setLiked);
   const favourites = useSaveRecipe();
   const isSignedIn = useIsSignedIn();
   // One hop at a time, so a failed navigation cannot loop back here.
@@ -67,14 +68,15 @@ export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[
     if (row === null) return { ok: false, notMine: true };
 
     travelling.current = true;
-    try {
+    const travel = async (): Promise<AssistantActionResultType> => {
       router.push(RoutePaths.recipeDetail(row.id) as Href);
       const arrived = await registry.waitForScreenHandler(action, SCREEN_ARRIVAL_TIMEOUT_MS);
       if (!arrived) return { ok: false, error: AssistantActionError.ScreenDidNotOpen };
-      return await registry.run(action, arg);
-    } finally {
+      return registry.run(action, arg);
+    };
+    return travel().finally(() => {
       travelling.current = false;
-    }
+    });
   };
 
   const setLiked = async (arg: string | undefined, wanted: boolean): Promise<AssistantActionResultType> => {

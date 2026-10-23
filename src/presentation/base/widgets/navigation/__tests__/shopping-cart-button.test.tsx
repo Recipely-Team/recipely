@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { act } from 'react-test-renderer';
 import { byRole, renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { ShoppingCartButton } from '@presentation/base/widgets/navigation/shopping-cart-button';
@@ -12,16 +13,11 @@ jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ push: mockPush })),
 }));
 jest.mock('@presentation/bootstrap/use-stores', () => {
-  const shoppingListStore = Object.assign(
-    jest.fn((selector: (state: { toBuy: number | null }) => unknown) => selector({ toBuy: mockToBuy })),
-    { getState: () => ({ loadToBuy: mockLoadToBuy }) },
-  );
+  const shoppingListStore = mockStoreReading(() => ({ toBuy: mockToBuy, loadToBuy: mockLoadToBuy }));
   return {
     useStores: jest.fn(() => ({
       shoppingListStore,
-      authStore: jest.fn((selector: (state: { state: { status: string } }) => unknown) =>
-        selector({ state: { status: mockGuest ? 'unauthenticated' : 'authenticated' } }),
-      ),
+      authStore: mockStoreReading(() => ({ state: { status: mockGuest ? 'unauthenticated' : 'authenticated' } })),
     })),
   };
 });

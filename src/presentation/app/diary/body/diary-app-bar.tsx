@@ -2,7 +2,7 @@ import { TabAppBar } from '@presentation/base/widgets/navigation/tab-app-bar';
 import { ShoppingCartButton } from '@presentation/base/widgets/navigation/shopping-cart-button';
 import { NotificationsBellButton } from '@presentation/base/widgets/navigation/notifications-bell-button';
 import { TabAppBarButton } from '@presentation/base/widgets/navigation/tab-app-bar-button';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface DiaryAppBarProps {
   /** Hidden once the calendar sits in the page's own rail (an expanded viewport). */
@@ -13,7 +13,8 @@ export interface DiaryAppBarProps {
 
 /** The Diary tab's top bar on the native shell: the shared tab bar with calendar · goals · notifications (design spec → Tab app bar). */
 export const DiaryAppBar = ({ showCalendar, onOpenCalendar, onOpenGoals }: DiaryAppBarProps): React.JSX.Element => {
-  const strings = t().diary;
+  const t = useTranslations();
+  const strings = t.diary;
   return (
     <TabAppBar
       title={strings.title}

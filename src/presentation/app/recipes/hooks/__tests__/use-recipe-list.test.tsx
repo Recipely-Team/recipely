@@ -1,4 +1,4 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 /**
  * Regression tests for `useRecipeList`'s `isPullRefreshing` flag.
  *
@@ -182,7 +182,7 @@ const ownRecipes = create<{ version: number }>(() => ({ version: 0 }));
 const viewer = makeAuthStore();
 beforeEach(() => viewer.setState({ state: { status: 'unauthenticated' } } as unknown as AuthStore));
 
-const makeStores = (recipeListStore: BoundStore<RecipeListStore>): ApplicationStores =>
+const makeStores = (recipeListStore: StoreApi<RecipeListStore>): ApplicationStores =>
   ({
     recipeListStore,
     authStore: viewer,

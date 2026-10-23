@@ -33,7 +33,7 @@ import {
   radii,
   spacing,
 } from "@presentation/base/theme";
-import { t } from "@presentation/i18n";
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * Instagram automations (spec §2): the creator's comment-to-DM rules, paged
@@ -41,12 +41,13 @@ import { t } from "@presentation/i18n";
  * linked, and Paused with Reconnect when the link expired.
  */
 export const AutomationsScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const vm = useAutomations();
   const scrollable = useAssistantScrollable(
     vm.view === AutomationsViewKind.Rules,
   );
-  const copy = t().instagram;
+  const copy = t.instagram;
   const rules = vm.rules;
 
   const newButton =
@@ -83,7 +84,7 @@ export const AutomationsScreen = (): React.JSX.Element => {
           return (
             <ActivityIndicator style={styles.spinner} color={colors.primary} />
           );
-        const content = failureContent(vm.connectionFailure);
+        const content = failureContent(t, vm.connectionFailure);
         return (
           <ErrorState
             icon={failureIcon(vm.connectionFailure)}
@@ -104,8 +105,8 @@ export const AutomationsScreen = (): React.JSX.Element => {
           <ErrorState
             icon="logo-instagram"
             severity={SeverityType.Neutral}
-            title={t().errors.instagramNotConfigured.title}
-            body={t().errors.instagramNotConfigured.body}
+            title={t.errors.instagramNotConfigured.title}
+            body={t.errors.instagramNotConfigured.body}
           />
         );
       case AutomationsViewKind.Locked:
@@ -129,7 +130,7 @@ export const AutomationsScreen = (): React.JSX.Element => {
         );
       case AutomationsViewKind.Rules:
         if (rules.status === StoreStatus.Error) {
-          const content = failureContent(rules.failure);
+          const content = failureContent(t, rules.failure);
           return (
             <ErrorState
               icon={failureIcon(rules.failure)}

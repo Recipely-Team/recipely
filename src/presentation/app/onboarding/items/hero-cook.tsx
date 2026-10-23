@@ -7,7 +7,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
 import { upperCase } from '@presentation/i18n/upper-case';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ArtCard } from '@presentation/app/onboarding/items/art-card';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
 import type { HeroProps } from '@presentation/app/onboarding/model/hero-props';
@@ -31,8 +31,9 @@ const pad = (n: number): string => String(n).padStart(ValueConstants.two, CharCo
 
 /** Slide 2, "Cook hands-free": a spoken "next step", the assistant's reply, the step, a live timer. */
 export const HeroCook = ({ active = true }: HeroProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const a = t().onboarding.art;
+  const a = t.onboarding.art;
   const reducedMotion = useReducedMotion();
   const running = active && !reducedMotion;
   // Starting or stopping the slide's timer winds it back to the top, in the same render.

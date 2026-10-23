@@ -13,7 +13,7 @@ import { formatPlanDay } from '@presentation/app/diary/model/plan/format-plan-da
 import { PlanWeekStep, type PlanWeekStepType } from '@presentation/app/diary/model/plan/plan-week-step';
 import type { ProposalRow } from '@presentation/app/diary/model/plan/proposal-row';
 import type { UsePlanMyWeekResult } from '@presentation/app/diary/model/plan/use-plan-my-week-result';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 /** The seed range the backend accepts; a new one is "Shuffle". */
 const SEED_MAX = 2_147_483_647;
@@ -32,6 +32,7 @@ const keyOf = (date: CalendarDate, meal: MealSlotType): string => `${date.value}
  * - **Undo removes exactly what Add wrote**, entry by entry.
  */
 export const usePlanMyWeek = (weekStart: CalendarDate, today: CalendarDate): UsePlanMyWeekResult => {
+  const t = useTranslations();
   const { mealPlanStore } = useStores();
   const locale = useLocale();
   const [visible, setVisible] = useState(false);
@@ -103,11 +104,11 @@ export const usePlanMyWeek = (weekStart: CalendarDate, today: CalendarDate): Use
     if (added.length === ValueConstants.zero) return;
     toastStore.getState().show({
       severity: SeverityType.Neutral,
-      message: t().mealPlan.planWeek.added.replace('{n}', String(added.length)),
-      actionLabel: t().mealPlan.undo,
+      message: t.mealPlan.planWeek.added.replace('{n}', String(added.length)),
+      actionLabel: t.mealPlan.undo,
       onAction: () => void Promise.all(added.map((entry) => mealPlanStore.getState().remove(entry))),
     });
-  }, [mealPlanStore, toAdd, today]);
+  }, [mealPlanStore, toAdd, today, t]);
 
   return {
     visible,

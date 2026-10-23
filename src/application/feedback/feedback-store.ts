@@ -1,5 +1,5 @@
-import type { BoundStore } from '@application/store/bound-store';
-import { create } from 'zustand';
+import type { StoreApi } from 'zustand/vanilla';
+import { createStore } from 'zustand/vanilla';
 import { type Failure, UnknownFailure } from '@core/failure';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
 import type { FeedbackStore } from '@application/feedback/feedback-store-contract';
@@ -19,10 +19,10 @@ interface FeedbackStoreDeps {
  *   showed somebody else's failure. Errors are page-scoped, as in the auth and
  *   favorites stores; only `isSubmitting` is shared.
  */
-export const configureFeedbackStore = (deps: FeedbackStoreDeps): BoundStore<FeedbackStore> => {
+export const configureFeedbackStore = (deps: FeedbackStoreDeps): StoreApi<FeedbackStore> => {
   const { submitFeedbackUseCase } = deps;
 
-  return create<FeedbackStore>((set) => ({
+  return createStore<FeedbackStore>((set) => ({
     isSubmitting: false,
     submit: async (input: FeedbackSubmission): Promise<Failure | null> => {
       set({ isSubmitting: true });

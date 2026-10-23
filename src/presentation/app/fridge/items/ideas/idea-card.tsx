@@ -5,7 +5,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontSizes, fontWeights, fridgeSizes, iconSizes, lineHeights, opacities, radii, spacing } from '@presentation/base/theme';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { IdeaMeter } from '@presentation/app/fridge/items/ideas/idea-meter';
 import { MissingChips } from '@presentation/app/fridge/items/ideas/missing-chips';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -29,9 +29,10 @@ export interface IdeaCardProps {
  * - **Once added, the link turns into a disabled "✓ Added to your list"**.
  */
 export const IdeaCard = ({ idea, added, onCook, onAddMissing }: IdeaCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().fridge;
-  const meta = [copy.minutes.replace('{n}', String(idea.totalMinutes)), difficultyLabel(idea.difficulty)];
+  const copy = t.fridge;
+  const meta = [copy.minutes.replace('{n}', String(idea.totalMinutes)), difficultyLabel(t, idea.difficulty)];
 
   return (
     <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>

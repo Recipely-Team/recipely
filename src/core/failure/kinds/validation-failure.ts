@@ -36,7 +36,7 @@ export class ValidationFailure extends Failure {
    * is treated as a fieldless message. Purely additive: `message`/`field`
    * keep working unchanged for existing callers.
    */
-  get fieldErrors(): ValidationFieldError[] {
+  fieldErrors(): ValidationFieldError[] {
     return this.message.split(CharConstants.semicolonSpace).map((segment) => {
       const separatorIndex = segment.indexOf(CharConstants.colonSpace);
       if (separatorIndex === ValueConstants.minusOne) {

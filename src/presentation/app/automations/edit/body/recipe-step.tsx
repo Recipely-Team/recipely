@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import { ActivityIndicator, FlatList, StyleSheet, TextInput, View } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -11,7 +12,7 @@ import { AutomationMetrics } from '@presentation/base/widgets/instagram/automati
 import { ADD_FOOD_SEARCH_DEBOUNCE_MS } from '@presentation/base/widgets/diary/add-food/list/search-debounce';
 import { RecipeOptionRow } from '@presentation/app/automations/edit/items/recipe-option-row';
 import { borderWidths, fontSizes, fontWeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 
 export interface RecipeStepProps {
@@ -27,14 +28,15 @@ export interface RecipeStepProps {
  * from the first page.
  */
 export const RecipeStep = ({ selected, onSelect, scrollable }: RecipeStepProps): React.JSX.Element => {
+  const t = useTranslations();
   // Stable, so a memoized RecipeOptionRow is not re-rendered by a new arrow on every render.
   const onSelectHit = useCallback((hit: { id: string; name: string; imageUrl: string | null }) => onSelect(hit.id, hit.name, hit.imageUrl), [onSelect]);
   const colors = useTheme().colors;
   const { automationsStore } = useStores();
-  const recipes = automationsStore((s) => s.recipes);
+  const recipes = useStore(automationsStore, (s) => s.recipes);
   const [query, setQuery] = useState(CharConstants.empty);
   const debounced = useDebouncedValue(query.trim(), ADD_FOOD_SEARCH_DEBOUNCE_MS);
-  const copy = t().instagram;
+  const copy = t.instagram;
 
   useEffect(() => {
     void automationsStore.getState().searchRecipes(debounced);

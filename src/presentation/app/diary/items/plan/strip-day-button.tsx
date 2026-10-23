@@ -7,7 +7,7 @@ import { formatPlanWeekday } from '@presentation/base/utils/meal-plan/format-pla
 import { formatPlanDay } from '@presentation/base/utils/meal-plan/format-plan-day';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { borderWidths, fontSizes, fontWeights, mealPlanSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface StripDayButtonProps {
@@ -29,9 +29,10 @@ export interface StripDayButtonProps {
  * `primary`".
  */
 export const StripDayButton = ({ date, selected, isToday, mealCount, kcal, goal, onPress }: StripDayButtonProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const label = [
     strings.dayA11y.replace('{date}', formatPlanDay(date, locale)).replace('{count}', String(mealCount)).replace('{kcal}', formatWholeNumber(kcal, locale)),
     isToday ? strings.today : CharConstants.empty,

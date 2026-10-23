@@ -7,7 +7,7 @@ import { ChefsSoonHero } from '@presentation/app/creators/items/chefs-soon-hero'
 import { GhostCreatorGrid } from '@presentation/app/creators/items/ghost-creator-grid';
 import { CreatorApplyCard } from '@presentation/app/creators/items/creator-apply-card';
 import { ChefsSoonMetrics } from '@presentation/app/creators/model/chefs-soon-metrics';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface ChefsComingSoonProps {
   onApply: () => void;
@@ -19,8 +19,9 @@ export interface ChefsComingSoonProps {
  * faded grid the page will become, and the creator call to action over it.
  */
 export const ChefsComingSoon = ({ onApply }: ChefsComingSoonProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().creators.comingSoon;
+  const strings = t.creators.comingSoon;
   return (
     <View style={styles.root}>
       <ChefsSoonHero />

@@ -5,7 +5,7 @@ import { StoreStatus } from '@application/store/store-status';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, borderWidths, opacities } from '@presentation/base/theme';
-import { getLocale, t } from '@presentation/i18n';
+import { useTranslations, useLocale } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
 import { ValueConstants } from '@core/constants';
@@ -26,6 +26,8 @@ export interface ProfileStatsProps {
  * they are; likes and views have nowhere to go and stay plain.
  */
 export const ProfileStats = ({ stats }: ProfileStatsProps): React.JSX.Element | null => {
+  const t = useTranslations();
+  const locale = useLocale();
   const colors = useTheme().colors;
   const router = useRouter();
 
@@ -46,13 +48,13 @@ export const ProfileStats = ({ stats }: ProfileStatsProps): React.JSX.Element | 
           { backgroundColor: colors.surface, borderColor: colors.cardBorder },
         ]}
         accessibilityRole="button"
-        accessibilityLabel={t().common.retry}
+        accessibilityLabel={t.common.retry}
       >
         <ThemedText variant="caption" muted style={styles.statsErrorText}>
           {stats.message}
         </ThemedText>
         <ThemedText variant="caption" style={[styles.retryText, { color: colors.primary }]}>
-          {t().common.retry}
+          {t.common.retry}
         </ThemedText>
       </Pressable>
     );
@@ -61,10 +63,10 @@ export const ProfileStats = ({ stats }: ProfileStatsProps): React.JSX.Element | 
   if (stats.status === StoreStatus.Loaded) {
     const openTab = (tab: string) => (): void => router.push(RoutePaths.myRecipesTab(tab) as Href);
     const cells = [
-      { value: String(stats.recipeCount), label: t().profile.recipes, onPress: openTab(RoutePaths.myRecipesCreatedTab) },
-      { value: formatCompactCount(stats.totalLikes, getLocale()), label: t().profile.likes, onPress: null },
-      { value: formatCompactCount(stats.totalViews, getLocale()), label: t().profile.views, onPress: null },
-      { value: String(stats.savedCount), label: t().profile.saved, onPress: openTab(RoutePaths.myRecipesSavedTab) },
+      { value: String(stats.recipeCount), label: t.profile.recipes, onPress: openTab(RoutePaths.myRecipesCreatedTab) },
+      { value: formatCompactCount(stats.totalLikes, locale), label: t.profile.likes, onPress: null },
+      { value: formatCompactCount(stats.totalViews, locale), label: t.profile.views, onPress: null },
+      { value: String(stats.savedCount), label: t.profile.saved, onPress: openTab(RoutePaths.myRecipesSavedTab) },
     ];
 
     return (

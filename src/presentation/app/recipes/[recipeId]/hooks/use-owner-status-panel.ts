@@ -1,11 +1,12 @@
 import { useCallback, useState } from 'react';
+import { useStore } from 'zustand';
 import { type Href, useRouter } from 'expo-router';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { usePublishRecipe } from '@presentation/base/hooks/recipes/use-publish-recipe';
 import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { RoutePaths } from '@presentation/base/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import {
   PanelConfirm,
   type PanelConfirmType,
@@ -23,10 +24,11 @@ import type { UseOwnerStatusPanelResult } from '@presentation/app/recipes/[recip
  *   write the server's answer into the detail store the screen renders from.
  */
 export const useOwnerStatusPanel = (recipe: RecipeEntity): UseOwnerStatusPanelResult => {
+  const t = useTranslations();
   const router = useRouter();
   const { recipeDetailStore } = useStores();
-  const removePhoto = recipeDetailStore((s) => s.removePhoto);
-  const isPhotoBusy = recipeDetailStore((s) => s.isPhotoBusy);
+  const removePhoto = useStore(recipeDetailStore, (s) => s.removePhoto);
+  const isPhotoBusy = useStore(recipeDetailStore, (s) => s.isPhotoBusy);
   const { publish, unpublish, isBusy } = usePublishRecipe();
   const [confirm, setConfirm] = useState<PanelConfirmType | null>(null);
   const cover = recipe.media.find((item) => recipe.isCover(item));
@@ -43,9 +45,9 @@ export const useOwnerStatusPanel = (recipe: RecipeEntity): UseOwnerStatusPanelRe
     void (async () => {
       const failure = await removePhoto(recipe.id, cover);
       if (failure !== null) showErrorToast(failure);
-      else showSuccessToast(t().publishing.sitePhotoRemoved);
+      else showSuccessToast(t.publishing.sitePhotoRemoved);
     })();
-  }, [cover, removePhoto, recipe.id]);
+  }, [cover, removePhoto, recipe.id, t]);
 
   return {
     status: recipe.ownerStatus,

@@ -7,7 +7,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, mediaSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { RecipeSpecCard } from '@presentation/app/create-recipe/body/recipe-spec-card';
@@ -85,6 +85,7 @@ export const RecipePreviewEditor = ({
   onOpenPhotos,
   importReview = null,
 }: RecipePreviewEditorProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
@@ -106,17 +107,17 @@ export const RecipePreviewEditor = ({
       contentContainerStyle={styles.scroll}
     >
       <View style={[styles.cover, { backgroundColor: colors.skeleton }]}>
-        <RecipeImage accessibilityLabel={isBlank(recipe.name) ? null : recipe.name} uri={cover?.url} focus={cover?.focus} style={styles.coverImage} placeholderLabel={t().recipes.noPhoto} />
+        <RecipeImage accessibilityLabel={isBlank(recipe.name) ? null : recipe.name} uri={cover?.url} focus={cover?.focus} style={styles.coverImage} placeholderLabel={t.recipes.noPhoto} />
         {onOpenPhotos !== null ? (
           <Pressable
             onPress={onOpenPhotos}
             style={[styles.photoBtn, { backgroundColor: colors.overlay }]}
             accessibilityRole="button"
-            accessibilityLabel={cover !== undefined ? t().createRecipe.changePhoto : t().createRecipe.addPhoto}
+            accessibilityLabel={cover !== undefined ? t.createRecipe.changePhoto : t.createRecipe.addPhoto}
           >
             <Ionicons name="camera" size={iconSizes.md} color={colors.onOverlay} />
             <ThemedText variant="caption" style={[styles.photoLabel, { color: colors.onOverlay }]}>
-              {cover !== undefined ? t().createRecipe.changePhoto : t().createRecipe.addPhoto}
+              {cover !== undefined ? t.createRecipe.changePhoto : t.createRecipe.addPhoto}
             </ThemedText>
           </Pressable>
         ) : null}
@@ -129,7 +130,7 @@ export const RecipePreviewEditor = ({
           <TextInput
             value={recipe.name}
             onChangeText={onChangeName}
-            placeholder={t().createRecipe.namePlaceholder}
+            placeholder={t.createRecipe.namePlaceholder}
             placeholderTextColor={colors.textMuted}
             style={[
               styles.nameInput,
@@ -142,18 +143,18 @@ export const RecipePreviewEditor = ({
           {fieldErrors.name !== undefined ? <FieldErrorText message={fieldErrors.name} /> : null}
           <View style={styles.taxonomyRow}>
             <SelectTile
-              label={t().createRecipe.cuisineLabel}
+              label={t.createRecipe.cuisineLabel}
               emoji={cuisine?.emoji ?? TAXONOMY_PLACEHOLDER_EMOJI}
               value={cuisine?.name ?? null}
-              placeholder={t().createRecipe.selectCuisine}
+              placeholder={t.createRecipe.selectCuisine}
               onPress={() => setPicker(TaxonomyPickerKind.Cuisine)}
               error={fieldErrors.cuisine}
             />
             <SelectTile
-              label={t().createRecipe.categoryLabel}
+              label={t.createRecipe.categoryLabel}
               emoji={category.emoji}
               value={category.name}
-              placeholder={t().createRecipe.selectCategory}
+              placeholder={t.createRecipe.selectCategory}
               onPress={() => setPicker(TaxonomyPickerKind.Category)}
               error={fieldErrors.category}
             />
@@ -171,13 +172,13 @@ export const RecipePreviewEditor = ({
 
         <EditableItemsSection
           icon="restaurant-outline"
-          title={t().recipes.ingredients}
+          title={t.recipes.ingredients}
           count={ingredientCount}
           error={fieldErrors.ingredients}
           listGap={spacing.sm}
           // Ingredients are added per card; the section adds groups.
           onAdd={onAddIngredientGroup}
-          addLabel={t().createRecipe.addGroup}
+          addLabel={t.createRecipe.addGroup}
         >
           {ingredientGroups.map((group) => (
             <IngredientGroupCard
@@ -210,12 +211,12 @@ export const RecipePreviewEditor = ({
 
         <EditableItemsSection
           icon="flame"
-          title={t().recipes.instructions}
+          title={t.recipes.instructions}
           count={stepCount}
           error={fieldErrors.instructions}
           listGap={spacing.sm}
           onAdd={onAddStep}
-          addLabel={t().createRecipe.addStep}
+          addLabel={t.createRecipe.addStep}
         >
           {recipe.instructions.map((value, i) => (
             <StepRow
@@ -224,7 +225,7 @@ export const RecipePreviewEditor = ({
               value={value}
               onChange={(v) => onChangeStep(i, v)}
               onRemove={() => onRemoveStep(i)}
-              removeLabel={t().mediaPicker.remove}
+              removeLabel={t.mediaPicker.remove}
             />
           ))}
         </EditableItemsSection>

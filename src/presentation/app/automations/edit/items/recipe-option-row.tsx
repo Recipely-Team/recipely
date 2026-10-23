@@ -8,7 +8,7 @@ import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { borderWidths, fontSizes, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface RecipeOptionRowProps {
   hit: RecipeFoodHit;
@@ -22,10 +22,11 @@ export interface RecipeOptionRowProps {
  * it shows why and cannot be chosen.
  */
 const RecipeOptionRowComponent = ({ hit, selected, onSelect }: RecipeOptionRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const copy = t().instagram;
-  const meta = hit.isDraft ? copy.draftUnavailable : t().diary.perServingMeta.replace('{k}', formatWholeNumber(hit.perServing.calories, locale));
+  const copy = t.instagram;
+  const meta = hit.isDraft ? copy.draftUnavailable : t.diary.perServingMeta.replace('{k}', formatWholeNumber(hit.perServing.calories, locale));
   return (
     <Pressable
       onPress={() => onSelect(hit)}

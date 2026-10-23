@@ -105,7 +105,7 @@ export class FoodLogEntryEntity extends BaseEntity<FoodLogEntryEntityProps> {
   }
 
   /** A product entry as its product at the logged unit, with the quantity the edit sheet starts on; null otherwise. */
-  get loggedProduct(): { product: LoggableProduct; quantity: FoodQuantity } | null {
+  loggedProduct(): { product: LoggableProduct; quantity: FoodQuantity } | null {
     const product = this.props.product;
     if (product === null) return null;
     const loggable = LoggableProduct.fromLogged(this.props.name, product, this.props.nutrients.scale(ValueConstants.one / this.props.servings));
@@ -114,7 +114,7 @@ export class FoodLogEntryEntity extends BaseEntity<FoodLogEntryEntityProps> {
   }
 
   /** This entry as one serving of a food — what the edit sheet's stepper multiplies. */
-  get food(): LoggableFood {
+  food(): LoggableFood {
     return LoggableFood.of({
       name: this.props.name,
       perServing: this.props.nutrients.scale(ValueConstants.one / this.props.servings),

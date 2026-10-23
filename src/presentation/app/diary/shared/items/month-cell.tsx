@@ -8,7 +8,7 @@ import { borderWidths, colorAlphas, diarySizes, fontSizes, fontWeights, opacitie
 import { StatusMarker } from '@presentation/app/diary/shared/items/status-marker';
 import { statusMarkerFor } from '@presentation/app/diary/shared/model/status-marker-for';
 import { dayA11yLabel } from '@presentation/app/diary/shared/model/day-a11y-label';
-import { useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface MonthCellProps {
@@ -28,6 +28,7 @@ export interface MonthCellProps {
  * is underlined, the selected day outlined, future days dimmed and inert.
  */
 export const MonthCell = ({ date, status, calories, isToday, isSelected, isFuture, height, onPress }: MonthCellProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const tones = useDiaryTones();
   const locale = useLocale();
@@ -39,7 +40,7 @@ export const MonthCell = ({ date, status, calories, isToday, isSelected, isFutur
       onPress={() => onPress(date)}
       disabled={isFuture}
       accessibilityRole="button"
-      accessibilityLabel={dayA11yLabel(date, calories, status, locale)}
+      accessibilityLabel={dayA11yLabel(t, date, calories, status, locale)}
       accessibilityState={{ selected: isSelected, disabled: isFuture }}
       style={[
         styles.cell,

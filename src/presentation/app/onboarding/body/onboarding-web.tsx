@@ -6,7 +6,7 @@ import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, layoutSizes, opacities, controlSizes, targetSizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { OnboardingHero } from '@presentation/app/onboarding/items/onboarding-hero';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
@@ -30,6 +30,7 @@ export interface OnboardingWebProps {
 
 /** Two-column desktop welcome screen: copy + actions beside a large gradient hero. */
 export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { width } = useWindowDimensions();
   const [index, setIndex] = useState(ValueConstants.zero);
@@ -53,8 +54,8 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
   };
 
   const arrows: { icon: 'chevron-back' | 'chevron-forward'; delta: number; disabled: boolean; label: string }[] = [
-    { icon: 'chevron-back', delta: -1, disabled: atStart, label: t().onboarding.previousSlide },
-    { icon: 'chevron-forward', delta: 1, disabled: atEnd, label: t().onboarding.nextSlide },
+    { icon: 'chevron-back', delta: -1, disabled: atStart, label: t.onboarding.previousSlide },
+    { icon: 'chevron-forward', delta: 1, disabled: atEnd, label: t.onboarding.nextSlide },
   ];
 
   return (
@@ -66,8 +67,8 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
               <RecipelyLogo size={LOGO_SIZE} />
               <ThemedText style={styles.wordmark}>{SiteMetadata.appName}</ThemedText>
             </View>
-            <Pressable onPress={actions.onSkip} accessibilityRole="button" accessibilityLabel={t().onboarding.skip} style={styles.skip}>
-              <ThemedText style={[styles.skipLabel, { color: colors.textSubtle }]}>{t().onboarding.skip}</ThemedText>
+            <Pressable onPress={actions.onSkip} accessibilityRole="button" accessibilityLabel={t.onboarding.skip} style={styles.skip}>
+              <ThemedText style={[styles.skipLabel, { color: colors.textSubtle }]}>{t.onboarding.skip}</ThemedText>
             </Pressable>
           </View>
 

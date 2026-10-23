@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { ok } from '@core/result/result-helpers';
@@ -7,7 +7,7 @@ import type { ShoppingItemEntity } from '@domain/shopping/items/shopping-item-en
 import type { ShoppingAddResult } from '@domain/shopping/items/shopping-add-result';
 import { orderedShoppingItems } from '@domain/shopping/items/ordered-shopping-items';
 import { compareShoppingItems } from '@domain/shopping/items/compare-shopping-items';
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
 import { KeyedRequestEpoch } from '@application/store/keyed-request-epoch';
 import { RequestEpoch } from '@application/store/request-epoch';
@@ -74,13 +74,13 @@ const hasItem = (list: PagedList<ShoppingItemEntity>, id: string): boolean =>
  * - **User-scoped**: cleared on sign-out (`clearSessionCaches`); an answer that
  *   lands after that is dropped, so the old account's lines never come back.
  */
-export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundStore<ShoppingListStore> => {
+export const configureShoppingListStore = (deps: ShoppingListStoreDeps): StoreApi<ShoppingListStore> => {
   const ticks = new Map<string, number>();
   const removals = new KeyedRequestEpoch();
   const session = new RequestEpoch();
   const toBuyReads = new RequestEpoch();
 
-  return create<ShoppingListStore>((set, get) => {
+  return createStore<ShoppingListStore>((set, get) => {
     const loader = new PagedListLoader<ShoppingItemEntity>(() => get().list, (list) => set({ list }), (item) => item.id);
     const fetchPage = (page: number) => deps.list.execute(page, PageSizes.shoppingList);
     const hasMore = (): boolean => { const list = get().list; return list.status === StoreStatus.Loaded && list.hasMore; };

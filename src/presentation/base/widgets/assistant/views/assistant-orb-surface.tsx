@@ -1,3 +1,4 @@
+import type { TranslationsType } from '@presentation/i18n';
 import { useState } from 'react';
 import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
@@ -12,7 +13,7 @@ import { assistantIsLive } from '@application/assistant/session/assistant-is-liv
 import { assistantSheetGeometry } from '@presentation/base/widgets/assistant/assistant-sheet-geometry';
 import { useKeyboardHeight } from '@presentation/base/hooks/interaction/use-keyboard-height';
 import { spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AssistantOrbSurfaceProps {
   status: AssistantStatusType;
@@ -57,6 +58,7 @@ export const AssistantOrbSurface = ({
   onClose,
   restingBottom,
 }: AssistantOrbSurfaceProps): React.JSX.Element => {
+  const t = useTranslations();
   const { height } = useWindowDimensions();
   const [isTyping, setIsTyping] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -74,7 +76,7 @@ export const AssistantOrbSurface = ({
     {
       key: 'voice',
       icon: (live && isMuted ? 'mic-off' : 'mic') as 'mic' | 'mic-off',
-      label: !live ? t().assistant.start : isMuted ? t().assistant.unmute : t().assistant.mute,
+      label: !live ? t.assistant.start : isMuted ? t.assistant.unmute : t.assistant.mute,
       isOn: live && isMuted,
       onPress: () => {
         setIsMenuOpen(false);
@@ -85,7 +87,7 @@ export const AssistantOrbSurface = ({
     {
       key: 'text',
       icon: 'chatbubble-ellipses-outline' as const,
-      label: isTyping ? t().assistant.voice : t().assistant.keyboard,
+      label: isTyping ? t.assistant.voice : t.assistant.keyboard,
       isOn: isTyping,
       onPress: () => {
         setIsMenuOpen(false);
@@ -95,7 +97,7 @@ export const AssistantOrbSurface = ({
     {
       key: 'end',
       icon: 'close' as const,
-      label: t().assistant.close,
+      label: t.assistant.close,
       isDanger: true,
       onPress: () => {
         setIsMenuOpen(false);
@@ -111,7 +113,7 @@ export const AssistantOrbSurface = ({
           style={StyleSheet.absoluteFill}
           onPress={() => setIsMenuOpen(false)}
           accessibilityRole="button"
-          accessibilityLabel={t().assistant.close}
+          accessibilityLabel={t.assistant.close}
         />
       ) : null}
 
@@ -136,8 +138,8 @@ export const AssistantOrbSurface = ({
         <Pressable
           onPress={() => setIsMenuOpen((open) => !open)}
           accessibilityRole="button"
-          accessibilityLabel={t().assistant.title}
-          accessibilityValue={{ text: assistantStatusValue(status, isMuted) }}
+          accessibilityLabel={t.assistant.title}
+          accessibilityValue={{ text: assistantStatusValue(t, status, isMuted) }}
         >
           <AssistantOrb status={status} isMuted={isMuted} />
         </Pressable>
@@ -149,9 +151,9 @@ export const AssistantOrbSurface = ({
 /** Roughly an eighth up the screen — clear of the tab bar, under the thumb. */
 const ORB_RESTING_SHARE = 0.13;
 
-function assistantStatusValue(status: AssistantStatusType, isMuted: boolean): string {
-  if (isMuted) return t().assistant.unmute;
-  return status === AssistantStatus.Idle ? t().assistant.idle : t().assistant.listening;
+function assistantStatusValue(t: TranslationsType, status: AssistantStatusType, isMuted: boolean): string {
+  if (isMuted) return t.assistant.unmute;
+  return status === AssistantStatus.Idle ? t.assistant.idle : t.assistant.listening;
 }
 
 const styles = StyleSheet.create({

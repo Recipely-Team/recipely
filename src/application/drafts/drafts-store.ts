@@ -1,6 +1,6 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import type { DraftsStore } from '@application/drafts/drafts-store-contract';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
@@ -34,8 +34,8 @@ interface DraftsStoreDeps {
  * - **Edits show without a reload**: a saved draft replaces its row or joins
  *   the top; a deleted one leaves the list and, if it was the latest, the card.
  */
-export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsStore> =>
-  create<DraftsStore>((set, get) => {
+export const configureDraftsStore = (deps: DraftsStoreDeps): StoreApi<DraftsStore> =>
+  createStore<DraftsStore>((set, get) => {
     const loader = new PagedListLoader<RecipeDraft>(() => get().drafts, (drafts) => set({ drafts }), (draft) => draft.id);
     const fetchPage = (page: number) => deps.listDraftsUseCase.execute(page);
     const latest = new RequestEpoch();

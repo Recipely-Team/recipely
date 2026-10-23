@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { useStore } from 'zustand';
 import { StyleSheet, View } from "react-native";
 import type { RecipeSummaryEntity } from "@domain/recipes/recipe-summary-entity";
 import { ValueConstants } from "@core/constants";
@@ -22,7 +23,7 @@ const CreatorRecipeCellComponent = ({
   onToggleSave,
 }: CreatorRecipeCellProps): React.JSX.Element => {
   // Its own recipe only, so saving one card does not re-render the grid.
-  const saved = useStores().savedRecipesStore((s) => s.savedIds.has(recipe.id));
+  const saved = useStore(useStores().savedRecipesStore, (s) => s.savedIds.has(recipe.id));
   return (
     <View style={styles.cell}>
       {expanded ? (

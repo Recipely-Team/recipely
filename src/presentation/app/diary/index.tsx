@@ -26,7 +26,7 @@ import { useMealPlanWeek } from '@presentation/app/diary/hooks/plan/use-meal-pla
 import { DiaryModeSwitch } from '@presentation/app/diary/items/plan/diary-mode-switch';
 import { PlanView } from '@presentation/app/diary/body/plan/plan-view';
 import { DiaryMode } from '@presentation/app/diary/model/plan/diary-mode';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -42,6 +42,7 @@ import { ValueConstants } from '@core/constants';
  *   scrolls on its own so its shopping bar can stay fixed on a phone.
  */
 export const DiaryScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
@@ -61,7 +62,7 @@ export const DiaryScreen = (): React.JSX.Element => {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: isWebShell ? ValueConstants.zero : insets.top }]}>
-      <PageTitle subject={t().diary.title} />
+      <PageTitle subject={t.diary.title} />
       {isWebShell ? null : (
         <DiaryAppBar showCalendar={!isExpanded} onOpenCalendar={() => router.push(RoutePaths.diaryCalendar)} onOpenGoals={sheets.openGoals} />
       )}

@@ -12,7 +12,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices, opacities, BrandColors, durations, maxFontScales } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { countBadgeLabel } from '@presentation/base/widgets/text/count-badge-label';
 
@@ -41,12 +41,13 @@ export const FilterSortFab = ({
   activeCount,
   onPress,
 }: FilterSortFabProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   // The widest layout seen: a web font loading after the first layout widens the label.
   const [extendedWidth, setExtendedWidth] = useState(ValueConstants.zero);
   const [labelWidth, setLabelWidth] = useState(ValueConstants.zero);
 
-  const label = t().recipes.filtersAndSort;
+  const label = t.recipes.filtersAndSort;
   const accessibilityLabel = activeCount > ValueConstants.zero ? `${label}, ${activeCount}` : label;
   const badgeText = countBadgeLabel(activeCount);
 

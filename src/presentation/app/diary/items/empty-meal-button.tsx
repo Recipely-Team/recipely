@@ -2,7 +2,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, diarySizes, fontSizes, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface EmptyMealButtonProps {
   /** The meal's name, for the spoken label. */
@@ -12,8 +12,9 @@ export interface EmptyMealButtonProps {
 
 /** A meal with nothing in it: a dashed box reading "Nothing logged yet" and "+ Add" (design spec → Food Diary §4). */
 export const EmptyMealButton = ({ mealName, onPress }: EmptyMealButtonProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().diary;
+  const strings = t.diary;
   return (
     <Pressable
       onPress={onPress}

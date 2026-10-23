@@ -9,7 +9,7 @@ import { unitWord } from '@presentation/base/utils/diary/units/unit-word';
 import { hasUnitWord } from '@presentation/base/utils/diary/units/has-unit-word';
 import { formatFoodPortion } from '@presentation/base/utils/diary/units/format-food-portion';
 import { borderWidths, diarySizes, fontSizes, fontWeights, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface UnitChipsProps {
   units: readonly FoodUnit[];
@@ -21,14 +21,15 @@ export interface UnitChipsProps {
 
 /** The amount's units as wrapping radio chips: serving units ("1 bardak · 200 ml") first, then "ml" / "g". */
 export const UnitChips = ({ units, baseUnit, selected, onSelect }: UnitChipsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
   const { isWebShell } = useLayout();
   const label = (unit: FoodUnit): string => {
-    if (isBaseUnitKey(unit.key) || baseUnit === null) return unitWord(unit.key, ValueConstants.zero);
-    const inBase = formatFoodPortion({ key: baseUnit, amount: ValueConstants.one }, unit.amount, baseUnit, locale);
+    if (isBaseUnitKey(unit.key) || baseUnit === null) return unitWord(t, unit.key, ValueConstants.zero);
+    const inBase = formatFoodPortion(t, { key: baseUnit, amount: ValueConstants.one }, unit.amount, baseUnit, locale);
     // A unit the app has no word for yet is offered as its amount: "300 ml".
-    return hasUnitWord(unit.key) ? t().diary.unitChip.replace('{u}', unitWord(unit.key, ValueConstants.one)).replace('{a}', inBase) : inBase;
+    return hasUnitWord(t, unit.key) ? t.diary.unitChip.replace('{u}', unitWord(t, unit.key, ValueConstants.one)).replace('{a}', inBase) : inBase;
   };
   return (
     <View style={styles.row} accessibilityRole="radiogroup">

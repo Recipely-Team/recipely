@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { act } from 'react-test-renderer';
 import { byRole, renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { NotificationsBellButton } from '@presentation/base/widgets/navigation/notifications-bell-button';
@@ -12,12 +13,8 @@ jest.mock('expo-router', () => ({
 }));
 jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: jest.fn(() => ({
-    notificationsStore: jest.fn((selector: (state: { unreadCount: number }) => unknown) =>
-      selector({ unreadCount: mockUnread }),
-    ),
-    authStore: jest.fn((selector: (state: { state: { status: string } }) => unknown) =>
-      selector({ state: { status: mockGuest ? 'unauthenticated' : 'authenticated' } }),
-    ),
+    notificationsStore: mockStoreReading(() => ({ unreadCount: mockUnread })),
+    authStore: mockStoreReading(() => ({ state: { status: mockGuest ? 'unauthenticated' : 'authenticated' } })),
   })),
 }));
 jest.mock('@expo/vector-icons/Ionicons', () => {

@@ -10,6 +10,6 @@ export class ClearMealPlanWeekUseCase {
 
   execute(day: CalendarDate): Promise<Result<void, Failure>> {
     const week = MealPlanWeek.of(day, []);
-    return this.repo.clear(week.start, week.end);
+    return this.repo.clear(week.start, week.end());
   }
 }

@@ -1,6 +1,6 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
 import type { CreatorsStore } from '@application/creators/creators-store-contract';
 import type { ListCreatorsUseCase } from '@application/creators/list/list-creators-use-case';
@@ -21,8 +21,8 @@ interface CreatorsStoreDeps {
  * - **The newest first-page request wins**; a next page started before it is
  *   dropped (the loader's generation).
  */
-export const configureCreatorsStore = (deps: CreatorsStoreDeps): BoundStore<CreatorsStore> =>
-  create<CreatorsStore>((set, get) => {
+export const configureCreatorsStore = (deps: CreatorsStoreDeps): StoreApi<CreatorsStore> =>
+  createStore<CreatorsStore>((set, get) => {
     const loader = new PagedListLoader(
       () => get().creators,
       (creators) => set({ creators }),

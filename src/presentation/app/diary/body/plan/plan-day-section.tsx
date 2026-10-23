@@ -11,7 +11,7 @@ import { PlanSlotCard } from '@presentation/app/diary/body/plan/plan-slot-card';
 import { formatPlanDay } from '@presentation/base/utils/meal-plan/format-plan-day';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { borderWidths, fontSizes, fontWeights, mealPlanSizes, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface PlanDaySectionProps {
@@ -33,10 +33,11 @@ const MEALS: readonly MealSlotType[] = Object.values(MealSlot);
  * ("N kcal over your goal" past it), then the four meal slots.
  */
 export const PlanDaySection = ({ week, date, today, goal, onAdd, onOpen, onStep, onOptions }: PlanDaySectionProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const tones = useDiaryTones();
   const locale = useLocale();
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const planned = week.dayCalories(date);
   const over = goal > ValueConstants.zero && planned > goal;
   const canAdd = week.canPlanOn(date, today) && !week.isDayFull(date);

@@ -23,7 +23,7 @@ describe('product names', () => {
 
 describe('LoggableProduct', () => {
   it('totals the chosen quantity from per-100 figures', () => {
-    const product = ayran.loggable;
+    const product = ayran.loggable();
     const twoGlasses = FoodQuantity.of({ key: 'glass', amount: 200 }, 2);
     const total = product.nutrientsFor(twoGlasses);
     expect(total.calories).toBeCloseTo(104);
@@ -32,7 +32,7 @@ describe('LoggableProduct', () => {
   });
 
   it('builds a product entry: servings is the quantity, nutrients the totals, the unit travels with it', () => {
-    const entry = ayran.loggable.entryFor(CalendarDate.of(2026, 9, 30), MealSlot.Lunch, FoodQuantity.of({ key: 'ml', amount: 1 }, 250));
+    const entry = ayran.loggable().entryFor(CalendarDate.of(2026, 9, 30), MealSlot.Lunch, FoodQuantity.of({ key: 'ml', amount: 1 }, 250));
     expect(entry.servings).toBe(250);
     expect(entry.nutrients.calories).toBeCloseTo(65);
     expect(entry.recipeId).toBeNull();
@@ -47,7 +47,7 @@ describe('LoggableProduct', () => {
       recipeId: null,
       product: { source: 'curated', foodVariantId: 'v2', offBarcode: null, unitKey: 'glass', unitAmount: 200 },
     });
-    const logged = entry.loggedProduct;
+    const logged = entry.loggedProduct();
     expect(entry.isQuickAdd).toBe(false);
     expect(logged?.quantity.value).toBe(1.5);
     expect(logged?.product.nutrientsFor(logged.quantity.increment()).calories).toBeCloseTo(104);

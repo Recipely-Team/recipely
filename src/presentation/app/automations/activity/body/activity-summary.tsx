@@ -12,7 +12,7 @@ import { KeywordChips } from '@presentation/app/automations/shared/items/keyword
 import { AutomationSwitch } from '@presentation/app/automations/shared/items/automation-switch';
 import { SendFilter, type SendFilterType } from '@presentation/app/automations/activity/model/send-filter';
 import { borderWidths, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface ActivitySummaryProps {
   rule: DmRuleEntity;
@@ -24,9 +24,10 @@ export interface ActivitySummaryProps {
 
 /** Above the activity (spec §4): the post, every keyword, the recipe and the switch; the Sent count; the segment. */
 export const ActivitySummary = ({ rule, isPaused, filter, onFilter, onToggle }: ActivitySummaryProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const copy = t().instagram;
+  const copy = t.instagram;
   return (
     <View style={styles.stack}>
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>

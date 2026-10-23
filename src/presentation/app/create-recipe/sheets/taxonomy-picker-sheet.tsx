@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useStore } from 'zustand';
 import { TaxonomyPickerKind } from '@presentation/app/create-recipe/model/taxonomy-picker-kind';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -6,7 +7,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
 import { CUISINE_KEY_VALUES } from '@domain/recipes/taxonomy/cuisine-key';
@@ -50,11 +51,12 @@ const localItems = (
  * so the picker is never empty before the store loads, while offline, or on error.
  */
 const useCatalog = (kind: TaxonomyPickerKind): Catalog => {
-  const tr = t();
+  const t = useTranslations();
+  const tr = t;
   const { taxonomyStore } = useStores();
-  const status = taxonomyStore((s) => s.status);
-  const cuisines = taxonomyStore((s) => s.cuisines);
-  const categories = taxonomyStore((s) => s.categories);
+  const status = useStore(taxonomyStore, (s) => s.status);
+  const cuisines = useStore(taxonomyStore, (s) => s.cuisines);
+  const categories = useStore(taxonomyStore, (s) => s.categories);
 
   return useMemo(() => {
     const ready = status === StoreStatus.Ready;

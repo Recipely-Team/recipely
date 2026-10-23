@@ -166,7 +166,7 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
 1. **One declaration per file** — one EXPORTED class, interface, type alias or component per `.ts`/`.tsx`.
    Exempt: barrel `index.ts`, a component's `Props` interface, non-exported types. A shape only its own
    consumer names stays unexported above it; a factory gets no alias for its return type (a store module
-   exports only its factory, typed `BoundStore<XStore>`). `check:structure` rule A. A store's contract
+   exports only its factory, typed `StoreApi<XStore>` from `zustand/vanilla`). `check:structure` rule A. A store's contract
    (`XStore`, state + actions, in `x-store-contract.ts`) is not a state: its `state` field is the union
    `XState` of named states (`XLoaded`, `XError`, …), one interface each in a `states/` folder.
 2. **Class vs. function** — classes for use cases, repositories, HTTP clients, storage, domain entities;
@@ -197,15 +197,25 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
    and `FlatList` turns it ON by default on Android, so leaving it out is not enough (v1.7.0). Bound mounted rows with
    `windowSize` / `maxToRenderPerBatch` / `initialNumToRender`. `check:structure` rule R.
 7. **Component props interface** — `ComponentNameProps`, exported, above the component in the same file.
-8. **Custom hooks** — prefix `use`, one hook per file, no store state passed as props. Select the narrowest
-   value a component reads (`s.state.status`, `s.savedIds.has(id)`), never a whole state object for one field;
-   list rows are `memo` with stable callbacks. Auth goes through `useSignedInUserId` / `useIsSignedIn` /
-   `useSignedInUser`. `check:structure` rule AW.
+8. **Hooks, stores and the React Compiler** — prefix `use`, one hook per file, no store state passed as props.
+   Stores are vanilla (`createStore` from `zustand/vanilla`, no React in `application/`); components read them
+   with `useStore(store, selector)`, selecting the narrowest value (`s.state.status`, `s.savedIds.has(id)`).
+   The React Compiler memoizes: new code writes no `useMemo`/`useCallback`/`memo` except as a documented
+   escape hatch. Rules of React are gated — no ref read or written during render (`useEffectEvent` inside
+   effects, `useLatestRef` for handlers), no `setState` mirrored through an effect (derive it, key it, or
+   `useSyncExternalStore` for an outside source), no `eslint-disable` of a hooks rule, no `try…finally` in a
+   hook (`.finally()` or a plain async function), no prop default reading another prop, Reanimated values via
+   `.get()`/`.set()`; outside mutable state (the clock: `useToday`) is subscribed to, never read in render.
+   A getter returns a stored value; anything it would compute is a method. `'use no memo'` only with a
+   one-line reason. Auth goes through `useSignedInUserId` / `useIsSignedIn` / `useSignedInUser`.
+   `check:structure` rules AW and `assert-react-compiler.mjs`; eslint `react-hooks/*`.
 9. **FlatList keyExtractor** — always stable, never the array index for mutable lists.
 10. **Accessibility** — every `Pressable` / `TouchableOpacity` has `accessibilityRole`, and
     `accessibilityLabel` when the visual label is not plain text.
-11. **i18n** — all user-visible strings via `t()` from `src/presentation/i18n/`; every locale in sync
-    (`i18n-copy` skill).
+11. **i18n** — all user-visible strings from `src/presentation/i18n/`; every locale in sync (`i18n-copy`
+    skill). The language is state: components and hooks read `const t = useTranslations()`, text helpers take
+    the catalogue as their first parameter, and the global `t()` is only for code that runs at event time
+    (toasts, alerts, notifications) — eslint `no-restricted-imports` blocks it everywhere else.
 12. **Error handling** — `Result<T, Failure>` everywhere; no thrown exceptions in domain / application code.
 13. **Platform files** — `*.web.ts` / `*.ts` pairs use RN platform-extension resolution (e.g. `kv-store`);
     types shared by the pair live in one separate file.

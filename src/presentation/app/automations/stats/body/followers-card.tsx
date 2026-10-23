@@ -11,7 +11,7 @@ import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-n
 import { formatStatsDay } from '@presentation/app/automations/stats/model/format-stats-day';
 import { StatsMetrics } from '@presentation/app/automations/stats/model/stats-metrics';
 import { borderWidths, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface FollowersCardProps {
   stats: CreatorStats;
@@ -28,10 +28,11 @@ const EDGES = 2;
  * tracking began inside the range the line starts there, after a dashed run.
  */
 export const FollowersCard = ({ stats, wide }: FollowersCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const surfaces = useSeveritySurfaces();
   const locale = useLocale();
-  const copy = t().creatorStats;
+  const copy = t.creatorStats;
   const [width, setWidth] = useState<number>(ValueConstants.zero);
   const height = wide ? StatsMetrics.sparkHeightWide : StatsMetrics.sparkHeight;
   const { current, change, trackingSince, points } = stats.followers;

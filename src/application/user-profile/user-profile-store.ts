@@ -1,6 +1,6 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import type { UserProfileStore } from '@application/user-profile/user-profile-store-contract';
 import type { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 
@@ -15,8 +15,8 @@ interface UserProfileStoreDeps {
  */
 export const configureUserProfileStore = (
   deps: UserProfileStoreDeps,
-): BoundStore<UserProfileStore> => {
-  return create<UserProfileStore>((set) => ({
+): StoreApi<UserProfileStore> => {
+  return createStore<UserProfileStore>((set) => ({
     state: { status: StoreStatus.Idle },
     load: async (userId: string) => {
       set({ state: { status: StoreStatus.Loading } });

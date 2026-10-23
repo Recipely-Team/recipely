@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
 import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/use-assistant-draft-actions';
 import { useAssistantExitActions } from '@presentation/app/create-recipe/hooks/use-assistant-exit-actions';
@@ -22,6 +22,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
 export const CreateRecipeScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const vm = useCreateRecipe();
   // Only the assistant's publish is confirmed here (speech may be misheard).
@@ -146,9 +147,9 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       />
       <ConfirmSheet
         visible={assistantPublishOpen}
-        title={t().assistant.publishTitle}
-        message={t().assistant.publishMessage}
-        confirmLabel={t().assistant.publishConfirm}
+        title={t.assistant.publishTitle}
+        message={t.assistant.publishMessage}
+        confirmLabel={t.assistant.publishConfirm}
         onConfirm={() => {
           setAssistantPublishOpen(false);
           vm.onSaveAndPublish();
@@ -158,18 +159,18 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
 
       <ConfirmSheet
         visible={vm.saveError !== null}
-        title={t().createRecipe.saveErrorTitle}
+        title={t.createRecipe.saveErrorTitle}
         message={vm.saveError ?? CharConstants.empty}
-        confirmLabel={t().common.retry}
+        confirmLabel={t.common.retry}
         onConfirm={vm.onConfirmSaveError}
         onClose={vm.onCloseSaveError}
       />
       <FeedbackDialog
         severity={SeverityType.Danger}
         visible={vm.saveIssue !== null}
-        title={t().createRecipe.saveErrorTitle}
+        title={t.createRecipe.saveErrorTitle}
         message={vm.saveIssue ?? CharConstants.empty}
-        primaryLabel={t().common.ok}
+        primaryLabel={t.common.ok}
         onPrimary={vm.onCloseSaveIssue}
         onClose={vm.onCloseSaveIssue}
       />

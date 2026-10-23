@@ -7,7 +7,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, fontSizes, fontWeights, fridgeSizes, iconSizes, lineHeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { PhotoTile } from '@presentation/app/fridge/items/capture/photo-tile';
 import { AddPhotoTile } from '@presentation/app/fridge/items/capture/add-photo-tile';
 import { FridgePrimaryButton } from '@presentation/app/fridge/items/buttons/fridge-primary-button';
@@ -31,8 +31,9 @@ export interface CaptureStepProps {
  * comes back here with a danger banner and the photos kept.
  */
 export const CaptureStep = ({ photos, failure, canUseCamera, onTakePhoto, onChoosePhotos, onRemovePhoto }: CaptureStepProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().fridge;
+  const copy = t.fridge;
   const room = FridgeLimits.photosMax - photos.length;
   const sources = (compact: boolean) => (
     <View style={styles.row}>
@@ -45,7 +46,7 @@ export const CaptureStep = ({ photos, failure, canUseCamera, onTakePhoto, onChoo
 
   return (
     <View style={styles.root}>
-      {failure === null ? null : <FormBanner severity="danger" message={fridgeFailureMessage(failure)} />}
+      {failure === null ? null : <FormBanner severity="danger" message={fridgeFailureMessage(t, failure)} />}
       <View style={styles.heading}>
         <SizedText accessibilityRole="header" size={fontSizes.display} weight={fontWeights.heavy} ratio={lineHeights.tight}>
           {copy.captureTitle}

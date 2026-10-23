@@ -5,7 +5,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { borderWidths, fontSizes, fontWeights, iconSizes, lineHeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface StatsEmptyProps {
   onCreate: () => void;
@@ -13,8 +13,9 @@ export interface StatsEmptyProps {
 
 /** No automations yet (spec state 2): what will appear here, and the way to make the first one. */
 export const StatsEmpty = ({ onCreate }: StatsEmptyProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().creatorStats;
+  const copy = t.creatorStats;
   return (
     <View style={styles.centre}>
       <View style={[styles.disc, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>

@@ -10,6 +10,7 @@
  * markup.
  */
 
+import { t } from '@presentation/i18n';
 import { act } from 'react-test-renderer';
 import {
   renderComponent,
@@ -32,7 +33,7 @@ jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
   return Icon;
 });
 
-const labels = sortKeyLabels();
+const labels = sortKeyLabels(t());
 
 const renderMenu = (
   current: SortKey = 'popular',

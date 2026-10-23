@@ -3,7 +3,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { toastStore } from '@presentation/base/feedback/toast-store';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { UseSaveRecipeResult } from '@presentation/base/hooks/recipes/use-save-recipe-result';
 import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-user-id';
 
@@ -18,6 +18,7 @@ import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-u
  * - **Unsaving offers Undo** — on the Saved tab the card vanishes at once.
  */
 export const useSaveRecipe = (): UseSaveRecipeResult => {
+  const t = useTranslations();
   const { savedRecipesStore, favoritesStore } = useStores();
   const userId = useSignedInUserId();
 
@@ -36,8 +37,8 @@ export const useSaveRecipe = (): UseSaveRecipeResult => {
       if (wasSaved) {
         toastStore.getState().show({
           severity: SeverityType.Neutral,
-          message: t().recipes.removedFromSaved,
-          actionLabel: t().common.undo,
+          message: t.recipes.removedFromSaved,
+          actionLabel: t.common.undo,
           onAction: () => {
             void favoritesStore.getState().addFavorite(userId, recipeId).then((undoFailure) => {
               if (undoFailure !== null) showErrorToast(undoFailure);
@@ -46,7 +47,7 @@ export const useSaveRecipe = (): UseSaveRecipeResult => {
         });
       }
     },
-    [favoritesStore, savedRecipesStore, userId],
+    [favoritesStore, savedRecipesStore, userId, t],
   );
 
   return { toggleSave };

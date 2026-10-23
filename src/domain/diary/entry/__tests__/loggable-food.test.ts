@@ -17,8 +17,8 @@ describe('LoggableFood', () => {
 
   it('is what an entry is per serving, for the edit sheet', () => {
     const entry = foodLogEntryOf({ servings: 2, nutrients: nutrientsOf({ calories: 600, carbs: 40 }) });
-    expect(entry.food.perServing.calories).toBe(300);
-    expect(entry.food.perServing.carbs).toBe(20);
+    expect(entry.food().perServing.calories).toBe(300);
+    expect(entry.food().perServing.carbs).toBe(20);
   });
 });
 

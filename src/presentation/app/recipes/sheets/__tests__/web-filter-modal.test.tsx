@@ -201,7 +201,7 @@ describe('WebFilterModal', () => {
     const texts = textContent(root);
 
     for (const value of DIFFICULTY_VALUES) {
-      expect(texts).toContain(difficultyLabel(value));
+      expect(texts).toContain(difficultyLabel(t(), value));
     }
   });
 });

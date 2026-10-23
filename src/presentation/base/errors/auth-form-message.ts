@@ -1,3 +1,4 @@
+import type { TranslationsType } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
 import {
   failureKeyMessage,
@@ -20,7 +21,8 @@ import {
  *    server).
  */
 export const authFormMessage = (
+  t: TranslationsType,
   failure: Failure,
   overrides: Partial<Record<string, string>>,
 ): string =>
-  failureKeyMessage(failure) ?? overrides[failure.code] ?? failureToastMessage(failure);
+  failureKeyMessage(t, failure) ?? overrides[failure.code] ?? failureToastMessage(t, failure);

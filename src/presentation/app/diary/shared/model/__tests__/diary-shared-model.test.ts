@@ -6,7 +6,7 @@ import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import { NetworkFailure } from '@core/failure';
 import { StoreStatus } from '@application/store/store-status';
 import { LocaleConstants } from '@application/i18n/locale-constants';
-import { setLocale } from '@presentation/i18n';
+import { setLocale, t } from '@presentation/i18n';
 import { statusMarkerFor } from '@presentation/app/diary/shared/model/status-marker-for';
 import { StatusMarkerKind } from '@presentation/app/diary/shared/model/status-marker-kind';
 import { dayA11yLabel } from '@presentation/app/diary/shared/model/day-a11y-label';
@@ -28,10 +28,10 @@ describe('diary status look', () => {
 
   it('speaks the kcal and the status in words, Turkish numbers included', () => {
     setLocale(LocaleConstants.tr);
-    const label = dayA11yLabel(CalendarDate.of(2026, 9, 27), 2269, CalorieStatus.Over, 'tr');
+    const label = dayA11yLabel(t(), CalendarDate.of(2026, 9, 27), 2269, CalorieStatus.Over, 'tr');
     expect(label).toContain('2.269 kcal');
     expect(label).toContain('Hedefin üstünde');
-    expect(dayA11yLabel(CalendarDate.of(2026, 9, 27), 0, CalorieStatus.None, 'tr')).toContain('Kayıt yok');
+    expect(dayA11yLabel(t(), CalendarDate.of(2026, 9, 27), 0, CalorieStatus.None, 'tr')).toContain('Kayıt yok');
   });
 });
 

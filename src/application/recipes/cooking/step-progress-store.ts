@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import type { BoundStore } from '@application/store/bound-store';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand/vanilla';
 import type { StepProgressStore } from '@application/recipes/cooking/step-progress-store-contract';
 
 /** A copy of `flags` with `index` set to `done`; holes stay unticked. */
@@ -16,8 +16,8 @@ const withFlag = (flags: readonly boolean[] | undefined, index: number, done: bo
  * - **Keyed by recipe id**, so the recipe page and cook mode — two routes, two
  *   screens — read and write one list instead of each holding its own.
  */
-export const configureStepProgressStore = (): BoundStore<StepProgressStore> =>
-  create<StepProgressStore>((set, get) => ({
+export const configureStepProgressStore = (): StoreApi<StepProgressStore> =>
+  createStore<StepProgressStore>((set, get) => ({
     byRecipe: {},
 
     toggleStep: (recipeId, index) => {

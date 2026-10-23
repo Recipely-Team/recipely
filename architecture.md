@@ -17,20 +17,25 @@ src/
     navigation/       Shell: route-context.js, auth guard, share-import hook, alarm overlay
     i18n/             Internationalization
     base/             Widgets (categorized), theme, utils
-    bootstrap/        DI init, stores context
-    |
-  application/        Use cases, state stores, DI registration
-    |
-  domain/             Entities, value objects, repository interfaces
-    |
-  infrastructure/     Repository implementations, DTOs, mappers, network, storage
-    |
+    bootstrap/        DI init, stores context (the composition root)
+  application/        Use cases, vanilla Zustand stores, DI registration
+  domain/             Entities, value objects, repository interfaces (ports)
+  infrastructure/     Repository implementations, DTOs, mappers, network, storage (adapters)
   core/               Framework-agnostic building blocks (Result, Failure, BaseEntity, DI)
+```
+
+Source dependencies point inward, toward the domain (Clean Architecture's dependency rule; the
+domain's ports are implemented by infrastructure, which therefore depends on the domain, not the
+other way round):
+
+```
+presentation ──► application ──► domain ◄── infrastructure
+      every layer ──► core          (bootstrap/ and */di/ wire them together)
 ```
 
 ### Dependency Rule
 
-Each layer may only depend on layers **below** it. Never import upward:
+Never import outward — away from the domain:
 
 - `src/domain/` — never imports from `src/application/`, `src/infrastructure/`, or `src/presentation/`.
 - `src/application/` — never imports from `src/infrastructure/` or `src/presentation/`.
@@ -166,7 +171,8 @@ Orchestrates domain logic through use cases and manages UI state.
 
 - **Use Cases** — Single-responsibility classes with an `execute(...)` method returning
   `Promise<Result<T, Failure>>`.
-- **Stores** — Zustand stores that call use cases and expose state to the presentation layer.
+- **Stores** — vanilla Zustand stores (`createStore` from `zustand/vanilla`, typed `StoreApi<XStore>`) that call
+  use cases and expose state; no React import in this layer. Presentation reads them with `useStore`.
 - **DI Registration** — `src/application/di/register.ts` wires use cases and stores into the container.
 - **Test Fixtures** — `src/application/__fixtures__/` contains fakes (e.g., `FakeAuthRepository`) for unit tests.
 
@@ -736,6 +742,23 @@ export const RecipeCard = ({ recipe, onPress }: RecipeCardProps): React.JSX.Elem
   accept store state as props.
 - Hooks are thin adapters over application stores / use cases: view-facing glue only, no business
   rules (those belong in `src/domain/`, orchestration in `src/application/`).
+- Stores are read with `useStore(store, (s) => …)`; actions in handlers through `store.getState()`.
+- Async I/O with cleanup (`try … finally`) lives in a plain async function outside the hook, or uses
+  `.finally()`; the hook guards and orchestrates. The compiler cannot compile `try … finally`.
+- See CLAUDE.md rule 8 and its rationale below for the compiler's rules.
+
+```ts
+// ✅
+const { authStore } = useStores();
+const isSignedIn = useStore(authStore, (s) => s.state.status === StoreStatus.Authenticated);
+const t = useTranslations();
+const today = useToday();
+
+// ❌ — not a hook to the compiler; global reads cached past a change
+const isSignedIn = authStore((s) => s.state.status === StoreStatus.Authenticated);
+const label = t().common.retry;
+const today = CalendarDate.today();
+```
 
 ---
 
@@ -1122,7 +1145,36 @@ placed above the component in the same file.
 
 ### Rule 8
 
-**Custom hooks** — prefix `use`, one hook per file, no store state passed as props.
+**Hooks, stores and the React Compiler.** The app runs compiled by the React Compiler (`experiments.reactCompiler`
+in `app.json`; Jest compiles app code too, through `babel.config.js`, so tests measure the shipped program).
+Measured when it was switched on, with the Profiler tests: the assistant's 50 level ticks went from ~124 ms to
+~9 ms on a phone layout and from ~82 ms to ~1 ms in the wide panel; a recipe-detail step tick from ~5 ms to ~1 ms.
+
+What the compiler needs, and why each part of the rule exists:
+
+- **Hooks are named `use…`.** The compiler recognises a hook by its name only (react.dev, Rules of Hooks). Stores
+  were called as `recipeListStore((s) => …)`; compiled, that call was treated as a plain function, cached, and
+  React reported a changed hook order. Stores are now vanilla (`createStore` from `zustand/vanilla` — Zustand's
+  documented shape for dependency-injected stores, and it keeps React out of `application/`), read with
+  `useStore(store, selector)`.
+- **No manual memoization in new code.** React's guidance (React Compiler v1.0): rely on the compiler, keep
+  `useMemo`/`useCallback` only as an escape hatch (e.g. a value an effect depends on). A hand-written
+  `useCallback` with incomplete deps hidden by an `eslint-disable` stopped the compiler on the whole hook.
+- **Rules of React are linted** (`react-hooks/refs`, `immutability`, `set-state-in-effect`, …): 224 findings were
+  fixed before the switch. A ref is not read or written during render (`useEffectEvent` inside effects,
+  `useLatestRef` for handlers and continuations); state that followed a prop through an effect is derived,
+  tagged with the input it belongs to, or adjusted during render; outside sources go through
+  `useSyncExternalStore`.
+- **Constructs the compiler cannot compile are gated** by `scripts/assert-react-compiler.mjs`: a skipped function
+  is otherwise silent. Twenty were found — `try … finally` and `try` without `catch` in hooks, `eslint-disable`
+  comments, a prop default reading another prop. `'use no memo'` with a reason is the only allowed opt-out.
+- **Reading mutable outside state during render is a bug under the compiler.** It caches the value with the
+  component: `t()` kept a mounted screen in the old language after a switch (rule 11), `CalendarDate.today()`
+  would keep yesterday as "Today" past midnight (`useToday` subscribes instead).
+- **Getters return stored values.** The compiler tracks dependencies by property path; a getter that builds a
+  new array on every read (`recipe.heroPhotos`) looked like a changed input on every render and re-drew the
+  photo viewer on each like. Such getters are methods (`recipe.heroPhotos()`), which the compiler keys on the
+  entity itself.
 
 
 ### Rule 9
@@ -1137,7 +1189,13 @@ placed above the component in the same file.
 
 ### Rule 11
 
-**i18n** — all user-visible strings via `t()` from `src/presentation/i18n/`. Minimum en + tr in sync.
+**i18n** — all user-visible strings from `src/presentation/i18n/`, every locale in sync. Components and hooks
+read `useTranslations()`; text helpers take the catalogue as their first parameter. A language switch used to
+reach mounted screens only because `AppThemeProvider` re-rendered every `useTheme` consumer on it; under the
+React Compiler that was no longer enough (a label built from the global `t()` is cached on the component's other
+inputs), and `useTranslations` makes the language an input like any other. The global `t()` remains for code
+that runs at event time only; eslint's `no-restricted-imports` names the files allowed to import it, and
+`use-translations.language-switch.test.tsx` holds a real screen to the behaviour.
 
 
 ### Rule 12

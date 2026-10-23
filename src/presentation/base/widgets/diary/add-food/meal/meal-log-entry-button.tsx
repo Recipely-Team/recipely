@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, controlSizes, diarySizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface MealLogEntryButtonProps {
   onPress: () => void;
@@ -12,8 +12,9 @@ export interface MealLogEntryButtonProps {
 
 /** The pick step's way into "Describe or photograph your meal": one card-like row above the tabs. */
 export const MealLogEntryButton = ({ onPress }: MealLogEntryButtonProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().diary;
+  const strings = t.diary;
   return (
     <Pressable
       onPress={onPress}

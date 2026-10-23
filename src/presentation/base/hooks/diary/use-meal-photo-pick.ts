@@ -8,7 +8,7 @@ import { PickSource } from '@presentation/base/utils/pick-source';
 import { askPickSource } from '@presentation/base/utils/ask-pick-source';
 import { shrinkForUpload } from '@presentation/base/utils/shrink-for-upload';
 import { uploadFileMeta } from '@presentation/base/utils/upload-file-meta';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 const MEAL_FILE_PREFIX = 'meal';
 
@@ -23,8 +23,10 @@ type MealPhotoPick = { photo: MealParseInputType } | { photo: null; denied: bool
  * photos; no new native module. The camera-or-library question is skipped on web.
  */
 export const useMealPhotoPick = (locale: string): (() => Promise<MealPhotoPick>) =>
-  useCallback(async (): Promise<MealPhotoPick> => {
-    const source = await askPickSource(t().diary.mealLogPhoto);
+  {
+  const t = useTranslations();
+  return useCallback(async (): Promise<MealPhotoPick> => {
+    const source = await askPickSource(t.diary.mealLogPhoto);
     if (source === null) return { photo: null, denied: false };
     const camera = source === PickSource.Camera;
     const perm = camera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -35,4 +37,5 @@ export const useMealPhotoPick = (locale: string): (() => Promise<MealPhotoPick>)
     const uri = await shrinkForUpload({ uri: asset.uri, width: asset.width, height: asset.height }, MEDIA_UPLOAD_MAX_EDGE);
     const { fileName, mimeType } = uploadFileMeta(uri, MEAL_FILE_PREFIX, String(Date.now()));
     return { photo: { kind: MealParseInputKind.Photo, uri, fileName, mimeType, locale } };
-  }, [locale]);
+  }, [locale, t]);
+};

@@ -72,7 +72,7 @@ describe('resolveProductStep', () => {
   });
 
   it('starts on the row’s variant at its first serving unit', () => {
-    const detail = row.asDetail;
+    const detail = row.asDetail();
     if (detail === null) throw new Error('no detail');
     const model = resolveProductStep(choice, { status: StoreStatus.Loaded, key: row.key, detail }, null, null);
     expect(model.status === StoreStatus.Loaded && [model.variantIndex, model.quantity.unit.key, model.quantity.value, model.variants.length]).toEqual([

@@ -10,7 +10,7 @@ import { AutomationMetrics } from '@presentation/base/widgets/instagram/automati
 import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
 import { sendLookFor } from '@presentation/app/automations/activity/model/send-look-for';
 import { borderWidths, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface SendRowProps {
   send: DmSend;
@@ -22,11 +22,12 @@ const CLOSE_QUOTE = '”';
 
 /** One matched comment (spec §4): initials, @handle and when, the comment quoted, and how its reply went. */
 const SendRowComponent = ({ send }: SendRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const look = sendLookFor(send);
+  const look = sendLookFor(t, send);
   const surface = useSeveritySurfaces()[look.severity];
-  const name = send.commenterUsername === null ? t().instagram.someone : `${AT}${send.commenterUsername}`;
-  const initial = (send.commenterUsername ?? t().instagram.someone).charAt(ValueConstants.zero).toUpperCase();
+  const name = send.commenterUsername === null ? t.instagram.someone : `${AT}${send.commenterUsername}`;
+  const initial = (send.commenterUsername ?? t.instagram.someone).charAt(ValueConstants.zero).toUpperCase();
   return (
     <View role="status" style={[styles.row, { borderBottomColor: colors.border }]}>
       <View style={[styles.avatar, { backgroundColor: colors.chipBackground }]}>
@@ -40,7 +41,7 @@ const SendRowComponent = ({ send }: SendRowProps): React.JSX.Element => {
             {name}
           </SizedText>
           <SizedText size={fontSizes.small} color={colors.textSubtle}>
-            {formatTimeAgo(send.createdAt)}
+            {formatTimeAgo(t, send.createdAt)}
           </SizedText>
         </View>
         {send.commentText === null ? null : (
@@ -55,7 +56,7 @@ const SendRowComponent = ({ send }: SendRowProps): React.JSX.Element => {
           </SizedText>
           {send.publicReplied ? (
             <SizedText size={fontSizes.micro} color={surface.text}>
-              {`${CharConstants.middotSpaced}${t().instagram.publicReplied}`}
+              {`${CharConstants.middotSpaced}${t.instagram.publicReplied}`}
             </SizedText>
           ) : null}
         </View>

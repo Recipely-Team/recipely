@@ -6,7 +6,7 @@ import { SegmentedTabs } from '@presentation/base/widgets/diary/segmented-tabs';
 import type { SegmentOption } from '@presentation/base/widgets/diary/segment-option';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, fontSizes, fontWeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ChoiceChip } from '@presentation/app/fridge/items/ingredients/choice-chip';
 import { ServingsStepper } from '@presentation/app/fridge/items/ingredients/servings-stepper';
 import type { FridgeFilters } from '@presentation/app/fridge/model/filters/fridge-filters';
@@ -21,8 +21,9 @@ export interface FiltersCardProps {
 
 /** "Filters · optional": max time (Any / 15 / 30 / 60), one diet, and servings. */
 export const FiltersCard = ({ filters, onChange }: FiltersCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().fridge;
+  const copy = t.fridge;
   const timeOptions: SegmentOption<string>[] = [
     { key: MaxTimeKey.Any, label: copy.anyTime },
     ...Object.values(FridgeMaxMinutes).map((minutes) => ({ key: MaxTimeKey.of(minutes), label: copy.minutes.replace('{n}', String(minutes)) })),
@@ -46,7 +47,7 @@ export const FiltersCard = ({ filters, onChange }: FiltersCardProps): React.JSX.
       {label(copy.diet)}
       <View accessibilityRole="radiogroup" style={styles.chips}>
         {Object.values(FridgeDiet).map((diet) => (
-          <ChoiceChip key={diet} label={dietLabel(diet)} selected={filters.diet === diet} onPress={() => onChange({ diet })} />
+          <ChoiceChip key={diet} label={dietLabel(t, diet)} selected={filters.diet === diet} onPress={() => onChange({ diet })} />
         ))}
       </View>
       <View style={styles.servings}>

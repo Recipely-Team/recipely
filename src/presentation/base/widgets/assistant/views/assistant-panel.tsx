@@ -27,7 +27,7 @@ import {
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AssistantPanelProps {
   /** Ends the session and puts the assistant away. */
@@ -67,6 +67,7 @@ export const AssistantPanel = ({
   onMinimize,
   bottomOffset,
 }: AssistantPanelProps): React.JSX.Element => {
+  const t = useTranslations();
   const { colors } = useTheme();
   const { isExpanded, isWebShell } = useLayout();
   const { height } = useWindowDimensions();
@@ -87,8 +88,8 @@ export const AssistantPanel = ({
   // Dev builds append the diagnostic to the notice.
   const notice =
     error !== null
-      ? t().assistant.requestFailed + (IS_DEV_BUILD ? CharConstants.middotSpaced + error.message : CharConstants.empty)
-      : assistantNotice(status, deniedReason);
+      ? t.assistant.requestFailed + (IS_DEV_BUILD ? CharConstants.middotSpaced + error.message : CharConstants.empty)
+      : assistantNotice(t, status, deniedReason);
   const noticeTone = assistantNoticeTone(error !== null, deniedReason);
 
   const send = (text: string): void => {
@@ -136,7 +137,7 @@ export const AssistantPanel = ({
             <AssistantMascot size={assistantMetrics.headerMascot} status={status} />
           </LinearGradient>
           <ThemedText variant="caption" style={styles.title}>
-            {t().assistant.title}
+            {t.assistant.title}
           </ThemedText>
           <View style={[styles.liveDot, { backgroundColor: live ? colors.success : colors.textMuted }]} />
         </View>
@@ -146,7 +147,7 @@ export const AssistantPanel = ({
         <Pressable
           onPress={onMinimize}
           accessibilityRole="button"
-          accessibilityLabel={t().assistant.minimize}
+          accessibilityLabel={t.assistant.minimize}
           style={[styles.round, shadows.md, { backgroundColor: colors.cardBackground }]}
         >
           <Ionicons name="chevron-down" size={iconSizes.md} color={colors.text} />
@@ -158,7 +159,7 @@ export const AssistantPanel = ({
             onClose();
           }}
           accessibilityRole="button"
-          accessibilityLabel={t().assistant.close}
+          accessibilityLabel={t.assistant.close}
           style={[styles.round, shadows.md, { backgroundColor: colors.cardBackground }]}
         >
           <Ionicons name="close" size={iconSizes.md} color={colors.text} />

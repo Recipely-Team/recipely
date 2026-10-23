@@ -1,18 +1,20 @@
 import { useState } from 'react';
+import { useStore } from 'zustand';
 import { useRouter, type Href } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { AuthHeroLayout } from '@presentation/base/widgets/layout/auth-hero-layout';
 import { ForgotPasswordInputView } from '@presentation/app/forgot-password/body/forgot-password-input-view';
 import { ForgotPasswordSuccessView } from '@presentation/app/forgot-password/body/forgot-password-success-view';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { RoutePaths } from '@presentation/base/constants';
 import { CharConstants } from '@core/constants';
 import { isBlank } from '@core/guards/type-guards';
 
 export const ForgotPasswordScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const { authStore } = useStores();
-  const requestPasswordReset = authStore((s) => s.requestPasswordReset);
+  const requestPasswordReset = useStore(authStore, (s) => s.requestPasswordReset);
 
   const [email, setEmail] = useState(CharConstants.empty);
   const [loading, setLoading] = useState(false);
@@ -31,16 +33,16 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
     if (failure === null) {
       setSent(true);
     } else {
-      setSendError(t().forgotPassword.sendError);
+      setSendError(t.forgotPassword.sendError);
     }
   };
 
   return (
     <AuthHeroLayout
       icon="key-outline"
-      title={t().forgotPassword.title}
-      subtitle={t().forgotPassword.subtitle}
-      backLabel={t().forgotPassword.backToLogin}
+      title={t.forgotPassword.title}
+      subtitle={t.forgotPassword.subtitle}
+      backLabel={t.forgotPassword.backToLogin}
       onBack={goBack}
     >
       {sent ? (

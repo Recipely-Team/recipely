@@ -3,7 +3,7 @@ import { useLatestRef } from '@presentation/base/hooks/lifecycle/use-latest-ref'
 import { ValueConstants } from '@core/constants';
 import { FridgeLimits } from '@domain/fridge/fridge-limits';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { useLocale, t } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { toastStore } from '@presentation/base/feedback/toast-store';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
@@ -33,6 +33,7 @@ import type { FridgeIdeasQuery } from '@presentation/app/fridge/model/ideas/frid
  *   ones; a failed page is a toast and the shown ideas stay.
  */
 export const useFridgeFlow = () => {
+  const t = useTranslations();
   const { fridgeStore } = useStores();
   const locale = useLocale();
   const pick = useFridgePhotoPick();
@@ -98,11 +99,11 @@ export const useFridgeFlow = () => {
     dispatch({ type: 'chipRemoved', key: chip.key });
     toastStore.getState().show({
       severity: SeverityType.Neutral,
-      message: t().fridge.removed.replace('{x}', chip.name),
-      actionLabel: t().fridge.undo,
+      message: t.fridge.removed.replace('{x}', chip.name),
+      actionLabel: t.fridge.undo,
       onAction: () => dispatch({ type: 'chipRestored', chip, index }),
     });
-  }, [latest]);
+  }, [latest, t]);
 
   return {
     state,

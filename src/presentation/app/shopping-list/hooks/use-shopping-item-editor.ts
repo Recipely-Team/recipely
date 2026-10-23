@@ -6,7 +6,7 @@ import type { ShoppingItemEdit } from '@application/shopping/write/shopping-item
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { failureContent } from '@presentation/base/errors/failure-lookups';
 import type { UseShoppingItemEditorResult } from '@presentation/app/shopping-list/model/use-shopping-item-editor-result';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 const EMPTY: ShoppingItemEdit = { label: CharConstants.empty, quantityText: CharConstants.empty, unit: CharConstants.empty };
 
@@ -16,6 +16,7 @@ const EMPTY: ShoppingItemEdit = { label: CharConstants.empty, quantityText: Char
  * the error's own body copy, so the user fixes the field instead of losing it.
  */
 export const useShoppingItemEditor = (): UseShoppingItemEditorResult => {
+  const t = useTranslations();
   const { shoppingListStore } = useStores();
   const [editing, setEditing] = useState<ShoppingItemEntity | null>(null);
   const [fields, setFields] = useState<ShoppingItemEdit>(EMPTY);
@@ -28,10 +29,10 @@ export const useShoppingItemEditor = (): UseShoppingItemEditorResult => {
     setError(null);
     setFields({
       label: item.label,
-      quantityText: shoppingAmountText(item.quantity, null, t().recipes.portions.decimalMark),
+      quantityText: shoppingAmountText(item.quantity, null, t.recipes.portions.decimalMark),
       unit: item.unit ?? CharConstants.empty,
     });
-  }, []);
+  }, [t]);
 
   return {
     editing,
@@ -49,7 +50,7 @@ export const useShoppingItemEditor = (): UseShoppingItemEditorResult => {
       setSaving(true);
       void shoppingListStore.getState().edit(editing.id, fields).then((result) => {
         setSaving(false);
-        if (!result.ok) return void setError(failureContent(result.failure).body);
+        if (!result.ok) return void setError(failureContent(t, result.failure).body);
         setEditing(null);
       });
     },

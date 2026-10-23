@@ -9,7 +9,7 @@ import { useTaxonomyOptions } from '@presentation/app/recipes/hooks/use-taxonomy
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, avatarSizes, controlSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface WebCuisineRailProps {
@@ -43,6 +43,7 @@ export const WebCuisineRail = ({
   onOpenAll,
   showTitle,
 }: WebCuisineRailProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
   const { cuisineKeys } = useTaxonomyOptions();
@@ -85,18 +86,18 @@ export const WebCuisineRail = ({
       <View style={styles.header}>
         {showTitle ? (
           <ThemedText style={[styles.title, { color: colors.text }]}>
-            {t().recipes.browseCuisines}
+            {t.recipes.browseCuisines}
           </ThemedText>
         ) : null}
         <Pressable
           onPress={onOpenAll}
           accessibilityRole="button"
-          accessibilityLabel={t().recipes.allCuisines}
+          accessibilityLabel={t.recipes.allCuisines}
           style={[styles.allBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
         >
           <Ionicons name="options-outline" size={iconSizes.md} color={colors.text} />
           <ThemedText style={[styles.allLabel, { color: colors.text }]}>
-            {t().recipes.allCuisines}
+            {t.recipes.allCuisines}
           </ThemedText>
           <ThemedText style={[styles.allCount, { color: colors.textMuted }]}>
             {cuisineKeys.length}
@@ -105,7 +106,7 @@ export const WebCuisineRail = ({
       </View>
 
       <View style={styles.wrap}>
-        {chip(ALL_CUISINES_KEY, t().recipes.cuisineAll, ALL_EMOJI, noneSelected)}
+        {chip(ALL_CUISINES_KEY, t.recipes.cuisineAll, ALL_EMOJI, noneSelected)}
         {railKeys.map((key) => {
           const { name, emoji } = cuisineLabel(key);
           return chip(key, name, emoji, selectedCuisines.includes(key));

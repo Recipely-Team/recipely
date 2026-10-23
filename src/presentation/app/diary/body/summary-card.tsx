@@ -11,7 +11,7 @@ import { SummaryStats } from '@presentation/app/diary/items/summary-stats';
 import { MacroBars } from '@presentation/app/diary/items/macro-bars';
 import { StatusStrip } from '@presentation/app/diary/items/status-strip';
 import { statusMarkerFor } from '@presentation/app/diary/shared/model/status-marker-for';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface SummaryCardProps {
@@ -30,10 +30,11 @@ export interface SummaryCardProps {
  *   arc has nowhere further to go, so the colour carries the news.
  */
 export const SummaryCard = ({ day, wide }: SummaryCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const tones = useDiaryTones();
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   const status = day.calorieStatus;
   const tone = status === CalorieStatus.None ? null : tones[status];
   const marker = statusMarkerFor(status);

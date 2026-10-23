@@ -1,4 +1,4 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import { StoreStatus } from '@application/store/store-status';
 
@@ -26,7 +26,7 @@ const SETTLE_TIMEOUT_MS = 4_000;
  * - **It never rejects and never waits forever.** An error state and a timeout
  *   both resolve: the caller's next step is the same either way.
  */
-export function waitForRecipeListQuery(store: BoundStore<RecipeListStore>, query: string): Promise<void> {
+export function waitForRecipeListQuery(store: StoreApi<RecipeListStore>, query: string): Promise<void> {
   const wanted = query.trim();
   const hasRows = (state: RecipeListStore['state']): boolean =>
     state.status === StoreStatus.Loaded && state.query.trim() === wanted;

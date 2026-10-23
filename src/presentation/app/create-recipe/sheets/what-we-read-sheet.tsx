@@ -3,7 +3,7 @@ import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, borderWidths, controlSizes, lineHeightFor, lineHeights, layoutSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { ImportReview } from '@presentation/app/create-recipe/model/review/import-review';
 import { CharConstants } from '@core/constants';
 
@@ -23,8 +23,9 @@ export interface WhatWeReadSheetProps {
  * web shell, through the shared `BottomSheet` (rule 23).
  */
 export const WhatWeReadSheet = ({ visible, review, onClose }: WhatWeReadSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().createRecipe.importReview;
+  const copy = t.createRecipe.importReview;
   const text = review.sourceText ?? CharConstants.empty;
   const url = review.sourceUrl;
   return (

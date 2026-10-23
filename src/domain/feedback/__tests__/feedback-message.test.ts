@@ -9,11 +9,11 @@ const created = (subject: string, message: string): FeedbackMessage => {
 
 describe('FeedbackMessage', () => {
   it('trims both fields into a wire-ready submission', () => {
-    expect(created('  Bug ', ' it crashed \n').submission).toEqual({ subject: 'Bug', message: 'it crashed' });
+    expect(created('  Bug ', ' it crashed \n').submission()).toEqual({ subject: 'Bug', message: 'it crashed' });
   });
 
   it('allows an empty subject', () => {
-    expect(created('', 'hello').submission.subject).toBe('');
+    expect(created('', 'hello').submission().subject).toBe('');
   });
 
   it('refuses a blank message on the message field', () => {

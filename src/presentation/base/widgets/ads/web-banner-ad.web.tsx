@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants } from '@core/constants';
 import { UnknownFailure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
@@ -48,6 +48,7 @@ let reported = false;
  *   possible thing to print.
  */
 export const WebBannerAd = ({ slotId, accessibilityLabel }: WebBannerAdProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const hostRef = useRef<View | null>(null);
 
   const [status, setStatus] = useState<AdUnitStatus | null>(null);
@@ -84,7 +85,7 @@ export const WebBannerAd = ({ slotId, accessibilityLabel }: WebBannerAdProps): R
     >
       {status === AdUnitStatus.Filled ? (
         <ThemedText variant="label" muted>
-          {t().createRecipe.adLabel}
+          {t.createRecipe.adLabel}
         </ThemedText>
       ) : null}
       <View ref={hostRef} />

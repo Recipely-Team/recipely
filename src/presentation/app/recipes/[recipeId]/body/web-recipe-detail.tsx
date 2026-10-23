@@ -12,7 +12,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, fontSizes, fontWeights, letterSpacings, iconSizes, layoutSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
@@ -83,6 +83,7 @@ const stickyColumn = stickyBase as ViewStyle;
  * the photo viewer keeps which photo is in view.
  */
 export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const backLabel = useBackLabel();
   const { width } = useLayout();
@@ -131,7 +132,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
 
           <View style={styles.section}>
             <ThemedText style={[styles.heading, { color: colors.text }]}>
-              {`${t().recipes.instructions} · ${String(recipe.instructions.length)}`}
+              {`${t.recipes.instructions} · ${String(recipe.instructions.length)}`}
             </ThemedText>
             <View style={styles.stepList}>
               {recipe.instructions.map((step, i) => (

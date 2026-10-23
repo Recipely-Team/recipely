@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import type { BoundStore } from '@application/store/bound-store';
+import { createStore } from 'zustand/vanilla';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
 import { ValueConstants } from '@core/constants';
 import { ok } from '@core/result/result-helpers';
@@ -40,10 +40,10 @@ const productKey = (product: FoodProduct): string => product.key;
  *   same query; that second call waits on the first instead of sending it twice.
  * - **User-scoped** (saved / mine): cleared on sign-out.
  */
-export const configureFoodSearchStore = (deps: FoodSearchStoreDeps): BoundStore<FoodSearchStore> => {
+export const configureFoodSearchStore = (deps: FoodSearchStoreDeps): StoreApi<FoodSearchStore> => {
   let inFlight: { query: string; done: Promise<void> } | null = null;
 
-  return create<FoodSearchStore>((set, get) => {
+  return createStore<FoodSearchStore>((set, get) => {
     const recipeLoader = (group: RecipeHitGroupType): PagedListLoader<RecipeFoodHit> =>
       new PagedListLoader(() => get()[group], (list) => set({ [group]: list }), hitKey);
     const loaders = {

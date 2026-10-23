@@ -16,7 +16,7 @@ import {
   failureIcon,
   failureSeverity,
 } from '@presentation/base/errors/failure-lookups';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { Failure } from '@core/failure';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
@@ -113,6 +113,7 @@ export const MyRecipesList = ({
   onRefresh,
   scrollable,
 }: MyRecipesListProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const renderDraft = useCallback(
     ({ item }: { item: DraftItem }): React.JSX.Element => (
@@ -149,14 +150,14 @@ export const MyRecipesList = ({
 
   // Only with nothing to fall back on; a failed reload keeps the rows.
   if (loadFailure !== null && (tab === TabType.Drafts ? drafts.length : items.length) === ValueConstants.zero) {
-    const content = failureContent(loadFailure);
+    const content = failureContent(t, loadFailure);
     return (
       <ErrorState
         severity={failureSeverity(loadFailure)}
         icon={failureIcon(loadFailure)}
         title={content.title}
         body={content.body}
-        primaryLabel={t().errors.retry}
+        primaryLabel={t.errors.retry}
         onPrimary={onRefresh}
       />
     );

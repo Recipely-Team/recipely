@@ -8,7 +8,7 @@ import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label
 import { useTaxonomyOptions } from '@presentation/app/recipes/hooks/use-taxonomy-options';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, decorSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface AllCuisinesSheetProps {
@@ -40,6 +40,7 @@ export const AllCuisinesSheet = ({
   onClear,
   onClose,
 }: AllCuisinesSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
   const { cuisineKeys } = useTaxonomyOptions();
@@ -54,35 +55,35 @@ export const AllCuisinesSheet = ({
   const footer = (
     <View style={styles.footer}>
       <ThemedText style={[styles.count, { color: colors.textMuted }]}>
-        {t().recipes.cuisinesSelected.replace('{n}', String(selectedCuisines.length))}
+        {t.recipes.cuisinesSelected.replace('{n}', String(selectedCuisines.length))}
       </ThemedText>
       <Pressable
         onPress={onClear}
         accessibilityRole="button"
-        accessibilityLabel={t().common.clear}
+        accessibilityLabel={t.common.clear}
         style={[styles.clear, { borderColor: colors.border }]}
       >
-        <ThemedText style={[styles.clearLabel, { color: colors.textMuted }]}>{t().common.clear}</ThemedText>
+        <ThemedText style={[styles.clearLabel, { color: colors.textMuted }]}>{t.common.clear}</ThemedText>
       </Pressable>
       <Pressable
         onPress={onClose}
         accessibilityRole="button"
-        accessibilityLabel={t().common.apply}
+        accessibilityLabel={t.common.apply}
         style={[styles.apply, { backgroundColor: colors.primary }]}
       >
-        <ThemedText style={[styles.applyLabel, { color: colors.primaryText }]}>{t().common.apply}</ThemedText>
+        <ThemedText style={[styles.applyLabel, { color: colors.primaryText }]}>{t.common.apply}</ThemedText>
       </Pressable>
     </View>
   );
 
   return (
-    <BottomSheet visible={visible} title={t().recipes.allCuisines} onClose={onClose} footer={footer}>
+    <BottomSheet visible={visible} title={t.recipes.allCuisines} onClose={onClose} footer={footer}>
       <View style={[styles.search, { backgroundColor: colors.cardBackground, borderColor: colors.inputBorder }]}>
         <Ionicons name="search" size={iconSizes.md} color={colors.textMuted} />
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder={t().recipes.searchCuisine}
+          placeholder={t.recipes.searchCuisine}
           placeholderTextColor={colors.textMuted}
           style={[styles.searchInput, { color: colors.text }]}
         />

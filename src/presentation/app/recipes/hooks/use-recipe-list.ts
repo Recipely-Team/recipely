@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import { useStore } from 'zustand';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { ListConstants, scrollThrottleMs, RoutePaths } from '@presentation/base/constants';
 import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/scrolling/assistant-scroll-direction';
@@ -28,7 +29,7 @@ import * as mutate from '@presentation/app/recipes/model/filtering/filter-mutati
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useWebShellState } from '@presentation/base/web-shell/use-web-shell-state';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { spacing, layoutSizes, durations } from '@presentation/base/theme';
 import { feedContentWidth } from '@presentation/app/recipes/model/feed-content-width';
 import type { Difficulty } from '@domain/recipes/difficulty';
@@ -95,6 +96,7 @@ const REVEAL_THRESHOLD = spacing.sm;
 type AssistantScrollHandleType = Parameters<AssistantScrollableProps['ref']>[0];
 
 export const useRecipeList = (): UseRecipeListResult => {
+  const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
   const { recipeListStore, savedRecipesStore, loadFavoritesUseCase, myRecipesStore } = useStores();
@@ -112,12 +114,12 @@ export const useRecipeList = (): UseRecipeListResult => {
   );
   // Stable, so the memoised cards do not re-render when the page does.
   const onToggleSave = useCallback(
-    (id: string) => requestGate(() => void toggleSave(id), t().recipes.signInToSave),
-    [requestGate, toggleSave],
+    (id: string) => requestGate(() => void toggleSave(id), t.recipes.signInToSave),
+    [requestGate, toggleSave, t],
   );
   const { cuisineLabel } = useTaxonomyLabel();
-  const state = recipeListStore((s) => s.state);
-  const loadFromStore = recipeListStore((s) => s.load);
+  const state = useStore(recipeListStore, (s) => s.state);
+  const loadFromStore = useStore(recipeListStore, (s) => s.load);
   // When the feed last loaded successfully — what the focus refetch's staleness reads.
   const lastLoadedAtRef = useRef<number | null>(null);
   // Who the feed was loaded for: its rows carry viewer state (liked, saved), so a sign-in makes it stale.
@@ -135,7 +137,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     },
     [loadFromStore, recipeListStore, userIdRef],
   );
-  const loadMore = recipeListStore((s) => s.loadMore);
+  const loadMore = useStore(recipeListStore, (s) => s.loadMore);
   const { isWebShell, isExpanded, width, height } = useLayout();
   const { searchQuery: webSearchQuery, setSearchQuery: setWebSearchQuery } = useWebShellState();
   const reduceMotion = useReducedMotion();
@@ -253,27 +255,17 @@ export const useRecipeList = (): UseRecipeListResult => {
   const reload = useCallback(
     async (next: RecipeFilters): Promise<void> => {
       setPendingReloads((n) => n + ValueConstants.one);
-      try {
-        await load(next);
-      } finally {
-        setPendingReloads((n) => n - ValueConstants.one);
-      }
+      await load(next).finally(() => setPendingReloads((n) => n - ValueConstants.one));
     },
     [load],
   );
 
   const onRefresh = useCallback(() => {
     setIsPullRefreshing(true);
-    void (async () => {
-      try {
-        await load(buildApiFilters(filters, sortBy, debouncedSearch));
-      } catch {
-        // `load` folds failures into state; swallow anyway so nothing escapes unhandled.
-      } finally {
-        // Cleared unconditionally so the spinner can never stick.
-        setIsPullRefreshing(false);
-      }
-    })();
+    // `load` folds failures into state; swallow anyway, and clear the spinner whatever happens.
+    void load(buildApiFilters(filters, sortBy, debouncedSearch))
+      .catch(() => undefined)
+      .finally(() => setIsPullRefreshing(false));
   }, [load, filters, sortBy, debouncedSearch, buildApiFilters]);
 
   // Effect Events, so these effects read the latest filters without re-running on them.

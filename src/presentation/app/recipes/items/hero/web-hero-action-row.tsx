@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { HERO_SAVE_BG } from '@presentation/app/recipes/model/hero/web-hero-constants';
 
 export interface WebHeroActionRowProps {
@@ -18,28 +18,29 @@ export const WebHeroActionRow = ({
   onSave,
   savedByMe = false,
 }: WebHeroActionRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <View style={styles.row}>
       <Pressable
         onPress={onView}
         accessibilityRole="button"
-        accessibilityLabel={t().recipes.viewRecipe}
+        accessibilityLabel={t.recipes.viewRecipe}
         style={[styles.viewBtn, { backgroundColor: colors.onOverlay }]}
       >
         <ThemedText style={[styles.label, { color: colors.heroButtonText }]}>
-          {t().recipes.viewRecipe}
+          {t.recipes.viewRecipe}
         </ThemedText>
       </Pressable>
       {onSave !== undefined ? (
         <Pressable
           onPress={onSave}
           accessibilityRole="button"
-          accessibilityLabel={savedByMe ? t().recipes.saved : t().recipes.save}
+          accessibilityLabel={savedByMe ? t.recipes.saved : t.recipes.save}
           style={[styles.saveBtn, { backgroundColor: HERO_SAVE_BG, borderColor: colors.onOverlay }]}
         >
           <ThemedText style={[styles.label, { color: colors.onOverlay }]}>
-            {savedByMe ? t().recipes.saved : t().recipes.save}
+            {savedByMe ? t.recipes.saved : t.recipes.save}
           </ThemedText>
         </Pressable>
       ) : null}

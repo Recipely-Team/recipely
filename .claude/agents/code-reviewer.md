@@ -33,7 +33,7 @@ regression discipline (`bug-fix`) and which `architecture.md` section to read fo
 1b. **Structure & placement (architecture.md §1, §8; CLAUDE.md rules 1, 14-16, 21).**
    - One EXPORTED class/interface/type/component/enum per file (rule 1). Exempt: barrels, a component's
      `Props`, non-exported types — a shape only its consumer names stays unexported above it. A store
-     module `x-store.ts` exports only `configureXStore(): BoundStore<XStore>`; the contract is
+     module `x-store.ts` exports only `configureXStore(): StoreApi<XStore>` (vanilla `createStore`, no React import); the contract is
      `x-store-contract.ts`, the `XState` union `x-state.ts`, each named state `states/*.ts`. A context provider and its `use*` hook are separate files.
    - Props interfaces named exactly `<ComponentName>Props`.
    - Page code in the page's `body/`/`items/`/`sheets/`/`hooks/`/`model/`; single-page widgets NOT in
@@ -55,6 +55,8 @@ regression discipline (`bug-fix`) and which `architecture.md` section to read fo
 6. **DI hygiene.** Flag module-level singletons in `src/application/` that reach into `src/infrastructure/`. Wiring belongs in `src/application/di/` (tokens, registration) and the composition root `src/presentation/bootstrap/`; `src/core/di/` holds only the `Container`.
 
 7. **Presentation hygiene.** Flag business logic in components (calculations, transformations, fetching). Flag bare `Text`/`View` where themed primitives exist. Flag missing loading/error/empty states on data screens.
+
+7a. **React Compiler correctness (CLAUDE.md rules 8, 11).** Flag render-time reads of outside mutable state the gates cannot see — `Date.now()`, `CalendarDate.today()`, `getLocale()`, `store.getState()` in a component or hook body (not in a handler or effect); a getter in `domain/` that allocates; new `useMemo`/`useCallback`/`memo` without a stated reason; a `'use no memo'` without one.
 
 7b. **Smart-UI size guard (CLAUDE.md §18) — BLOCKING.** Any `.tsx` over 300 lines
    (`find src -name '*.tsx' | grep -v __tests__ | xargs wc -l | sort -rn | head`; `check:structure` rule F),

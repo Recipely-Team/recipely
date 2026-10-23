@@ -79,7 +79,7 @@ describe('ShoppingListScreen editing', () => {
 
     expect(repo.update).not.toHaveBeenCalled();
     expect(sheetOpen(root)).toBe(true);
-    expect(textContent(root)).toContain(failureContent(new ValidationFailure('x', 'quantity', ErrorMessageKey.shoppingQuantityInvalid)).body);
+    expect(textContent(root)).toContain(failureContent(t(), new ValidationFailure('x', 'quantity', ErrorMessageKey.shoppingQuantityInvalid)).body);
     expect(byLabel(root, copy.labelField).props.value).toBe('Milk');
   });
 

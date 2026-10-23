@@ -17,7 +17,7 @@ export class LoadFoodDetailUseCase {
   async execute(product: FoodProduct): Promise<Result<FoodDetail, Failure>> {
     if (product.foodId !== null) return this.repo.getProduct(product.foodId);
     if (product.offBarcode !== null) return this.repo.getBrandedProduct(product.offBarcode);
-    const detail = product.asDetail;
+    const detail = product.asDetail();
     return detail === null ? fail(new NotFoundFailure(DiagnosticMessage.diary.foodWithoutVariants)) : ok(detail);
   }
 }

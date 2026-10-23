@@ -4,7 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
 import { fillPhotoPosition } from '@presentation/app/recipes/[recipeId]/model/photos/fill-photo-position';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface PhotoCounterChipProps {
   current: number;
@@ -20,17 +20,18 @@ export interface PhotoCounterChipProps {
  * has none, and a row of twelve dots is a count nobody can read.
  */
 export const PhotoCounterChip = ({ current, total, bottom }: PhotoCounterChipProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <View
       style={[styles.chip, { bottom, backgroundColor: colors.overlay }]}
       accessibilityLiveRegion="polite"
-      accessibilityLabel={fillPhotoPosition(t().photoViewer.position, current, total)}
+      accessibilityLabel={fillPhotoPosition(t.photoViewer.position, current, total)}
     >
       <Ionicons name="image" size={iconSizes.xs} color={colors.onOverlay} />
       <ThemedText style={[styles.text, { color: colors.onOverlay }]}>
-        {fillPhotoPosition(t().photoViewer.counter, current, total)}
+        {fillPhotoPosition(t.photoViewer.counter, current, total)}
       </ThemedText>
     </View>
   );

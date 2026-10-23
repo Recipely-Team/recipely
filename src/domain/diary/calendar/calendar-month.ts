@@ -51,12 +51,12 @@ export class CalendarMonth extends BaseValueObject<string> {
     return this.first;
   }
 
-  get lastDay(): CalendarDate {
+  lastDay(): CalendarDate {
     return this.addMonths(ValueConstants.one).firstDay.addDays(ValueConstants.minusOne);
   }
 
   get dayCount(): number {
-    return this.lastDay.day;
+    return this.lastDay().day;
   }
 
   days(): CalendarDate[] {

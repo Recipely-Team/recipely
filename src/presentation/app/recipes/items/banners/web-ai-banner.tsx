@@ -4,7 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, lineHeightFor, iconSizes, decorSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface WebAiBannerProps {
@@ -30,12 +30,13 @@ export interface WebAiBannerProps {
  *   panel keeps its shape whatever height the row settles at.
  */
 export const WebAiBanner = ({ onPress, wide = false }: WebAiBannerProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={t().recipes.aiPromo}
+      accessibilityLabel={t.recipes.aiPromo}
       style={({ pressed }) => [styles.wrapper, pressed ? styles.pressed : null]}
     >
       <LinearGradient
@@ -53,14 +54,14 @@ export const WebAiBanner = ({ onPress, wide = false }: WebAiBannerProps): React.
             <Ionicons name="sparkles" size={iconSizes.md} color={colors.onOverlay} />
           </View>
           <ThemedText style={[styles.kicker, { color: colors.onOverlay }]}>
-            {t().recipes.aiKicker}
+            {t.recipes.aiKicker}
           </ThemedText>
           <ThemedText style={[styles.title, wide ? styles.titleWide : null, { color: colors.onOverlay }]}>
-            {t().recipes.aiPromo}
+            {t.recipes.aiPromo}
           </ThemedText>
           {wide ? null : (
             <ThemedText style={[styles.body, { color: colors.onOverlay }]}>
-              {t().recipes.aiPromoSubtitle}
+              {t.recipes.aiPromoSubtitle}
             </ThemedText>
           )}
         </View>
@@ -68,7 +69,7 @@ export const WebAiBanner = ({ onPress, wide = false }: WebAiBannerProps): React.
         <View style={[styles.foot, wide ? styles.footWide : null]}>
           <View style={[styles.action, { backgroundColor: colors.onOverlay }]}>
             <ThemedText style={[styles.actionLabel, { color: colors.heroButtonText }]}>
-              {t().recipes.aiStart}
+              {t.recipes.aiStart}
             </ThemedText>
             <Ionicons name="arrow-forward" size={iconSizes.md} color={colors.heroButtonText} />
           </View>

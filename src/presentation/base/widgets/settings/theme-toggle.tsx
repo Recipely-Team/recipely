@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, controlSizes } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { ThemePreference } from '@presentation/base/theme/context/theme-preference';
 
@@ -19,6 +19,7 @@ const options: { key: ThemePreference; labelKey: 'themeSystem' | 'themeLight' | 
 
 /** Three-segment toggle for selecting system, light, or dark colour scheme. */
 export const ThemeToggle = ({ value, onChange }: ThemeToggleProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -44,7 +45,7 @@ export const ThemeToggle = ({ value, onChange }: ThemeToggleProps): React.JSX.El
                 { color: active ? colors.primaryText : colors.textMuted },
               ]}
             >
-              {t().settings[opt.labelKey]}
+              {t.settings[opt.labelKey]}
             </ThemedText>
           </Pressable>
         );

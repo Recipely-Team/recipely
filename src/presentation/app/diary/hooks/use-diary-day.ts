@@ -1,4 +1,6 @@
+import { useToday } from '@presentation/base/hooks/lifecycle/use-today';
 import { StoreStatus } from '@application/store/store-status';
+import { useStore } from 'zustand';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
@@ -29,11 +31,11 @@ const DAYS_PER_WEEK = 7;
  */
 export const useDiaryDay = (): UseDiaryDayResult => {
   const { diaryStore } = useStores();
-  const selected = diaryStore((s) => s.selectedDate);
-  const day = diaryStore((s) => s.days[s.selectedDate.value]);
-  const failure = diaryStore((s) => (s.loads.day.status === StoreStatus.Error ? s.loads.day.failure : null));
+  const selected = useStore(diaryStore, (s) => s.selectedDate);
+  const day = useStore(diaryStore, (s) => s.days[s.selectedDate.value]);
+  const failure = useStore(diaryStore, (s) => (s.loads.day.status === StoreStatus.Error ? s.loads.day.failure : null));
   const [isRefreshing, setRefreshing] = useState(false);
-  const today = CalendarDate.today();
+  const today = useToday();
   const hasDay = day !== undefined;
   useReportFailure(hasDay ? null : failure, 'DiaryScreen');
 

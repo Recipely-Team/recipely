@@ -1,4 +1,4 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { configureRecipeAuthoringStore } from '@application/recipes/create/recipe-authoring-store';
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
@@ -62,7 +62,7 @@ const fakeCreateUseCase = {
 
 // The Created list: a preview must never be added to it.
 const mineAdded = jest.fn();
-const fakeMine = { getState: () => ({ addLocal: mineAdded, removeLocal: jest.fn() }) } as unknown as BoundStore<MyRecipesStore>;
+const fakeMine = { getState: () => ({ addLocal: mineAdded, removeLocal: jest.fn() }) } as unknown as StoreApi<MyRecipesStore>;
 beforeEach(() => mineAdded.mockClear());
 
 const fakeGenerateUseCase = {
@@ -76,11 +76,11 @@ const fakeDeleteUseCase = {
 
 const fakeRecipeListStore = {
   getState: () => ({ replace: () => undefined, remove: () => undefined }),
-} as unknown as BoundStore<RecipeListStore>;
+} as unknown as StoreApi<RecipeListStore>;
 
 const fakeRecipeDetailStore = {
   getState: () => ({ replace: () => undefined, remove: () => undefined }),
-} as unknown as BoundStore<RecipeDetailStore>;
+} as unknown as StoreApi<RecipeDetailStore>;
 
 interface DeferredRefineUseCase {
   useCase: RefineRecipeUseCase;

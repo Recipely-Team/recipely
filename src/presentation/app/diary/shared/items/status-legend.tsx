@@ -7,18 +7,19 @@ import { StatusMarker } from '@presentation/app/diary/shared/items/status-marker
 import { statusLabel } from '@presentation/app/diary/shared/model/status-label';
 import { statusMarkerFor } from '@presentation/app/diary/shared/model/status-marker-for';
 import { upperCase } from '@presentation/i18n/upper-case';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 const TONED = [CalorieStatus.Under, CalorieStatus.On, CalorieStatus.Over, CalorieStatus.Far] as const;
 
 /** "Calories vs goal": each status as its swatch, marker and words, so the calendar's colours are never the only key. */
 export const StatusLegend = (): React.JSX.Element => {
+  const t = useTranslations();
   const tones = useDiaryTones();
   return (
     <View style={styles.stack}>
       <SizedText accessibilityRole="header" size={fontSizes.micro} weight={fontWeights.bold} muted style={styles.title}>
-        {upperCase(t().diary.legendTitle)}
+        {upperCase(t.diary.legendTitle)}
       </SizedText>
       <View style={styles.grid}>
         {TONED.map((status) => {
@@ -28,7 +29,7 @@ export const StatusLegend = (): React.JSX.Element => {
               <View style={[styles.swatch, { backgroundColor: tones[status].bg }]}>
                 {marker === null ? null : <StatusMarker kind={marker} color={tones[status].fg} size={diarySizes.marker} />}
               </View>
-              <SizedText size={fontSizes.small}>{statusLabel(status)}</SizedText>
+              <SizedText size={fontSizes.small}>{statusLabel(t, status)}</SizedText>
             </View>
           );
         })}

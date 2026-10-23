@@ -7,7 +7,7 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing } from '@presentation/base/theme';
-import { pluralCount, t } from '@presentation/i18n';
+import { pluralCount, useTranslations } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 
@@ -55,6 +55,7 @@ export const RecipeSearchOverlay = ({
   query,
   onCreateWithAi,
 }: RecipeSearchOverlayProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -66,12 +67,12 @@ export const RecipeSearchOverlay = ({
           <View style={styles.countLoading}>
             <ActivityIndicator size="small" color={colors.primary} />
             <ThemedText variant="caption" muted>
-              {t().recipes.refreshing}
+              {t.recipes.refreshing}
             </ThemedText>
           </View>
         ) : (
           <ThemedText variant="caption" muted>
-            {pluralCount(t().recipes.resultsCount, recipes.length)}
+            {pluralCount(t.recipes.resultsCount, recipes.length)}
           </ThemedText>
         )}
       </View>

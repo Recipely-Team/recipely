@@ -6,7 +6,7 @@ import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, fontSizes, fontWeights } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 interface ForgotPasswordInputViewProps {
@@ -21,13 +21,14 @@ interface ForgotPasswordInputViewProps {
 export const ForgotPasswordInputView = ({
   email, onChangeEmail, loading, onSend, onBack, error,
 }: ForgotPasswordInputViewProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <>
       <AuthTextField
         iconName="mail-outline"
         autofill={AuthAutofill.Email}
-        placeholder={t().forgotPassword.emailPlaceholder}
+        placeholder={t.forgotPassword.emailPlaceholder}
         value={email}
         onChangeText={onChangeEmail}
         keyboardType="email-address"
@@ -37,7 +38,7 @@ export const ForgotPasswordInputView = ({
       />
 
       <ThemedText variant="caption" muted style={styles.hint}>
-        {t().forgotPassword.hint}
+        {t.forgotPassword.hint}
       </ThemedText>
 
       {error !== undefined ? (
@@ -48,7 +49,7 @@ export const ForgotPasswordInputView = ({
 
       <View style={styles.buttonRow}>
         <PrimaryButton
-          label={loading ? t().forgotPassword.sending : t().forgotPassword.send}
+          label={loading ? t.forgotPassword.sending : t.forgotPassword.send}
           onPress={onSend}
           loading={loading}
           disabled={email.trim().length === ValueConstants.zero}
@@ -59,10 +60,10 @@ export const ForgotPasswordInputView = ({
         onPress={onBack}
         style={styles.textLink}
         accessibilityRole="button"
-        accessibilityLabel={t().forgotPassword.backToLogin}
+        accessibilityLabel={t.forgotPassword.backToLogin}
       >
         <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: fontWeights.semibold }}>
-          {t().forgotPassword.backToLogin}
+          {t.forgotPassword.backToLogin}
         </ThemedText>
       </Pressable>
     </>

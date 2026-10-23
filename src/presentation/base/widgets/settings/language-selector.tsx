@@ -7,7 +7,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { LANGUAGE_NAMES } from '@presentation/base/widgets/settings/language-names';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface LanguageSelectorProps {
   value: string;
@@ -24,6 +24,7 @@ export interface LanguageSelectorProps {
  * name, so the setting reads correctly whatever the app is currently in.
  */
 export const LanguageSelector = ({ value, onChange }: LanguageSelectorProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const [open, setOpen] = useState(false);
 
@@ -38,7 +39,7 @@ export const LanguageSelector = ({ value, onChange }: LanguageSelectorProps): Re
         onPress={() => setOpen(true)}
         style={[styles.trigger, { backgroundColor: colors.inputBackground }]}
         accessibilityRole="button"
-        accessibilityLabel={t().settings.language}
+        accessibilityLabel={t.settings.language}
       >
         <ThemedText variant="caption" style={styles.triggerLabel}>
           {LANGUAGE_NAMES[value] ?? value}
@@ -46,7 +47,7 @@ export const LanguageSelector = ({ value, onChange }: LanguageSelectorProps): Re
         <Ionicons name="chevron-down" size={iconSizes.sm} color={colors.textMuted} />
       </Pressable>
 
-      <BottomSheet visible={open} title={t().settings.language} onClose={() => setOpen(false)}>
+      <BottomSheet visible={open} title={t.settings.language} onClose={() => setOpen(false)}>
         <ScrollView contentContainerStyle={styles.list}>
           {ALL_LOCALE_LIST.map((locale) => {
             const active = locale === value;
@@ -72,7 +73,7 @@ export const LanguageSelector = ({ value, onChange }: LanguageSelectorProps): Re
                 {preview ? (
                   <View style={[styles.badge, { backgroundColor: colors.chipBackground }]}>
                     <ThemedText variant="caption" style={[styles.badgeLabel, { color: colors.chipText }]}>
-                      {t().settings.languageComingSoon}
+                      {t.settings.languageComingSoon}
                     </ThemedText>
                   </View>
                 ) : active ? (

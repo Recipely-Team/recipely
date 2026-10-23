@@ -5,7 +5,7 @@ import { FridgeDiet } from '@domain/fridge/ideas/fridge-diet';
 import { fridgeIdeaPrompt } from '@domain/fridge/ideas/fridge-idea-prompt';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { dietLabel } from '@presentation/app/fridge/model/filters/diet-label';
 import { fridgePromptWording } from '@presentation/app/fridge/model/ideas/fridge-prompt-wording';
@@ -32,6 +32,7 @@ interface FridgeIdeaActions {
  *   with no recipe attached; the toast offers the list.
  */
 export const useFridgeIdeaActions = (query: FridgeIdeasQuery | null): FridgeIdeaActions => {
+  const t = useTranslations();
   const router = useRouter();
   const { shoppingListStore } = useStores();
 
@@ -44,14 +45,14 @@ export const useFridgeIdeaActions = (query: FridgeIdeasQuery | null): FridgeIdea
           idea,
           ingredients: query.ingredients,
           maxMinutes: filters.maxMinutes,
-          dietLabel: filters.diet === FridgeDiet.None ? null : dietLabel(filters.diet),
+          dietLabel: filters.diet === FridgeDiet.None ? null : dietLabel(t, filters.diet),
           servings: filters.servings,
         },
-        fridgePromptWording(),
+        fridgePromptWording(t),
       );
       router.push(RoutePaths.createRecipeWithPrompt(prompt) as Href);
     },
-    [query, router],
+    [query, router, t],
   );
 
   const addMissing = useCallback(
@@ -62,13 +63,13 @@ export const useFridgeIdeaActions = (query: FridgeIdeasQuery | null): FridgeIdea
         return false;
       }
       const count = result.value.added + result.value.merged;
-      showSuccessToast(t().fridge.addedToast.replace('{n}', String(count)), {
-        label: t().fridge.viewList,
+      showSuccessToast(t.fridge.addedToast.replace('{n}', String(count)), {
+        label: t.fridge.viewList,
         onRetry: () => router.push(RoutePaths.shoppingList),
       });
       return true;
     },
-    [router, shoppingListStore],
+    [router, shoppingListStore, t],
   );
 
   return { cook, addMissing };

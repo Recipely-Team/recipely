@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, fontWeights } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 // Matches the pre-existing header layout (both side slots reserve the same
 // width so the centered title doesn't jump depending on which controls render).
@@ -22,6 +22,7 @@ export const BottomSheetHeader = ({
   showCloseButton,
   rightAction,
 }: BottomSheetHeaderProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -32,7 +33,7 @@ export const BottomSheetHeader = ({
           hitSlop={spacing.sm}
           style={styles.headerSide}
           accessibilityRole="button"
-          accessibilityLabel={t().common.close}
+          accessibilityLabel={t.common.close}
         >
           <ThemedText variant="body" muted>×</ThemedText>
         </Pressable>

@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { StoreStatus } from '@application/store/store-status';
@@ -54,22 +55,20 @@ jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: () => ({
     assistantActionRegistry: mockRegistry,
     savedRecipesStore: mockSavedRecipesStore,
-    authStore: (select: (s: { state: { status: string } }) => unknown) =>
-      select({
+    authStore: mockStoreReading(() => ({
         state: {
           status: (globalThis as never as { __rows: Probe }).__rows.signedIn
             ? mockAuth.in
             : mockAuth.out,
         },
-      }),
-    likesStore: (select: (s: { setLiked: unknown }) => unknown) =>
-      select({
+      })),
+    likesStore: mockStoreReading(() => ({
         setLiked: async (id: string, wanted: boolean) => {
           const state = (globalThis as never as { __rows: Probe }).__rows;
           state.liked.push({ id, wanted });
           return { ok: true, value: undefined };
         },
-      }),
+      })),
   }),
 }));
 const registry = mockRegistry;

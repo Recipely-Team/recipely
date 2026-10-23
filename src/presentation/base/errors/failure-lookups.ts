@@ -1,6 +1,6 @@
+import type { TranslationsType } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
 import { FailureCode } from '@core/failure';
-import { t } from '@presentation/i18n';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import type { IoniconNameType } from '@presentation/base/errors/ionicon-name';
 import type { FailureContentKeyType } from '@presentation/base/errors/failure-content-key';
@@ -183,14 +183,14 @@ export const failureSeverity = (failure: Failure): SeverityType =>
   KEY_TO_SEVERITY[keyFor(failure)] ?? 'danger';
 
 /** Localized title + body for a full-screen or section error state. */
-export const failureContent = (failure: Failure): FailureContent => {
-  const entry = t().errors[keyFor(failure)];
+export const failureContent = (t: TranslationsType, failure: Failure): FailureContent => {
+  const entry = t.errors[keyFor(failure)];
   return { title: entry.title, body: entry.body };
 };
 
 /** Short, single-line message for a transient toast. */
-export const failureToastMessage = (failure: Failure): string =>
-  t().errors[keyFor(failure)].short;
+export const failureToastMessage = (t: TranslationsType, failure: Failure): string =>
+  t.errors[keyFor(failure)].short;
 
 /**
  * The short copy written specifically for this failure's `messageKey`, or
@@ -199,9 +199,9 @@ export const failureToastMessage = (failure: Failure): string =>
  * enough to say out loud — if it is `undefined`, they fall back to their own
  * screen-level copy (e.g. "rephrase your prompt") rather than the coarse bucket.
  */
-export const failureKeyMessage = (failure: Failure): string | undefined => {
+export const failureKeyMessage = (t: TranslationsType, failure: Failure): string | undefined => {
   const key = dedicatedKeyFor(failure);
-  return key === undefined ? undefined : t().errors[key].short;
+  return key === undefined ? undefined : t.errors[key].short;
 };
 
 /** The illustration icon for a failure's full-screen / section state. */

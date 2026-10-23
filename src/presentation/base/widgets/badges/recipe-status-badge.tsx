@@ -1,3 +1,4 @@
+import { useTranslations } from '@presentation/i18n';
 import { StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { OwnerStatus, type OwnerStatusType } from '@domain/recipes/publishing/owner-status';
@@ -20,6 +21,7 @@ export interface RecipeStatusBadgeProps {
  *   that is the one state the owner has to notice.
  */
 export const RecipeStatusBadge = ({ status }: RecipeStatusBadgeProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const look = ownerStatusLook[status];
   const rejected = status === OwnerStatus.Rejected;
@@ -30,11 +32,11 @@ export const RecipeStatusBadge = ({ status }: RecipeStatusBadgeProps): React.JSX
     <View
       style={[styles.badge, { backgroundColor: background }]}
       accessibilityRole="text"
-      accessibilityLabel={look.label()}
+      accessibilityLabel={look.label(t)}
     >
       <Ionicons name={look.icon} size={iconSizes.sm} color={foreground} />
       <ThemedText variant="caption" style={[styles.label, { color: foreground }]}>
-        {look.label()}
+        {look.label(t)}
       </ThemedText>
     </View>
   );

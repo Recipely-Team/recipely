@@ -4,7 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SocialSignInButton } from '@presentation/app/login/items/social-sign-in-button';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, fontWeights, borderWidths, targetSizes, controlSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface SocialAuthSectionProps {
@@ -26,6 +26,7 @@ export const SocialAuthSection = ({
   onSignUp,
   onGuest,
 }: SocialAuthSectionProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
@@ -33,14 +34,14 @@ export const SocialAuthSection = ({
       <View style={styles.dividerRow}>
         <View style={[styles.dividerLine, { backgroundColor: colors.inputBorder }]} />
         <ThemedText variant="caption" muted style={styles.dividerLabel}>
-          {t().login.orContinueWith}
+          {t.login.orContinueWith}
         </ThemedText>
         <View style={[styles.dividerLine, { backgroundColor: colors.inputBorder }]} />
       </View>
 
       <SocialSignInButton
         provider="google"
-        label={t().login.signInWithGoogle}
+        label={t.login.signInWithGoogle}
         onPress={onGoogle}
         disabled={disabled}
         borderColor={colors.inputBorder}
@@ -49,7 +50,7 @@ export const SocialAuthSection = ({
       {!isAndroid() && (
         <SocialSignInButton
           provider="apple"
-          label={t().login.signInWithApple}
+          label={t.login.signInWithApple}
           onPress={onApple}
           disabled={disabled}
           borderColor={colors.inputBorder}
@@ -58,16 +59,16 @@ export const SocialAuthSection = ({
 
       <View style={styles.signUpRow}>
         <ThemedText variant="body" style={{ color: colors.textMuted }}>
-          {t().login.noAccount}
+          {t.login.noAccount}
         </ThemedText>
         <Pressable
           onPress={onSignUp}
           accessibilityRole="button"
-          accessibilityLabel={t().login.signUp}
+          accessibilityLabel={t.login.signUp}
           style={styles.linkTarget}
         >
           <ThemedText variant="body" style={[styles.signUpLink, { color: colors.primary }]}>
-            {t().login.signUp}
+            {t.login.signUp}
           </ThemedText>
         </Pressable>
       </View>
@@ -76,10 +77,10 @@ export const SocialAuthSection = ({
         onPress={onGuest}
         style={styles.guestRow}
         accessibilityRole="button"
-        accessibilityLabel={t().login.continueAsGuest}
+        accessibilityLabel={t.login.continueAsGuest}
       >
         <ThemedText variant="body" style={[styles.guestLink, { color: colors.primary }]}>
-          {t().login.continueAsGuest}
+          {t.login.continueAsGuest}
         </ThemedText>
       </Pressable>
     </>

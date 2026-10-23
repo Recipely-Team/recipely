@@ -59,8 +59,8 @@ describe('diary read mappers', () => {
     const r = toDiaryDay(dayDto);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.value.totals.calories).toBe(760);
-    expect(r.value.totals.protein).toBe(20);
+    expect(r.value.totals().calories).toBe(760);
+    expect(r.value.totals().protein).toBe(20);
     expect(r.value.waterGlasses).toBe(5);
     expect(r.value.entriesFor(MealSlot.Breakfast)).toHaveLength(1);
   });

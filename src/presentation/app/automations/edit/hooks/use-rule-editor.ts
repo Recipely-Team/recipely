@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -11,7 +12,7 @@ import { EditorStep, type EditorStepType } from '@presentation/app/automations/e
 import { EDITOR_STEPS } from '@presentation/app/automations/edit/model/editor-steps';
 import type { UseRuleEditorResult } from '@presentation/app/automations/edit/model/use-rule-editor-result';
 import { useAutomationsGuard } from '@presentation/app/automations/shared/hooks/use-automations-guard';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * The rule editor (spec §3): four steps, each gated by what the domain would
@@ -26,12 +27,13 @@ import { t } from '@presentation/i18n';
  * - **Forward only through valid steps**; back is always free.
  */
 export const useRuleEditor = (): UseRuleEditorResult => {
+  const t = useTranslations();
   const router = useRouter();
   const params = useLocalSearchParams<{ ruleId?: string }>();
   const ruleId = params.ruleId === undefined || params.ruleId.length === ValueConstants.zero ? null : params.ruleId;
   const { automationsStore } = useStores();
-  const opened = automationsStore((s) => s.opened);
-  const copy = t().instagram;
+  const opened = useStore(automationsStore, (s) => s.opened);
+  const copy = t.instagram;
 
   const [step, setStep] = useState<EditorStepType>(ruleId === null ? EditorStep.Post : EditorStep.Keywords);
   const [mediaId, setMediaId] = useState<string | null>(null);

@@ -10,7 +10,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, opacities, radii } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { ValueConstants } from '@core/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AssistantFabProps {
   status: AssistantStatusType;
@@ -30,6 +30,7 @@ export interface AssistantFabProps {
  *   floor — so a ring that kept beating would be advertising nothing.
  */
 export const AssistantFab = ({ status, onOpen }: AssistantFabProps): React.JSX.Element => {
+  const t = useTranslations();
   const { colors } = useTheme();
   const reduceMotion = useReduceMotion();
   const [ring] = useState(() => new Animated.Value(ValueConstants.zero));
@@ -56,7 +57,7 @@ export const AssistantFab = ({ status, onOpen }: AssistantFabProps): React.JSX.E
     <Pressable
       onPress={onOpen}
       accessibilityRole="button"
-      accessibilityLabel={t().assistant.open}
+      accessibilityLabel={t.assistant.open}
       style={styles.wrapper}
     >
       <Animated.View

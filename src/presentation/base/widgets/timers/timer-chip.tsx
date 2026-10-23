@@ -8,7 +8,7 @@ import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer
 import { formatTimer } from '@presentation/base/utils/format-timer';
 import type { TimerEntry } from '@application/timers/timer-entry';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { RoutePaths } from '@presentation/base/constants';
 import { ValueConstants, TimeConstants } from '@core/constants';
 
@@ -25,6 +25,7 @@ interface TimerChipProps {
 const ACTION_HIT_SLOP = spacing.xs;
 
 export const TimerChip = ({ entry }: TimerChipProps): React.JSX.Element => {
+  const t = useTranslations();
   const { colors } = useTheme();
   const router = useRouter();
   const timer = useRecipeTimer({
@@ -41,7 +42,7 @@ export const TimerChip = ({ entry }: TimerChipProps): React.JSX.Element => {
   }, [entry.recipeId, router]);
 
   const timeLabel = isDone
-    ? `✓ ${t().timer.done}`
+    ? `✓ ${t.timer.done}`
     : isPaused
       ? `⏸ ${formatTimer(remainingSeconds)}`
       : formatTimer(remainingSeconds);
@@ -81,7 +82,7 @@ export const TimerChip = ({ entry }: TimerChipProps): React.JSX.Element => {
         {!isDone ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={isPaused ? t().timer.resume : t().timer.pause}
+            accessibilityLabel={isPaused ? t.timer.resume : t.timer.pause}
             onPress={() => void (isPaused ? timer.resume() : timer.pause())}
             hitSlop={ACTION_HIT_SLOP}
             style={[styles.actionBtn, { backgroundColor: colors.chipBackground }]}
@@ -91,7 +92,7 @@ export const TimerChip = ({ entry }: TimerChipProps): React.JSX.Element => {
         ) : null}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t().timer.stop}
+          accessibilityLabel={t.timer.stop}
           onPress={() => void timer.stop()}
           hitSlop={ACTION_HIT_SLOP}
           style={[styles.actionBtn, { backgroundColor: colors.dangerLight }]}

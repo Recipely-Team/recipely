@@ -13,7 +13,7 @@ import {
   aspectRatios,
   controlSizes,
 } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { COUNT_TOKEN } from '@presentation/app/import-recipe/model/file/count-token';
 import { FilePageThumb } from '@presentation/app/import-recipe/items/file-page-thumb';
 import { ValueConstants } from '@core/constants';
@@ -48,8 +48,9 @@ export const FilePageTile = ({
   onPress,
   onRemove,
 }: FilePageTileProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().fileImport;
+  const copy = t.fileImport;
   const label = copy.page.replace(COUNT_TOKEN, String(index + ValueConstants.one));
 
   return (

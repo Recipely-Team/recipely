@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChatRole } from '@domain/drafts/chat-role';
 import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { failureKeyMessage } from '@presentation/base/errors/failure-lookups';
 import { editableToSnapshot } from '@presentation/app/create-recipe/model/drafting/editable-to-snapshot';
@@ -58,6 +58,7 @@ export const useRefineProposal = ({
   chatExpanded,
   refining,
 }: UseRefineProposalArgs) => {
+  const t = useTranslations();
   const { recipeAuthoringStore } = useStores();
   const [proposal, setProposal] = useState<RefineProposal | null>(null);
   // A refine outlives the screen; no toast after unmount.
@@ -96,12 +97,12 @@ export const useRefineProposal = ({
       if (refined !== null) {
         const proposed = recipeToEditable(refined.recipe, recipe.media);
         const changes = diffEditableRecipes(recipe, proposed);
-        const reply = buildRefineReply(refined, t().createRecipe.aiUpdated);
+        const reply = buildRefineReply(refined, t.createRecipe.aiUpdated);
         setChatHistory((h) => [...h, { role: ChatRole.Assistant, content: reply }]);
         if (changes.length > ValueConstants.zero) {
           setProposal({ recipe: proposed, changes, reply });
           // The answer landed behind a closed panel: say so.
-          if (!chatExpanded && mounted.current) showSuccessToast(t().createRecipe.proposalWaiting);
+          if (!chatExpanded && mounted.current) showSuccessToast(t.createRecipe.proposalWaiting);
         }
         recipeAuthoringStore.getState().resetRefineState();
         return;
@@ -110,14 +111,14 @@ export const useRefineProposal = ({
       // refineRecipe collapses failures to null, so read the reason from the store.
       const state = recipeAuthoringStore.getState().refineState;
       if (state.status === StoreStatus.Error) showErrorToast(state.failure);
-      const reason = state.status === StoreStatus.Error ? failureKeyMessage(state.failure) : undefined;
+      const reason = state.status === StoreStatus.Error ? failureKeyMessage(t, state.failure) : undefined;
       setChatHistory((h) => [
         ...h,
-        { role: ChatRole.Assistant, content: reason ?? t().createRecipe.aiError, error: true },
+        { role: ChatRole.Assistant, content: reason ?? t.createRecipe.aiError, error: true },
       ]);
       recipeAuthoringStore.getState().resetRefineState();
     },
-    [recipeAuthoringStore, recipe, refining, chatExpanded, chatHistory, proposal, markLastAssistantRejected, setChatHistory],
+    [recipeAuthoringStore, recipe, refining, chatExpanded, chatHistory, proposal, markLastAssistantRejected, setChatHistory, t],
   );
 
   const onAccept = useCallback((): void => {

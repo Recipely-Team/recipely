@@ -6,7 +6,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { diarySizes, fontSizes, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
 import { dayA11yLabel } from '@presentation/app/diary/shared/model/day-a11y-label';
 import { formatWeekdayShort } from '@presentation/app/diary/shared/model/format-weekday-short';
-import { useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface DayCellProps {
@@ -21,6 +21,7 @@ export interface DayCellProps {
 
 /** One day of the week strip: weekday, day number and a dot when something was logged (design spec → Food Diary §4). */
 export const DayCell = ({ date, status, calories, hasEntries, isSelected, isFuture, onPress }: DayCellProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
   const ink = isSelected ? colors.primaryText : colors.text;
@@ -29,7 +30,7 @@ export const DayCell = ({ date, status, calories, hasEntries, isSelected, isFutu
       onPress={() => onPress(date)}
       disabled={isFuture}
       accessibilityRole="button"
-      accessibilityLabel={dayA11yLabel(date, calories, status, locale)}
+      accessibilityLabel={dayA11yLabel(t, date, calories, status, locale)}
       accessibilityState={{ selected: isSelected, disabled: isFuture }}
       style={[
         styles.cell,

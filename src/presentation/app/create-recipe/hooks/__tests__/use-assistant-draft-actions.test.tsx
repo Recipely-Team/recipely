@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 import { act } from 'react-test-renderer';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
@@ -40,8 +41,7 @@ function harness(
   isExitPending = false,
 ) {
   const registry = new AssistantActionRegistry();
-  const taxonomyStore = ((selector: (state: unknown) => unknown) =>
-    selector({ cuisines: loaded ? CUISINES : [], categories: loaded ? CATEGORIES : [] })) as unknown as ApplicationStores['taxonomyStore'];
+  const taxonomyStore = (mockStoreReading(() => ({ cuisines: loaded ? CUISINES : [], categories: loaded ? CATEGORIES : [] }))) as unknown as ApplicationStores['taxonomyStore'];
 
   const spies = {
     onUpdateField: jest.fn(),

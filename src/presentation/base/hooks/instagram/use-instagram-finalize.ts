@@ -3,7 +3,7 @@ import { StoreStatus } from '@application/store/store-status';
 import { CreatorTagOutcome } from '@domain/instagram/connect/creator-tag-outcome';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast, showSuccessToast, showWarningToast } from '@presentation/base/feedback/show-toast';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * Finishes an Instagram login with the return link's one-time code and says
@@ -18,6 +18,7 @@ import { t } from '@presentation/i18n';
  *   creator badge show the Instagram tag approved without a restart.
  */
 export const useInstagramFinalize = (): ((code: string) => Promise<boolean>) => {
+  const t = useTranslations();
   const { instagramStore, authStore } = useStores();
   return useCallback(
     async (code: string): Promise<boolean> => {
@@ -29,7 +30,7 @@ export const useInstagramFinalize = (): ((code: string) => Promise<boolean>) => 
         return false;
       }
       void authStore.getState().refreshCreatorClaim();
-      const copy = t().instagram;
+      const copy = t.instagram;
       switch (result.value.creatorTag) {
         case CreatorTagOutcome.Approved:
           showSuccessToast(wasExpired ? copy.reconnectedToast : copy.connectedToast);
@@ -43,6 +44,6 @@ export const useInstagramFinalize = (): ((code: string) => Promise<boolean>) => 
       }
       return true;
     },
-    [authStore, instagramStore],
+    [authStore, instagramStore, t],
   );
 };

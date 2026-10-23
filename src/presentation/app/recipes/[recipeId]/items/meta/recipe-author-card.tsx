@@ -4,7 +4,7 @@ import { KitchenAvatar } from '@presentation/app/recipes/[recipeId]/items/meta/k
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, avatarSizes, borderWidths, iconSizes } from '@presentation/base/theme';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -33,10 +33,11 @@ export const RecipeAuthorCard = ({
   isOwner,
   isKitchen = false,
 }: RecipeAuthorCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const eyebrow = isOwner ? t().recipes.yourRecipe : t().recipes.recipeBy;
-  const name = isKitchen ? t().recipes.originCuratedDetailLabel : authorName;
-  const caption = isKitchen ? t().creators.verified : t().recipes.recipeCount.replace('{count}', String(recipeCount));
+  const eyebrow = isOwner ? t.recipes.yourRecipe : t.recipes.recipeBy;
+  const name = isKitchen ? t.recipes.originCuratedDetailLabel : authorName;
+  const caption = isKitchen ? t.creators.verified : t.recipes.recipeCount.replace('{count}', String(recipeCount));
   const groupLabel = [eyebrow, name, caption].join(CharConstants.commaSpace);
 
   return (
@@ -83,7 +84,7 @@ export const RecipeAuthorCard = ({
             variant="caption"
             style={[styles.pillLabel, { color: colors.chipText }]}
           >
-            {t().recipes.youPill}
+            {t.recipes.youPill}
           </ThemedText>
         </View>
       ) : null}

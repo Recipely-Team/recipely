@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect } from 'react';
+import { useStore } from 'zustand';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
@@ -35,9 +36,9 @@ const RecipeListItemComponent = ({ recipe, onOpen, hoverEffect }: RecipeListItem
   const { cuisineLabel } = useTaxonomyLabel();
   const isAuthenticated = useIsSignedIn();
 
-  const likeState = likesStore((s) => s.byRecipe[recipe.id]);
-  const seed = likesStore((s) => s.seed);
-  const toggle = likesStore((s) => s.toggle);
+  const likeState = useStore(likesStore, (s) => s.byRecipe[recipe.id]);
+  const seed = useStore(likesStore, (s) => s.seed);
+  const toggle = useStore(likesStore, (s) => s.toggle);
 
   useEffect(() => {
     seed(recipe.id, recipe.likeCount, recipe.likedByMe);
@@ -54,7 +55,7 @@ const RecipeListItemComponent = ({ recipe, onOpen, hoverEffect }: RecipeListItem
       cuisine={cuisineLabel(recipe.cuisine).name}
       difficulty={recipe.difficulty}
       rating={recipe.rating}
-      provenance={recipe.provenanceMarks}
+      provenance={recipe.provenanceMarks()}
       photoCount={recipe.photoCount}
       likeCount={likeState?.likeCount ?? recipe.likeCount}
       likedByMe={likeState?.likedByMe ?? recipe.likedByMe}

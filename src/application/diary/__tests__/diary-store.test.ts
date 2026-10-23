@@ -34,7 +34,7 @@ const monthOf = (calories: number) =>
 const makeRepo = (overrides: Partial<FoodDiaryRepositoryInterface> = {}): jest.Mocked<FoodDiaryRepositoryInterface> => ({
   getDay: jest.fn().mockResolvedValue(ok(dayOf([entry]))),
   getMonth: jest.fn().mockResolvedValue(ok(monthOf(300))),
-  listRecent: jest.fn().mockResolvedValue(ok([entry.food])),
+  listRecent: jest.fn().mockResolvedValue(ok([entry.food()])),
   addEntry: jest.fn().mockResolvedValue(ok(entry)),
   updateEntry: jest.fn().mockResolvedValue(ok(entry)),
   deleteEntry: jest.fn().mockResolvedValue(ok(undefined)),
@@ -104,7 +104,7 @@ describe('diary store', () => {
     const store = makeStore(repo);
     await store.getState().loadMonth(CalendarMonth.of(today));
     repo.getMonth.mockResolvedValueOnce(ok(monthOf(600)));
-    const r = await store.getState().addEntry(entry.food.entryFor(today, MealSlot.Lunch, Servings.one()));
+    const r = await store.getState().addEntry(entry.food().entryFor(today, MealSlot.Lunch, Servings.one()));
     expect(r.ok).toBe(true);
     await flush();
     expect(repo.getDay).toHaveBeenCalledWith(today);
@@ -148,7 +148,7 @@ describe('diary store', () => {
 
   it('refuses an entry past the caps without a request', async () => {
     const repo = makeRepo();
-    const huge = entry.food.entryFor(today, MealSlot.Lunch, Servings.nearest(20));
+    const huge = entry.food().entryFor(today, MealSlot.Lunch, Servings.nearest(20));
     const r = await makeStore(repo).getState().addEntry({ ...huge, nutrients: nutrientsOf({ calories: 20001 }) });
     expect(!r.ok && r.failure.messageKey).toBe('errors.validation.nutrient_invalid');
     expect(repo.addEntry).not.toHaveBeenCalled();
@@ -231,7 +231,7 @@ describe('diary store', () => {
   it('resolves an add before its refreshes finish', async () => {
     const slowDay = deferred<Result<DiaryDay, Failure>>();
     const repo = makeRepo({ getDay: jest.fn(() => slowDay.promise) });
-    const r = await makeStore(repo).getState().addEntry(entry.food.entryFor(today, MealSlot.Lunch, Servings.one()));
+    const r = await makeStore(repo).getState().addEntry(entry.food().entryFor(today, MealSlot.Lunch, Servings.one()));
     expect(r.ok).toBe(true);
     expect(repo.getDay).toHaveBeenCalled();
     slowDay.settle(ok(dayOf([entry])));

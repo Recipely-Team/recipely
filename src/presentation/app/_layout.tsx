@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useStore } from 'zustand';
 import { Stack, ThemeProvider, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
@@ -39,7 +40,7 @@ import { RoutePaths } from '@presentation/base/constants';
  * over the dismissed one's.
  */
 const AlarmOverlay = (): React.JSX.Element | null => {
-  const alarm = alarmStore((s) => s.alarms[ValueConstants.zero]);
+  const alarm = useStore(alarmStore, (s) => s.alarms[ValueConstants.zero]);
   if (alarm === undefined) return null;
   return (
     // zIndex must exceed ActiveTimersBar (100) so the alarm sits on top.

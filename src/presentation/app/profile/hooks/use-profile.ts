@@ -1,4 +1,6 @@
+import { useTranslations } from '@presentation/i18n';
 import { useCallback, useEffect } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -37,14 +39,15 @@ interface UseProfileResult {
  *   admin's approval puts the verified chip here without a visit there.
  */
 export const useProfile = (): UseProfileResult => {
+  const t = useTranslations();
   const router = useRouter();
   const { pickAndUpload, isUploading, uploadError, onDismissUploadError } = useAvatarUpload();
 
   const { authStore, userProfileStore, savedRecipesStore } = useStores();
-  const profileState = userProfileStore((s) => s.state);
-  const loadProfile = userProfileStore((s) => s.load);
-  const refreshCreatorClaim = authStore((s) => s.refreshCreatorClaim);
-  const savedCount = savedRecipesStore((s) => s.savedIds.size);
+  const profileState = useStore(userProfileStore, (s) => s.state);
+  const loadProfile = useStore(userProfileStore, (s) => s.load);
+  const refreshCreatorClaim = useStore(authStore, (s) => s.refreshCreatorClaim);
+  const savedCount = useStore(savedRecipesStore, (s) => s.savedIds.size);
 
   const user = useSignedInUser();
   const userId = user?.id;
@@ -78,7 +81,7 @@ export const useProfile = (): UseProfileResult => {
       case StoreStatus.Error:
         return {
           status: StoreStatus.Error,
-          message: failureToastMessage(profileState.failure),
+          message: failureToastMessage(t, profileState.failure),
           onRetry: retry,
         };
       case StoreStatus.Loaded:

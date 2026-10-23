@@ -6,7 +6,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { RoundIconButton } from '@presentation/base/widgets/buttons/round-icon-button';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, controlSizes, fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface ShoppingListBarProps {
   onBack: () => void;
@@ -17,6 +17,7 @@ export interface ShoppingListBarProps {
  * is already above it, so the bar drops the safe-area inset and its hairline.
  */
 export const ShoppingListBar = ({ onBack }: ShoppingListBarProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
@@ -27,7 +28,7 @@ export const ShoppingListBar = ({ onBack }: ShoppingListBarProps): React.JSX.Ele
         { paddingTop: isWebShell ? spacing.lg : insets.top + spacing.xs, borderBottomColor: isWebShell ? colors.background : colors.border },
       ]}
     >
-      <RoundIconButton icon="chevron-back" accessibilityLabel={t().common.back} onPress={onBack} size={controlSizes.touchTarget} />
+      <RoundIconButton icon="chevron-back" accessibilityLabel={t.common.back} onPress={onBack} size={controlSizes.touchTarget} />
       <SizedText
         accessibilityRole="header"
         size={isWebShell ? fontSizes.title : fontSizes.heading}
@@ -35,7 +36,7 @@ export const ShoppingListBar = ({ onBack }: ShoppingListBarProps): React.JSX.Ele
         numberOfLines={ValueConstants.one}
         style={styles.title}
       >
-        {t().shopping.title}
+        {t.shopping.title}
       </SizedText>
     </View>
   );

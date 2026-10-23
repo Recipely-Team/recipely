@@ -3,9 +3,8 @@ import { useMyRecipesTabDefs } from '@presentation/app/my-recipes/hooks/use-my-r
 import { useMyRecipesPaging } from '@presentation/app/my-recipes/hooks/use-my-recipes-paging';
 import { useCallback, useMemo } from 'react';
 import { StoreStatus } from '@application/store/store-status';
-import { loadedItems } from '@application/store/paging/loaded-items';
 import { StyleSheet, View } from 'react-native';
-import { type Href, useFocusEffect, useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
@@ -20,6 +19,7 @@ import { MyRecipesList } from '@presentation/app/my-recipes/body/my-recipes-list
 import { useMyRecipesTab } from '@presentation/app/my-recipes/hooks/use-my-recipes-tab';
 import { useMyRecipesAssistant } from '@presentation/app/my-recipes/hooks/use-my-recipes-assistant';
 import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-recipes-refresh';
+import { useMyRecipesLists } from '@presentation/app/my-recipes/hooks/use-my-recipes-lists';
 import { gridColumnsFor } from '@presentation/app/my-recipes/model/grid-columns-for';
 import { isFirstLoad } from '@presentation/app/my-recipes/model/is-first-load';
 import { useReportFailure } from '@presentation/base/errors/use-report-failure';
@@ -27,42 +27,27 @@ import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe'
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { RoutePaths } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
 
 export const MyRecipesScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const colors = useTheme().colors;
   const { isWebShell, isExpanded, width } = useLayout();
-  const { savedRecipesStore, likedRecipesStore, myRecipesStore, draftsStore } = useStores();
+  const { draftsStore } = useStores();
   const { toggleSave } = useSaveRecipe();
-
-  const savedListState = savedRecipesStore((s) => s.saved);
-  const likedListState = likedRecipesStore((s) => s.liked);
-  const createdListState = myRecipesStore((s) => s.mine);
-  const savedRecipes = useMemo(() => loadedItems(savedListState), [savedListState]);
-  const likedRecipes = useMemo(() => loadedItems(likedListState), [likedListState]);
-  const createdRecipes = useMemo(() => loadedItems(createdListState), [createdListState]);
-  const draftsListState = draftsStore((s) => s.drafts);
-  const drafts = useMemo(() => loadedItems(draftsListState), [draftsListState]);
-  const loadMoreDrafts = draftsStore((s) => s.loadMoreDrafts);
+  const {
+    savedListState, likedListState, createdListState, draftsListState,
+    savedRecipes, likedRecipes, createdRecipes, drafts, loadMoreDrafts,
+  } = useMyRecipesLists();
 
   const [tab, setTab] = useMyRecipesTab();
   const { totals, itemsFooter, onItemsEndReached } = useMyRecipesPaging(tab);
   const { isRefreshing, onRefresh } = useMyRecipesRefresh(tab);
 
   const gridColumns = useMemo(() => gridColumnsFor(isExpanded, width), [isExpanded, width]);
-
-  // On focus, not mount: the screen stays mounted behind the create flow.
-  useFocusEffect(
-    useCallback(() => {
-      void savedRecipesStore.getState().loadSaved();
-      void likedRecipesStore.getState().loadLiked();
-      void myRecipesStore.getState().loadMine();
-      void draftsStore.getState().loadDrafts();
-    }, [savedRecipesStore, likedRecipesStore, myRecipesStore, draftsStore]),
-  );
 
   const items =
     tab === TabType.Saved ? savedRecipes : tab === TabType.Liked ? likedRecipes : createdRecipes;
@@ -126,9 +111,9 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ConfirmSheet
         visible={assistant.isDraftDeletePending}
-        title={t().assistant.deleteDraftTitle}
-        message={t().assistant.deleteDraftMessage}
-        confirmLabel={t().myRecipes.deleteRecipe}
+        title={t.assistant.deleteDraftTitle}
+        message={t.assistant.deleteDraftMessage}
+        confirmLabel={t.myRecipes.deleteRecipe}
         destructive
         onConfirm={assistant.confirmDraftDelete}
         onClose={assistant.cancelDraftDelete}

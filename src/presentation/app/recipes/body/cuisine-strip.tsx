@@ -4,7 +4,7 @@ import { StyleSheet, View, ScrollView, Pressable } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, avatarSizes, borderWidths, maxFontScales } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/app/recipes/hooks/use-taxonomy-options';
 import { ValueConstants } from '@core/constants';
@@ -31,6 +31,7 @@ export interface CuisineStripProps {
  * taxonomy (localized) with a local fallback.
  */
 export const CuisineStrip = ({ selectedCuisines, onToggle, gutter = true }: CuisineStripProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
   const { cuisineKeys } = useTaxonomyOptions();
@@ -89,7 +90,7 @@ export const CuisineStrip = ({ selectedCuisines, onToggle, gutter = true }: Cuis
     <View style={styles.section}>
       <View style={[styles.sectionHeader, gutter ? styles.headerGutter : null]}>
         <ThemedText variant="body" style={styles.sectionTitle}>
-          {t().recipes.browseCuisines}
+          {t.recipes.browseCuisines}
         </ThemedText>
       </View>
       <ScrollView

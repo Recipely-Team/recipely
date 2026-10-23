@@ -16,7 +16,7 @@ import type { ShoppingRow } from '@presentation/app/shopping-list/model/shopping
 import { ShoppingAddField } from '@presentation/app/shopping-list/body/shopping-add-field';
 import { ShoppingListActions } from '@presentation/app/shopping-list/body/shopping-list-actions';
 import { ShoppingItemRow } from '@presentation/app/shopping-list/items/shopping-item-row';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface ShoppingListBodyProps {
   vm: UseShoppingListResult;
@@ -31,9 +31,10 @@ export interface ShoppingListBodyProps {
  * `renderRow` and `keyExtractor` keep their identity so the memoised rows hold.
  */
 export const ShoppingListBody = ({ vm, scrollable, onEdit }: ShoppingListBodyProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const list = vm.list;
-  const copy = t().shopping;
+  const copy = t.shopping;
   const { onToggle, onRemove } = vm;
   const renderRow = useCallback(
     ({ item: row }: { item: ShoppingRow }): React.JSX.Element =>

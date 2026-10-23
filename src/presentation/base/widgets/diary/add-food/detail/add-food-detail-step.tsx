@@ -1,3 +1,4 @@
+import { useToday } from '@presentation/base/hooks/lifecycle/use-today';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import type { LoggableFood } from '@domain/diary/entry/loggable-food';
 import type { Servings } from '@domain/diary/entry/servings';
@@ -13,7 +14,7 @@ import { ServingsStepper } from '@presentation/base/widgets/diary/add-food/detai
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { formatDayMonth } from '@presentation/base/utils/diary/format-day-month';
 import { controlSizes, diarySizes, fontSizes, fontWeights, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface AddFoodDetailStepProps {
@@ -30,10 +31,12 @@ export interface AddFoodDetailStepProps {
 
 /** The Add food sheet's second step: what the chosen amount adds up to, how much, and to which meal. */
 export const AddFoodDetailStep = (props: AddFoodDetailStepProps): React.JSX.Element => {
+  const t = useTranslations();
+  const today = useToday();
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   const { food, date } = props;
-  const dayParts = [formatDayMonth(date, locale), ...(date.equals(CalendarDate.today()) ? [strings.today] : [])];
+  const dayParts = [formatDayMonth(date, locale), ...(date.equals(today) ? [strings.today] : [])];
   const meta = [strings.perServingMeta.replace('{k}', formatWholeNumber(food.perServing.calories, locale)), ...dayParts].join(
     CharConstants.middotSpaced,
   );
@@ -42,7 +45,7 @@ export const AddFoodDetailStep = (props: AddFoodDetailStepProps): React.JSX.Elem
     <ScrollView contentContainerStyle={styles.stack} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         {props.canGoBack ? (
-          <RoundIconButton icon="chevron-back" accessibilityLabel={t().common.back} onPress={props.onBack} size={controlSizes.iconBtn} />
+          <RoundIconButton icon="chevron-back" accessibilityLabel={t.common.back} onPress={props.onBack} size={controlSizes.iconBtn} />
         ) : null}
         <FoodThumb imageUrl={food.imageUrl} icon={food.isQuickAdd ? FoodThumbIcon.QuickAdd : null} size={diarySizes.foodThumbLarge} />
         <View style={styles.headerText}>

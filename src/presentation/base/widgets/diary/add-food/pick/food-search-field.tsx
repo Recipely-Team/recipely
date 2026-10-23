@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { borderWidths, controlSizes, fontSizes, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface FoodSearchFieldProps {
@@ -19,9 +19,10 @@ export interface FoodSearchFieldProps {
  * shell — on a phone the keyboard would cover the tabs.
  */
 export const FoodSearchField = ({ value, onChangeText, placeholder }: FoodSearchFieldProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { isWebShell } = useLayout();
-  const strings = t().diary;
+  const strings = t.diary;
   return (
     <View style={[styles.box, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder }]}>
       <Ionicons name="search" size={iconSizes.lg} color={colors.textMuted} />
@@ -40,7 +41,7 @@ export const FoodSearchField = ({ value, onChangeText, placeholder }: FoodSearch
         <Pressable
           onPress={() => onChangeText(CharConstants.empty)}
           accessibilityRole="button"
-          accessibilityLabel={t().common.clear}
+          accessibilityLabel={t.common.clear}
           style={styles.clear}
           hitSlop={spacing.xs}
         >

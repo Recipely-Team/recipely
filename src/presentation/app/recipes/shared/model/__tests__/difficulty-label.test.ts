@@ -9,13 +9,14 @@
  * a new `Difficulty` value without updating the label map causes a test failure.
  */
 
+import { t } from '@presentation/i18n';
 import { Difficulty, DIFFICULTY_VALUES } from '@domain/recipes/difficulty';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 
 describe('difficultyLabel()', () => {
   it('returns a non-empty string for every Difficulty value', () => {
     for (const difficulty of DIFFICULTY_VALUES) {
-      const label = difficultyLabel(difficulty);
+      const label = difficultyLabel(t(), difficulty);
 
       expect(typeof label).toBe('string');
       expect(label.length).toBeGreaterThan(0);
@@ -25,7 +26,7 @@ describe('difficultyLabel()', () => {
   it('covers all values in DIFFICULTY_VALUES — no missing Difficulty is silently ignored', () => {
     // If a Difficulty is added to DIFFICULTY_VALUES but missing from the label
     // map, difficultyLabel() would return undefined (not a string).
-    const results = DIFFICULTY_VALUES.map((d) => difficultyLabel(d));
+    const results = DIFFICULTY_VALUES.map((d) => difficultyLabel(t(), d));
 
     const undefined_results = results.filter((r) => r === undefined);
 
@@ -33,25 +34,25 @@ describe('difficultyLabel()', () => {
   });
 
   it("returns 'Easy' for Difficulty.Easy in the English locale", () => {
-    const label = difficultyLabel(Difficulty.Easy);
+    const label = difficultyLabel(t(), Difficulty.Easy);
 
     expect(label).toBe('Easy');
   });
 
   it("returns 'Medium' for Difficulty.Medium in the English locale", () => {
-    const label = difficultyLabel(Difficulty.Medium);
+    const label = difficultyLabel(t(), Difficulty.Medium);
 
     expect(label).toBe('Medium');
   });
 
   it("returns 'Hard' for Difficulty.Hard in the English locale", () => {
-    const label = difficultyLabel(Difficulty.Hard);
+    const label = difficultyLabel(t(), Difficulty.Hard);
 
     expect(label).toBe('Hard');
   });
 
   it('produces distinct labels so difficulties are distinguishable', () => {
-    const labels = DIFFICULTY_VALUES.map((d) => difficultyLabel(d));
+    const labels = DIFFICULTY_VALUES.map((d) => difficultyLabel(t(), d));
     const unique = new Set(labels);
 
     expect(unique.size).toBe(DIFFICULTY_VALUES.length);

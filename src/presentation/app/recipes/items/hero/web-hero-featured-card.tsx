@@ -1,11 +1,12 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useStore } from 'zustand';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, opacities, aspectRatios } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { WebHeroActionRow } from '@presentation/app/recipes/items/hero/web-hero-action-row';
@@ -42,8 +43,9 @@ export const WebHeroFeaturedCard = ({
   onPress,
   onSave,
 }: WebHeroFeaturedCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const savedByMe = useStores().savedRecipesStore((s) => s.savedIds.has(recipe.id));
+  const savedByMe = useStore(useStores().savedRecipesStore, (s) => s.savedIds.has(recipe.id));
   const totalMin = recipe.totalTimeMinutes;
   return (
     <View style={styles.card}>
@@ -52,7 +54,7 @@ export const WebHeroFeaturedCard = ({
         focus={recipe.imageFocus}
         style={styles.image}
         accessibilityLabel={recipe.name}
-        placeholderLabel={t().recipes.noPhoto}
+        placeholderLabel={t.recipes.noPhoto}
       />
       <LinearGradient
         colors={[HERO_OVERLAY_DEEP, HERO_OVERLAY_MID, HERO_OVERLAY_FADE, HERO_OVERLAY_FADE]}
@@ -75,7 +77,7 @@ export const WebHeroFeaturedCard = ({
         <View style={[styles.badge, { backgroundColor: colors.primary }]}>
           <Ionicons name="flame" size={iconSizes.md} color={colors.primaryText} />
           <ThemedText style={[styles.badgeText, { color: colors.primaryText }]}>
-            {upperCase(t().recipes.trending)}
+            {upperCase(t.recipes.trending)}
           </ThemedText>
         </View>
 
@@ -95,13 +97,13 @@ export const WebHeroFeaturedCard = ({
             <>
               <Ionicons name="time-outline" size={iconSizes.md} color={colors.onOverlay} />
               <ThemedText style={[styles.meta, { color: colors.onOverlay }]}>
-                {t().recipes.heroTotalMin.replace('{n}', String(totalMin))}
+                {t.recipes.heroTotalMin.replace('{n}', String(totalMin))}
               </ThemedText>
             </>
           )}
           <Ionicons name="speedometer-outline" size={iconSizes.md} color={colors.onOverlay} />
           <ThemedText style={[styles.meta, { color: colors.onOverlay }]}>
-            {difficultyLabel(recipe.difficulty)}
+            {difficultyLabel(t, recipe.difficulty)}
           </ThemedText>
         </View>
 

@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useStore } from 'zustand';
 import { DiaryLimits } from '@domain/diary/diary-limits';
 import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import { ValueConstants } from '@core/constants';
@@ -7,7 +8,7 @@ import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/sh
 import { parseDecimalInput } from '@presentation/base/utils/diary/parse-decimal-input';
 import type { GoalFieldType } from '@presentation/app/diary/model/goal-field';
 import type { GoalsForm } from '@presentation/app/diary/model/goals-form';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 const toFields = (goals: NutritionGoals): Record<GoalFieldType, string> => ({
   calories: String(goals.calories),
@@ -28,8 +29,9 @@ const toFields = (goals: NutritionGoals): Record<GoalFieldType, string> => ({
  *   Water is not on this sheet, so the saved glasses ride along.
  */
 export const useGoalsForm = (visible: boolean, onSaved: () => void): GoalsForm => {
+  const t = useTranslations();
   const { diaryStore } = useStores();
-  const goals = diaryStore((s) => s.goals);
+  const goals = useStore(diaryStore, (s) => s.goals);
   const [values, setValues] = useState(() => toFields(goals));
   const [wasVisible, setWasVisible] = useState(visible);
   const [isSaving, setSaving] = useState(false);
@@ -68,8 +70,8 @@ export const useGoalsForm = (visible: boolean, onSaved: () => void): GoalsForm =
     setSaving(false);
     if (!result.ok) return void showErrorToast(result.failure);
     onSaved();
-    showSuccessToast(t().diary.goalsSaved);
-  }, [candidate, diaryStore, onSaved]);
+    showSuccessToast(t.diary.goalsSaved);
+  }, [candidate, diaryStore, onSaved, t]);
 
   return {
     values,

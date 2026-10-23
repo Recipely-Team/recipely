@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import { getPreferenceStore } from '@application/storage/get-preference-store';
 import { PreferenceSlot } from '@domain/storage/preference-slot';
 import type { OnboardingStore } from '@application/onboarding/onboarding-store-contract';
@@ -12,7 +12,7 @@ const SEEN_VALUE = '1';
  * the preference store resolved lazily through DI, so no layer above
  * depends on a concrete storage backend.
  */
-export const onboardingStore = create<OnboardingStore>((set) => ({
+export const onboardingStore = createStore<OnboardingStore>((set) => ({
   hydrated: false,
   dismissed: false,
   hydrate: async (): Promise<void> => {

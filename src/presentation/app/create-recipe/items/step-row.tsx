@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, decorSizes, borderWidths, maxFontScales } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { useIsGuessed } from '@presentation/app/create-recipe/hooks/use-is-guessed';
 import { CheckChip } from '@presentation/app/create-recipe/items/check-chip';
@@ -27,6 +27,7 @@ export const StepRow = ({
   onRemove,
   removeLabel,
 }: StepRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const [focused, setFocused] = useState(false);
   const guessed = useIsGuessed(value);
@@ -58,7 +59,7 @@ export const StepRow = ({
         onChangeText={onChange}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        placeholder={t().createRecipe.stepPlaceholder}
+        placeholder={t.createRecipe.stepPlaceholder}
         placeholderTextColor={colors.textMuted}
         minHeight={controlSizes.iconBtn}
         style={[styles.input, { color: colors.text }]}

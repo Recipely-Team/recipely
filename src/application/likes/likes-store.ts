@@ -1,5 +1,5 @@
-import type { BoundStore } from '@application/store/bound-store';
-import { create } from 'zustand';
+import type { StoreApi } from 'zustand/vanilla';
+import { createStore } from 'zustand/vanilla';
 import { fail, ok } from '@core/result/result-helpers';
 import { ConflictFailure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
@@ -12,7 +12,7 @@ import { RequestEpoch } from '@application/store/request-epoch';
 
 interface LikesStoreDeps {
   setRecipeLike: SetRecipeLikeUseCase;
-  likedRecipesStore: BoundStore<LikedRecipesStore>;
+  likedRecipesStore: StoreApi<LikedRecipesStore>;
 }
 
 /**
@@ -22,9 +22,9 @@ interface LikesStoreDeps {
  * - **Session guard**: `clear()` on sign-out drops a toggle answer still in
  *   flight, so the previous account's like is never written back.
  */
-export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore> => {
+export const configureLikesStore = (deps: LikesStoreDeps): StoreApi<LikesStore> => {
   const session = new RequestEpoch();
-  return create<LikesStore>((set, get) => ({
+  return createStore<LikesStore>((set, get) => ({
     byRecipe: {},
 
     seed: (recipeId, likeCount, likedByMe) => {

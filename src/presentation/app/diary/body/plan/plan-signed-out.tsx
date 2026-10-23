@@ -6,7 +6,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { RoutePaths } from '@presentation/base/constants';
 import { borderWidths, fontWeights, iconSizes, mealPlanSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /**
  * The Plan view for a guest (design spec → Meal planner, States 4): a lock
@@ -14,9 +14,10 @@ import { t } from '@presentation/i18n';
  * plan afterwards.
  */
 export const PlanSignedOut = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const router = useRouter();
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const redirect = `${RoutePaths.diary}?mode=plan`;
   return (
     <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>

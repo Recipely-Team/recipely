@@ -231,7 +231,7 @@ export class AssistantActionRegistry {
     }
   }
 
-  get registeredActions(): AssistantActionType[] {
+  registeredActions(): AssistantActionType[] {
     return [...this.handlers.keys()];
   }
 

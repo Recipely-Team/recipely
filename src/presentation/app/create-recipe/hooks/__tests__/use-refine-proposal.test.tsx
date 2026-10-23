@@ -13,7 +13,7 @@
 
 import { useState } from 'react';
 import { act } from 'react-test-renderer';
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
@@ -102,12 +102,12 @@ const noopCacheStore = <T,>(): T =>
 const makeStores = (repo: FakeRecipeRepository): ApplicationStores => {
   const recipeAuthoringStore = configureRecipeAuthoringStore({
     createRecipeUseCase: unusedUseCase<CreateRecipeUseCase>(),
-    myRecipesStore: { getState: () => ({ addLocal: jest.fn(), removeLocal: jest.fn() }) } as unknown as BoundStore<MyRecipesStore>,
+    myRecipesStore: { getState: () => ({ addLocal: jest.fn(), removeLocal: jest.fn() }) } as unknown as StoreApi<MyRecipesStore>,
     generateRecipeUseCase: unusedUseCase<GenerateRecipeUseCase>(),
     refineRecipeUseCase: new RefineRecipeUseCase(repo),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
-    recipeListStore: noopCacheStore<BoundStore<RecipeListStore>>(),
-    recipeDetailStore: noopCacheStore<BoundStore<RecipeDetailStore>>(),
+    recipeListStore: noopCacheStore<StoreApi<RecipeListStore>>(),
+    recipeDetailStore: noopCacheStore<StoreApi<RecipeDetailStore>>(),
   });
   return { recipeAuthoringStore } as unknown as ApplicationStores;
 };

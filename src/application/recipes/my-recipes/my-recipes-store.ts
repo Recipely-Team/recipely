@@ -1,6 +1,6 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import type { MyRecipesStore } from '@application/recipes/my-recipes/my-recipes-store-contract';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
@@ -20,8 +20,8 @@ interface MyRecipesStoreDeps {
  * - **One `PagedList` via `PagedListLoader`**: the newest load wins, a removal
  *   shifts the next page's offset, and `clear()` drops answers still in flight.
  */
-export const configureMyRecipesStore = (deps: MyRecipesStoreDeps): BoundStore<MyRecipesStore> =>
-  create<MyRecipesStore>((set, get) => {
+export const configureMyRecipesStore = (deps: MyRecipesStoreDeps): StoreApi<MyRecipesStore> =>
+  createStore<MyRecipesStore>((set, get) => {
     const loader = new PagedListLoader<RecipeSummaryEntity>(() => get().mine, (mine) => set({ mine }), (r) => r.id);
     const fetchPage = (page: number) => deps.listMyRecipesUseCase.execute(page);
     return {

@@ -1,4 +1,5 @@
 import type { UserEntity } from '@domain/auth/user-entity';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
@@ -12,5 +13,5 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  */
 export const useSignedInUser = (): UserEntity | null => {
   const { authStore } = useStores();
-  return authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user : null));
+  return useStore(authStore, (s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user : null));
 };

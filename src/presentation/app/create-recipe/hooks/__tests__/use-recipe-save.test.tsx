@@ -1,4 +1,4 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 /**
  * Behavior tests for `useRecipeSave` — the save-feedback rework.
  *
@@ -148,11 +148,11 @@ const makeStores = (repo: FakeRecipeRepository): ApplicationStores => {
   });
   const recipeAuthoringStore = configureRecipeAuthoringStore({
     createRecipeUseCase: new CreateRecipeUseCase(repo),
-    myRecipesStore: { getState: () => ({ addLocal: jest.fn(), removeLocal: jest.fn() }) } as unknown as BoundStore<MyRecipesStore>,
+    myRecipesStore: { getState: () => ({ addLocal: jest.fn(), removeLocal: jest.fn() }) } as unknown as StoreApi<MyRecipesStore>,
     generateRecipeUseCase: unusedUseCase<GenerateRecipeUseCase>(),
     refineRecipeUseCase: unusedUseCase<RefineRecipeUseCase>(),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
-    recipeListStore: noopCacheStore<BoundStore<RecipeListStore>>(),
+    recipeListStore: noopCacheStore<StoreApi<RecipeListStore>>(),
     recipeDetailStore,
   });
 

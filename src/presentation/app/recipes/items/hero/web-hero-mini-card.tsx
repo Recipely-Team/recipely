@@ -5,7 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, decorSizes, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { HERO_OVERLAY_DEEP, HERO_OVERLAY_FADE } from '@presentation/app/recipes/model/hero/web-hero-constants';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
@@ -20,6 +20,7 @@ export interface WebHeroMiniCardProps {
 
 /** Compact ranked hero card: bleed image, bottom gradient, rank badge, meta. */
 export const WebHeroMiniCard = ({ recipe, rank, onPress }: WebHeroMiniCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const totalMin = recipe.totalTimeMinutes;
   return (
@@ -34,7 +35,7 @@ export const WebHeroMiniCard = ({ recipe, rank, onPress }: WebHeroMiniCardProps)
         focus={recipe.imageFocus}
         style={styles.image}
         accessibilityLabel={recipe.name}
-        placeholderLabel={t().recipes.noPhoto}
+        placeholderLabel={t.recipes.noPhoto}
       />
       <LinearGradient
         colors={[HERO_OVERLAY_FADE, HERO_OVERLAY_DEEP]}
@@ -60,7 +61,7 @@ export const WebHeroMiniCard = ({ recipe, rank, onPress }: WebHeroMiniCardProps)
             <>
               <Ionicons name="time-outline" size={iconSizes.md} color={colors.onOverlay} />
               <ThemedText style={[styles.meta, { color: colors.onOverlay }]}>
-                {totalMin} {t().recipes.minutes}
+                {totalMin} {t.recipes.minutes}
               </ThemedText>
             </>
           )}

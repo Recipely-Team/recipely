@@ -1,6 +1,6 @@
 import { ValueConstants } from '@core/constants';
-import type { BoundStore } from '@application/store/bound-store';
-import { create } from 'zustand';
+import type { StoreApi } from 'zustand/vanilla';
+import { createStore } from 'zustand/vanilla';
 import { type Failure, UnknownFailure } from '@core/failure';
 import type { Result } from '@core/result/result';
 import type { FavoritesStore } from '@application/favorites/favorites-store-contract';
@@ -11,7 +11,7 @@ import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes
 interface FavoritesStoreDeps {
   addFavoriteUseCase: AddFavoriteUseCase;
   removeFavoriteUseCase: RemoveFavoriteUseCase;
-  savedRecipesStore: BoundStore<SavedRecipesStore>;
+  savedRecipesStore: StoreApi<SavedRecipesStore>;
 }
 
 /**
@@ -23,10 +23,10 @@ interface FavoritesStoreDeps {
  *   one recipe's failure was toasted for the other, or cleared before its own
  *   caller saw it. Errors are page-scoped, as in the auth store.
  */
-export const configureFavoritesStore = (deps: FavoritesStoreDeps): BoundStore<FavoritesStore> => {
+export const configureFavoritesStore = (deps: FavoritesStoreDeps): StoreApi<FavoritesStore> => {
   const { addFavoriteUseCase, removeFavoriteUseCase, savedRecipesStore } = deps;
 
-  return create<FavoritesStore>((set, get) => {
+  return createStore<FavoritesStore>((set, get) => {
     const begin = (recipeId: string): boolean => {
       if (get().pending.has(recipeId)) return false;
       set({ pending: new Set(get().pending).add(recipeId), isLoading: true });

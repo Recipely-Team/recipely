@@ -26,7 +26,7 @@
 
 import { useState } from 'react';
 import { act } from 'react-test-renderer';
-import { create } from 'zustand';
+import { create, useStore } from 'zustand';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { ApplicationStores } from '@application/di/application-stores';
@@ -164,7 +164,7 @@ describe('useMyRecipesRefresh', () => {
   const mount = (tab: TabType) => {
     const loaders = makeLoaders();
     const { stores, recipeListStore, savedRecipesStore } = makeStores(loaders);
-    useStoreState = () => recipeListStore((s) => s.state);
+    useStoreState = () => useStore(recipeListStore, (s) => s.state);
 
     renderComponent(
       <StoresProvider value={stores}>

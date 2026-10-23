@@ -10,7 +10,7 @@ import { AutomationMetrics } from '@presentation/base/widgets/instagram/automati
 import { RoutePaths } from '@presentation/base/constants';
 import { CreatorPlatform } from '@domain/creators/creator-platform';
 import { borderWidths, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CreatorStatsRow } from '@presentation/app/profile/body/creator-stats-row';
 
 /**
@@ -20,11 +20,12 @@ import { CreatorStatsRow } from '@presentation/app/profile/body/creator-stats-ro
  * there is at least one automation (creator stats spec "Entry points").
  */
 export const ProfileAutomationsRow = (): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const router = useRouter();
   const connection = useInstagramConnection();
   if (!connection.isAvailable || !connection.isConnected) return null;
-  const copy = t().instagram;
+  const copy = t.instagram;
   return (
     <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
       <Pressable

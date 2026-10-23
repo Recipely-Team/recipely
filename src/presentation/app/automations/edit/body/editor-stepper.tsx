@@ -1,3 +1,4 @@
+import { useTranslations } from '@presentation/i18n';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ValueConstants } from '@core/constants';
@@ -20,11 +21,12 @@ export interface EditorStepperProps {
  * that turn into checks once done; back freely, forward only past valid steps.
  */
 export const EditorStepper = ({ step, stepValid, onGoTo }: EditorStepperProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <View style={styles.column}>
       {EDITOR_STEPS.map((target, index) => {
-        const label = editorStepLabels()[index];
+        const label = editorStepLabels(t)[index];
         const current = index === step;
         const reachable = index <= step || stepValid.slice(ValueConstants.zero, index).every(Boolean);
         const done = index < step && stepValid[index] === true;

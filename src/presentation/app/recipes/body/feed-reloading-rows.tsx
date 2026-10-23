@@ -2,7 +2,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -21,13 +21,14 @@ import { ValueConstants } from '@core/constants';
  * out of a filter is to un-tap it, and it must not disappear mid-load.
  */
 export const FeedReloadingRows = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color={colors.primary} />
       <ThemedText variant="body" muted style={styles.label}>
-        {t().common.loading}
+        {t.common.loading}
       </ThemedText>
     </View>
   );

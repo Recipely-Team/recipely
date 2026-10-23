@@ -14,7 +14,7 @@ import { formatWeekRange } from '@presentation/base/utils/meal-plan/format-week-
 import { failureContent } from '@presentation/base/errors/failure-lookups';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { fontSizes, fontWeights, mealPlanSizes, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface PlanShoppingSheetProps {
@@ -32,9 +32,10 @@ const NO_LINES: readonly PlanShoppingLine[] = [];
  * (max 560) on an expanded viewport.
  */
 export const PlanShoppingSheet = ({ visible, week, onClose }: PlanShoppingSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const shop = usePlanShopping(visible, week.start, onClose);
   const lines = shop.lines ?? NO_LINES;
   const count = lines.filter((line) => shop.selected.has(line.key)).length;
@@ -62,7 +63,7 @@ export const PlanShoppingSheet = ({ visible, week, onClose }: PlanShoppingSheetP
         </SizedText>
         {shop.failure !== null ? (
           <View style={styles.stack}>
-            <FormBanner message={failureContent(shop.failure).body} severity={SeverityType.Danger} />
+            <FormBanner message={failureContent(t, shop.failure).body} severity={SeverityType.Danger} />
             <PrimaryButton label={strings.tryAgain} onPress={shop.retry} />
           </View>
         ) : shop.lines === null ? (

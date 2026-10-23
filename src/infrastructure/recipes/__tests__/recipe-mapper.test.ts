@@ -89,7 +89,7 @@ describe('toRecipe — nutrition', () => {
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.value.nutrition).toEqual(nutrition);
-      expect(r.value.nutritionFacts.servingWeightGrams).toBe(380);
+      expect(r.value.nutritionFacts().servingWeightGrams).toBe(380);
     }
   });
 
@@ -97,7 +97,7 @@ describe('toRecipe — nutrition', () => {
     const r = toRecipe({ ...fullDto, nutrition: { protein: 24 } });
 
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value.nutritionFacts.servingWeightGrams).toBeUndefined();
+    if (r.ok) expect(r.value.nutritionFacts().servingWeightGrams).toBeUndefined();
   });
 });
 

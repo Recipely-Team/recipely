@@ -1,6 +1,6 @@
 import { ErrorMessageKey, ValidationFailure } from '@core/failure';
 import { failureContent } from '@presentation/base/errors/failure-lookups';
-import { setLocale } from '@presentation/i18n';
+import { setLocale, t } from '@presentation/i18n';
 import { LocaleConstants } from '@application/i18n/locale-constants';
 import { en } from '@presentation/i18n/locales/en';
 import { tr } from '@presentation/i18n/locales/tr';
@@ -39,9 +39,9 @@ describe('file import failure copy', () => {
     const failure = new ValidationFailure('refused', 'files', wireKey);
 
     setLocale(LocaleConstants.en);
-    expect(failureContent(failure)).toEqual({ title: en.errors[contentKey].title, body: en.errors[contentKey].body });
+    expect(failureContent(t(), failure)).toEqual({ title: en.errors[contentKey].title, body: en.errors[contentKey].body });
     setLocale(LocaleConstants.tr);
-    expect(failureContent(failure)).toEqual({ title: tr.errors[contentKey].title, body: tr.errors[contentKey].body });
+    expect(failureContent(t(), failure)).toEqual({ title: tr.errors[contentKey].title, body: tr.errors[contentKey].body });
   });
 
   it.each(Object.entries(CATALOGUES))('%s carries every file import key and screen string', (_locale, catalogue) => {

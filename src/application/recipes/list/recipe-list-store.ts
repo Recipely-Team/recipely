@@ -1,9 +1,9 @@
 import { appendById } from '@application/store/paging/append-by-id';
 import type { RecipeListLoaded } from '@application/recipes/list/states/recipe-list-loaded';
 import type { RecipeListError } from '@application/recipes/list/states/recipe-list-error';
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { RecipeListStore } from '@application/recipes/list/recipe-list-store-contract';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -15,12 +15,12 @@ interface RecipeListStoreDeps {
   listRecipes: ListRecipesUseCase;
 }
 
-export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<RecipeListStore> => {
+export const configureRecipeListStore = (deps: RecipeListStoreDeps): StoreApi<RecipeListStore> => {
   // Only the latest load may write; `isLatestLoad` is that load's check, which an append borrows.
   const epoch = new RequestEpoch();
   let isLatestLoad = epoch.start();
 
-  return create<RecipeListStore>((set, get) => ({
+  return createStore<RecipeListStore>((set, get) => ({
     state: { status: StoreStatus.Idle },
     // A filter change re-fetches in place (isRefreshing) instead of blanking the list.
     load: async (filters?: RecipeFilters) => {

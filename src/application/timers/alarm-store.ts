@@ -1,7 +1,7 @@
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import type { AlarmStore } from '@application/timers/alarm-store-contract';
 
-export const alarmStore = create<AlarmStore>((set) => ({
+export const alarmStore = createStore<AlarmStore>((set) => ({
   alarms: [],
   trigger: (timerId, recipeName) =>
     set((state) => {

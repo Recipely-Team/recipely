@@ -1,3 +1,4 @@
+import { mockStoreReading } from '@presentation/base/test-support/mock-store-reading';
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
 jest.mock('@presentation/base/timers/timer-controls', () => ({
   startTimer: jest.fn(() => Promise.resolve()),
@@ -31,8 +32,7 @@ const scrollViewRef = { current: null };
  */
 const selectorOf =
   <S,>(state: S) =>
-  (select: (s: S) => unknown): unknown =>
-    select(state);
+  mockStoreReading(() => (state));
 
 function harness(over: Partial<UseRecipeDetailResult> = {}, extraStores: Partial<ApplicationStores> = {}) {
   const registry = new AssistantActionRegistry();

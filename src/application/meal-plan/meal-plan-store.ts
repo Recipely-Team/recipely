@@ -1,10 +1,10 @@
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import { ok } from '@core/result/result-helpers';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
 import type { MealPlanEntryEntity } from '@domain/meal-plan/meal-plan-entry-entity';
 import { MealPlanWeek } from '@domain/meal-plan/week/meal-plan-week';
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
 import { RequestEpoch } from '@application/store/request-epoch';
 import { KeyedRequestEpoch } from '@application/store/keyed-request-epoch';
@@ -56,13 +56,13 @@ const keyOf = (day: CalendarDate): string => day.weekStart().value;
  * - **User-scoped**: cleared on sign-out (`clearSessionCaches`); an answer
  *   that lands after that is dropped. The flag answer is per launch and stays.
  */
-export const configureMealPlanStore = (deps: MealPlanStoreDeps): BoundStore<MealPlanStore> => {
+export const configureMealPlanStore = (deps: MealPlanStoreDeps): StoreApi<MealPlanStore> => {
   const loads = new KeyedRequestEpoch();
   const edits = new KeyedRequestEpoch();
   const session = new RequestEpoch();
   let flag: Promise<boolean> | null = null;
 
-  return create<MealPlanStore>((set, get) => {
+  return createStore<MealPlanStore>((set, get) => {
     const put = (key: string, state: MealPlanWeekState): void => set((s) => ({ weeks: { ...s.weeks, [key]: state } }));
     const weekOf = (day: CalendarDate): MealPlanWeek | null => {
       const state = get().weeks[keyOf(day)];

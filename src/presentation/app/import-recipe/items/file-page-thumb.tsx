@@ -6,7 +6,7 @@ import type { ImportFile } from '@domain/recipes/import-file/import-file';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface FilePageThumbProps {
@@ -24,6 +24,7 @@ const NAME_LINES = 2;
  * empty box, so the user can still tell which page it was.
  */
 export const FilePageThumb = ({ file, large = false }: FilePageThumbProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const [broken, setBroken] = useState(false);
   const isPdf = file.mimeType === ImportFileMimeType.Pdf;
@@ -37,7 +38,7 @@ export const FilePageThumb = ({ file, large = false }: FilePageThumbProps): Reac
       {isPdf ? (
         <View style={[styles.badge, { backgroundColor: colors.primary }]}>
           <ThemedText style={[styles.badgeText, large ? styles.badgeTextLarge : null, { color: colors.primaryText }]}>
-            {t().fileImport.pdfLabel}
+            {t.fileImport.pdfLabel}
           </ThemedText>
         </View>
       ) : (

@@ -35,7 +35,7 @@ describe('NotificationEntity.target', () => {
       commentId: 'comment-9',
     });
 
-    expect(notification.target).toEqual({
+    expect(notification.target()).toEqual({
       kind: 'comment',
       recipeId: 'recipe-1',
       commentId: 'comment-9',
@@ -45,7 +45,7 @@ describe('NotificationEntity.target', () => {
   it('targets the recipe when only recipeId is present', () => {
     const notification = build({ type: 'like', recipeId: 'recipe-1', commentId: null });
 
-    expect(notification.target).toEqual({ kind: 'recipe', recipeId: 'recipe-1' });
+    expect(notification.target()).toEqual({ kind: 'recipe', recipeId: 'recipe-1' });
   });
 
   it('has no destination for a follow notification with no recipeId', () => {
@@ -56,7 +56,7 @@ describe('NotificationEntity.target', () => {
       commentId: null,
     });
 
-    expect(notification.target).toBeNull();
+    expect(notification.target()).toBeNull();
   });
 });
 
@@ -87,20 +87,20 @@ describe('NotificationEntity.target — a draft that became a recipe', () => {
   it('opens the recipe, not the draft, once both are present', () => {
     const notification = build({ recipeId: 'recipe-9', draftId: 'draft-9' });
 
-    expect(notification.target).toEqual({ kind: 'recipe', recipeId: 'recipe-9' });
+    expect(notification.target()).toEqual({ kind: 'recipe', recipeId: 'recipe-9' });
   });
 
   it('still opens the draft while the import is unpublished', () => {
     const notification = build({ recipeId: null, draftId: 'draft-9' });
 
-    expect(notification.target).toEqual({ kind: 'draft', draftId: 'draft-9' });
+    expect(notification.target()).toEqual({ kind: 'draft', draftId: 'draft-9' });
   });
 
   // A comment always accompanies a recipe, so it must keep outranking both.
   it('still opens the comment when one is attached', () => {
     const notification = build({ recipeId: 'recipe-9', commentId: 'comment-9', draftId: 'draft-9' });
 
-    expect(notification.target).toEqual({
+    expect(notification.target()).toEqual({
       kind: 'comment', recipeId: 'recipe-9', commentId: 'comment-9',
     });
   });
@@ -108,7 +108,7 @@ describe('NotificationEntity.target — a draft that became a recipe', () => {
 
 describe('NotificationEntity.target — a creator decision', () => {
   it.each(['creator_approved', 'creator_rejected'])('%s opens the creator account settings for its platform', (type) => {
-    expect(build({ type, creatorPlatform: 'tiktok', sourceHandle: 'mert.mutfakta' }).target).toEqual({
+    expect(build({ type, creatorPlatform: 'tiktok', sourceHandle: 'mert.mutfakta' }).target()).toEqual({
       kind: 'creator_account',
       platform: 'tiktok',
     });

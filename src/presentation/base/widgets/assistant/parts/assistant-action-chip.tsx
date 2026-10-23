@@ -1,3 +1,4 @@
+import { useTranslations } from '@presentation/i18n';
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -26,6 +27,7 @@ export interface AssistantActionChipProps {
  *   touched — this is the only place that record survives the audio.
  */
 const AssistantActionChipComponent = ({ action, detail }: AssistantActionChipProps): React.JSX.Element => {
+  const t = useTranslations();
   const { colors } = useTheme();
 
   return (
@@ -39,7 +41,7 @@ const AssistantActionChipComponent = ({ action, detail }: AssistantActionChipPro
       >
         <Ionicons name="sparkles" size={iconSizes.xs} color={colors.chipText} />
         <ThemedText variant="caption" style={[styles.label, { color: colors.chipText }]}>
-          {assistantActionLabel(action)}
+          {assistantActionLabel(t, action)}
         </ThemedText>
         {detail !== undefined ? (
           <ThemedText variant="caption" style={{ color: colors.chipText }} numberOfLines={1}>

@@ -12,7 +12,7 @@ import { MealFailureAction } from '@presentation/base/widgets/diary/add-food/mea
 import { mealFailureActionFor } from '@presentation/base/widgets/diary/add-food/meal/state/meal-failure-action-for';
 import { mealFailureContent } from '@presentation/base/widgets/diary/add-food/meal/state/meal-failure-content';
 import { diarySizes, fontSizes, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface MealLogBodyProps {
   log: MealLog;
@@ -26,8 +26,9 @@ export interface MealLogBodyProps {
  * (none for the daily limit or an unavailable service), or the confirm list.
  */
 export const MealLogBody = ({ log, meal, isSubmitting }: MealLogBodyProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().diary;
+  const strings = t.diary;
   const { state } = log;
   switch (state.phase) {
     case MealLogPhase.Compose:
@@ -42,7 +43,7 @@ export const MealLogBody = ({ log, meal, isSubmitting }: MealLogBodyProps): Reac
         </View>
       );
     case MealLogPhase.Failed: {
-      const content = mealFailureContent(state.failure);
+      const content = mealFailureContent(t, state.failure);
       const action = mealFailureActionFor(state.failure);
       return (
         <PickMessage
@@ -52,7 +53,7 @@ export const MealLogBody = ({ log, meal, isSubmitting }: MealLogBodyProps): Reac
             action === MealFailureAction.None
               ? null
               : action === MealFailureAction.Retry
-                ? { label: t().errors.retry, icon: 'refresh', onPress: log.retry }
+                ? { label: t.errors.retry, icon: 'refresh', onPress: log.retry }
                 : { label: strings.mealLogEdit, icon: 'create-outline', onPress: log.edit }
           }
         />

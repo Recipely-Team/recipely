@@ -1,4 +1,6 @@
+import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
 import { useCallback, useMemo } from 'react';
+import { useStore } from 'zustand';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useFoodSearchQuery } from '@presentation/base/hooks/diary/use-food-search-query';
 import { FoodSearchGroup, type FoodSearchGroupType } from '@domain/diary/foods/search/food-search-group';
@@ -11,7 +13,7 @@ import { searchRows, SEARCH_GROUP_ORDER } from '@presentation/base/widgets/diary
 import { phaseOfLists } from '@presentation/base/widgets/diary/add-food/list/phase-of-lists';
 import { nextListToLoad } from '@presentation/base/widgets/diary/add-food/list/next-list-to-load';
 import { PickPhase } from '@presentation/base/widgets/diary/add-food/list/pick-phase';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface SearchResultsBodyProps {
@@ -31,14 +33,15 @@ const isSearchGroup = (key: string): key is FoodSearchGroupType => (SEARCH_GROUP
  * spec §3, §4): skeleton, no-results and failed faces first.
  */
 export const SearchResultsBody = ({ rawQuery, onChoose, onChooseProduct, onQuickAdd }: SearchResultsBodyProps): React.JSX.Element => {
+  const t = useTranslations();
   const { foodSearchStore } = useStores();
   useFoodSearchQuery(rawQuery);
   const query = rawQuery.trim();
-  const saved = foodSearchStore((s) => s.saved);
-  const mine = foodSearchStore((s) => s.mine);
-  const products = foodSearchStore((s) => s.products);
-  const recipes = foodSearchStore((s) => s.recipes);
-  const strings = t().diary;
+  const saved = useStore(foodSearchStore, (s) => s.saved);
+  const mine = useStore(foodSearchStore, (s) => s.mine);
+  const products = useStore(foodSearchStore, (s) => s.products);
+  const recipes = useStore(foodSearchStore, (s) => s.recipes);
+  const strings = t.diary;
   const isTab = query.length === ValueConstants.zero;
   const lists = useMemo(() => ({ saved, mine, products, recipes }), [saved, mine, products, recipes]);
   const phase = phaseOfLists(isTab ? [saved, mine, recipes] : [saved, mine, products, recipes]);
@@ -56,7 +59,7 @@ export const SearchResultsBody = ({ rawQuery, onChoose, onChooseProduct, onQuick
       }),
     [lists, strings, isTab],
   );
-  const onPickRecipe = useCallback((hit: { food: LoggableFood }) => onChoose(hit.food), [onChoose]);
+  const onPickRecipe = useCallback((hit: RecipeFoodHit) => onChoose(hit.food()), [onChoose]);
   const onEndReached = useCallback(() => {
     const next = nextListToLoad(SEARCH_GROUP_ORDER.map((key) => ({ key, list: lists[key] })));
     if (next !== null) loadMore(next);

@@ -15,7 +15,7 @@ import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, avatarSizes, borderWidths, shadows, targetSizes } from '@presentation/base/theme';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
@@ -55,6 +55,7 @@ const RecipeOverviewComponent = ({
   photos,
   portions,
 }: RecipeOverviewProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
 
@@ -85,7 +86,7 @@ const RecipeOverviewComponent = ({
         <Pressable
           onPress={onToggleLike}
           accessibilityRole="button"
-          accessibilityLabel={liked ? t().recipes.unlike : t().recipes.like}
+          accessibilityLabel={liked ? t.recipes.unlike : t.recipes.like}
           style={styles.statItem}
         >
           <MaterialCommunityIcons
@@ -146,7 +147,7 @@ const RecipeOverviewComponent = ({
           `spacing.sm` because it reads as a continuation of "about this
           recipe", not a new section. */}
       <ProvenanceNote
-        marks={recipe.provenanceMarks}
+        marks={recipe.provenanceMarks()}
         sourceHandle={recipe.sourceHandle}
         sourceUrl={recipe.sourceUrl}
         style={styles.provenance}
@@ -163,11 +164,11 @@ const RecipeOverviewComponent = ({
 
       {/* Unconditional: the panel itself says when a recipe has no figures,
           and it carries no title — this header is the section's one heading. */}
-      <SectionHeader title={t().recipes.nutrition} />
+      <SectionHeader title={t.recipes.nutrition} />
       <View
         style={[styles.nutritionCard, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
       >
-        <NutritionPanel facts={recipe.nutritionFacts} isCalculating={isNutritionCalculating} source={recipe.nutritionSource} />
+        <NutritionPanel facts={recipe.nutritionFacts()} isCalculating={isNutritionCalculating} source={recipe.nutritionSource} />
       </View>
       <AddToDiaryButton recipe={recipe} inCard={false} />
       <AddToPlanButton recipe={recipe} inCard={false} />

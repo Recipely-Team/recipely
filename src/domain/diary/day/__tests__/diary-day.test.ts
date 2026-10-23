@@ -27,7 +27,7 @@ describe('DiaryDay', () => {
   });
 
   it('groups entries into the four meals in display order, each with its sum', () => {
-    const groups = dayWith([400, 600, 500]).mealGroups;
+    const groups = dayWith([400, 600, 500]).mealGroups();
     expect(groups.map((g) => g.meal)).toEqual([MealSlot.Breakfast, MealSlot.Lunch, MealSlot.Dinner, MealSlot.Snacks]);
     expect(groups.map((g) => g.totals.calories)).toEqual([400, 0, 1100, 0]);
   });
@@ -53,8 +53,8 @@ describe('DiaryDay', () => {
 
   it('drops an entry without touching the original', () => {
     const day = dayWith([400, 600]);
-    expect(day.withoutEntry('e0').totals.calories).toBe(600);
-    expect(day.totals.calories).toBe(1000);
+    expect(day.withoutEntry('e0').totals().calories).toBe(600);
+    expect(day.totals().calories).toBe(1000);
   });
 });
 

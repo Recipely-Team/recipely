@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useStore } from 'zustand';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -39,10 +40,10 @@ export const useCookMode = (): UseCookModeResult => {
   const steps = recipe?.instructions ?? NONE;
   const portions = usePortionScaling(recipe);
   const navigation = useStepNavigation(steps.length);
-  const completedSteps = stepProgressStore((s) => s.byRecipe[recipeId]) ?? NONE;
-  const toggleStep = stepProgressStore((s) => s.toggleStep);
-  const setStepDone = stepProgressStore((s) => s.setStepDone);
-  const load = recipeDetailStore((s) => s.load);
+  const completedSteps = useStore(stepProgressStore, (s) => s.byRecipe[recipeId]) ?? NONE;
+  const toggleStep = useStore(stepProgressStore, (s) => s.toggleStep);
+  const setStepDone = useStore(stepProgressStore, (s) => s.setStepDone);
+  const load = useStore(recipeDetailStore, (s) => s.load);
   const [isIngredientsOpen, setIngredientsOpen] = useState(false);
 
   const currentStep = steps[navigation.index] ?? CharConstants.empty;

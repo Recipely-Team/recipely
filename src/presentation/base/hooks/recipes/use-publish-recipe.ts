@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { OwnerStatus } from '@domain/recipes/publishing/owner-status';
 import type { Failure } from '@core/failure';
@@ -21,7 +22,7 @@ import type { UsePublishRecipeResult } from '@presentation/base/hooks/recipes/us
  */
 export const usePublishRecipe = (): UsePublishRecipeResult => {
   const { recipePublishingStore, recipeDetailStore } = useStores();
-  const isBusy = recipePublishingStore((s) => s.isBusy);
+  const isBusy = useStore(recipePublishingStore, (s) => s.isBusy);
 
   const announce = useCallback(
     (recipeId: string, failure: Failure | null): void => {

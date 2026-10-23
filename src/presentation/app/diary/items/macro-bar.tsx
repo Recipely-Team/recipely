@@ -3,7 +3,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { diarySizes, fontSizes, fontWeights, lineHeights, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface MacroBarProps {
@@ -19,10 +19,11 @@ const VALUE_SLOT = '{v}';
 
 /** One macro of the summary: "Protein", "62 / 120 g" and a 6pt bar (design spec → Food Diary §4). */
 export const MacroBar = ({ label, value, goal, color }: MacroBarProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
   // The template places the value; splitting on it keeps that order in every language and lets the value alone be bold.
-  const [before = CharConstants.empty, after = CharConstants.empty] = t()
+  const [before = CharConstants.empty, after = CharConstants.empty] = t
     .diary.macroOfGoal.replace('{g}', formatWholeNumber(goal, locale))
     .split(VALUE_SLOT);
   const share = value === null || goal <= ValueConstants.zero ? ValueConstants.zero : Math.min(ValueConstants.one, value / goal);

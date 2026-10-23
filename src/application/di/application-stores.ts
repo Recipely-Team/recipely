@@ -1,6 +1,6 @@
 import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import type { AssistantSessionStore } from '@application/assistant/session/assistant-session-store-contract';
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import type { AuthStore } from '@application/auth/auth-store-contract';
 import type { CommentsStore } from '@application/comments/comments-store-contract';
@@ -50,62 +50,62 @@ import type { ShouldOfferRemindersUseCase } from '@application/notifications/rem
 
 /** The store bundle `registerApplication` hands to the presentation layer. */
 export interface ApplicationStores {
-  assistantSessionStore: BoundStore<AssistantSessionStore>;
+  assistantSessionStore: StoreApi<AssistantSessionStore>;
   /** Screens register the actions only they can perform (navigate, focus, pick). */
   assistantActionRegistry: AssistantActionRegistry;
   /** Siri, Spotlight and the launcher — the assistant's entry points from outside. */
   osAssistant: OsAssistantInterface;
   /** Mints the narrow token those entry points answer with. */
   assistantTokens: AssistantTokenRepositoryInterface;
-  authStore: BoundStore<AuthStore>;
-  recipeListStore: BoundStore<RecipeListStore>;
-  trendingRecipesStore: BoundStore<TrendingRecipesStore>;
-  recipeDetailStore: BoundStore<RecipeDetailStore>;
+  authStore: StoreApi<AuthStore>;
+  recipeListStore: StoreApi<RecipeListStore>;
+  trendingRecipesStore: StoreApi<TrendingRecipesStore>;
+  recipeDetailStore: StoreApi<RecipeDetailStore>;
   /** Publish, take back and edit a recipe the user owns. */
-  recipePublishingStore: BoundStore<RecipePublishingStore>;
-  savedRecipesStore: BoundStore<SavedRecipesStore>;
-  likedRecipesStore: BoundStore<LikedRecipesStore>;
-  recipeAuthoringStore: BoundStore<RecipeAuthoringStore>;
+  recipePublishingStore: StoreApi<RecipePublishingStore>;
+  savedRecipesStore: StoreApi<SavedRecipesStore>;
+  likedRecipesStore: StoreApi<LikedRecipesStore>;
+  recipeAuthoringStore: StoreApi<RecipeAuthoringStore>;
   /** The viewer's own recipes, the Created tab. */
-  myRecipesStore: BoundStore<MyRecipesStore>;
-  draftsStore: BoundStore<DraftsStore>;
-  importJobStore: BoundStore<ImportJobStore>;
+  myRecipesStore: StoreApi<MyRecipesStore>;
+  draftsStore: StoreApi<DraftsStore>;
+  importJobStore: StoreApi<ImportJobStore>;
   /** One synchronous reading of photos or a PDF into a draft. */
-  fileImportStore: BoundStore<FileImportStore>;
-  favoritesStore: BoundStore<FavoritesStore>;
-  commentsStore: BoundStore<CommentsStore>;
-  likesStore: BoundStore<LikesStore>;
+  fileImportStore: StoreApi<FileImportStore>;
+  favoritesStore: StoreApi<FavoritesStore>;
+  commentsStore: StoreApi<CommentsStore>;
+  likesStore: StoreApi<LikesStore>;
   /** Ticked instruction steps per recipe, shared by the recipe page and cook mode. */
-  stepProgressStore: BoundStore<StepProgressStore>;
-  portionChoiceStore: BoundStore<PortionChoiceStore>;
-  notificationsStore: BoundStore<NotificationsStore>;
-  userProfileStore: BoundStore<UserProfileStore>;
-  taxonomyStore: BoundStore<TaxonomyStore>;
-  feedbackStore: BoundStore<FeedbackStore>;
+  stepProgressStore: StoreApi<StepProgressStore>;
+  portionChoiceStore: StoreApi<PortionChoiceStore>;
+  notificationsStore: StoreApi<NotificationsStore>;
+  userProfileStore: StoreApi<UserProfileStore>;
+  taxonomyStore: StoreApi<TaxonomyStore>;
+  feedbackStore: StoreApi<FeedbackStore>;
   /** The Explore creators strip. Public, so it survives sign-out. */
-  creatorsStore: BoundStore<CreatorsStore>;
+  creatorsStore: StoreApi<CreatorsStore>;
   /** One creator's page: profile, recipes, follow. Viewer-scoped, cleared on sign-out. */
-  creatorProfileStore: BoundStore<CreatorProfileStore>;
+  creatorProfileStore: StoreApi<CreatorProfileStore>;
   /** The food diary: days, months, recent foods, goals. User-scoped. */
-  diaryStore: BoundStore<DiaryStore>;
+  diaryStore: StoreApi<DiaryStore>;
   /** The Add food sheet's server-side search, four paged groups. User-scoped. */
-  foodSearchStore: BoundStore<FoodSearchStore>;
+  foodSearchStore: StoreApi<FoodSearchStore>;
   /** The Add food sheet's shelves, products, recent foods and opened product. User-scoped. */
-  foodCatalogStore: BoundStore<FoodCatalogStore>;
+  foodCatalogStore: StoreApi<FoodCatalogStore>;
   /** The viewer's Instagram link. User-scoped. */
-  instagramStore: BoundStore<InstagramStore>;
+  instagramStore: StoreApi<InstagramStore>;
   /** Instagram comment-to-DM rules, their pickers and activity. User-scoped. */
-  automationsStore: BoundStore<AutomationsStore>;
+  automationsStore: StoreApi<AutomationsStore>;
   /** The creator stats panel, one answer per range. */
-  creatorStatsStore: BoundStore<CreatorStatsStore>;
+  creatorStatsStore: StoreApi<CreatorStatsStore>;
   /** Recipes reached through a creator's DM; app-session scoped so a sign-in in between still counts the save. */
-  dmArrivalStore: BoundStore<DmArrivalStore>;
+  dmArrivalStore: StoreApi<DmArrivalStore>;
   /** The viewer's shopping list. User-scoped. */
-  shoppingListStore: BoundStore<ShoppingListStore>;
+  shoppingListStore: StoreApi<ShoppingListStore>;
   /** The weekly meal plan, one state per week, and the add sheet's recipe list. User-scoped. */
-  mealPlanStore: BoundStore<MealPlanStore>;
+  mealPlanStore: StoreApi<MealPlanStore>;
   /** Cook from my fridge: its flag and its two AI calls. Not user-scoped. */
-  fridgeStore: BoundStore<FridgeStore>;
+  fridgeStore: StoreApi<FridgeStore>;
   /** The food search without a store, for the assistant's `logFood` / `searchFood`. */
   searchFoods: SearchFoodsUseCase;
   /** Recent foods, product-aware, for the assistant's name matching. */

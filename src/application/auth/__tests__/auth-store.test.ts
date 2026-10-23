@@ -1,4 +1,4 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
 import { configureAuthStore } from '@application/auth/auth-store';
 import { GetSessionUseCase } from '@application/auth/session/get-session-use-case';
@@ -93,7 +93,7 @@ const neverLoadsFavorites = {
 const makeStore = (
   repo: FakeAuthRepository,
   overrides: {
-    savedRecipesStore?: BoundStore<SavedRecipesStore>;
+    savedRecipesStore?: StoreApi<SavedRecipesStore>;
     clearSessionCaches?: () => void;
     onSessionRestored?: () => void;
   } = {},

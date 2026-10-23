@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 import { AssistantOrbAura } from '@presentation/base/widgets/assistant/parts/assistant-orb-aura';
@@ -52,7 +53,7 @@ const ORB_SHAPE = {
  *   blur, so a CSS translation of this design would have been flat circles.
  */
 export const AssistantOrb = ({ status, isMuted }: AssistantOrbProps): React.JSX.Element => {
-  const level = useStores().assistantSessionStore((s) => s.level);
+  const level = useStore(useStores().assistantSessionStore, (s) => s.level);
   const { colors } = useTheme();
   const reduceMotion = useReduceMotion();
   const speaking = status === AssistantStatus.Speaking && !isMuted;

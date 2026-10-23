@@ -7,7 +7,7 @@ import { RecipeShareCard } from '@presentation/app/recipes/[recipeId]/sheets/rec
 import { useShareCard } from '@presentation/app/recipes/[recipeId]/hooks/share/use-share-card';
 import { ShareCardLayout } from '@presentation/app/recipes/[recipeId]/model/share/share-card-layout';
 import { spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface ShareChannelsProps {
@@ -43,7 +43,8 @@ export const ShareChannels = ({
   servings,
   ingredients,
 }: ShareChannelsProps): React.JSX.Element => {
-  const shareText = t().recipes.shareText.replace('{name}', recipeName);
+  const t = useTranslations();
+  const shareText = t.recipes.shareText.replace('{name}', recipeName);
 
   const handleMessage = (): void => {
     void Linking.openURL(smsShareUrl(shareText + CharConstants.space + url)).catch(() => undefined);
@@ -67,7 +68,7 @@ export const ShareChannels = ({
   const [cardBusy, setCardBusy] = useState(false);
   const handleStory = (): void => {
     setCardBusy(true);
-    void shareCard(t().recipes.shareTitle).then((shared) => {
+    void shareCard(t.recipes.shareTitle).then((shared) => {
       setCardBusy(false);
       if (!shared) handleMore();
     });
@@ -92,7 +93,7 @@ export const ShareChannels = ({
 
         {CAN_SHARE_CARD ? (
           <View style={styles.storyButton}>
-            <PrimaryButton label={t().recipes.shareChannelStory} onPress={handleStory} loading={cardBusy} />
+            <PrimaryButton label={t.recipes.shareChannelStory} onPress={handleStory} loading={cardBusy} />
           </View>
         ) : null}
 
@@ -100,22 +101,22 @@ export const ShareChannels = ({
         <View style={styles.channelRow}>
           <ChannelTile
             icon="logo-whatsapp"
-            label={t().recipes.shareChannelWhatsApp}
+            label={t.recipes.shareChannelWhatsApp}
             onPress={handleWhatsApp}
           />
           <ChannelTile
             icon="chatbubble-outline"
-            label={t().recipes.shareChannelMessage}
+            label={t.recipes.shareChannelMessage}
             onPress={handleMessage}
           />
           <ChannelTile
             icon="mail-outline"
-            label={t().recipes.shareChannelEmail}
+            label={t.recipes.shareChannelEmail}
             onPress={handleEmail}
           />
           <ChannelTile
             icon="share-social-outline"
-            label={t().recipes.shareChannelMore}
+            label={t.recipes.shareChannelMore}
             onPress={handleMore}
           />
         </View>

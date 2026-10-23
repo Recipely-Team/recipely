@@ -1,11 +1,12 @@
 import { useCallback, useState } from 'react';
+import { useStore } from 'zustand';
 import * as ImagePicker from 'expo-image-picker';
 import { failureKeyMessage } from '@presentation/base/errors/failure-lookups';
 import { PickSource } from '@presentation/base/utils/pick-source';
 import { askPickSource } from '@presentation/base/utils/ask-pick-source';
 import type { RecipePhotoUpload } from '@presentation/app/recipes/[recipeId]/model/recipe-photo-upload';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ValueConstants } from '@core/constants';
 import type { MediaItem } from '@domain/recipes/media/media-item';
@@ -43,10 +44,11 @@ const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
  *   advice, and both arrive as message keys.
  */
 export const useRecipePhotoUpload = (recipeId: string): RecipePhotoUpload => {
+  const t = useTranslations();
   const { recipeDetailStore } = useStores();
-  const addPhoto = recipeDetailStore((s) => s.addPhoto);
-  const removePhoto = recipeDetailStore((s) => s.removePhoto);
-  const isBusy = recipeDetailStore((s) => s.isPhotoBusy);
+  const addPhoto = useStore(recipeDetailStore, (s) => s.addPhoto);
+  const removePhoto = useStore(recipeDetailStore, (s) => s.removePhoto);
+  const isBusy = useStore(recipeDetailStore, (s) => s.isPhotoBusy);
   const [error, setError] = useState<string | null>(null);
 
   const launch = useCallback(
@@ -56,7 +58,7 @@ export const useRecipePhotoUpload = (recipeId: string): RecipePhotoUpload => {
           ? await ImagePicker.requestCameraPermissionsAsync()
           : await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        setError(t().recipes.photoPermissionDenied);
+        setError(t.recipes.photoPermissionDenied);
         return;
       }
 
@@ -70,31 +72,31 @@ export const useRecipePhotoUpload = (recipeId: string): RecipePhotoUpload => {
       const { fileName, mimeType } = uploadFileMeta(asset.uri, RECIPE_FILE_PREFIX, String(Date.now()));
       const failure = await addPhoto(recipeId, asset.uri, fileName, mimeType);
       if (failure !== null) {
-        setError(failureKeyMessage(failure) ?? t().recipes.photoAddFailed);
+        setError(failureKeyMessage(t, failure) ?? t.recipes.photoAddFailed);
         return;
       }
-      showSuccessToast(t().recipes.photoAdded);
+      showSuccessToast(t.recipes.photoAdded);
     },
-    [addPhoto, recipeId],
+    [addPhoto, recipeId, t],
   );
 
   const pickAndAdd = useCallback(async (): Promise<void> => {
     if (isBusy) return;
-    const source = await askPickSource(t().recipes.addPhoto);
+    const source = await askPickSource(t.recipes.addPhoto);
     if (source !== null) await launch(source);
-  }, [isBusy, launch]);
+  }, [isBusy, launch, t]);
 
   const remove = useCallback(
     async (item: MediaItem): Promise<void> => {
       if (isBusy) return;
       const failure = await removePhoto(recipeId, item);
       if (failure !== null) {
-        setError(failureKeyMessage(failure) ?? t().recipes.photoRemoveFailed);
+        setError(failureKeyMessage(t, failure) ?? t.recipes.photoRemoveFailed);
         return;
       }
-      showSuccessToast(t().recipes.photoRemoved);
+      showSuccessToast(t.recipes.photoRemoved);
     },
-    [isBusy, removePhoto, recipeId],
+    [isBusy, removePhoto, recipeId, t],
   );
 
   return { pickAndAdd, remove, isBusy, error, onDismissError: () => setError(null) };

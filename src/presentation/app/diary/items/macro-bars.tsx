@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useDiaryTones } from '@presentation/base/theme/colors/tones/use-diary-tones';
 import { diarySizes, spacing } from '@presentation/base/theme';
 import { MacroBar } from '@presentation/app/diary/items/macro-bar';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { NutritionMacro } from '@domain/recipes/nutrition/nutrition-macro';
 
@@ -23,10 +23,12 @@ const TWO_UP_BASIS = '40%';
  * (design spec → Food Diary §4).
  */
 export const MacroBars = ({ day, stacked }: MacroBarsProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const tones = useDiaryTones();
-  const strings = t().nutrition;
-  const { totals, goals } = day;
+  const strings = t.nutrition;
+  const { goals } = day;
+  const totals = day.totals();
   const ink = (value: number | null, goal: number, canBeOver: boolean): string =>
     canBeOver && value !== null && value > goal ? tones.over.solid : colors.primary;
   const bars = [

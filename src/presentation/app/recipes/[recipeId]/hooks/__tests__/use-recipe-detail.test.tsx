@@ -1,4 +1,4 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 /**
  * Regression tests for `useRecipeDetail`'s comment-submit error copy.
  *
@@ -150,7 +150,7 @@ const buildSession = (userId: string): AuthSessionEntity => {
  */
 const makeRealCommentsStore = (
   execute: jest.Mock<Promise<Result<CommentEntity, Failure>>, [{ recipeId: string; body: string }]>,
-): BoundStore<CommentsStore> =>
+): StoreApi<CommentsStore> =>
   configureCommentsStore({
     addComment: { execute } as unknown as AddCommentUseCase,
     listComments: { execute: jest.fn().mockResolvedValue(fail(new NetworkFailure('not stubbed'))) } as unknown as ListCommentsUseCase,
@@ -209,7 +209,7 @@ interface StoreOverrides {
   likesByRecipe?: Record<string, { likeCount: number; likedByMe: boolean; isLoading: boolean }>;
 }
 
-const makeStores = (commentsStore: BoundStore<CommentsStore>, overrides: StoreOverrides = {}): ApplicationStores => {
+const makeStores = (commentsStore: StoreApi<CommentsStore>, overrides: StoreOverrides = {}): ApplicationStores => {
   const recipeDetailStore = create<RecipeDetailStore>(() => ({
     byId: { [RECIPE_ID]: overrides.detailState ?? { status: 'loading' } },
     load: jest.fn(),
@@ -265,7 +265,7 @@ const makeStores = (commentsStore: BoundStore<CommentsStore>, overrides: StoreOv
 
 /** Renders a probe that captures the live hook output on every render. */
 const driveHook = (
-  commentsStore: BoundStore<CommentsStore>,
+  commentsStore: StoreApi<CommentsStore>,
   overrides: StoreOverrides = {},
 ): { latest: () => UseRecipeDetailResult } => {
   let latest: UseRecipeDetailResult | null = null;
@@ -358,7 +358,7 @@ describe('useRecipeDetail — submitError after a failed comment post', () => {
       deleteComment: jest.fn(),
       toggleLike: jest.fn(),
       clear: jest.fn(),
-    })) as unknown as BoundStore<CommentsStore>;
+    })) as unknown as StoreApi<CommentsStore>;
 
     const { latest } = driveHook(commentsStore);
 
@@ -520,7 +520,7 @@ describe('useRecipeDetail — the hero photos', () => {
  * delete waits for yes.
  */
 describe('useRecipeDetail — deleting a comment', () => {
-  const stubStore = (deleteComment: jest.Mock): BoundStore<CommentsStore> =>
+  const stubStore = (deleteComment: jest.Mock): StoreApi<CommentsStore> =>
     create<CommentsStore>(() => ({
       byRecipe: { [RECIPE_ID]: defaultRecipeCommentsState() },
       load: jest.fn(),
@@ -529,7 +529,7 @@ describe('useRecipeDetail — deleting a comment', () => {
       deleteComment,
       toggleLike: jest.fn(),
       clear: jest.fn(),
-    })) as unknown as BoundStore<CommentsStore>;
+    })) as unknown as StoreApi<CommentsStore>;
 
   it('a tap on the bin asks first and deletes nothing yet', () => {
     const deleteComment = jest.fn().mockResolvedValue(true);

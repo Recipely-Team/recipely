@@ -53,11 +53,7 @@ export const useAssistantReachActions = (): void => {
         // not_found (a screen declined), not unavailable_here (which invites a retry).
         if (reaching.has(action)) return { ok: false, error: AssistantActionError.NotFound };
         reaching.add(action);
-        try {
-          return await carry(arg);
-        } finally {
-          reaching.delete(action);
-        }
+        return carry(arg).finally(() => reaching.delete(action));
       };
 
       const carry = async (arg?: string): Promise<AssistantActionResultType> => {

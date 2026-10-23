@@ -6,7 +6,7 @@ import type { CreatorClaim } from '@domain/creators/creator-claim';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface CreatorStatusPillProps {
   claim: CreatorClaim;
@@ -20,8 +20,9 @@ type IconName = ComponentProps<typeof Ionicons>['name'];
  * alert in `primary` / `danger` (icon ink only); approved on `primary`.
  */
 export const CreatorStatusPill = ({ claim }: CreatorStatusPillProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().creators.account;
+  const copy = t.creators.account;
   const approved = claim.status === CreatorStatus.Approved;
   const look: { icon: IconName; ink: string; label: string } = approved
     ? { icon: 'checkmark', ink: colors.primaryText, label: copy.approved }

@@ -11,7 +11,7 @@ import { formatPlanServings } from '@presentation/base/utils/meal-plan/format-pl
 import { PlanServingsStepper } from '@presentation/app/diary/items/plan/plan-servings-stepper';
 import { EatenBadge } from '@presentation/app/diary/items/plan/eaten-badge';
 import { borderWidths, fontSizes, fontWeights, iconSizes, mealPlanSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface PlannedMealRowProps {
@@ -30,10 +30,11 @@ export interface PlannedMealRowProps {
  * servings as plain text — an eaten meal's servings are locked.
  */
 export const PlannedMealRow = ({ entry, onOpen, onStep, onOptions, first }: PlannedMealRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const tones = useDiaryTones();
   const locale = useLocale();
-  const strings = t().mealPlan;
+  const strings = t.mealPlan;
   const { recipe } = entry;
   const kcal = entry.calories;
 
@@ -58,7 +59,7 @@ export const PlannedMealRow = ({ entry, onOpen, onStep, onOptions, first }: Plan
               </SizedText>
             </View>
             <SizedText size={fontSizes.caption} color={colors.textMuted}>
-              {formatPlanServings(entry.servings.value, locale)}
+              {formatPlanServings(t, entry.servings.value, locale)}
             </SizedText>
           </View>
         ) : (

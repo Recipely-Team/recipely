@@ -14,10 +14,11 @@ import {
   borderWidths,
 } from '@presentation/base/theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { IngredientGroup } from '@domain/recipes/ingredients/ingredient-group';
 import { ValueConstants } from '@core/constants';
 import { useStableKeys } from '@presentation/app/create-recipe/hooks/use-stable-keys';
+import { GroupDeleteConfirm } from '@presentation/app/create-recipe/items/group-delete-confirm';
 
 export interface IngredientGroupCardProps {
   group: IngredientGroup;
@@ -55,8 +56,9 @@ export const IngredientGroupCard = ({
   onRenameGroup,
   onDeleteGroup,
 }: IngredientGroupCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().createRecipe;
+  const copy = t.createRecipe;
   const [confirming, setConfirming] = useState(false);
   const titleLineHeight = useTextLineHeight(fontSizes.medium);
   const rowKeys = useStableKeys(group.items.map((item) => item.value));
@@ -67,7 +69,7 @@ export const IngredientGroupCard = ({
       value={item.value}
       onChange={(next) => onChangeItem(item.index, next)}
       onRemove={() => onRemoveItem(item.index)}
-      removeLabel={t().mediaPicker.remove}
+      removeLabel={t.mediaPicker.remove}
       onMoveUp={position > ValueConstants.zero ? () => onMoveItem(item.index, ValueConstants.minusOne) : undefined}
       onMoveDown={
         position < group.items.length - ValueConstants.one
@@ -133,50 +135,7 @@ export const IngredientGroupCard = ({
         </Pressable>
       </View>
 
-      {confirming ? (
-        <View style={[styles.confirm, { borderBottomColor: colors.border }]}>
-          <ThemedText variant="caption" style={styles.confirmTitle}>
-            {copy.deleteQuestion}
-          </ThemedText>
-          <Pressable
-            onPress={() => onDeleteGroup(true)}
-            style={[styles.choice, { borderColor: colors.cardBorder, backgroundColor: colors.background }]}
-            accessibilityRole="button"
-            accessibilityLabel={copy.keepItems}
-          >
-            <Ionicons name="list-outline" size={iconSizes.md} color={colors.primary} />
-            <View style={styles.choiceBody}>
-              <ThemedText variant="caption" style={styles.choiceLabel}>
-                {copy.keepItems}
-              </ThemedText>
-              <ThemedText variant="caption" style={{ color: colors.textMuted }}>
-                {copy.keepItemsHint}
-              </ThemedText>
-            </View>
-          </Pressable>
-          <Pressable
-            onPress={() => onDeleteGroup(false)}
-            style={[styles.choice, { borderColor: colors.cardBorder, backgroundColor: colors.background }]}
-            accessibilityRole="button"
-            accessibilityLabel={copy.deleteAll}
-          >
-            <Ionicons name="trash-outline" size={iconSizes.md} color={colors.danger} />
-            <ThemedText variant="caption" style={[styles.choiceBody, styles.choiceLabel, { color: colors.danger }]}>
-              {copy.deleteAll}
-            </ThemedText>
-          </Pressable>
-          <Pressable
-            onPress={() => setConfirming(false)}
-            style={styles.cancel}
-            accessibilityRole="button"
-            accessibilityLabel={t().common.cancel}
-          >
-            <ThemedText variant="caption" style={{ color: colors.textMuted }}>
-              {t().common.cancel}
-            </ThemedText>
-          </Pressable>
-        </View>
-      ) : null}
+      {confirming ? <GroupDeleteConfirm onDelete={onDeleteGroup} onCancel={() => setConfirming(false)} /> : null}
 
       <View style={styles.body}>
         {group.items.length === ValueConstants.zero ? (
@@ -233,37 +192,6 @@ const styles = StyleSheet.create({
     height: controlSizes.iconBtnSm,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  confirm: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
-    gap: spacing.sm,
-    borderBottomWidth: borderWidths.hairline,
-  },
-  confirmTitle: {
-    fontWeight: fontWeights.bold,
-  },
-  choice: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    minHeight: controlSizes.button,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.lg,
-    borderWidth: borderWidths.hairline,
-  },
-  choiceBody: {
-    flex: ValueConstants.one,
-  },
-  choiceLabel: {
-    fontWeight: fontWeights.semibold,
-  },
-  cancel: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: controlSizes.chip,
   },
   body: {
     padding: spacing.sm,

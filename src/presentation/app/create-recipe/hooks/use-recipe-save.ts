@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { type Href, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { getLocale, t } from '@presentation/i18n';
+import { getLocale, useTranslations } from '@presentation/i18n';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { ValidationFailure, type Failure } from '@core/failure';
@@ -56,10 +57,11 @@ export const useRecipeSave = ({
   flushDraft,
   stopAutosave,
 }: UseRecipeSaveArgs) => {
+  const t = useTranslations();
   const router = useRouter();
   const { recipeAuthoringStore, draftsStore, recipePublishingStore } = useStores();
-  const createState = recipeAuthoringStore((s) => s.createState);
-  const isEditing = recipePublishingStore((s) => s.isBusy);
+  const createState = useStore(recipeAuthoringStore, (s) => s.createState);
+  const isEditing = useStore(recipePublishingStore, (s) => s.isBusy);
   const { publish } = usePublishRecipe();
 
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -72,13 +74,13 @@ export const useRecipeSave = ({
       FailureReporter.report(failure, PUBLISH_CONTEXT);
       if (!(failure instanceof ValidationFailure)) {
         setFieldErrors(NO_CREATE_RECIPE_FIELD_ERRORS);
-        setSaveError(failureToastMessage(failure));
+        setSaveError(failureToastMessage(t, failure));
         return;
       }
-      setFieldErrors(mapFieldErrorsToInputs(failure.fieldErrors));
-      setSaveIssue(failureKeyMessage(failure) ?? failureToastMessage(failure));
+      setFieldErrors(mapFieldErrorsToInputs(failure.fieldErrors()));
+      setSaveIssue(failureKeyMessage(t, failure) ?? failureToastMessage(t, failure));
     },
-    [setFieldErrors],
+    [setFieldErrors, t],
   );
 
   const clearSaveFeedback = (): void => {
@@ -92,17 +94,17 @@ export const useRecipeSave = ({
     const ingredientsEmpty = IngredientList.of(recipe.ingredients).filledCount === ValueConstants.zero;
     if (nameEmpty || ingredientsEmpty) {
       const fields: CreateRecipeFieldErrors['fields'] = {};
-      if (nameEmpty) fields.name = t().createRecipe.nameRequired;
-      if (ingredientsEmpty) fields.ingredients = t().createRecipe.ingredientsRequired;
+      if (nameEmpty) fields.name = t.createRecipe.nameRequired;
+      if (ingredientsEmpty) fields.ingredients = t.createRecipe.ingredientsRequired;
       setFieldErrors({ fields, unmatched: [] });
-      setSaveIssue(t().createRecipe.missing);
+      setSaveIssue(t.createRecipe.missing);
       return false;
     }
     return true;
   };
 
   /** Saves privately — create, or PATCH when editing — and answers with the recipe id. */
-  const persist = useCallback(async (): Promise<string | null> => {
+  const persist = async (): Promise<string | null> => {
     clearSaveFeedback();
     if (!hasRequiredText()) return null;
     if (editRecipeId !== undefined) {
@@ -135,8 +137,7 @@ export const useRecipeSave = ({
       recipeAuthoringStore.getState().resetCreateState();
     }
     return null;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recipe, recipeAuthoringStore, draftsStore, recipePublishingStore, activeDraftId, editRecipeId, surfaceSaveFailure, flushDraft, stopAutosave]);
+  };
 
   const openSaved = useCallback(
     (recipeId: string): void => {
@@ -150,28 +151,28 @@ export const useRecipeSave = ({
     [router, editRecipeId],
   );
 
-  const onSave = useCallback((): void => {
+  const onSave = (): void => {
     void (async () => {
       const recipeId = await persist();
       if (recipeId === null) return;
       openSaved(recipeId);
-      showSuccessToast(t().createRecipe.savedPrivately);
+      showSuccessToast(t.createRecipe.savedPrivately);
     })();
-  }, [persist, openSaved]);
+  };
 
-  const onSaveAndPublish = useCallback((): void => {
+  const onSaveAndPublish = (): void => {
     void (async () => {
       const recipeId = await persist();
       if (recipeId === null) return;
       openSaved(recipeId);
       await publish(recipeId);
     })();
-  }, [persist, openSaved, publish]);
+  };
 
   const isSaving = createState.status === StoreStatus.Creating || isEditing;
   const headerTitle =
-    editRecipeId === undefined ? t().createRecipe.previewTitle : t().createRecipe.editTitle;
-  const saveLabel = isSaving ? t().createRecipe.saving : t().createRecipe.save;
+    editRecipeId === undefined ? t.createRecipe.previewTitle : t.createRecipe.editTitle;
+  const saveLabel = isSaving ? t.createRecipe.saving : t.createRecipe.save;
 
   return {
     onSave,

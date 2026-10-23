@@ -16,7 +16,7 @@ import {
   opacities,
   borderWidths,
 } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface ImportEntryCardProps {
@@ -36,8 +36,9 @@ export interface ImportEntryCardProps {
  *   the card's accessible name is its title.
  */
 export const ImportEntryCard = ({ onPress }: ImportEntryCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().importRecipe;
+  const copy = t.importRecipe;
 
   return (
     <Pressable

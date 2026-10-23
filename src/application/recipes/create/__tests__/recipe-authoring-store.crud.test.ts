@@ -7,7 +7,7 @@ import type { RecipeListStore } from "@application/recipes/list/recipe-list-stor
 import { configureRecipeAuthoringStore } from "@application/recipes/create/recipe-authoring-store";
 import type { MyRecipesStore } from "@application/recipes/my-recipes/my-recipes-store-contract";
 import type { RefineRecipeUseCase } from "@application/recipes/refine/refine-recipe-use-case";
-import type { BoundStore } from "@application/store/bound-store";
+import type { StoreApi } from 'zustand/vanilla';
 import { UnknownFailure } from "@core/failure";
 import { fail, ok } from "@core/result/result-helpers";
 import type { CreateRecipeInput } from "@domain/recipes/create/create-recipe-input";
@@ -88,9 +88,9 @@ const makeStore = (overrides: Partial<Deps> = {}) => {
     generateRecipeUseCase: fakeGenerateUseCase,
     refineRecipeUseCase: fakeRefineUseCase,
     deleteRecipeUseCase: { execute: () => Promise.resolve(ok(undefined)) } as unknown as DeleteRecipeUseCase,
-    recipeListStore: { getState: () => ({ remove: recipeListStoreRemove }) } as unknown as BoundStore<RecipeListStore>,
-    recipeDetailStore: { getState: () => ({ remove: recipeDetailStoreRemove, put: jest.fn() }) } as unknown as BoundStore<RecipeDetailStore>,
-    myRecipesStore: { getState: () => ({ addLocal: mineAdded, removeLocal: mineRemoved }) } as unknown as BoundStore<MyRecipesStore>,
+    recipeListStore: { getState: () => ({ remove: recipeListStoreRemove }) } as unknown as StoreApi<RecipeListStore>,
+    recipeDetailStore: { getState: () => ({ remove: recipeDetailStoreRemove, put: jest.fn() }) } as unknown as StoreApi<RecipeDetailStore>,
+    myRecipesStore: { getState: () => ({ addLocal: mineAdded, removeLocal: mineRemoved }) } as unknown as StoreApi<MyRecipesStore>,
     ...overrides,
   });
   return { store, recipeListStoreRemove, recipeDetailStoreRemove, mineAdded, mineRemoved };

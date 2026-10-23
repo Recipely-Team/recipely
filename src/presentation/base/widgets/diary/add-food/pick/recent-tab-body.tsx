@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react';
+import { useStore } from 'zustand';
 import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { FoodPickList } from '@presentation/base/widgets/diary/add-food/pick/food-pick-list';
@@ -8,7 +9,7 @@ import { pagedRows } from '@presentation/base/widgets/diary/add-food/list/paged-
 import { phaseOfLists } from '@presentation/base/widgets/diary/add-food/list/phase-of-lists';
 import { PickPhase } from '@presentation/base/widgets/diary/add-food/list/pick-phase';
 import { PickRowType } from '@presentation/base/widgets/diary/add-food/list/pick-row-type';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface RecentTabBodyProps {
   onChooseRecent: (recent: RecentFoodType) => void;
@@ -22,9 +23,10 @@ const RECENT = 'recent';
  * product re-logs at its own unit and quantity.
  */
 export const RecentTabBody = ({ onChooseRecent }: RecentTabBodyProps): React.JSX.Element => {
+  const t = useTranslations();
   const { foodCatalogStore } = useStores();
-  const recent = foodCatalogStore((s) => s.recent);
-  const strings = t().diary;
+  const recent = useStore(foodCatalogStore, (s) => s.recent);
+  const strings = t.diary;
 
   useEffect(() => {
     void foodCatalogStore.getState().loadRecent();

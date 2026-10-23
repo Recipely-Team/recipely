@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { isString } from '@core/guards/type-guards';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -16,7 +17,7 @@ import { useTwoPaneSplit } from '@presentation/base/responsive/fold/use-two-pane
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, iconSizes, controlSizes, mediaSizes, decorSizes, layoutSizes, zIndices } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
@@ -24,6 +25,7 @@ import { enterApp } from '@presentation/navigation/enter-app';
 const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const VerifyCodeScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const goBack = useGoBackOrHome(RoutePaths.login);
   const colors = useTheme().colors;
@@ -36,7 +38,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   const initialExpiresAt = isString(params.expiresAt) ? params.expiresAt : CharConstants.empty;
 
   const { authStore } = useStores();
-  const authStatus = authStore((s) => s.state.status);
+  const authStatus = useStore(authStore, (s) => s.state.status);
 
   useEffect(() => {
     if (authStatus === StoreStatus.Authenticated) {
@@ -96,7 +98,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
           onPress={goBack}
           style={[styles.backBtn, { backgroundColor: colors.gradientSurface }]}
           accessibilityRole="button"
-          accessibilityLabel={t().verify.changeEmail}
+          accessibilityLabel={t.verify.changeEmail}
         >
           <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
         </Pressable>

@@ -6,7 +6,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import { spacing, radii, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { COUNT_TOKEN, MAX_TOKEN } from '@presentation/app/import-recipe/model/file/count-token';
 import type { FilePage } from '@presentation/app/import-recipe/model/file/file-page';
@@ -32,9 +32,10 @@ const PREVIEW_HEIGHT = 260;
  * web grid is reordered by dragging, which react-native-web does not offer.
  */
 export const FilePageSheet = ({ pages, index, isPdf, onMove, onRemove, onClose }: FilePageSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const danger = useSeveritySurfaces().danger;
-  const copy = t().fileImport;
+  const copy = t.fileImport;
   const page = index === null ? undefined : pages[index];
   const at = index ?? ValueConstants.zero;
   const title =

@@ -1,8 +1,8 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
 import type { Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
 import type { RecipeAuthoringStore } from '@application/recipes/create/recipe-authoring-store-contract';
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
@@ -27,10 +27,10 @@ interface RecipeAuthoringStoreDeps {
   refineRecipeUseCase: RefineRecipeUseCase;
   deleteRecipeUseCase: DeleteRecipeUseCase;
   // Owner mutations keep the public feed and detail cache in sync.
-  recipeListStore: BoundStore<RecipeListStore>;
-  recipeDetailStore: BoundStore<RecipeDetailStore>;
+  recipeListStore: StoreApi<RecipeListStore>;
+  recipeDetailStore: StoreApi<RecipeDetailStore>;
   // The Created list; a recipe made or deleted here is added to or removed from it.
-  myRecipesStore: BoundStore<MyRecipesStore>;
+  myRecipesStore: StoreApi<MyRecipesStore>;
 }
 
 /** The failed state of any operation this store runs; the four share one shape. */
@@ -56,8 +56,8 @@ const runOperation = async <S, T>(
   return result.value;
 };
 
-export const configureRecipeAuthoringStore = (deps: RecipeAuthoringStoreDeps): BoundStore<RecipeAuthoringStore> => {
-  return create<RecipeAuthoringStore>((set, get) => ({
+export const configureRecipeAuthoringStore = (deps: RecipeAuthoringStoreDeps): StoreApi<RecipeAuthoringStore> => {
+  return createStore<RecipeAuthoringStore>((set, get) => ({
     localRecipes: [],
     createState: { status: StoreStatus.Idle },
     generateState: { status: StoreStatus.Idle },

@@ -3,7 +3,7 @@ import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { spacing, fontSizes, lineHeightFor } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface SignInPromptSheetProps {
   visible: boolean;
@@ -25,12 +25,13 @@ export const SignInPromptSheet = ({
   onSignIn,
   message,
 }: SignInPromptSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   return (
-    <BottomSheet visible={visible} title={t().signInPrompt.title} onClose={onClose}>
+    <BottomSheet visible={visible} title={t.signInPrompt.title} onClose={onClose}>
       <ThemedText variant="body" muted style={styles.message}>
-        {message ?? t().signInPrompt.message}
+        {message ?? t.signInPrompt.message}
       </ThemedText>
-      <PrimaryButton label={t().signInPrompt.cta} onPress={onSignIn} />
+      <PrimaryButton label={t.signInPrompt.cta} onPress={onSignIn} />
     </BottomSheet>
   );
 };

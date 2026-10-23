@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, iconSizes, borderWidths, aspectRatios } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface FileAddTileProps {
   width: number;
@@ -12,8 +12,9 @@ export interface FileAddTileProps {
 
 /** The dashed tile after the last page, while the batch has room for another. */
 export const FileAddTile = ({ width, onPress }: FileAddTileProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const label = t().fileImport.addPage;
+  const label = t.fileImport.addPage;
 
   return (
     <Pressable

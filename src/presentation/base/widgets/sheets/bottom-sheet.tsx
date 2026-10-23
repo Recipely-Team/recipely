@@ -8,7 +8,7 @@ import { useDragToDismiss } from '@presentation/base/hooks/interaction/use-drag-
 import { useSheetPresentation } from '@presentation/base/hooks/interaction/use-sheet-presentation';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { spacing, radii, controlSizes, borderWidths, layoutSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface BottomSheetProps {
@@ -74,6 +74,7 @@ export const BottomSheet = ({
   scrollsItself = false,
   children,
 }: BottomSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isExpanded } = useLayout();
@@ -121,8 +122,8 @@ export const BottomSheet = ({
               hitSlop={spacing.sm}
               accessible
               accessibilityRole="button"
-              accessibilityLabel={t().common.close}
-              accessibilityHint={t().common.closeHint}
+              accessibilityLabel={t.common.close}
+              accessibilityHint={t.common.closeHint}
               onAccessibilityTap={onClose}
             >
               <View style={[styles.grabber, { backgroundColor: colors.border }]} />

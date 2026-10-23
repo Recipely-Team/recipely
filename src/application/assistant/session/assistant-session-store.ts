@@ -1,6 +1,6 @@
 import type { AssistantSessionState } from '@application/assistant/session/assistant-session-state';
 import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import {
   AssistantController,
   AssistantStatus as SessionStatus,
@@ -28,7 +28,7 @@ import type { RunAssistantActionUseCase } from '@application/assistant/actions/r
 import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import type { AssistantSessionStore } from '@application/assistant/session/assistant-session-store-contract';
 import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantBudget } from '@domain/assistant/session/assistant-budget';
@@ -104,7 +104,7 @@ const EXTRA_ID_PREFIX = 'app-';
  */
 export const configureAssistantSessionStore = (
   deps: AssistantSessionStoreDeps,
-): BoundStore<AssistantSessionStore> => {
+): StoreApi<AssistantSessionStore> => {
   const { tokens, registry, askAssistant, runAction } = deps;
   const meter = new AssistantLevelMeter();
   let languageCode = CharConstants.empty;
@@ -121,7 +121,7 @@ export const configureAssistantSessionStore = (
   let seenEntries: readonly TranscriptEntry[] | null = null;
   let previousStatus: string = SessionStatus.Idle;
 
-  return create<AssistantSessionStore>((set, get) => {
+  return createStore<AssistantSessionStore>((set, get) => {
     let controller!: AssistantController<LiveSessionCredentials>;
 
     const publishLevel = (samples: Float32Array<ArrayBuffer>): void => {

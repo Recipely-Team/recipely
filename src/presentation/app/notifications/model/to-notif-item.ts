@@ -40,7 +40,7 @@ export const toNotifItem = (notification: NotificationEntity): NotifItem => ({
   read: notification.read,
   // Surface free-text payload (e.g. the comment body) as the secondary line.
   body: notification.message ?? undefined,
-  target: notification.target,
+  target: notification.target(),
   ...importSourceOf(notification),
   ...creatorAccountOf(notification),
 });

@@ -1,6 +1,6 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import { ok } from '@core/result/result-helpers';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store-contract';
@@ -24,8 +24,8 @@ interface SavedRecipesStoreDeps {
  * - **`clear()` resets the loader**, dropping any answer still in flight: a
  *   load started under the previous account must not put its rows back.
  */
-export const configureSavedRecipesStore = (deps: SavedRecipesStoreDeps): BoundStore<SavedRecipesStore> =>
-  create<SavedRecipesStore>((set, get) => {
+export const configureSavedRecipesStore = (deps: SavedRecipesStoreDeps): StoreApi<SavedRecipesStore> =>
+  createStore<SavedRecipesStore>((set, get) => {
     const write = (saved: PagedList<RecipeSummaryEntity>): void =>
       set(saved.status === StoreStatus.Loaded ? { saved, savedIds: new Set(saved.items.map((r) => r.id)) } : { saved });
     const loader = new PagedListLoader<RecipeSummaryEntity>(() => get().saved, write, (r) => r.id);

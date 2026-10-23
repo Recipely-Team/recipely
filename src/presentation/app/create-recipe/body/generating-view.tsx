@@ -8,7 +8,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, iconSizes, decorSizes, layoutSizes, borderWidths, opacities, fontWeights, BrandColors, controlSizes } from '@presentation/base/theme';
 import { useGeneratingAnimation } from '@presentation/app/create-recipe/hooks/use-generating-animation';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { AnimationConstants } from '@presentation/base/constants';
 
@@ -47,10 +47,11 @@ const LOGO_SIZE = 60;
  * (`app/import-recipe/`), because nobody is waiting on it.
  */
 export const GeneratingView = ({ activeStep, onCancel, topInset }: GeneratingViewProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { orbitStyle, ringStyle, coreStyle } = useGeneratingAnimation();
 
-  const copy = t().createRecipe;
+  const copy = t.createRecipe;
   const steps = GENERATE_STEP_KEYS.map((key) => copy[key]);
   const spotlight = activeStep;
   const progress = Math.min(
@@ -65,7 +66,7 @@ export const GeneratingView = ({ activeStep, onCancel, topInset }: GeneratingVie
         hitSlop={spacing.sm}
         style={[styles.cancel, { top: topInset + spacing.sm }]}
         accessibilityRole="button"
-        accessibilityLabel={t().createRecipe.cancel}
+        accessibilityLabel={t.createRecipe.cancel}
       >
         <Ionicons name="close" size={iconSizes.lg} color={colors.text} />
       </Pressable>

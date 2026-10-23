@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useStore } from 'zustand';
 import { useLeaveGuard } from '@presentation/base/hooks/navigation/use-leave-guard';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { RoutePaths } from '@presentation/base/constants';
@@ -6,7 +7,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { useAvatarUpload } from '@presentation/base/hooks/profile/use-avatar-upload';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { BIO_MAX } from '@presentation/app/edit-profile/model/edit-profile-limits';
 import type { UseEditProfileResult } from '@presentation/app/edit-profile/model/use-edit-profile-result';
 import {
@@ -37,11 +38,12 @@ import { useSignedInUser } from '@presentation/base/hooks/auth/use-signed-in-use
  *   same stale render would be wrong in the same way.
  */
 export const useEditProfile = (): UseEditProfileResult => {
+  const t = useTranslations();
   const goBack = useGoBackOrHome(RoutePaths.profile);
   const { pickAndUpload, isUploading, uploadError, onDismissUploadError } = useAvatarUpload();
 
   const { authStore } = useStores();
-  const updateProfile = authStore((s) => s.updateProfile);
+  const updateProfile = useStore(authStore, (s) => s.updateProfile);
 
   const user = useSignedInUser();
   const initialDisplayName = user?.displayName ?? CharConstants.empty;
@@ -84,18 +86,14 @@ export const useEditProfile = (): UseEditProfileResult => {
     if (name === initialDisplayName && about === initialBio) return EditProfileSaveOutcome.Unchanged;
 
     setIsSaving(true);
-    try {
-      const failure = await updateProfile({ displayName: name.trim(), bio: about.trim() });
-      if (failure !== null) {
-        setSaveError(failureKeyMessage(failure) ?? failureToastMessage(failure));
-        return EditProfileSaveOutcome.Failed;
-      }
-      showSuccessToast(t().editProfile.saved);
-      goBack();
-      return EditProfileSaveOutcome.Saved;
-    } finally {
-      setIsSaving(false);
+    const failure = await updateProfile({ displayName: name.trim(), bio: about.trim() }).finally(() => setIsSaving(false));
+    if (failure !== null) {
+      setSaveError(failureKeyMessage(t, failure) ?? failureToastMessage(t, failure));
+      return EditProfileSaveOutcome.Failed;
     }
+    showSuccessToast(t.editProfile.saved);
+    goBack();
+    return EditProfileSaveOutcome.Saved;
   };
 
   return {

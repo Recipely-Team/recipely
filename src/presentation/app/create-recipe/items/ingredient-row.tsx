@@ -4,7 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, iconSizes, controlSizes, borderWidths, opacities, BrandColors } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { useIsGuessed } from '@presentation/app/create-recipe/hooks/use-is-guessed';
 import { CheckChip } from '@presentation/app/create-recipe/items/check-chip';
@@ -39,6 +39,7 @@ export const IngredientRow = ({
   onMoveUp,
   onMoveDown,
 }: IngredientRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const [focused, setFocused] = useState(false);
   const guessed = useIsGuessed(value);
@@ -62,7 +63,7 @@ export const IngredientRow = ({
             hitSlop={spacing.xs}
             style={onMoveUp === undefined ? styles.reorderDisabled : undefined}
             accessibilityRole="button"
-            accessibilityLabel={t().createRecipe.moveUp}
+            accessibilityLabel={t.createRecipe.moveUp}
           >
             <Ionicons name="chevron-up" size={iconSizes.sm} color={colors.textMuted} />
           </Pressable>
@@ -72,7 +73,7 @@ export const IngredientRow = ({
             hitSlop={spacing.xs}
             style={onMoveDown === undefined ? styles.reorderDisabled : undefined}
             accessibilityRole="button"
-            accessibilityLabel={t().createRecipe.moveDown}
+            accessibilityLabel={t.createRecipe.moveDown}
           >
             <Ionicons name="chevron-down" size={iconSizes.sm} color={colors.textMuted} />
           </Pressable>
@@ -85,7 +86,7 @@ export const IngredientRow = ({
         onChangeText={onChange}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        placeholder={t().createRecipe.ingredientPlaceholder}
+        placeholder={t.createRecipe.ingredientPlaceholder}
         placeholderTextColor={colors.textMuted}
         minHeight={controlSizes.iconBtn}
         style={[styles.input, { color: colors.text }]}

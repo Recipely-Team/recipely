@@ -8,7 +8,7 @@ import type { AddFoodRequestType } from '@presentation/base/widgets/diary/add-fo
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
 import { CharConstants } from '@core/constants';
 import { diarySizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AddFoodSheetProps {
   /** What to open on; null closes the sheet. */
@@ -32,6 +32,7 @@ export interface AddFoodSheetProps {
  *   state when `request` turns null, so the exit animation is not blank.
  */
 export const AddFoodSheet = ({ request, onClose, onOpenDiary }: AddFoodSheetProps): React.JSX.Element => {
+  const t = useTranslations();
   const flow = useAddFoodFlow(request, onClose, onOpenDiary);
 
   const body = (): React.JSX.Element => {
@@ -85,7 +86,7 @@ export const AddFoodSheet = ({ request, onClose, onOpenDiary }: AddFoodSheetProp
   return (
     <BottomSheet
       visible={request !== null}
-      title={flow.isEdit ? t().diary.editFood : t().diary.addFood}
+      title={flow.isEdit ? t.diary.editFood : t.diary.addFood}
       onClose={onClose}
       dialogMaxWidth={diarySizes.addFoodDialogMaxWidth}
       scrollsItself

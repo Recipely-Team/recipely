@@ -16,7 +16,7 @@ import { CreatorsPageHeader } from '@presentation/app/creators/[userId]/body/cre
 import { CreatorsRoundButton } from '@presentation/app/creators/[userId]/body/creators-round-button';
 import { useCreatorProfile } from '@presentation/app/creators/[userId]/hooks/use-creator-profile';
 import { CreatorProfileBody } from '@presentation/app/creators/[userId]/body/creator-profile-body';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /** How the assistant names this page's list of recipes. */
 const ROSTER_LABEL = 'recipes';
@@ -27,6 +27,7 @@ const ROSTER_LABEL = 'recipes';
  * all of it; following asks them to sign in.
  */
 export const CreatorProfileScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const vm = useCreatorProfile();
   const scrollable = useAssistantScrollable();
@@ -53,8 +54,8 @@ export const CreatorProfileScreen = (): React.JSX.Element => {
       <ResponsiveContainer route="creatorProfile" gutter={false} fill>
         <CreatorsPageHeader
           onBack={vm.onBack}
-          backLabel={t().creators.backToChefs}
-          trailing={loaded !== null ? <CreatorsRoundButton icon="share-outline" label={t().creators.share} onPress={vm.onShare} /> : null}
+          backLabel={t.creators.backToChefs}
+          trailing={loaded !== null ? <CreatorsRoundButton icon="share-outline" label={t.creators.share} onPress={vm.onShare} /> : null}
         />
         <CreatorProfileBody vm={vm} scrollable={scrollable} />
       </ResponsiveContainer>

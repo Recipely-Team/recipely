@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import { type Href, usePathname, useRouter } from 'expo-router';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
@@ -8,7 +9,7 @@ import { RoutePaths } from '@presentation/base/constants';
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import type { AddToPlanRequest } from '@presentation/base/widgets/meal-plan/model/add-to-plan-request';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useSignedInUserId } from '@presentation/base/hooks/auth/use-signed-in-user-id';
 
 interface AddToPlanModel {
@@ -32,11 +33,12 @@ interface AddToPlanModel {
  * prompt and come back to the recipe.
  */
 export const useAddToPlan = (recipe: RecipeEntity): AddToPlanModel => {
+  const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
   const { mealPlanStore } = useStores();
   const userId = useSignedInUserId();
-  const enabled = mealPlanStore((s) => s.enabled === true);
+  const enabled = useStore(mealPlanStore, (s) => s.enabled === true);
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const [request, setRequest] = useState<AddToPlanRequest | null>(null);
 
@@ -58,9 +60,9 @@ export const useAddToPlan = (recipe: RecipeEntity): AddToPlanModel => {
           date: CalendarDate.today(),
           meal: null,
         }),
-      t().mealPlan.signInToPlan,
+      t.mealPlan.signInToPlan,
     );
-  }, [recipe, requestGate]);
+  }, [recipe, requestGate, t]);
 
   return {
     enabled,

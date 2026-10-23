@@ -20,7 +20,7 @@ import {
   radii,
   spacing,
 } from "@presentation/base/theme";
-import { t } from "@presentation/i18n";
+import { useTranslations } from '@presentation/i18n';
 import type { AssistantScrollableProps } from "@presentation/base/hooks/assistant/actions/assistant-scrollable-props";
 
 export interface MessageStepProps {
@@ -48,9 +48,10 @@ const TOKENS = [DmMessageToken.Name, DmMessageToken.Link] as const;
  * under them on a phone.
  */
 export const MessageStep = (props: MessageStepProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const { isExpanded } = useLayout();
-  const copy = t().instagram;
+  const copy = t.instagram;
   const linkMissing = !props.dmText.includes(DmMessageToken.Link);
   const overLimit = props.dmText.length > DmRuleLimits.DmTextMax;
   // The caret, so a token lands where the user is typing rather than at the end.

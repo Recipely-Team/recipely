@@ -1,6 +1,6 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import type { AuthStore } from '@application/auth/auth-store-contract';
 import { ClaimWriteQueue } from '@application/auth/claim-write-queue';
 import type { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
@@ -33,7 +33,7 @@ interface AuthStoreDeps {
   signOut: SignOutUseCase;
   getSession: GetSessionUseCase;
   loadFavorites: LoadFavoritesUseCase;
-  savedRecipesStore: BoundStore<SavedRecipesStore>;
+  savedRecipesStore: StoreApi<SavedRecipesStore>;
   signInWithGoogle: SignInWithGoogleUseCase;
   signInWithApple: SignInWithAppleUseCase;
   requestPasswordReset: RequestPasswordResetUseCase;
@@ -85,10 +85,10 @@ interface AuthStoreDeps {
  *   from before the change. Writes run one at a time, in order, so writing
  *   both platforms together cannot lose one ({@link ClaimWriteQueue}).
  */
-export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStore> => {
+export const configureAuthStore = (deps: AuthStoreDeps): StoreApi<AuthStore> => {
   const claims = new ClaimWriteQueue();
 
-  return create<AuthStore>((set, get) => {
+  return createStore<AuthStore>((set, get) => {
     type SessionCall = () => Promise<Result<AuthSessionEntity, Failure>>;
 
     /** The signed-in user's id, or `null` — read when a claim call starts. */

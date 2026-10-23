@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { useOpenCookMode } from '@presentation/app/recipes/[recipeId]/hooks/use-open-cook-mode';
 
 export interface StartCookingPillProps {
@@ -15,6 +15,7 @@ export interface StartCookingPillProps {
  * row, because it is the one that starts the recipe rather than filing it.
  */
 export const StartCookingPill = ({ recipeId }: StartCookingPillProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const openCookMode = useOpenCookMode(recipeId);
 
@@ -29,7 +30,7 @@ export const StartCookingPill = ({ recipeId }: StartCookingPillProps): React.JSX
     >
       <Ionicons name="restaurant-outline" size={iconSizes.md} color={colors.primaryText} />
       <ThemedText variant="caption" style={[styles.label, { color: colors.primaryText }]}>
-        {t().cookMode.start}
+        {t.cookMode.start}
       </ThemedText>
     </Pressable>
   );

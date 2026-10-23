@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, controlSizes, fontSizes, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
 import { ShoppingConfirm, type ShoppingConfirmType } from '@presentation/app/shopping-list/model/shopping-confirm';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface ShoppingListActionsProps {
   checkedCount: number;
@@ -14,9 +14,10 @@ export interface ShoppingListActionsProps {
 
 /** "Clear completed" (only while something is ticked) and "Clear all" (only while there is anything), each asking first. */
 export const ShoppingListActions = ({ checkedCount, itemCount, onAsk }: ShoppingListActionsProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   if (itemCount === ValueConstants.zero) return null;
-  const copy = t().shopping;
+  const copy = t.shopping;
   const pill = (label: string, confirm: ShoppingConfirmType, color: string): React.JSX.Element => (
     <Pressable
       onPress={() => onAsk(confirm)}

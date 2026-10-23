@@ -13,7 +13,7 @@ import type { MealLog } from '@presentation/base/widgets/diary/add-food/meal/sta
 import type { MealReviewRow } from '@presentation/base/widgets/diary/add-food/meal/state/meal-review-row';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface MealConfirmListProps {
   log: MealLog;
@@ -30,9 +30,10 @@ export interface MealConfirmListProps {
  * presented as measured.
  */
 export const MealConfirmList = ({ log, rows, note, initialMeal, isSubmitting }: MealConfirmListProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   const [meal, setMeal] = useState(initialMeal);
   const addLabel = strings.mealLogAdd
     .replace('{n}', formatWholeNumber(log.selectedCount, locale))

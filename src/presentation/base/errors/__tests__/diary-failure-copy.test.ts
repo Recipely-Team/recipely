@@ -1,6 +1,6 @@
 import { ErrorMessageKey, NotFoundFailure, ValidationFailure } from '@core/failure';
 import { failureContent } from '@presentation/base/errors/failure-lookups';
-import { setLocale } from '@presentation/i18n';
+import { setLocale, t } from '@presentation/i18n';
 import { LocaleConstants } from '@application/i18n/locale-constants';
 import { en } from '@presentation/i18n/locales/en';
 import { tr } from '@presentation/i18n/locales/tr';
@@ -38,9 +38,9 @@ describe('diary failure copy', () => {
 
   it.each(CASES)('%p resolves to its own English and Turkish copy', (failure, contentKey) => {
     setLocale(LocaleConstants.en);
-    expect(failureContent(failure)).toEqual({ title: en.errors[contentKey].title, body: en.errors[contentKey].body });
+    expect(failureContent(t(), failure)).toEqual({ title: en.errors[contentKey].title, body: en.errors[contentKey].body });
     setLocale(LocaleConstants.tr);
-    expect(failureContent(failure)).toEqual({ title: tr.errors[contentKey].title, body: tr.errors[contentKey].body });
+    expect(failureContent(t(), failure)).toEqual({ title: tr.errors[contentKey].title, body: tr.errors[contentKey].body });
   });
 
   it.each(Object.entries(CATALOGUES))('%s carries every diary error key', (_locale, catalogue) => {

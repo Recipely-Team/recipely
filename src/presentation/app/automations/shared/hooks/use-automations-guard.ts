@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -15,7 +16,7 @@ import { RoutePaths } from '@presentation/base/constants';
 export const useAutomationsGuard = (isMissing: boolean): void => {
   const router = useRouter();
   const { instagramStore } = useStores();
-  const known = instagramStore((s) => s.connection.status === StoreStatus.Loaded);
+  const known = useStore(instagramStore, (s) => s.connection.status === StoreStatus.Loaded);
   const connection = useInstagramConnection();
   const blocked = isMissing || (known && (!connection.isAvailable || !connection.isConnected));
   useEffect(() => {

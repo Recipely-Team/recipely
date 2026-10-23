@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
@@ -13,13 +14,14 @@ import { useTwoPaneSplit } from '@presentation/base/responsive/fold/use-two-pane
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, layoutSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { resolveRedirect } from '@presentation/navigation/resolve-redirect';
 import { ValueConstants } from '@core/constants';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const LoginScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const colors = useTheme().colors;
@@ -28,7 +30,7 @@ export const LoginScreen = (): React.JSX.Element => {
   const isLandscapeShell = split.isSplit;
 
   const { authStore } = useStores();
-  const authStatus = authStore((s) => s.state.status);
+  const authStatus = useStore(authStore, (s) => s.state.status);
 
   useEffect(() => {
     if (authStatus === StoreStatus.Authenticated) {
@@ -62,9 +64,9 @@ export const LoginScreen = (): React.JSX.Element => {
             >
               <LoginForm />
             </View>
-            {t().login.hint ? (
+            {t.login.hint ? (
               <ThemedText variant="caption" muted style={styles.hint}>
-                {t().login.hint}
+                {t.login.hint}
               </ThemedText>
             ) : null}
           </ScrollView>
@@ -98,9 +100,9 @@ export const LoginScreen = (): React.JSX.Element => {
           <LoginForm />
         </View>
 
-        {t().login.hint ? (
+        {t.login.hint ? (
           <ThemedText variant="caption" muted style={styles.hint}>
-            {t().login.hint}
+            {t.login.hint}
           </ThemedText>
         ) : null}
       </ScrollView>

@@ -6,7 +6,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, borderWidths, avatarSizes, lineHeightFor, lineHeights } from '@presentation/base/theme';
 import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
 import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { ImportReview } from '@presentation/app/create-recipe/model/review/import-review';
 import { CheckChip } from '@presentation/app/create-recipe/items/check-chip';
 import { WhatWeReadSheet } from '@presentation/app/create-recipe/sheets/what-we-read-sheet';
@@ -29,8 +29,9 @@ export interface ImportReviewBlockProps {
  *   with every line read looks exactly as before.
  */
 export const ImportReviewBlock = ({ review, showLegend }: ImportReviewBlockProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().createRecipe.importReview;
+  const copy = t.createRecipe.importReview;
   const [reading, setReading] = useState(false);
   const hasSource = review.sourceText !== undefined;
   if (!review.suggested && !hasSource && !showLegend) return null;

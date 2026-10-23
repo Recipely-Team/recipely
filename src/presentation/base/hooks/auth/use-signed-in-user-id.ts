@@ -1,4 +1,5 @@
 import { StoreStatus } from '@application/store/store-status';
+import { useStore } from 'zustand';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
 /**
@@ -13,5 +14,5 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  */
 export const useSignedInUserId = (): string | null => {
   const { authStore } = useStores();
-  return authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.id : null));
+  return useStore(authStore, (s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.id : null));
 };

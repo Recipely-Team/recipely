@@ -1,5 +1,5 @@
-import type { BoundStore } from '@application/store/bound-store';
-import { create } from 'zustand';
+import type { StoreApi } from 'zustand/vanilla';
+import { createStore } from 'zustand/vanilla';
 import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
@@ -46,14 +46,14 @@ const commentKey = (view: CommentView): string => view.comment.id;
  *   reloads the thread, so it is not lost from view until the next visit.
  * - **No try/catch:** the use cases return `Result` and the HTTP client never throws.
  */
-export const configureCommentsStore = (deps: CommentsStoreDeps): BoundStore<CommentsStore> => {
+export const configureCommentsStore = (deps: CommentsStoreDeps): StoreApi<CommentsStore> => {
   const { listComments, addComment, deleteComment, setCommentLike } = deps;
   const lists = new Map<string, PagedList<CommentView>>();
   const loaders = new Map<string, PagedListLoader<CommentView>>();
   const sessions = new RequestEpoch();
   let isSessionCurrent = sessions.start();
 
-  return create<CommentsStore>((set, get) => {
+  return createStore<CommentsStore>((set, get) => {
     const patch = (recipeId: string, change: Patch): void =>
       set((state) => ({ byRecipe: mergeRecipeComments(state.byRecipe, recipeId, change) }));
 

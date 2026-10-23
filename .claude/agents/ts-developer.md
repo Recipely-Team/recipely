@@ -33,7 +33,8 @@ Flutter project at `/Users/recep/Documents/GitHub/shartflix/lib`; this repo's ow
 
 **Hard rules (blocking in review)**
 - One exported declaration per file. A store module `x-store.ts` exports only its factory
-  `configureXStore(deps): BoundStore<XStore>`; the contract (state + actions) lives in `x-store-contract.ts`,
+  `configureXStore(deps): StoreApi<XStore>` built with `createStore` from `zustand/vanilla` (no React in
+  `application/`); a domain getter returns a stored value, anything computed is a method; the contract (state + actions) lives in `x-store-contract.ts`,
   the `XState` union in `x-state.ts`, each named state (`XLoaded`, `XError`, …) in `states/`; the deps
   shape stays unexported above the factory (rule 1).
 - Ports are `*Interface` in `*-interface.ts` (never an `I` prefix); entities `*Entity` in `*-entity.ts`

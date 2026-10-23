@@ -33,7 +33,7 @@ export class FeedbackMessage extends BaseValueObject<string> {
     return mapResult(message, (m) => new FeedbackMessage(m.value, raw.subject.trim()));
   }
 
-  get submission(): FeedbackSubmission {
+  submission(): FeedbackSubmission {
     return { subject: this.subject, message: this.value };
   }
 

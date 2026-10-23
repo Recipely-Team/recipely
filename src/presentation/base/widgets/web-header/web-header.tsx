@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { StyleSheet, View } from 'react-native';
 import { type Href, useRouter, usePathname } from 'expo-router';
 import { useGuestRouteGate } from '@presentation/base/hooks/auth/use-guest-route-gate';
@@ -8,7 +9,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useWebShellState } from '@presentation/base/web-shell/use-web-shell-state';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { spacing, zIndices } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { WebHeaderLogo } from '@presentation/base/widgets/web-header/web-header-logo';
 import { WebHeaderTabs } from '@presentation/base/widgets/web-header/web-header-tabs';
 import { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
@@ -50,15 +51,16 @@ const isProfileRoute = (pathname: string): boolean =>
  *   ({@link useGuestRouteGate}).
  */
 export const WebHeader = (): React.JSX.Element => {
+  const t = useTranslations();
   useLocale(); // re-render the persistent header when the language changes
   const router = useRouter();
   const gate = useGuestRouteGate();
   const pathname = usePathname();
   const colors = useTheme().colors;
   const { notificationsStore, shoppingListStore } = useStores();
-  const toBuy = shoppingListStore((s) => s.toBuy) ?? ValueConstants.zero;
+  const toBuy = useStore(shoppingListStore, (s) => s.toBuy) ?? ValueConstants.zero;
   const user = useSignedInUser();
-  const unreadCount = notificationsStore((s) => s.unreadCount);
+  const unreadCount = useStore(notificationsStore, (s) => s.unreadCount);
   const signedIn = user !== null;
   useEffect(() => {
     if (signedIn) void shoppingListStore.getState().loadToBuy();
@@ -69,10 +71,10 @@ export const WebHeader = (): React.JSX.Element => {
   const isProfileActive = isProfileRoute(pathname);
 
   const tabs: TabItem<WebHeaderTabKey>[] = [
-    { key: 'recipes', label: t().recipes.title, icon: { family: TabIconFamily.Ionicons, name: 'restaurant-outline' } },
-    { key: 'myRecipes', label: t().myRecipes.title, icon: { family: TabIconFamily.Ionicons, name: 'bookmark-outline' } },
-    { key: 'chefs', label: t().navigation.chefs, icon: { family: TabIconFamily.Material, name: 'chef-hat' } },
-    { key: 'diary', label: t().navigation.diary, icon: { family: TabIconFamily.Ionicons, name: 'calendar-outline' } },
+    { key: 'recipes', label: t.recipes.title, icon: { family: TabIconFamily.Ionicons, name: 'restaurant-outline' } },
+    { key: 'myRecipes', label: t.myRecipes.title, icon: { family: TabIconFamily.Ionicons, name: 'bookmark-outline' } },
+    { key: 'chefs', label: t.navigation.chefs, icon: { family: TabIconFamily.Material, name: 'chef-hat' } },
+    { key: 'diary', label: t.navigation.diary, icon: { family: TabIconFamily.Ionicons, name: 'calendar-outline' } },
   ];
 
   // Empty for guests, so the avatar shows the person mark.
@@ -123,26 +125,26 @@ export const WebHeader = (): React.JSX.Element => {
             <WebHeaderSearch
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder={t().recipes.searchPlaceholder}
-              ariaLabel={t().recipes.searchPlaceholder}
-              ariaClear={t().common.clear}
+              placeholder={t.recipes.searchPlaceholder}
+              ariaLabel={t.recipes.searchPlaceholder}
+              ariaClear={t.common.clear}
             />
           ) : null}
         </View>
 
         <WebHeaderActions
-          createLabel={t().myRecipes.createNew}
-          notificationsLabel={t().notifications.title}
-          cartLabel={toBuy > ValueConstants.zero ? t().shopping.cartA11y.replace('{n}', String(toBuy)) : t().shopping.title}
+          createLabel={t.myRecipes.createNew}
+          notificationsLabel={t.notifications.title}
+          cartLabel={toBuy > ValueConstants.zero ? t.shopping.cartA11y.replace('{n}', String(toBuy)) : t.shopping.title}
           toBuy={toBuy}
           isCartActive={pathname === RoutePaths.shoppingList}
           onOpenCart={goCart}
-          profileLabel={t().navigation.profile}
+          profileLabel={t.navigation.profile}
           unreadCount={unreadCount}
           isProfileActive={isProfileActive}
           avatarName={displayName}
           avatarUri={avatarUri}
-          discoverLabel={showDiscover ? t().onboarding.discover : undefined}
+          discoverLabel={showDiscover ? t.onboarding.discover : undefined}
           onCreate={goCreate}
           onOpenNotifications={goNotifs}
           onOpenProfile={goProfile}

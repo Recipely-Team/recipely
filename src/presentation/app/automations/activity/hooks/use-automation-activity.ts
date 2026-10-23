@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useStore } from 'zustand';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -26,9 +27,9 @@ export const useAutomationActivity = (): UseAutomationActivityResult => {
   const router = useRouter();
   const { ruleId = CharConstants.empty } = useLocalSearchParams<{ ruleId?: string }>();
   const { automationsStore, instagramStore } = useStores();
-  const opened = automationsStore((s) => s.opened);
-  const sends = automationsStore((s) => s.sends);
-  const isPaused = instagramStore((s) => s.connection.status === StoreStatus.Loaded && s.connection.connection.isExpired);
+  const opened = useStore(automationsStore, (s) => s.opened);
+  const sends = useStore(automationsStore, (s) => s.sends);
+  const isPaused = useStore(instagramStore, (s) => s.connection.status === StoreStatus.Loaded && s.connection.connection.isExpired);
   const [filter, setFilter] = useState<SendFilterType>(SendFilter.All);
   const hasRule = ruleId.length > ValueConstants.zero;
   useAutomationsGuard(!hasRule);

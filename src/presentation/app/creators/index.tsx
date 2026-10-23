@@ -13,7 +13,7 @@ import { recipeRoster } from '@presentation/base/hooks/assistant/args/describing
 import { useCreatorsScreen } from '@presentation/app/creators/hooks/use-creators-screen';
 import { ChefsHeading } from '@presentation/app/creators/body/chefs-heading';
 import { CreatorsGrid } from '@presentation/app/creators/body/creators-grid';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 /** How the assistant names this page's one list. */
 const ROSTER_LABEL = 'creators';
@@ -23,6 +23,7 @@ const ROSTER_LABEL = 'creators';
  * the tab bar below on a phone and no back button. Public: guests browse it too.
  */
 export const CreatorsScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const vm = useCreatorsScreen();
   const scrollable = useAssistantScrollable();
@@ -39,7 +40,7 @@ export const CreatorsScreen = (): React.JSX.Element => {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <PageTitle subject={t().creators.title} />
+      <PageTitle subject={t.creators.title} />
       <ResponsiveContainer route="creators" gutter={false} fill>
         <ChefsHeading showSubtitle={vm.creators.length > ValueConstants.zero} />
         <CreatorsGrid vm={vm} scrollable={scrollable} />

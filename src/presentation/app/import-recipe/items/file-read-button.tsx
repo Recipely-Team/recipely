@@ -5,7 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface FileReadButtonProps {
@@ -18,8 +18,9 @@ const GRADIENT_END = { x: ValueConstants.one, y: ValueConstants.one };
 
 /** "Read recipe" — the AI call to action, in the same gradient as the create screen's Generate. */
 export const FileReadButton = ({ disabled, onPress }: FileReadButtonProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const label = t().fileImport.submit;
+  const label = t.fileImport.submit;
 
   return (
     <Pressable

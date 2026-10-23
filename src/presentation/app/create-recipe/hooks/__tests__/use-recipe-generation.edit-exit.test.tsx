@@ -12,7 +12,7 @@ import { useState } from 'react';
 import { act } from 'react-test-renderer';
 import { UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import { recipeEntityOf } from '@application/__fixtures__/recipe-entity-of';
 import { configureRecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
@@ -70,11 +70,11 @@ const mount = () => {
   });
   const recipeAuthoringStore = configureRecipeAuthoringStore({
     createRecipeUseCase: unused(),
-    myRecipesStore: { getState: () => ({ addLocal: jest.fn(), removeLocal: jest.fn() }) } as unknown as BoundStore<MyRecipesStore>,
+    myRecipesStore: { getState: () => ({ addLocal: jest.fn(), removeLocal: jest.fn() }) } as unknown as StoreApi<MyRecipesStore>,
     generateRecipeUseCase: unused(),
     refineRecipeUseCase: unused(),
     deleteRecipeUseCase: unused(),
-    recipeListStore: unused<BoundStore<RecipeListStore>>(),
+    recipeListStore: unused<StoreApi<RecipeListStore>>(),
     recipeDetailStore,
   });
   const stores = { recipeDetailStore, draftsStore, recipeAuthoringStore } as unknown as ApplicationStores;

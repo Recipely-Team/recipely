@@ -6,7 +6,7 @@ import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { aspectRatios, borderWidths, controlSizes, fontSizes, fontWeights, fridgeSizes, iconSizes, layoutSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ScanSweep } from '@presentation/app/fridge/items/capture/scan-sweep';
 import { useScanPhotoCue } from '@presentation/app/fridge/hooks/use-scan-photo-cue';
 import { ValueConstants } from '@core/constants';
@@ -23,6 +23,7 @@ const TILE_HEIGHT = fridgeSizes.analysingTile / aspectRatios.pagePortrait;
  * politely, and a progress bar that fills with the cue.
  */
 export const AnalysingStep = ({ photos }: AnalysingStepProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const current = useScanPhotoCue(photos.length);
   const total = Math.max(ValueConstants.one, photos.length);
@@ -47,11 +48,11 @@ export const AnalysingStep = ({ photos }: AnalysingStepProps): React.JSX.Element
       <View style={styles.titleRow}>
         <Ionicons name="scan" size={iconSizes.xl} color={colors.primary} />
         <SizedText accessibilityRole="header" size={fontSizes.subtitle} weight={fontWeights.heavy}>
-          {t().fridge.analysingTitle}
+          {t.fridge.analysingTitle}
         </SizedText>
       </View>
       <SizedText accessibilityLiveRegion="polite" size={fontSizes.caption} muted>
-        {t().fridge.analysingProgress.replace('{i}', String(current + ValueConstants.one)).replace('{n}', String(total))}
+        {t.fridge.analysingProgress.replace('{i}', String(current + ValueConstants.one)).replace('{n}', String(total))}
       </SizedText>
       <View style={[styles.track, { backgroundColor: colors.skeleton }]}>
         <LinearGradient

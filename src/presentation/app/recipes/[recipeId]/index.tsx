@@ -26,9 +26,10 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export const RecipeDetailScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
   // Cast: a RoutePaths string is not in the typed-routes union.
@@ -74,7 +75,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
             failure={vm.failure}
             onRetry={vm.onRetry}
             onSecondary={browseRecipes}
-            secondaryLabel={t().recipes.browseRecipes}
+            secondaryLabel={t.recipes.browseRecipes}
           >
             <RecipeDetailContent
               vm={vm}

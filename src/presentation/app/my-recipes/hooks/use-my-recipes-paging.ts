@@ -1,4 +1,5 @@
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { useStore } from 'zustand';
 import type { Failure } from '@core/failure';
 import { StoreStatus } from '@application/store/store-status';
 import { ValueConstants } from '@core/constants';
@@ -24,9 +25,9 @@ export const useMyRecipesPaging = (
   onItemsEndReached: () => void;
 } => {
   const { savedRecipesStore, likedRecipesStore, myRecipesStore } = useStores();
-  const saved = savedRecipesStore((s) => s.saved);
-  const liked = likedRecipesStore((s) => s.liked);
-  const mine = myRecipesStore((s) => s.mine);
+  const saved = useStore(savedRecipesStore, (s) => s.saved);
+  const liked = useStore(likedRecipesStore, (s) => s.liked);
+  const mine = useStore(myRecipesStore, (s) => s.mine);
   const active = tab === TabType.Saved ? saved : tab === TabType.Liked ? liked : tab === TabType.Created ? mine : null;
 
   const onItemsEndReached = (): void => {

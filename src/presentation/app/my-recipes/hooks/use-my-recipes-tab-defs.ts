@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
 
@@ -13,12 +13,15 @@ export const useMyRecipesTabDefs = (
   draftsTotal: number,
   totals: { saved: number; liked: number; created: number },
 ): readonly MyRecipesTab[] =>
-  useMemo(
+  {
+  const t = useTranslations();
+  return useMemo(
     () => [
-      { key: TabType.Saved, label: t().myRecipes.saved, count: Math.max(totals.saved, loaded.saved) },
-      { key: TabType.Liked, label: t().myRecipes.liked, count: Math.max(totals.liked, loaded.liked) },
-      { key: TabType.Created, label: t().myRecipes.created, count: Math.max(totals.created, loaded.created) },
-      { key: TabType.Drafts, label: t().myRecipes.drafts, count: draftsTotal },
+      { key: TabType.Saved, label: t.myRecipes.saved, count: Math.max(totals.saved, loaded.saved) },
+      { key: TabType.Liked, label: t.myRecipes.liked, count: Math.max(totals.liked, loaded.liked) },
+      { key: TabType.Created, label: t.myRecipes.created, count: Math.max(totals.created, loaded.created) },
+      { key: TabType.Drafts, label: t.myRecipes.drafts, count: draftsTotal },
     ],
-    [loaded.saved, loaded.liked, loaded.created, draftsTotal, totals.saved, totals.liked, totals.created],
+    [loaded.saved, loaded.liked, loaded.created, draftsTotal, totals.saved, totals.liked, totals.created, t],
   );
+};

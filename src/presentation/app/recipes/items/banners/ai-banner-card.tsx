@@ -4,7 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { FridgeCameraButton } from '@presentation/app/recipes/items/banners/fridge-camera-button';
 
@@ -19,10 +19,11 @@ export interface AiBannerCardProps {
  * from my fridge" sits on its right.
  */
 export const AiBannerCard = ({ onPress }: AiBannerCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <View style={styles.wrapper}>
-      <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={t().recipes.aiPromo} style={styles.banner}>
+      <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={t.recipes.aiPromo} style={styles.banner}>
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
@@ -38,7 +39,7 @@ export const AiBannerCard = ({ onPress }: AiBannerCardProps): React.JSX.Element 
           </View>
 
           <ThemedText variant="body" numberOfLines={ValueConstants.two} style={[styles.title, { color: colors.onOverlay }]}>
-            {t().recipes.aiPromo}
+            {t.recipes.aiPromo}
           </ThemedText>
 
           <Ionicons name="arrow-forward" size={iconSizes.md} color={colors.onOverlay} />

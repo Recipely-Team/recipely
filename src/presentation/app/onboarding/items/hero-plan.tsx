@@ -4,7 +4,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
 import { upperCase } from '@presentation/i18n/upper-case';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ArtCard } from '@presentation/app/onboarding/items/art-card';
 import { ArtChip } from '@presentation/app/onboarding/items/art-chip';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
@@ -24,8 +24,9 @@ const ART_WIDTH = 270;
 
 /** Slide 3, "Plan your week": a week filled from saved recipes, and the one shopping list it makes. */
 export const HeroPlan = ({ active = true }: HeroProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const a = t().onboarding.art;
+  const a = t.onboarding.art;
   const rows = [
     [a.day1, a.meal1],
     [a.day2, a.meal2],

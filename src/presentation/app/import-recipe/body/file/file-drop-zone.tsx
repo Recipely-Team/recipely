@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, iconSizes, borderWidths, controlSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface FileDropZoneProps {
   /** A file is being dragged over the window. */
@@ -21,8 +21,9 @@ const DISC = 56;
  * user is told so, and it lights up while a file is over the page.
  */
 export const FileDropZone = ({ isDragging, onChoose }: FileDropZoneProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().fileImport;
+  const copy = t.fileImport;
 
   return (
     <View

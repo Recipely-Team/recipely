@@ -6,7 +6,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { durations, opacities } from '@presentation/base/theme';
 import { isPortraitPhoto } from '@presentation/app/recipes/[recipeId]/model/photos/is-portrait-photo';
 import { photoViewerSizes } from '@presentation/app/recipes/[recipeId]/model/photos/photo-viewer-sizes';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { toContentPosition } from '@presentation/base/widgets/media/to-content-position';
 import type { FocalPoint } from '@domain/recipes/media/focal-point';
@@ -39,6 +39,7 @@ export interface SmartPhotoProps {
  *   portrait photo is shown whole, so its position does not matter.
  */
 const SmartPhotoComponent = ({ url, accessibilityLabel, focus }: SmartPhotoProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const [frameRatio, setFrameRatio] = useState<number | null>(null);
   // What the decoder said, tagged with the url it said it about: a new url starts unknown.
@@ -61,7 +62,7 @@ const SmartPhotoComponent = ({ url, accessibilityLabel, focus }: SmartPhotoProps
   return (
     <View style={[styles.frame, { backgroundColor: colors.skeleton }]} onLayout={onLayout}>
       {failed ? (
-        <RecipePlaceholder label={t().recipes.noPhoto} />
+        <RecipePlaceholder label={t.recipes.noPhoto} />
       ) : (
         <>
           {portrait ? (

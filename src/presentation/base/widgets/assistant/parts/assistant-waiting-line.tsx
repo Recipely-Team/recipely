@@ -5,7 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { assistantStatusLabel } from '@presentation/base/widgets/assistant/assistant-status-label';
 import { useReduceMotion } from '@presentation/base/hooks/accessibility/use-reduce-motion';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { durations, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
@@ -48,6 +48,7 @@ export const AssistantWaitingLine = ({
   status,
   isMuted = false,
 }: AssistantWaitingLineProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const { colors } = useTheme();
   const reduceMotion = useReduceMotion();
   const [pulse] = useState(() => new Animated.Value(ValueConstants.zero));
@@ -74,7 +75,7 @@ export const AssistantWaitingLine = ({
   return (
     <View style={[styles.line, { backgroundColor: colors.cardBackground }]}>
       <ThemedText variant="caption" muted style={styles.label}>
-        {isMutedLive ? t().assistant.muted : assistantStatusLabel(status)}
+        {isMutedLive ? t.assistant.muted : assistantStatusLabel(t, status)}
       </ThemedText>
 
       {isMutedLive ? null : (

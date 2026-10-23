@@ -10,7 +10,7 @@ import { formatServings } from '@presentation/base/utils/diary/format-servings';
 import { formatMacroLine } from '@presentation/base/utils/diary/format-macro-line';
 import { formatFoodPortion } from '@presentation/base/utils/diary/units/format-food-portion';
 import { diarySizes, fontSizes, fontWeights, opacities, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface MealEntryRowProps {
@@ -25,17 +25,18 @@ export interface MealEntryRowProps {
  * edit mode (design spec → Food Diary §4, Add food v2 §5).
  */
 export const MealEntryRow = ({ entry, onPress }: MealEntryRowProps): React.JSX.Element => {
+  const t = useTranslations();
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   const kcal = formatWholeNumber(entry.nutrients.calories, locale);
   const product = entry.product;
   const portion =
     product === null
-      ? [formatServings(entry.servings, locale), entry.isQuickAdd ? strings.sourceQuickAdd : strings.sourceRecipe].join(CharConstants.middotSpaced)
-      : formatFoodPortion({ key: product.unitKey, amount: product.unitAmount }, entry.servings, null, locale);
+      ? [formatServings(t, entry.servings, locale), entry.isQuickAdd ? strings.sourceQuickAdd : strings.sourceRecipe].join(CharConstants.middotSpaced)
+      : formatFoodPortion(t, { key: product.unitKey, amount: product.unitAmount }, entry.servings, null, locale);
   const icon =
     product !== null ? productThumbIcon(null, product.source === FoodSource.OpenFoodFacts) : entry.isQuickAdd ? FoodThumbIcon.QuickAdd : null;
-  const macros = formatMacroLine(entry.nutrients, locale);
+  const macros = formatMacroLine(t, entry.nutrients, locale);
   return (
     <Pressable
       onPress={() => onPress(entry)}
@@ -62,7 +63,7 @@ export const MealEntryRow = ({ entry, onPress }: MealEntryRowProps): React.JSX.E
           {kcal}
         </SizedText>
         <SizedText size={fontSizes.micro} muted>
-          {t().nutrition.kcal}
+          {t.nutrition.kcal}
         </SizedText>
       </View>
     </Pressable>

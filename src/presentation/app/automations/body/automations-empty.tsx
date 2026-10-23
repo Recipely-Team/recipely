@@ -6,7 +6,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface AutomationsEmptyProps {
   disabled: boolean;
@@ -15,8 +15,9 @@ export interface AutomationsEmptyProps {
 
 /** No automations yet (spec §2 → Empty): a send disc, the title, three numbered steps and Create. */
 export const AutomationsEmpty = ({ disabled, onCreate }: AutomationsEmptyProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().instagram;
+  const copy = t.instagram;
   const steps = [copy.emptyStep1, copy.emptyStep2, copy.emptyStep3];
   return (
     <View style={styles.box}>

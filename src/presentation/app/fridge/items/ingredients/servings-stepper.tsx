@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { FridgeLimits } from '@domain/fridge/fridge-limits';
 import { ValueConstants } from '@core/constants';
 
@@ -14,8 +14,9 @@ export interface ServingsStepperProps {
 
 /** − n + with 44 targets, held to the backend's 1–12; an end stop dims its button. */
 export const ServingsStepper = ({ value, onChange }: ServingsStepperProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().fridge;
+  const copy = t.fridge;
   const canLess = value > FridgeLimits.servingsMin;
   const canMore = value < FridgeLimits.servingsMax;
   const button = (icon: 'remove' | 'add', enabled: boolean, label: string, delta: number) => (

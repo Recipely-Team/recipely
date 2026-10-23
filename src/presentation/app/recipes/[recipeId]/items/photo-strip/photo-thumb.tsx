@@ -14,7 +14,7 @@ import {
   spacing,
 } from '@presentation/base/theme';
 import { fillPhotoPosition } from '@presentation/app/recipes/[recipeId]/model/photos/fill-photo-position';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 /** The selection ring sits this far outside the thumb: a gap in the page colour, then the ring. */
@@ -35,13 +35,14 @@ export interface PhotoThumbProps {
 
 /** One photo in the strip under the hero; a tab that brings it into view. */
 export const PhotoThumb = ({ url, focus, index, total, selected, width, coverBand, onPress }: PhotoThumbProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <Pressable
       accessibilityRole="tab"
       accessibilityState={{ selected }}
-      accessibilityLabel={fillPhotoPosition(t().photoViewer.position, index, total)}
+      accessibilityLabel={fillPhotoPosition(t.photoViewer.position, index, total)}
       onPress={onPress}
       style={[styles.cell, { width, opacity: selected ? opacities.full : opacities.onMedia }]}
     >
@@ -56,7 +57,7 @@ export const PhotoThumb = ({ url, focus, index, total, selected, width, coverBan
         <RecipeImage accessibilityLabel={null} uri={url} focus={focus} style={styles.image} placeholderCompact />
         {coverBand ? (
           <View style={[styles.band, { backgroundColor: colors.overlay }]}>
-            <ThemedText style={[styles.bandText, { color: colors.onOverlay }]}>{t().photoViewer.cover}</ThemedText>
+            <ThemedText style={[styles.bandText, { color: colors.onOverlay }]}>{t.photoViewer.cover}</ThemedText>
           </View>
         ) : null}
       </View>

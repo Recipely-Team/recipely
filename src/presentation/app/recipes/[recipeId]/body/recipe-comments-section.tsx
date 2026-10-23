@@ -7,7 +7,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { CommentCard } from '@presentation/app/recipes/[recipeId]/items/comment-card';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { spacing, radii, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
@@ -43,6 +43,7 @@ const RecipeCommentsSectionComponent = ({
   onDeleteComment,
   commentHighlight,
 }: RecipeCommentsSectionProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const composer = useCommentDraft(onAddComment);
 
@@ -51,7 +52,7 @@ const RecipeCommentsSectionComponent = ({
       {/* A zero stays hidden, as it was before the count moved out of the
           title: "Yorumlar 0" beside the empty-state copy says it twice. */}
       <SectionHeader
-        title={t().comments.title}
+        title={t.comments.title}
         count={commentState?.total === ValueConstants.zero ? undefined : commentState?.total}
       />
 
@@ -59,7 +60,7 @@ const RecipeCommentsSectionComponent = ({
         <ActivityIndicator size="small" color={colors.primary} style={styles.commentsLoader} />
       ) : !commentState || commentState.items.length === ValueConstants.zero ? (
         <ThemedText variant="caption" muted style={styles.commentsEmpty}>
-          {t().comments.empty}
+          {t.comments.empty}
         </ThemedText>
       ) : (
         <View style={styles.commentsList}>
@@ -98,7 +99,7 @@ const RecipeCommentsSectionComponent = ({
           ]}
         >
           <ThemedText variant="caption" muted>
-            {commentState.isLoadingMore ? t().common.loading : t().comments.loadMore}
+            {commentState.isLoadingMore ? t.common.loading : t.comments.loadMore}
           </ThemedText>
         </Pressable>
       ) : null}
@@ -107,7 +108,7 @@ const RecipeCommentsSectionComponent = ({
         <AutoGrowTextInput
           value={composer.draft}
           onChangeText={composer.onChangeDraft}
-          placeholder={t().comments.placeholder}
+          placeholder={t.comments.placeholder}
           placeholderTextColor={colors.textMuted}
           style={[
             styles.commentInput,
@@ -121,7 +122,7 @@ const RecipeCommentsSectionComponent = ({
           onPress={composer.onSubmit}
           disabled={commentState?.isSubmitting === true || composer.isEmpty}
           accessibilityRole="button"
-          accessibilityLabel={t().comments.send}
+          accessibilityLabel={t.comments.send}
           style={({ pressed }) => [
             styles.commentSendBtn,
             {

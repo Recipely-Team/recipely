@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useStore } from 'zustand';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isWeb } from '@infrastructure/constants/platform';
@@ -14,7 +15,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { PageTitle } from '@presentation/base/widgets/head/page-title';
 import { RoutePaths } from '@presentation/base/constants';
 import { fontSizes, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -31,11 +32,12 @@ import { ValueConstants } from '@core/constants';
  *   With no login open (a cold start), it says the login did not finish.
  */
 export const InstagramConnectedScreen = (): React.JSX.Element => {
+  const t = useTranslations();
   const router = useRouter();
   const colors = useTheme().colors;
   const params = useLocalSearchParams<{ status?: string; code?: string; reason?: string }>();
   const { authStore } = useStores();
-  const authStatus = authStore((s) => s.state.status);
+  const authStatus = useStore(authStore, (s) => s.state.status);
   const finalize = useInstagramFinalize();
   const handled = useRef(false);
 
@@ -45,7 +47,7 @@ export const InstagramConnectedScreen = (): React.JSX.Element => {
     if (!isWeb()) {
       handled.current = true;
       // No login open here: a cold start reached by the return link. Its code is never finalized here.
-      if (!InstagramLoginInFlight.isOpen && outcome.kind === InstagramReturnKind.Authorized) showWarningToast(t().instagram.loginNotFinished);
+      if (!InstagramLoginInFlight.isOpen && outcome.kind === InstagramReturnKind.Authorized) showWarningToast(t.instagram.loginNotFinished);
       if (router.canGoBack()) router.back();
       else router.replace(RoutePaths.editProfileCreatorAccount);
       return;
@@ -55,7 +57,7 @@ export const InstagramConnectedScreen = (): React.JSX.Element => {
     handled.current = true;
     const done = (): void => router.replace(RoutePaths.editProfileCreatorAccount);
     if (authStatus === StoreStatus.Unauthenticated) {
-      showWarningToast(t().instagram.loginNotFinished);
+      showWarningToast(t.instagram.loginNotFinished);
       return done();
     }
     switch (outcome.kind) {
@@ -63,21 +65,21 @@ export const InstagramConnectedScreen = (): React.JSX.Element => {
         void finalize(outcome.code).then(done);
         return;
       case InstagramReturnKind.Failed:
-        showWarningToast(t().instagram.loginFailed);
+        showWarningToast(t.instagram.loginFailed);
         return done();
       case InstagramReturnKind.Denied:
       case InstagramReturnKind.Cancelled:
-        showWarningToast(t().instagram.cancelled);
+        showWarningToast(t.instagram.cancelled);
         return done();
     }
-  }, [authStatus, finalize, params, router]);
+  }, [authStatus, finalize, params, router, t]);
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      <PageTitle subject={t().instagram.connect} />
+      <PageTitle subject={t.instagram.connect} />
       <ActivityIndicator color={colors.primary} />
       <SizedText size={fontSizes.medium} muted>
-        {t().instagram.finishing}
+        {t.instagram.finishing}
       </SizedText>
     </View>
   );

@@ -4,7 +4,7 @@ import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { borderWidths, controlSizes, fontSizes, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface AddFoodFooterProps {
@@ -18,9 +18,10 @@ export interface AddFoodFooterProps {
 
 /** The detail step's pinned actions: "Add to diary · 460 kcal", or Remove + Save changes when editing. */
 export const AddFoodFooter = ({ isEdit, calories, isSubmitting, onSubmit, onRemove }: AddFoodFooterProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   if (!isEdit) {
     return (
       <PrimaryButton

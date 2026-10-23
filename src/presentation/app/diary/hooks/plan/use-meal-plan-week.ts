@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { MealPlanLimits } from '@domain/meal-plan/meal-plan-limits';
@@ -36,10 +37,10 @@ interface MealPlanWeekModel {
  */
 export const useMealPlanWeek = (): MealPlanWeekModel => {
   const { authStore, mealPlanStore, diaryStore } = useStores();
-  const signedIn = authStore((s) => s.state.status === StoreStatus.Authenticated);
-  const weekStart = mealPlanStore((s) => s.weekStart);
-  const state = mealPlanStore((s) => s.weeks[s.weekStart.value]);
-  const goal = diaryStore((s) => s.goals.calories);
+  const signedIn = useStore(authStore, (s) => s.state.status === StoreStatus.Authenticated);
+  const weekStart = useStore(mealPlanStore, (s) => s.weekStart);
+  const state = useStore(mealPlanStore, (s) => s.weeks[s.weekStart.value]);
+  const goal = useStore(diaryStore, (s) => s.goals.calories);
   const [today] = useState(() => CalendarDate.today());
   const [selected, setSelected] = useState(() => (weekStart.equals(today.weekStart()) ? today : weekStart));
   const [isRefreshing, setRefreshing] = useState(false);

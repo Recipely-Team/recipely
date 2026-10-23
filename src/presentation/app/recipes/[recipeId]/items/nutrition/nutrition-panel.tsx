@@ -5,7 +5,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { fontSizes, iconSizes, lineHeights, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import type { NutritionFacts } from '@domain/recipes/nutrition/nutrition-facts';
 import { NutritionBasis, type NutritionBasisType } from '@domain/recipes/nutrition/nutrition-basis';
 import type { NutritionSourceType } from '@domain/recipes/nutrition/nutrition-source';
@@ -41,8 +41,9 @@ export interface NutritionPanelProps {
  *   domain would silently ignore.
  */
 export const NutritionPanel = ({ facts, isCalculating, compact = false, source = null }: NutritionPanelProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().nutrition;
+  const strings = t.nutrition;
   const noteLineHeight = useTextLineHeight(fontSizes.small, lineHeights.normal);
   const [requested, setRequested] = useState<NutritionBasisType>(NutritionBasis.Per100g);
 

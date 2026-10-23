@@ -4,7 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, fontWeights, iconSizes, decorSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 interface ForgotPasswordSuccessViewProps {
@@ -14,6 +14,7 @@ interface ForgotPasswordSuccessViewProps {
 }
 
 export const ForgotPasswordSuccessView = ({ email, onBack, onTryDifferent }: ForgotPasswordSuccessViewProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   return (
     <>
@@ -22,11 +23,11 @@ export const ForgotPasswordSuccessView = ({ email, onBack, onTryDifferent }: For
       </View>
 
       <ThemedText variant="subtitle" style={styles.cardTitle}>
-        {t().forgotPassword.sentTitle}
+        {t.forgotPassword.sentTitle}
       </ThemedText>
 
       <ThemedText variant="body" muted style={styles.cardSubtitle}>
-        {t().forgotPassword.sentBody}{CharConstants.space}
+        {t.forgotPassword.sentBody}{CharConstants.space}
         <ThemedText variant="body" style={{ fontWeight: fontWeights.bold }}>
           {email}
         </ThemedText>
@@ -34,7 +35,7 @@ export const ForgotPasswordSuccessView = ({ email, onBack, onTryDifferent }: For
 
       <View style={styles.buttonRow}>
         <PrimaryButton
-          label={t().forgotPassword.backToLogin}
+          label={t.forgotPassword.backToLogin}
           onPress={onBack}
         />
       </View>
@@ -43,10 +44,10 @@ export const ForgotPasswordSuccessView = ({ email, onBack, onTryDifferent }: For
         onPress={onTryDifferent}
         style={styles.textLink}
         accessibilityRole="button"
-        accessibilityLabel={t().forgotPassword.tryDifferent}
+        accessibilityLabel={t.forgotPassword.tryDifferent}
       >
         <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: fontWeights.semibold }}>
-          {t().forgotPassword.tryDifferent}
+          {t.forgotPassword.tryDifferent}
         </ThemedText>
       </Pressable>
     </>

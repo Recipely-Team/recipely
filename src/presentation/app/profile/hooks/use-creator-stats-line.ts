@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { ValueConstants } from '@core/constants';
 import { StatsRange } from '@domain/instagram/stats/stats-range';
 import { funnelRate } from '@domain/instagram/stats/funnel-rate';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 /**
  * The profile's Creator stats line: "Last 30 days · 36 DMs · 50% opened",
@@ -13,9 +14,10 @@ import { t, useLocale } from '@presentation/i18n';
  * null — no row — until the answer shows at least one automation.
  */
 export const useCreatorStatsLine = (): string | null => {
+  const t = useTranslations();
   const { creatorStatsStore } = useStores();
   const locale = useLocale();
-  const state = creatorStatsStore((s) => s.byRange[StatsRange.Month]);
+  const state = useStore(creatorStatsStore, (s) => s.byRange[StatsRange.Month]);
 
   useEffect(() => {
     void creatorStatsStore.getState().load(StatsRange.Month);
@@ -23,7 +25,7 @@ export const useCreatorStatsLine = (): string | null => {
 
   if (state?.status !== StoreStatus.Loaded || state.stats.posts.length === ValueConstants.zero) return null;
   const { sent, opened } = state.stats.totals;
-  return t()
+  return t
     .creatorStats.profileSub.replace('{s}', formatWholeNumber(sent, locale))
     .replace('{p}', `${funnelRate(opened, sent)}%`);
 };

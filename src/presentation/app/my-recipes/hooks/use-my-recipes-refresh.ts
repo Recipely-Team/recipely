@@ -38,25 +38,23 @@ export const useMyRecipesRefresh = (tab: TabType): UseMyRecipesRefreshResult => 
 
   const onRefresh = useCallback((): void => {
     setIsRefreshing(true);
-    void (async () => {
-      try {
-        if (tab === TabType.Saved) {
-          await refreshSaved();
-        } else if (tab === TabType.Liked) {
-          await refreshLiked();
-        } else if (tab === TabType.Created) {
-          const failure = await myRecipesStore.getState().loadMine();
-          if (failure !== null) showErrorToast(failure);
-        } else {
-          const failure = await draftsStore.getState().loadDrafts();
-          if (failure !== null) showErrorToast(failure);
-        }
-      } catch {
-        // Loads fold failures into state; swallow an unexpected throw anyway.
-      } finally {
-        setIsRefreshing(false);
+    const refreshTab = async (): Promise<void> => {
+      if (tab === TabType.Saved) {
+        await refreshSaved();
+      } else if (tab === TabType.Liked) {
+        await refreshLiked();
+      } else if (tab === TabType.Created) {
+        const failure = await myRecipesStore.getState().loadMine();
+        if (failure !== null) showErrorToast(failure);
+      } else {
+        const failure = await draftsStore.getState().loadDrafts();
+        if (failure !== null) showErrorToast(failure);
       }
-    })();
+    };
+    // Loads fold failures into state; swallow an unexpected throw anyway, and always stop the spinner.
+    void refreshTab()
+      .catch(() => undefined)
+      .finally(() => setIsRefreshing(false));
   }, [tab, refreshSaved, refreshLiked, myRecipesStore, draftsStore]);
 
   return { isRefreshing, onRefresh };

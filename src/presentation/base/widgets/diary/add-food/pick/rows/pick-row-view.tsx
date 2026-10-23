@@ -1,3 +1,4 @@
+import type { TranslationsType } from '@presentation/i18n';
 import { memo } from 'react';
 import { CharConstants, ValueConstants } from '@core/constants';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
@@ -14,7 +15,7 @@ import { productThumbIcon } from '@presentation/base/widgets/diary/product-thumb
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { formatPerHundred } from '@presentation/base/utils/diary/units/format-per-hundred';
 import { formatFoodPortion } from '@presentation/base/utils/diary/units/format-food-portion';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 
 export interface PickRowViewProps {
   row: PickRowEntryType;
@@ -27,9 +28,9 @@ export interface PickRowViewProps {
 const join = (parts: readonly (string | null)[]): string => parts.filter((part) => part !== null).join(CharConstants.middotSpaced);
 
 /** "3 variants · 38 kcal / 100 ml" for a curated row; "Ülker · 36 g · 530 kcal / 100 g" for a branded pack. */
-const productMeta = (product: FoodProduct, locale: string): string => {
-  const strings = t().diary;
-  const per100 = formatPerHundred(product.per100, product.unit, locale);
+const productMeta = (t: TranslationsType, product: FoodProduct, locale: string): string => {
+  const strings = t.diary;
+  const per100 = formatPerHundred(t, product.per100, product.unit, locale);
   if (product.isBranded) return join([product.brand, product.packSize, per100]);
   const variants =
     product.variantCount > ValueConstants.one ? strings.variantsOther.replace('{n}', formatWholeNumber(product.variantCount, locale)) : null;
@@ -38,8 +39,9 @@ const productMeta = (product: FoodProduct, locale: string): string => {
 
 /** One row of the pick step's list, drawn by its type. */
 const PickRowViewComponent = ({ row, onPickRecipe, onPickProduct, onPickRecent, onRetryMore }: PickRowViewProps): React.JSX.Element => {
+  const t = useTranslations();
   const locale = useLocale();
-  const strings = t().diary;
+  const strings = t.diary;
   const perServing = (kcal: number): string => strings.perServingMeta.replace('{k}', formatWholeNumber(kcal, locale));
   switch (row.type) {
     case PickRowType.Heading:
@@ -63,7 +65,7 @@ const PickRowViewComponent = ({ row, onPickRecipe, onPickProduct, onPickRecent, 
         <FoodPickRow
           name={row.product.displayName}
           tag={null}
-          meta={productMeta(row.product, locale)}
+          meta={productMeta(t, row.product, locale)}
           sourceNote={row.product.isBranded ? strings.sourceOff : null}
           imageUrl={row.product.imageUrl}
           icon={productThumbIcon(row.product.kind, row.product.isBranded)}
@@ -90,7 +92,7 @@ const PickRowViewComponent = ({ row, onPickRecipe, onPickProduct, onPickRecent, 
         <FoodPickRow
           name={recent.product.name}
           tag={null}
-          meta={join([formatFoodPortion(recent.quantity.unit, recent.quantity.value, recent.product.baseUnit, locale), `${formatWholeNumber(kcal, locale)} ${t().nutrition.kcal}`])}
+          meta={join([formatFoodPortion(t, recent.quantity.unit, recent.quantity.value, recent.product.baseUnit, locale), `${formatWholeNumber(kcal, locale)} ${t.nutrition.kcal}`])}
           sourceNote={null}
           imageUrl={null}
           icon={productThumbIcon(recent.product.kind, recent.product.isBranded)}

@@ -4,7 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
 import { isWeb } from '@infrastructure/constants/platform';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface PhotoDropZoneProps {
   onPress: () => void;
@@ -17,27 +17,28 @@ export interface PhotoDropZoneProps {
  * button inside a button is invalid on the web, and both would do the same.
  */
 export const PhotoDropZone = ({ onPress }: PhotoDropZoneProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
 
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={t().mediaPicker.add}
+      accessibilityLabel={t.mediaPicker.add}
       style={[styles.zone, { backgroundColor: colors.surface, borderColor: colors.inputBorder }]}
     >
       <View style={[styles.badge, { backgroundColor: colors.primaryLight }]}>
         <Ionicons name="camera" size={iconSizes.xxl} color={colors.primary} />
       </View>
       <ThemedText variant="body" style={styles.title}>
-        {t().mediaPicker.photos}
+        {t.mediaPicker.photos}
       </ThemedText>
       <ThemedText variant="caption" muted style={styles.hint}>
-        {isWeb() ? t().mediaPicker.hint : t().mediaPicker.hintWithCamera}
+        {isWeb() ? t.mediaPicker.hint : t.mediaPicker.hintWithCamera}
       </ThemedText>
       <View style={[styles.outline, { borderColor: colors.primary }]}>
         <Ionicons name="image" size={iconSizes.sm} color={colors.primary} />
-        <ThemedText style={[styles.outlineText, { color: colors.primary }]}>{t().mediaPicker.add}</ThemedText>
+        <ThemedText style={[styles.outlineText, { color: colors.primary }]}>{t.mediaPicker.add}</ThemedText>
       </View>
     </Pressable>
   );

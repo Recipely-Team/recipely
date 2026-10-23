@@ -3,7 +3,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { borderWidths, controlSizes, fontSizes, fontWeights, lineHeights, shadows, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { useLocale, useTranslations } from '@presentation/i18n';
 import { NutritionBasis, type NutritionBasisType } from '@domain/recipes/nutrition/nutrition-basis';
 import { formatNutritionNumber } from '@presentation/app/recipes/[recipeId]/model/nutrition/format-nutrition-number';
 import { nutritionPanelSizes } from '@presentation/app/recipes/[recipeId]/model/nutrition/nutrition-panel-sizes';
@@ -26,8 +26,9 @@ export interface NutritionBasisSwitchProps {
  *   translation wraps inside its own pill instead of squeezing the other.
  */
 export const NutritionBasisSwitch = ({ weightGrams, basis, onChange }: NutritionBasisSwitchProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const strings = t().nutrition;
+  const strings = t.nutrition;
   const locale = useLocale();
   const lineHeight = useTextLineHeight(fontSizes.caption, lineHeights.snug);
 

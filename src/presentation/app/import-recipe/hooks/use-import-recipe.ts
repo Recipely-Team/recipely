@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useStore } from 'zustand';
 import { type Href, useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
@@ -16,7 +17,7 @@ import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { showWarningToast } from '@presentation/base/feedback/show-toast';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { ensurePushRegistration } from '@application/notifications/ensure-push-registration';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ImportTrail } from '@presentation/base/errors/import-trail';
 
 /** How often the screen asks the backend where the job has got to. */
@@ -86,10 +87,11 @@ interface UseImportRecipeResult {
  *   child already has a parent") — the Android "Open draft" crash of v1.7.0.
  */
 export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeResult => {
+  const t = useTranslations();
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
   const { importJobStore } = useStores();
-  const state = importJobStore((s) => s.state);
+  const state = useStore(importJobStore, (s) => s.state);
   const [ticks, setTicks] = useState(ValueConstants.zero);
   // The link this screen is working on: the shared one, or the pasted one.
   const [pastedUrl, setPastedUrl] = useState<string | null>(null);
@@ -159,11 +161,11 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
       .then((granted) => {
         // Re-register push now that permission exists.
         if (granted) ensurePushRegistration();
-        else showWarningToast(t().importRecipe.notifyBlocked);
+        else showWarningToast(t.importRecipe.notifyBlocked);
       })
-      .catch(() => showWarningToast(t().importRecipe.notifyBlocked))
+      .catch(() => showWarningToast(t.importRecipe.notifyBlocked))
       .finally(onClose);
-  }, [onClose]);
+  }, [onClose, t]);
 
   const onOpenDraft = useCallback((): void => {
     FailureReporter.trail(ImportTrail.openDraftTapped);

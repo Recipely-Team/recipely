@@ -7,7 +7,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, layoutSizes, borderWidths, zIndices } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { sortKeyLabels } from '@presentation/app/recipes/model/sorting/recipe-sort';
 import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import { ValueConstants } from '@core/constants';
@@ -29,8 +29,9 @@ export interface WebSortMenuProps {
  * `onChange`, which the parent uses to apply the sort and reload.
  */
 export const WebSortMenu = ({ current, onChange }: WebSortMenuProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const labels = sortKeyLabels();
+  const labels = sortKeyLabels(t);
   const [open, setOpen] = useState(false);
 
   // Web only: close on outside press and Escape.
@@ -64,12 +65,12 @@ export const WebSortMenu = ({ current, onChange }: WebSortMenuProps): React.JSX.
         onPress={() => setOpen((v) => !v)}
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
-        accessibilityLabel={t().recipes.sortBy}
+        accessibilityLabel={t.recipes.sortBy}
         style={[styles.button, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
       >
         <Ionicons name="swap-vertical" size={iconSizes.md} color={colors.textMuted} />
         <ThemedText style={[styles.muted, { color: colors.textMuted }]}>
-          {t().recipes.sortBy}:
+          {t.recipes.sortBy}:
         </ThemedText>
         <ThemedText style={[styles.value, { color: colors.text }]}>
           {labels[current]}

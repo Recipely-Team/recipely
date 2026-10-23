@@ -10,6 +10,29 @@ import { PhotoPickFeedback } from '@presentation/base/feedback/photo-pick-feedba
 const FRIDGE_FILE_PREFIX = 'fridge';
 const CAMERA_OPTIONS: ImagePicker.ImagePickerOptions = { mediaTypes: 'images' };
 
+/** Camera or library, shrunk and named for upload; a throw is reported and picks nothing. */
+const pickFridgePhotos = async (source: PickSource, room: number): Promise<FridgePhoto[]> => {
+  try {
+    const camera = source === PickSource.Camera;
+    const permission = camera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      PhotoPickFeedback.permissionDenied();
+      return [];
+    }
+    const result = camera
+      ? await ImagePicker.launchCameraAsync(CAMERA_OPTIONS)
+      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', allowsMultipleSelection: room > ValueConstants.one, orderedSelection: true, selectionLimit: room });
+    if (result.canceled) return [];
+    const stamp = String(Date.now());
+    const picked = result.assets.slice(ValueConstants.zero, room);
+    const uris = await Promise.all(picked.map((asset) => shrinkForUpload({ uri: asset.uri, width: asset.width, height: asset.height })));
+    return uris.map((uri, index) => ({ uri, ...uploadFileMeta(uri, FRIDGE_FILE_PREFIX, `${stamp}-${index}`) }));
+  } catch {
+    PhotoPickFeedback.failed();
+    return [];
+  }
+};
+
 /**
  * Camera or library → shrunk local photos for the fridge scan, at most `room`.
  *
@@ -28,26 +51,8 @@ export const useFridgePhotoPick = (): ((source: PickSource, room: number) => Pro
   return useCallback(async (source: PickSource, room: number): Promise<FridgePhoto[]> => {
     if (busy.current || room <= ValueConstants.zero) return [];
     busy.current = true;
-    try {
-      const camera = source === PickSource.Camera;
-      const permission = camera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        PhotoPickFeedback.permissionDenied();
-        return [];
-      }
-      const result = camera
-        ? await ImagePicker.launchCameraAsync(CAMERA_OPTIONS)
-        : await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', allowsMultipleSelection: room > ValueConstants.one, orderedSelection: true, selectionLimit: room });
-      if (result.canceled) return [];
-      const stamp = String(Date.now());
-      const picked = result.assets.slice(ValueConstants.zero, room);
-      const uris = await Promise.all(picked.map((asset) => shrinkForUpload({ uri: asset.uri, width: asset.width, height: asset.height })));
-      return uris.map((uri, index) => ({ uri, ...uploadFileMeta(uri, FRIDGE_FILE_PREFIX, `${stamp}-${index}`) }));
-    } catch {
-      PhotoPickFeedback.failed();
-      return [];
-    } finally {
+    return pickFridgePhotos(source, room).finally(() => {
       busy.current = false;
-    }
+    });
   }, []);
 };

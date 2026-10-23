@@ -61,7 +61,7 @@ export class CreatorClaims extends BaseValueObject<readonly CreatorClaim[]> {
   }
 
   /** The approved accounts, Instagram first. */
-  get approvedTags(): readonly CreatorTag[] {
+  approvedTags(): readonly CreatorTag[] {
     return this._value.filter((claim) => claim.isApproved).map((claim) => claim.tag);
   }
 

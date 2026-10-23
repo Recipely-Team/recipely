@@ -9,7 +9,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { BrandColors, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 
 export interface PostTileProps {
   media: InstagramMedia;
@@ -29,6 +29,7 @@ export interface PostTileProps {
  *   with a null `thumbnailUrl` was an invisible cell and the grid looked empty.
  */
 const PostTileComponent = ({ media, selected, hasRule, onPress }: PostTileProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const isReel = media.mediaType === InstagramMediaType.Video;
   const placeholderIcon = isReel ? 'videocam-outline' : media.mediaType === InstagramMediaType.Carousel ? 'albums-outline' : 'image-outline';
@@ -37,7 +38,7 @@ const PostTileComponent = ({ media, selected, hasRule, onPress }: PostTileProps)
       onPress={() => onPress(media)}
       accessibilityRole="radio"
       accessibilityState={{ checked: selected }}
-      accessibilityLabel={media.caption ?? (isReel ? t().instagram.reel : t().instagram.stepPost)}
+      accessibilityLabel={media.caption ?? (isReel ? t.instagram.reel : t.instagram.stepPost)}
       style={[styles.tile, { backgroundColor: colors.chipBackground }]}
     >
       {media.thumbnailUrl === null ? (
@@ -59,7 +60,7 @@ const PostTileComponent = ({ media, selected, hasRule, onPress }: PostTileProps)
       {hasRule ? (
         <View style={[styles.tag, { backgroundColor: colors.chipBackground }]}>
           <SizedText size={fontSizes.tiny} weight={fontWeights.bold} color={colors.chipText} numberOfLines={ValueConstants.one}>
-            {t().instagram.hasRule}
+            {t.instagram.hasRule}
           </SizedText>
         </View>
       ) : null}

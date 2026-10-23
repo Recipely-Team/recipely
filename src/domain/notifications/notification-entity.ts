@@ -92,7 +92,7 @@ export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
    * route yet — so it has no destination and this returns `null`. A creator
    * decision opens the user's own creator account settings.
    */
-  get target(): NotificationTargetType | null {
+  target(): NotificationTargetType | null {
     const creatorPlatform = this.props.creatorPlatform ?? null;
     if (creatorPlatform !== null) {
       return { kind: NotificationTargetKind.CreatorAccount, platform: creatorPlatform };
@@ -117,7 +117,7 @@ export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
    * told the user their recipe was ready and then went nowhere when tapped.
    */
   get isFailedImport(): boolean {
-    return this.props.type === ImportNotificationType.Done && this.target === null;
+    return this.props.type === ImportNotificationType.Done && this.target() === null;
   }
 
   /**

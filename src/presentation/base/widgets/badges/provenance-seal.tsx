@@ -1,3 +1,4 @@
+import { useTranslations } from '@presentation/i18n';
 import { Fragment } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
@@ -45,13 +46,14 @@ export interface ProvenanceSealProps {
  *   only place the fact lives.
  */
 export const ProvenanceSeal = ({ marks, surface, size, label: override, decorative = false }: ProvenanceSealProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   if (marks.length === ValueConstants.zero) return null;
 
   const onPhoto = surface === SealSurface.Photo;
   const glyph = Math.round(size * (onPhoto ? m.glyphShareOnPhoto : m.glyphShareOnPage));
   const pair = marks.length > ValueConstants.one;
-  const label = override ?? provenanceLabel(marks);
+  const label = override ?? provenanceLabel(t, marks);
 
   const face = (
     <View

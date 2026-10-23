@@ -8,7 +8,7 @@ import { NotificationsBellButton } from '@presentation/base/widgets/navigation/n
 import { SearchBar } from '@presentation/app/recipes/items/filters/search-bar';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, iconSizes, layoutSizes, zIndices } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { HomeHeaderAnimation } from '@presentation/app/recipes/model/home-header-animation';
 
@@ -51,6 +51,7 @@ export const CollapsingHomeHeader = ({
   searchValue,
   onSearchChange,
 }: CollapsingHomeHeaderProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
 
@@ -90,7 +91,7 @@ export const CollapsingHomeHeader = ({
   return (
     <Animated.View style={[styles.band, bandStyle, { top: insets.top, backgroundColor: colors.background }]}>
       <TabAppBar
-        title={t().recipes.title}
+        title={t.recipes.title}
         titleStyle={titleStyle}
         leading={
           <Animated.View style={eyebrowStyle}>
@@ -106,7 +107,7 @@ export const CollapsingHomeHeader = ({
       />
 
       <Animated.View style={[styles.searchWrapper, searchStyle]}>
-        <SearchBar value={searchValue} onChangeText={onSearchChange} placeholder={t().recipes.searchPlaceholder} />
+        <SearchBar value={searchValue} onChangeText={onSearchChange} placeholder={t.recipes.searchPlaceholder} />
       </Animated.View>
     </Animated.View>
   );

@@ -7,7 +7,7 @@ import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
 import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provenance-seal-metrics';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface FileImportEntryCardProps {
@@ -25,8 +25,9 @@ const AI_MARK = [ProvenanceMark.Ai] as const;
  *   the model's reading of the pages rather than something fetched.
  */
 export const FileImportEntryCard = ({ onPress }: FileImportEntryCardProps): React.JSX.Element => {
+  const t = useTranslations();
   const colors = useTheme().colors;
-  const copy = t().fileImport;
+  const copy = t.fileImport;
 
   return (
     <Pressable

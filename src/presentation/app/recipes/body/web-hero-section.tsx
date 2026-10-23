@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
 import { StyleSheet, View } from 'react-native';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
@@ -47,8 +48,8 @@ export const WebHeroSection = ({
   onToggleSave,
 }: WebHeroSectionProps): React.JSX.Element | null => {
   const { trendingRecipesStore } = useStores();
-  const state = trendingRecipesStore((s) => s.state);
-  const load = trendingRecipesStore((s) => s.load);
+  const state = useStore(trendingRecipesStore, (s) => s.state);
+  const load = useStore(trendingRecipesStore, (s) => s.load);
   const { width } = useLayout();
   const language = useLocale();
 

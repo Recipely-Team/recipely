@@ -5,7 +5,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { controlSizes, fontSizes, lineHeights, opacities } from '@presentation/base/theme';
 import { photoViewerSizes } from '@presentation/app/recipes/[recipeId]/model/photos/photo-viewer-sizes';
-import { t } from '@presentation/i18n';
+import { useTranslations } from '@presentation/i18n';
 import { CharConstants } from '@core/constants';
 
 const AUTHOR_SLOT = '{author}';
@@ -29,12 +29,13 @@ export interface PhotoCreditLineProps {
  * - **`textSubtle`, not `textMuted`**, which misses 4.5:1 in most palettes.
  */
 export const PhotoCreditLine = ({ credit, framed = false, style }: PhotoCreditLineProps): React.JSX.Element | null => {
+  const t = useTranslations();
   const colors = useTheme().colors;
   const lineHeight = useTextLineHeight(fontSizes.small, lineHeights.snug);
   if (credit === null) return null;
 
-  const [before = CharConstants.empty, after = CharConstants.empty] = t().recipes.photoCredit.replace(LICENSE_SLOT, credit.license).split(AUTHOR_SLOT);
-  const label = t().recipes.photoCreditA11y.replace(AUTHOR_SLOT, credit.author).replace(LICENSE_SLOT, credit.license);
+  const [before = CharConstants.empty, after = CharConstants.empty] = t.recipes.photoCredit.replace(LICENSE_SLOT, credit.license).split(AUTHOR_SLOT);
+  const label = t.recipes.photoCreditA11y.replace(AUTHOR_SLOT, credit.author).replace(LICENSE_SLOT, credit.license);
 
   return (
     <Pressable

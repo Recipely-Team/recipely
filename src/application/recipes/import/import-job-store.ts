@@ -1,6 +1,6 @@
-import type { BoundStore } from '@application/store/bound-store';
+import type { StoreApi } from 'zustand/vanilla';
 import { StoreStatus } from '@application/store/store-status';
-import { create } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import { isImportJobPending } from '@domain/recipes/import/is-import-job-pending';
 import { ValueConstants } from '@core/constants';
 import type { EnqueueInstagramImportUseCase } from '@application/recipes/import/enqueue-instagram-import-use-case';
@@ -23,7 +23,7 @@ interface ImportJobStoreDeps {
  *   there is a job that is still queued or running, so the screen's interval
  *   can keep firing harmlessly until it is torn down.
  */
-export const configureImportJobStore = (deps: ImportJobStoreDeps): BoundStore<ImportJobStore> => {
+export const configureImportJobStore = (deps: ImportJobStoreDeps): StoreApi<ImportJobStore> => {
   /** Bumped by `clear()`, so an answer from a previous import cannot land in the next one. */
   let session = ValueConstants.zero;
   /**
@@ -33,7 +33,7 @@ export const configureImportJobStore = (deps: ImportJobStoreDeps): BoundStore<Im
    */
   let isPolling = false;
 
-  return create<ImportJobStore>((set, get) => ({
+  return createStore<ImportJobStore>((set, get) => ({
     state: { status: StoreStatus.Idle },
     startImport: async (url) => {
       const requested = session;
