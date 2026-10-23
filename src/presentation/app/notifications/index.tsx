@@ -28,7 +28,7 @@ import { upperCase } from '@presentation/i18n/upper-case';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifRow } from '@presentation/app/notifications/items/notif-row';
 import { ValueConstants } from '@core/constants';
-import { toNotifItem } from '@presentation/app/notifications/model/to-notif-item';
+import { useNotifItems } from '@presentation/app/notifications/hooks/use-notif-items';
 import { NotificationsHeader } from '@presentation/app/notifications/body/notifications-header';
 import { NotificationFilterPills } from '@presentation/app/notifications/body/notification-filter-pills';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
@@ -72,10 +72,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const items: NotifItem[] = useMemo(() => {
-    if (state.status !== StoreStatus.Loaded) return [];
-    return state.items.map(toNotifItem);
-  }, [state]);
+  const items = useNotifItems(state);
 
   const locale = useLocale();
   // Section titles are translated: a language switch rebuilds them.
