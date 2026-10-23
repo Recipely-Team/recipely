@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -42,7 +43,7 @@ export interface RecipeOverviewProps {
  * Recipe header block for the mobile detail screen: title, cuisine/rating caption,
  * like/view/comment stats, author card, meta card, nutrition, and tags.
  */
-export const RecipeOverview = ({
+const RecipeOverviewComponent = ({
   recipe,
   recipeId,
   liked,
@@ -185,6 +186,9 @@ export const RecipeOverview = ({
     </>
   );
 };
+
+/** Memoised: the recipe page re-renders on a like, a save or a step tick, and this section's props do not change with them. */
+export const RecipeOverview = memo(RecipeOverviewComponent);
 
 const styles = StyleSheet.create({
   provenance: { marginTop: spacing.sm2 },

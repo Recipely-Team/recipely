@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Dimensions, StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { PhotoPager } from '@presentation/app/recipes/[recipeId]/items/media/photo-pager';
 import { PhotoArrows } from '@presentation/app/recipes/[recipeId]/items/media/photo-arrows';
@@ -48,7 +48,7 @@ export interface RecipePhotoViewerProps {
  * - **The frame takes focus only with something to step through**, and ← / →
  *   then move one photo.
  */
-export const RecipePhotoViewer = ({
+const RecipePhotoViewerComponent = ({
   media,
   variant,
   owner,
@@ -128,6 +128,9 @@ export const RecipePhotoViewer = ({
     </View>
   );
 };
+
+/** Memoised: the recipe page re-renders on a like, a save or a step tick, and this section's props do not change with them. */
+export const RecipePhotoViewer = memo(RecipePhotoViewerComponent);
 
 const styles = StyleSheet.create({
   frame: {

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import { COMMENT_MAX_LENGTH } from '@presentation/app/recipes/[recipeId]/model/comments/comment-limits';
@@ -31,7 +32,7 @@ export interface RecipeCommentsSectionProps {
  * The composer's text is its own (`useCommentDraft`): typing re-renders this
  * block, not the detail screen.
  */
-export const RecipeCommentsSection = ({
+const RecipeCommentsSectionComponent = ({
   commentState,
   userId,
   submitError,
@@ -144,6 +145,9 @@ export const RecipeCommentsSection = ({
     </>
   );
 };
+
+/** Memoised: the recipe page re-renders on a like, a save or a step tick, and this section's props do not change with them. */
+export const RecipeCommentsSection = memo(RecipeCommentsSectionComponent);
 
 const styles = StyleSheet.create({
   commentsLoader: {

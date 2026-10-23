@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isString } from '@core/guards/type-guards';
 import { StoreStatus } from '@application/store/store-status';
 import { ScrollView } from 'react-native';
@@ -187,6 +187,26 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     if (!result.ok) showErrorToast(result.failure);
   }, [userId, recipeId, commentsStore]);
 
+  // Stable, so the memoised sections they are handed skip a page re-render.
+  const onToggleLike = useCallback(
+    () => requestGate(() => void handleToggleLike(), t().recipes.signInToLike),
+    [requestGate, handleToggleLike],
+  );
+  const onAddComment = useCallback(
+    (text: string, onPosted: () => void) =>
+      requestGate(() => void handleAddComment(text).then((ok) => ok && onPosted()), t().comments.signInToComment),
+    [requestGate, handleAddComment],
+  );
+  const onLoadMoreComments = useCallback(
+    () => void commentsStore.getState().loadMore(recipeId),
+    [commentsStore, recipeId],
+  );
+  const onToggleCommentLike = useCallback(
+    (id: string) => requestGate(() => void handleToggleCommentLike(id), t().comments.signInToLikeComment),
+    [requestGate, handleToggleCommentLike],
+  );
+  const onOpenDelete = useCallback(() => setShowDeleteSheet(true), []);
+
   const [checkedIngredients, setCheckedIngredients] = useState<boolean[]>([]);
   // Shared with cook mode, so a step ticked there reads as done here.
   const completedSteps = stepProgressStore((s) => s.byRecipe[recipeId]) ?? NO_STEPS_DONE;
@@ -257,7 +277,8 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const failure: Failure | undefined = current.status === StoreStatus.Error ? current.failure : undefined;
 
   const recipe = current.status === StoreStatus.Loaded ? current.recipe : null;
-  const media: readonly MediaItem[] = recipe?.heroPhotos ?? [];
+  // heroPhotos builds a new array on every read; one per recipe keeps the photo viewer memoised.
+  const media: readonly MediaItem[] = useMemo(() => recipe?.heroPhotos ?? [], [recipe]);
   const firstImageUrl = media[ValueConstants.zero]?.url ?? CharConstants.empty;
   const cuisineName = recipe !== null ? cuisineLabel(recipe.cuisine).name : CharConstants.empty;
   const liked = likeState?.likedByMe ?? (current.status === StoreStatus.Loaded && current.likedByMe);
@@ -295,10 +316,9 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     completedSteps,
     onToggleIngredient,
     onToggleStep,
-    onToggleLike: () => requestGate(() => void handleToggleLike(), t().recipes.signInToLike),
+    onToggleLike,
     onToggleSave: () => requestGate(() => void handleToggleSave(), t().recipes.signInToSave),
-    onAddComment: (text: string, onPosted: () => void) =>
-      requestGate(() => void handleAddComment(text).then((ok) => ok && onPosted()), t().comments.signInToComment),
+    onAddComment,
     /** Posts text the caller already has — the assistant's path. */
     onPostComment: (text: string) =>
       requestGate(() => void handleAddComment(text), t().comments.signInToComment),
@@ -318,9 +338,8 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
         () => router.push(RoutePaths.createRecipeFromRecipe(recipeId) as Href),
         t().recipes.signInToCopy,
       ),
-    onLoadMoreComments: () => void commentsStore.getState().loadMore(recipeId),
-    onToggleCommentLike: (id: string) =>
-      requestGate(() => void handleToggleCommentLike(id), t().comments.signInToLikeComment),
+    onLoadMoreComments,
+    onToggleCommentLike,
     onDeleteComment: commentRemoval.request,
     commentDeletePending: commentRemoval.pendingId !== null,
     onConfirmDeleteComment: commentRemoval.confirm,
@@ -331,7 +350,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     showDeleteSheet,
     deleteError,
     isDeleting,
-    onOpenDelete: () => setShowDeleteSheet(true),
+    onOpenDelete,
     onCloseDelete: () => { setShowDeleteSheet(false); setDeleteError(null); },
     onConfirmDelete: () => void onConfirmDelete(),
     promptVisible,

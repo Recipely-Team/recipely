@@ -45,20 +45,24 @@ export const usePortionScaling = (recipe: RecipeEntity | null): PortionScaling =
     return IngredientList.of(recipe?.ingredients ?? []).present(factor, system, decimalMark);
   }, [recipe?.ingredients, servings, base, system, decimalMark]);
 
-  const step = (next: (current: RecipeServings) => RecipeServings) => (): void => {
-    if (servings !== null && recipeId !== null) setServings(recipeId, next(servings).value);
-  };
+  const fallbackServings = recipe?.servings ?? ValueConstants.zero;
 
-  return {
-    servings: servings?.value ?? recipe?.servings ?? ValueConstants.zero,
-    canIncrement: servings?.canIncrement ?? false,
-    canDecrement: servings?.canDecrement ?? false,
-    onIncrement: step((current) => current.increment()),
-    onDecrement: step((current) => current.decrement()),
-    unitSystem: system,
-    onChangeUnitSystem: (next) => {
-      if (recipeId !== null) setUnitSystem(recipeId, next);
-    },
-    ingredients,
-  };
+  // One object per choice, so the memoised sections it feeds skip a page re-render.
+  return useMemo(() => {
+    const step = (next: (current: RecipeServings) => RecipeServings) => (): void => {
+      if (servings !== null && recipeId !== null) setServings(recipeId, next(servings).value);
+    };
+    return {
+      servings: servings?.value ?? fallbackServings,
+      canIncrement: servings?.canIncrement ?? false,
+      canDecrement: servings?.canDecrement ?? false,
+      onIncrement: step((current) => current.increment()),
+      onDecrement: step((current) => current.decrement()),
+      unitSystem: system,
+      onChangeUnitSystem: (next: UnitSystemType) => {
+        if (recipeId !== null) setUnitSystem(recipeId, next);
+      },
+      ingredients,
+    };
+  }, [servings, fallbackServings, recipeId, setServings, setUnitSystem, system, ingredients]);
 };

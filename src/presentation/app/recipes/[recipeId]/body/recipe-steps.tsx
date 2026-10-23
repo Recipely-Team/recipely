@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -32,7 +33,7 @@ export interface RecipeStepsProps {
  * Ingredients + instructions checklists for the mobile detail screen, plus the
  * owner-only edit/delete actions below them.
  */
-export const RecipeSteps = ({
+const RecipeStepsComponent = ({
   recipe,
   recipeId,
   isOwner,
@@ -126,6 +127,9 @@ export const RecipeSteps = ({
     </>
   );
 };
+
+/** Memoised: the recipe page re-renders on a like, a save or a step tick, and this section's props do not change with them. */
+export const RecipeSteps = memo(RecipeStepsComponent);
 
 const styles = StyleSheet.create({
   cardsList: {
