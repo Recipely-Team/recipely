@@ -17,9 +17,14 @@ import { FeatureAvailability } from '@application/config/feature-availability';
  *   (backend #392) reached production.
  * - `fridgeToRecipe`: Cook from my fridge (photo → ingredients → ideas → AI recipe). On since
  *   `/fridge/*` (backend #393) reached production.
+ * - `appAttestation`: Play Integrity / App Attest proofs on the costly routes
+ *   (`ATTESTED_ROUTES`). Off until the backend verifies them (`/attestation/*`,
+ *   recipely-backend docs/roadmap.md); then DevOnly, then On. iOS also needs the
+ *   App Attest capability on the App ID (docs/security.md §Attestation).
  */
 export const FeatureFlags = {
   instagramAutomations: FeatureAvailability.DevOnly,
   mealPlanner: FeatureAvailability.On,
   fridgeToRecipe: FeatureAvailability.On,
+  appAttestation: FeatureAvailability.Off,
 } as const;

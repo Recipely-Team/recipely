@@ -24,6 +24,9 @@ import { UserProfileRepository } from '@infrastructure/user-profile/user-profile
 import { FeedbackRepository } from '@infrastructure/feedback/feedback-repository';
 import { FeatureFlagRepository } from '@infrastructure/flags/feature-flag-repository';
 import { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
+import { FeatureFlagName } from '@application/config/feature-flag-name';
+import { AttestationRepository } from '@infrastructure/integrity/attestation-repository';
+import { createAppAttestor } from '@infrastructure/integrity/create-app-attestor';
 import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { FirstPageCache } from '@infrastructure/network/paging/first-page-cache';
@@ -115,6 +118,9 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
     // Read at call time: the repository is built after the client it renews for.
     refreshSession: () => authRepository.refreshSession(),
     requestIdProvider: randomUUID,
+    // Read at call time, like refreshSession: both are built over the client below.
+    attestationProvider: async (binding) =>
+      attestor !== null && (await featureFlags.isOn(FeatureFlagName.AppAttestation)) ? attestor.headersFor(binding) : null,
     onRequestFailed: logCrashBreadcrumb,
   };
   if (opts?.onUnauthorized) {
@@ -122,6 +128,8 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   }
   const http = new AxiosHttpClient(httpClientOptions);
   const authRepository = new AuthRepository(http, storage, deviceIdentity, isCookieSession);
+  const featureFlags = new FeatureFlagResolver(new FeatureFlagRepository(http), IS_DEV_BUILD);
+  const attestor = createAppAttestor(kvStore, new AttestationRepository(http));
 
   container.register(TOKENS.AuthRepository, () => authRepository);
   container.register(TOKENS.AccountRepository, () => new AccountRepository(http, storage));
@@ -144,8 +152,5 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.FeedbackRepository, () => new FeedbackRepository(http));
   container.register(TOKENS.AssistantTokenRepository, () => new AssistantTokenRepository(http));
   container.register(TOKENS.AssistantMessenger, () => new AssistantMessenger(http));
-  container.register(
-    TOKENS.FeatureFlagResolver,
-    () => new FeatureFlagResolver(new FeatureFlagRepository(http), IS_DEV_BUILD),
-  );
+  container.register(TOKENS.FeatureFlagResolver, () => featureFlags);
 };

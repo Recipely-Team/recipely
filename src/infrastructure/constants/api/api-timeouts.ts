@@ -34,3 +34,10 @@ export const READ_RETRY_DELAY_MS = 800;
  * the winner's reply has put the successor token in the cookie jar.
  */
 export const REFRESH_RACE_RETRY_MS = 1_000;
+
+/**
+ * The longest an attested request waits for its proof before going without one.
+ * The first proof on iOS registers a key (two API calls and Apple's attestation),
+ * so it can miss this once; the registration finishes in the background.
+ */
+export const ATTESTATION_TIMEOUT_MS = 3_000;

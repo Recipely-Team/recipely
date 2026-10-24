@@ -36,6 +36,12 @@ export interface AxiosHttpClientOptions {
   /** Mints the `X-Request-Id` of each request (a UUID); no header when absent. */
   requestIdProvider?: () => string;
   /**
+   * Proves an `ATTESTED_ROUTES` request comes from the genuine app: given the
+   * request's binding, answers its attestation headers, or `null` to send it
+   * without. Needs `requestIdProvider` — the binding includes the request id.
+   */
+  attestationProvider?: (binding: string) => Promise<Readonly<Record<string, string>> | null>;
+  /**
    * Told about every failed request, with its request id, so the line reaches
    * the crash log's breadcrumbs. Diagnostic only; never user copy.
    */

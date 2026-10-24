@@ -104,20 +104,75 @@ unset — nothing errors, the app simply encrypts every request with a key an
 attacker guesses in one try. It runs in both production distribution jobs, and
 is deliberately a no-op for `APP_VARIANT=development`.
 
+## Certificate pinning
+
+Release builds pin `api.recipely.net` to the four ISRG (Let's Encrypt) root
+keys — Android `<pin-set>`, iOS `NSPinnedDomains`, written by
+`plugins/withApiCertificatePinning.js` (#580). Pinning the roots, not the leaf,
+survives every renewal; moving the API to another CA needs a release with the
+new pin first, and `npm run verify:pins` checks the live chain. Android's pins
+expire on the plugin's `PIN_EXPIRATION` (fail open); move it with each release.
+`dev-api` is not pinned — Cloudflare rotates its CAs. As OWASP says above, this
+slows interception on a device someone else controls; it stops nothing on a
+device the attacker owns.
+
+## Attestation
+
+What answers "this request came from our genuine app on a genuine device":
+Play Integrity on Android, App Attest on iOS, via `@expo/app-integrity`.
+Code: `src/infrastructure/integrity/`. Behind the `appAttestation` flag, **Off**.
+
+**Which requests.** Only `ATTESTED_ROUTES` (`infrastructure/constants/api/attested-routes.ts`):
+sign-up, AI generation and refinement, imports, fridge scan and ideas, meal
+photo parsing, voice-assistant sessions. Play Integrity is metered per day and
+these are the routes that cost money or mint accounts.
+
+**The binding.** Every proof is over `METHOD path\nX-Request-Id` (`requestBinding`),
+where `path` is the route relative to `/api/v1` with no query string — Express's
+`req.path` inside the v1 router (`POST /recipes/generate`), not `originalUrl`.
+The backend rebuilds the string from the request it received, so a proof cannot
+be moved onto another call, and remembering accepted request ids stops a replay.
+
+**Headers.**
+
+| header | Android | iOS |
+|---|---|---|
+| `X-App-Attestation-Platform` | `android` | `ios` |
+| `X-App-Attestation` | Play Integrity token, `requestHash` = SHA-256 hex of the binding | App Attest assertion (base64), `clientDataHash` = SHA-256 of the binding |
+| `X-App-Attestation-Key` | — | the registered key id |
+
+**iOS key registration, once per install.** `GET /attestation/challenge` →
+`{ challenge }`; the app generates a Secure Enclave key, Apple attests it over
+SHA-256 of the challenge, and `POST /attestation/apple-key`
+`{ keyId, attestation, challenge }` registers it. The key id is stored only after
+the backend accepted it; an assertion failing with "invalid key" (restored backup,
+reinstall) forgets it and the next request registers a new one.
+
+**Assertion counters can arrive out of order** — two requests signed back to back
+race on the network. The backend keeps the highest counter seen and does not
+refuse a lower one; the request id is what stops replays.
+
+**Fail open on the client.** No proof (unsupported device, Play services
+missing, an outage, or slower than `ATTESTATION_TIMEOUT_MS`) means the request goes without the headers. The backend
+decides: log-only first, then refuse on the attested routes once the numbers
+say real users are not caught.
+
+**Before turning the flag on:**
+
+1. Backend verifies both platforms (recipely-backend `docs/roadmap.md`).
+2. Android: link the Google Cloud project in Play Console → App integrity, enable
+   the Play Integrity API, and set the repo variable `PLAY_INTEGRITY_PROJECT_NUMBER`
+   (read by the distribute jobs as `EXPO_PUBLIC_PLAY_INTEGRITY_PROJECT_NUMBER`).
+3. iOS: enable App Attest on the `net.recipely.app` App ID, regenerate the
+   provisioning profiles CI signs with, and add the
+   `com.apple.developer.devicecheck.appattest-environment` = `production`
+   entitlement to `app.json`. Adding the entitlement before the profile carries
+   it breaks iOS signing in CI.
+4. Flip `appAttestation` to DevOnly, verify against dev, then On.
+
 ## Open items
 
-- **Certificate pinning** is NOT implemented, deliberately. `api.recipely.net`
-  uses Let's Encrypt, which rotates the leaf roughly every 60 days: pinning it
-  breaks the app for every user on that cycle, pinning the intermediate breaks
-  when Let's Encrypt rotates one, and pinning the root ties the app to that CA
-  for good. Recovery from a bad pin needs a store release — days on iOS, with
-  the app unusable throughout. Against that, the attacker it stops is one who
-  can already disable the pin on a device they control. If it is ever done, the
-  safe shape is the root SPKI plus a backup pin plus a remote kill switch.
-- **Attestation** (Play Integrity / App Attest) is the real answer to "only my
-  app may call this" and is not built. It needs a Google Cloud service account
-  with the Play Integrity API enabled and an Apple App Attest key before the
-  client side is worth writing, and the verdict must be verified server-side —
-  never trusted from the client.
+- **Attestation** — the app half is built (below); the backend half, which is
+  the half that protects anything, is on recipely-backend's `docs/roadmap.md`.
 - **The AES envelope** still ships its key in the binary. See above: it adds
   nothing over TLS, and a key exchange would not change that.

@@ -19,6 +19,12 @@ export const HttpHeader = {
   recipelySession: 'X-Recipely-Session',
   /** One id per request, logged by the API too, so an app failure can be found in the server log. */
   requestId: 'X-Request-Id',
+  /** The Play Integrity token or the App Attest assertion for this request. */
+  appAttestation: 'X-App-Attestation',
+  /** Which attestation `X-App-Attestation` holds: `android` or `ios`. */
+  appAttestationPlatform: 'X-App-Attestation-Platform',
+  /** iOS only: the registered App Attest key the assertion was signed with. */
+  appAttestationKey: 'X-App-Attestation-Key',
 } as const;
 
 /** Header values this client sends. */

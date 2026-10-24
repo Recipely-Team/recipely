@@ -48,6 +48,12 @@ export const CRASH_SENTINEL_STORAGE_KEY = 'recipely.crash.sentinel.v1';
  * the same phone is recorded against the same device.
  */
 export const DEVICE_ID_STORAGE_KEY = 'recipely.device.id.v1';
+/**
+ * iOS: the id of this install's registered App Attest key. Names the install,
+ * not the session, so it survives sign-out; the key itself never leaves the
+ * Secure Enclave.
+ */
+export const APP_ATTEST_KEY_STORAGE_KEY = 'recipely.attestation.appleKey.v1';
 /** The last first page of the recipe feed, shown when the next load of the same query cannot reach the API. */
 export const FEED_FIRST_PAGE_STORAGE_KEY = 'recipely.feedFirstPage.v1';
 /** The signed-in user's last shopping-list first page, for opening it offline (in a shop with no signal). */
