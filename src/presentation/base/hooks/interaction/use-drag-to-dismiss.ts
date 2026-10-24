@@ -34,6 +34,7 @@ export const useDragToDismiss = (onClose: () => void, isVisible: boolean): UseDr
     Animated.timing(translateY, {
       toValue: ValueConstants.zero,
       duration: SNAP_BACK_DURATION_MS,
+      // JS driver: the PanResponder sets this value from JS mid-drag, which a native-driven value refuses.
       useNativeDriver: false,
     }).start();
   };

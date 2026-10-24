@@ -46,6 +46,9 @@ export const RecipeStep = ({ selected, onSelect, scrollable }: RecipeStepProps):
     <FlatList
       // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
       removeClippedSubviews={false}
+      initialNumToRender={ListConstants.initialRows}
+      maxToRenderPerBatch={ListConstants.rowsPerBatch}
+      windowSize={ListConstants.windowSize}
       {...scrollable}
       data={recipes.status === StoreStatus.Loaded ? recipes.items : []}
       keyExtractor={(hit) => hit.key}

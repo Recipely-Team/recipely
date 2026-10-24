@@ -199,7 +199,7 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
    search/sort). Ask each call site which one it means.
 6c. **Every list says `removeClippedSubviews={false}`** — the prop re-parents views behind Fabric and crashed the app,
    and `FlatList` turns it ON by default on Android, so leaving it out is not enough (v1.7.0). Bound mounted rows with
-   `windowSize` / `maxToRenderPerBatch` / `initialNumToRender`. `check:structure` rule R.
+   `windowSize` / `maxToRenderPerBatch` / `initialNumToRender` from `ListConstants`. `check:structure` rules R and AY.
 7. **Component props interface** — `ComponentNameProps`, exported, above the component in the same file.
 7b. **Booleans read as questions** — a boolean variable or parameter we name starts with a verb: `isLoading`, `hasMore`,
    `canSave`, `shouldReduceMotion`, `wasSent`, `doPasswordsMatch`. Props and fields keep the name of the API they mirror
@@ -244,7 +244,7 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
     `PROJECT-MAP.md`. `check:structure` rule J.
 16. **Structure gate** — `npm run check:structure` must be green before any commit/PR. It also runs `knip` (no unused files,
     exports or types in `src/`) and `assert-i18n-keys-used` (no translation key nothing reads). It enforces rules 1,
-    6b, 8, 14, 14c, 15, 15b, 18, 21, 22, 23, 23b, 23c, 25, 24 (rules AB, AC, AQ, AR, AS and others), 27 (rule AD) and the
+    6b, 8, 14, 14c, 15, 15b, 18, 21, 22, 23, 23b, 23c, 25, 24 (rules AB, AC, AQ, AR, AS and others), 27 (rule AD), 29 (rules AY, AZ, BA) and the
     vocabulary half of rule 5 (rule P); the full letter list heads `scripts/check-structure.mjs`. `KNOWN_DEBT`
     only shrinks; never add to it without user approval. New rules land here from rule 24.
 17. **Ports over direct infrastructure** — presentation/application reach infrastructure capabilities only
@@ -306,6 +306,11 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
     [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html),
     then write `src/presentation/design-spec.md`, then build and compare. A written spec is not a design; a
     dead or missing link means STOP and ask. `design-handoff` skill.
+29. **Performance is guarded by machines** — a `useStore` selector returns a stored value, never a new array,
+    object, Set or Map (derive in render; the compiler memoizes); every list bounds its rows from `ListConstants`;
+    `useNativeDriver: false` carries `// JS driver: <why>`; the web bundle stays under the budget in
+    `scripts/assert-bundle-size.mjs` (raising it is a stated decision); a performance fix ships a render-count
+    test (`*-renders.test.tsx`). `check:structure` rules AY, AZ, BA; `npm run build:web`.
 
 ### Pre-commit quality gate
 

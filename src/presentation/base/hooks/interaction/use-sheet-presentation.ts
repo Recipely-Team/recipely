@@ -66,6 +66,7 @@ export const useSheetPresentation = (
         toValue: ValueConstants.one,
         duration: SCRIM_ENTER_MS,
         easing: Easing.out(Easing.quad),
+        // JS driver: the scrim shares a frame with the JS-driven panel; mixing drivers in one view is refused.
         useNativeDriver: false,
       }).start();
       // Parked off-screen until its height is known (first open only).
@@ -74,6 +75,7 @@ export const useSheetPresentation = (
         toValue: ValueConstants.zero,
         duration: PANEL_ENTER_MS,
         easing: Easing.out(Easing.cubic),
+        // JS driver: the panel is Animated.add-ed to the JS-driven drag value; both must share a driver.
         useNativeDriver: false,
       }).start();
       return;
@@ -85,6 +87,7 @@ export const useSheetPresentation = (
       toValue: ValueConstants.one,
       duration: PANEL_EXIT_MS,
       easing: Easing.in(Easing.cubic),
+      // JS driver: the panel is Animated.add-ed to the JS-driven drag value; both must share a driver.
       useNativeDriver: false,
     });
     exit.start(({ finished }) => {

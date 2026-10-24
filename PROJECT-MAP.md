@@ -109,7 +109,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `meal-plan/` — dtos, read, write _(21)_
 - `network/` — envelope, errors, http, jwt, paging, upload _(29)_
 - `notifications/` — dtos _(13)_
-- `recipes/` — create, dtos, edit, import, import-file, list, media, publishing, refine, taxonomy _(33)_
+- `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(33)_
 - `shopping/` — dtos _(11)_
 - `storage/` _(7)_
 - `user-profile/` _(4)_

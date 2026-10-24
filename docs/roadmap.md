@@ -225,6 +225,25 @@ with live art, autoplay and a single Skip in place of "Explore" and "Don't show 
 
 **Open:** the fridge slide uses a drawn camera frame; swap in a real photo if one is made.
 
+## 16. Engineering backlog
+
+`idea` — work on how the app is built rather than what it does, left for later
+on purpose. Each line is what, why, and what decides it.
+
+| What | Why | Depends on / open |
+|---|---|---|
+| App Attest and Play Integrity instead of relying on the envelope | The envelope key ships in every app, so it detects tampering but cannot prove a request came from a real install. | Apple and Google console setup plus a server-side verifier; a product decision. |
+| Count voice time per user, not per credential | The backend caps one minted credential at the remaining budget, but a client that skips heartbeats and re-mints is never charged. | Charge or reserve seconds at mint, or charge the time between mints (backend). |
+| Restore web sessions on `*.web.app` and `localhost` | The refresh cookie is `SameSite=Strict`, so from those origins a reload sends no cookie and the session is not restored. | Decide whether those origins matter; if so, `Lax` or `None` per host (backend). |
+| Prune old refresh tokens | `refresh_tokens` gains a row on every renewal and nothing deletes expired or revoked rows. | A scheduled sweep (backend). |
+| A lost renewal reply on native signs the user out | If the reply to `/auth/refresh` is lost, the app keeps only the spent token, and the grace window refuses it. | Retry the renewal once with the same token inside the grace window, or accept and document it. |
+| Timer, alarm and onboarding stores into the DI container | They are device-scoped and work, but bypass the container. | Threading stores through plain modules such as `timer-controls.ts`. |
+| Remove the legacy session key | Old installs still migrate from it on first read. | A minimum supported app version first, so older installs are not signed out. |
+| Split the screens over 250 lines | They are under the 300-line block but hard to read; the gate lists them as a warning. | A visual check at every width for each split. |
+| Code-split the web bundle | The web app ships one 7.7 MB (1.9 MB gzip) JavaScript file; the budget in `assert-bundle-size.mjs` stops growth but does not shrink it. | Route-level lazy loading on web, and a check that prerendered pages still hydrate. |
+| Rename `HttpMediaType.cookieSession` | It is the value of a session-mode header, not a media type. | None; small. |
+| TanStack Query | Evaluated in October 2026 and not adopted: it fights the Result-not-throw model and made tests flaky, and the stores already cache, page and drop late answers. | Revisit only for a concrete need. |
+
 ## Adding to this file
 
 Keep the shape: **what**, **why**, **what it depends on**, **what is still
