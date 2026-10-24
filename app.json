@@ -13,6 +13,9 @@
       "associatedDomains": [
         "applinks:recipely.net"
       ],
+      "entitlements": {
+        "com.apple.developer.devicecheck.appattest-environment": "production"
+      },
       "infoPlist": {
         "INAlternativeAppNames": [
           {

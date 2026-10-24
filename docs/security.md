@@ -179,11 +179,13 @@ proof is logged, never refused, and the web app passes on its rate limits.
 2. Android: link the Google Cloud project in Play Console → App integrity, enable
    the Play Integrity API, and set the repo variable `PLAY_INTEGRITY_PROJECT_NUMBER`
    (read by the distribute jobs as `EXPO_PUBLIC_PLAY_INTEGRITY_PROJECT_NUMBER`).
-3. iOS: enable App Attest on the `net.recipely.app` App ID, regenerate the
-   provisioning profiles CI signs with, and add the
-   `com.apple.developer.devicecheck.appattest-environment` = `production`
-   entitlement to `app.json`. Adding the entitlement before the profile carries
-   it breaks iOS signing in CI.
+3. iOS — **done 2026-10-24**: App Attest is enabled on `net.recipely.app` and
+   `net.recipely.app.dev`, both App Store profiles were regenerated with it and
+   uploaded to CI, and `app.json` carries
+   `com.apple.developer.devicecheck.appattest-environment` = `production` (a test
+   keeps it there). TestFlight and App Store builds use Apple's production
+   environment; the share extension does not need it. Any future profile must
+   keep the capability, or CI signing fails.
 4. Flip `appAttestation` to DevOnly, verify against dev, then On.
 
 ## Open items
