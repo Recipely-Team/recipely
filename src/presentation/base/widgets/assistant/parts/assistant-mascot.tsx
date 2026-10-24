@@ -60,11 +60,13 @@ export const AssistantMascot = ({
         Animated.timing(blink, {
           toValue: mascotGeometry.eyeClosed,
           duration: assistantMetrics.blinkDurationMs,
+          // JS driver: the blink animates an SVG radius, a prop the native driver cannot move.
           useNativeDriver: false,
         }),
         Animated.timing(blink, {
           toValue: mascotGeometry.eyes.r,
           duration: assistantMetrics.blinkDurationMs,
+          // JS driver: the blink animates an SVG radius, a prop the native driver cannot move.
           useNativeDriver: false,
         }),
       ]),

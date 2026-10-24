@@ -14,6 +14,7 @@ import { failureContent } from '@presentation/base/errors/failure-lookups';
 import { diarySizes, spacing } from '@presentation/base/theme';
 import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { ListConstants } from '@presentation/base/constants';
 
 export interface PlanPickStepProps {
   onChoose: (hit: RecipeFoodHit) => void;
@@ -52,6 +53,8 @@ export const PlanPickStep = ({ onChoose }: PlanPickStepProps): React.JSX.Element
       <FlatList
         // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
         removeClippedSubviews={false}
+        maxToRenderPerBatch={ListConstants.rowsPerBatch}
+        windowSize={ListConstants.windowSize}
         data={recipes.items}
         keyExtractor={(hit) => hit.id}
         renderItem={({ item }) => <PlanPickRow hit={item} onPress={onChoose} />}

@@ -1589,3 +1589,38 @@ This is the mechanical half of a standing instruction that predates it —
 *"designdan tasarımı al, kafana göre saçma tasarım yapma."* Inventing
 measurements at the call site is the same fault whether it happens in a
 component or in a markdown file.
+
+### Rule 29
+
+**Performance is guarded by machines, not by memory.** Each way the app has
+been slow is a check that fails, so the same slowness cannot come back quietly.
+
+The incidents behind it, measured with the React Profiler before the React
+Compiler and the selector work: one level tick in the voice assistant
+re-rendered the whole panel (124 ms on a phone; now 9 ms), a save on the feed
+re-rendered every card (4 ms; now 2 ms), and 11 of the 17 lists kept
+FlatList's default of twenty-one screens of rows mounted even though rule 6c
+already said not to. Nothing checked rule 6c, so it was not followed.
+
+What is checked:
+
+| Check | Catches | Where |
+|---|---|---|
+| React Compiler on, Rules of React clean | components that re-render because nothing memoized them | `assert-react-compiler.mjs`, eslint `react-hooks/*` (rule 8) |
+| **AZ** — a `useStore` selector returns a stored value | a selector that builds an array, object, Set or Map, which re-renders on every store change and can loop | `check:structure` |
+| **AY** — every list sets `windowSize`, `initialNumToRender`, `maxToRenderPerBatch` from `ListConstants` | lists that mount screens of rows nobody sees | `check:structure` (with rule R) |
+| **BA** — `useNativeDriver: false` carries `// JS driver: <why>` | animations moved onto the JS thread without a reason | `check:structure` |
+| Render-count tests | a hot interaction that starts re-rendering more than it did | `*-renders.test.tsx` beside the screen: assistant level, recipe-detail interactions, feed save, notification mark-read |
+| Web bundle budget | JavaScript that grew without anyone deciding it should | `assert-bundle-size.mjs` in `npm run build:web` |
+
+How to work with it:
+
+- **A performance fix ships a render-count test**, under rule 24, named after
+  the symptom ("a save re-renders the one bookmark, not the feed"), using the
+  Profiler `onRender` counter the existing `*-renders.test.tsx` files use.
+- **Derive in render, not in the selector.** Select `s.items`, then
+  `items.filter(…)` in the component: the compiler memoizes it.
+- **Raising the bundle budget is a decision**, made in the PR that needs it,
+  with the reason in the description, like a coverage minimum.
+- **Measure before and after** with the React Profiler when a change touches
+  a list, a store selector or an animation, and put the numbers in the PR.

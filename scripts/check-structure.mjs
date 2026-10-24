@@ -73,6 +73,11 @@
  *      (useSignedInUserId / useIsSignedIn / useSignedInUser, or s.state.status).
  *   AX. Every state a store can be in is a named type in a `states/` folder;
  *      no anonymous `| { status: typeof StoreStatus.X; … }` union members.
+ *   AY. Every FlatList / SectionList sets windowSize, initialNumToRender and
+ *      maxToRenderPerBatch (CLAUDE.md §6c, §29).
+ *   AZ. A `useStore` selector returns a stored value; it never builds an
+ *      array, object, Set or Map (CLAUDE.md §29).
+ *   BA. `useNativeDriver: false` carries a `// JS driver: <why>` line (§29).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -984,6 +989,72 @@ if (nearSizeLimit.length > 0 && process.env.CI !== 'true') {
       if (!OFF.test(tag)) {
         errors.push(`${file}:${String(index + 1)}: list without removeClippedSubviews={false} — Android clips by default and crashes Fabric (CLAUDE.md §6c)`);
       }
+    });
+  }
+}
+
+// --- AY: lists bound how many rows they mount (CLAUDE.md §6c, §29) ------------
+// Rule 6c always said it, and 11 of 17 lists did not: nothing checked. A list
+// that leaves the defaults renders 10 rows up front and keeps 21 screens of rows
+// mounted, so a long saved-recipes or notifications list grows memory and drops
+// frames as it scrolls. Every list states its window, from ListConstants.
+{
+  const LIST_OPEN = /^\s*<(FlatList|SectionList|Animated\.FlatList|VirtualizedList)\b/;
+  const BOUNDS = ['windowSize', 'initialNumToRender', 'maxToRenderPerBatch'];
+  for (const file of files) {
+    if (isTest(file) || !file.endsWith('.tsx')) continue;
+    const lines = fs.readFileSync(path.join(SRC, file), 'utf8').split('\n');
+    lines.forEach((line, index) => {
+      if (!LIST_OPEN.test(line)) return;
+      // The list's own closing line sits at its indentation; a nested `/>` in renderItem does not.
+      const indent = /^\s*/.exec(line)?.[0] ?? '';
+      const closes = (l) => l.startsWith(indent) && /^\s*\/?>\s*$/.test(l) && /^\s*/.exec(l)?.[0] === indent;
+      const end = /\/>\s*$/.test(line) ? index : lines.findIndex((l, i) => i > index && closes(l));
+      const tag = lines.slice(index, end === -1 ? index + 1 : end + 1).join('\n');
+      const missing = BOUNDS.filter((prop) => !new RegExp(`\\b${prop}=`).test(tag));
+      if (missing.length > 0) {
+        errors.push(`${file}:${String(index + 1)}: list without ${missing.join(', ')} — bound mounted rows with ListConstants (CLAUDE.md §6c, §29)`);
+      }
+    });
+  }
+}
+
+// --- AZ: a store selector returns what is stored, never a new value (§8, §29) ---
+// `useStore(store, (s) => s.items.filter(…))` builds a new array on every store
+// change, so the component re-renders on EVERY change to that store, even one it
+// does not show; an object or array literal does the same, and in a selector
+// that feeds an effect it loops. Select the stored value and derive in render:
+// the React Compiler memoizes the derivation.
+{
+  const SELECTOR = /useStore\(\s*[\w.]+\s*,\s*\(?\s*\w+\s*\)?\s*=>\s*([^\n;]*)/g;
+  const BUILDS = /^(\(\s*\{|\[)|\.(map|filter|slice|concat|sort|toSorted|toReversed|reduce|flatMap)\(|Object\.(keys|values|entries|fromEntries)\(|\bnew (Set|Map|Array)\b|\.\.\./;
+  for (const file of files) {
+    if (isTest(file) || !file.startsWith('presentation/')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(SELECTOR)) {
+      if (BUILDS.test(m[1].trim())) {
+        const line = src.slice(0, m.index).split('\n').length;
+        errors.push(`${file}:${String(line)}: store selector builds a new value — select the stored value and derive it in render (CLAUDE.md §29)`);
+      }
+    }
+  }
+}
+
+// --- BA: an animation off the native driver says why (CLAUDE.md §29) ---------
+// `useNativeDriver: false` runs every frame on the JS thread, where any render
+// competes with it; the native driver runs it on the UI thread. Some props
+// (height, layout, colours on a PanResponder value) cannot go native, so the
+// rule is not a ban: the line above says `// JS driver: <why>`.
+{
+  const JS_DRIVER = /useNativeDriver:\s*false/;
+  const REASON = /\/\/\s*JS driver:\s*\S/;
+  for (const file of files) {
+    if (isTest(file)) continue;
+    const lines = fs.readFileSync(path.join(SRC, file), 'utf8').split('\n');
+    lines.forEach((line, index) => {
+      if (!JS_DRIVER.test(line)) return;
+      if (REASON.test(line) || REASON.test(lines[index - 1] ?? '')) return;
+      errors.push(`${file}:${String(index + 1)}: useNativeDriver: false without a "// JS driver: <why>" line above it (CLAUDE.md §29)`);
     });
   }
 }

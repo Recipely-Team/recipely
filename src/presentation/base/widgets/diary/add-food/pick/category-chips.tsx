@@ -27,6 +27,9 @@ export const CategoryChips = ({ categories, selected, onSelect, onEndReached }: 
     <FlatList
       // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
       removeClippedSubviews={false}
+      initialNumToRender={ListConstants.initialRows}
+      maxToRenderPerBatch={ListConstants.rowsPerBatch}
+      windowSize={ListConstants.windowSize}
       horizontal
       data={chips}
       keyExtractor={(chip) => chip.key ?? CharConstants.empty}
