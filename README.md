@@ -12,9 +12,9 @@ A recipe app for iOS, Android and the web, built from one codebase.<br/>
 Import a recipe from any video, site, photo or PDF, have AI write one for you,<br/>
 and cook it with a voice assistant that uses the app on your behalf.
 
-<a href="https://apps.apple.com/us/app/recipely/id6787391255"><img src="https://tools.applemarketingtools.com/api/badges/download-on-the-app-store/black/en-us?size=250x83" height="44" alt="Download on the App Store" /></a>
+<a href="https://apps.apple.com/us/app/recipely/id6787391255"><img src="docs/images/badge-app-store.svg" height="44" alt="Download on the App Store" /></a>
 &nbsp;
-<a href="https://play.google.com/store/apps/details?id=com.recipely.app"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="66" alt="Get it on Google Play" /></a>
+<a href="https://play.google.com/store/apps/details?id=com.recipely.app"><img src="docs/images/badge-google-play.png" height="44" alt="Get it on Google Play" /></a>
 
 [![Expo SDK 57](https://img.shields.io/badge/Expo-SDK%2057-000020?style=flat-square&logo=expo&logoColor=white)](https://expo.dev)
 [![React Native 0.86](https://img.shields.io/badge/React%20Native-0.86-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactnative.dev)
