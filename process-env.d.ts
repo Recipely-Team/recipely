@@ -25,6 +25,7 @@ declare namespace NodeJS {
     EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET?: string;
     EXPO_PUBLIC_FIREBASE_VAPID_KEY?: string;
     EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?: string;
+    EXPO_PUBLIC_PLAY_INTEGRITY_PROJECT_NUMBER?: string;
     EXPO_PUBLIC_WEB_APP_URL?: string;
     APP_VARIANT?: string;
     BUILD_NUMBER?: string;

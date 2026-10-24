@@ -1,5 +1,13 @@
 import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-http-client-options';
 import { HttpHeader, HttpMediaType, BEARER_PREFIX } from '@infrastructure/network/http/http-header';
+import { ATTESTED_ROUTES } from '@infrastructure/constants/api/attested-routes';
+import { requestBinding } from '@infrastructure/integrity/request-binding';
+
+/** The verb and route a header set is for; only attestation reads it. */
+interface OutgoingRequest {
+  method: string;
+  url: string;
+}
 
 /**
  * Builds the headers every backend request carries, regardless of transport:
@@ -7,16 +15,23 @@ import { HttpHeader, HttpMediaType, BEARER_PREFIX } from '@infrastructure/networ
  * request locale is read — the axios interceptor and the raw-XHR multipart
  * uploader both go through it, so a language switch can never be picked up by
  * one path and missed by the other.
-
+ *
+ * An `ATTESTED_ROUTES` request also gets its attestation headers, bound to its
+ * verb, path and request id.
  */
 export const buildCommonHeaders = async (
   options: AxiosHttpClientOptions,
+  request?: OutgoingRequest,
 ): Promise<Record<string, string>> => {
   const headers: Record<string, string> = {
     [HttpHeader.acceptLanguage]: await options.localeProvider(),
   };
   if (options.requestIdProvider !== undefined) {
-    headers[HttpHeader.requestId] = options.requestIdProvider();
+    const requestId = options.requestIdProvider();
+    headers[HttpHeader.requestId] = requestId;
+    if (request !== undefined && options.attestationProvider !== undefined && ATTESTED_ROUTES.has(request.url)) {
+      Object.assign(headers, await options.attestationProvider(requestBinding(request.method, request.url, requestId)));
+    }
   }
   if (options.cookieSession === true) {
     headers[HttpHeader.recipelySession] = HttpMediaType.cookieSession;

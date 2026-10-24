@@ -355,6 +355,9 @@ jobs:
     env:
       APP_VARIANT: development
       EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
+      # Play Integrity's Google Cloud project number (not a secret). Unset means
+      # Android builds send no attestation; docs/security.md §Attestation.
+      EXPO_PUBLIC_PLAY_INTEGRITY_PROJECT_NUMBER: ${{ vars.PLAY_INTEGRITY_PROJECT_NUMBER }}
       EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 421167568469-kqknuidq9mtu66llumtdcitsr5j4j497.apps.googleusercontent.com
       BUILD_NUMBER: ${{ github.run_number }}
     steps:
@@ -866,6 +869,9 @@ jobs:
     env:
       APP_VARIANT: production
       EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
+      # Play Integrity's Google Cloud project number (not a secret). Unset means
+      # Android builds send no attestation; docs/security.md §Attestation.
+      EXPO_PUBLIC_PLAY_INTEGRITY_PROJECT_NUMBER: ${{ vars.PLAY_INTEGRITY_PROJECT_NUMBER }}
       # OAuth web client ID (type=3) used by GoogleSignin.configure on Android
       # to request an idToken. Not sensitive — same value is bundled into the
       # APK via google-services.json. Must match Firebase Authentication → Web
