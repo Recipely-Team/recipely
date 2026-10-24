@@ -107,6 +107,17 @@ describe('CommentRepository.unlike', () => {
 });
 
 describe('CommentRepository.listByRecipe — like mapping', () => {
+  // One comment with an empty body used to fail the page and blank the whole thread.
+  it('skips an unreadable comment and keeps the rest of the thread', async () => {
+    const { http } = makeHttp(ok(makePageDto([validDto, { ...validDto, id: 'c-empty', body: '' }])));
+    const repo = new CommentRepository(http);
+
+    const r = await repo.listByRecipe('recipe-3', 1, 20);
+
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.items.map(({ comment }) => comment.id)).toEqual([validDto.id]);
+  });
+
   it('maps likeCount and likedByMe from the DTO', async () => {
     const { http } = makeHttp(ok(makePageDto([validDto])));
     const repo = new CommentRepository(http);
