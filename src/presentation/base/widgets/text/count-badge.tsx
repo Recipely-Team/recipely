@@ -75,6 +75,7 @@ export const CountBadge = ({
       <ThemedText
         style={[styles.badgeText, { color: ink }]}
         maxFontSizeMultiplier={maxFontScales.badge}
+        numberOfLines={ValueConstants.one}
       >
         {countBadgeLabel(count, tone)}
       </ThemedText>
