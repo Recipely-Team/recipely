@@ -32,16 +32,13 @@ export class CommentRepository implements CommentRepositoryInterface {
     if (!result.ok) {
       return result;
     }
-    const items: CommentView[] = [];
-    for (const dto of result.value.items) {
-      const mapped = mapDtoToComment(dto);
-      if (!mapped.ok) {
-        return fail(mapped.failure);
-      }
-      items.push({ comment: mapped.value, likedByMe: dto.likedByMe ?? false });
-    }
-    // Strict: one unreadable comment fails the page, as before; `toPage` only wraps the envelope.
-    return ok(toPage({ ...result.value, items }, ok));
+    // One unreadable comment is skipped, as `toPage` does for every list; it used to blank the thread.
+    return ok(
+      toPage(result.value, (dto) => {
+        const mapped = mapDtoToComment(dto);
+        return mapped.ok ? ok({ comment: mapped.value, likedByMe: dto.likedByMe ?? false } satisfies CommentView) : mapped;
+      }),
+    );
   }
 
   async add(recipeId: string, body: string): Promise<Result<CommentEntity, Failure>> {

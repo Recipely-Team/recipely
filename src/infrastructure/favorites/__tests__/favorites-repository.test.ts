@@ -3,6 +3,15 @@ import { NetworkFailure } from '@core/failure';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { FavoritesRepository } from '@infrastructure/favorites/favorites-repository';
 import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
+import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
+import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
+import { Difficulty } from '@domain/recipes/difficulty';
+
+const recipe = (id: string, name: string): RecipeListItemDto => ({
+  id, name, image: '', cuisine: CuisineKey.Italian, category: RecipeCategory.Dinner, difficulty: Difficulty.Easy,
+  totalTimeMinutes: 15, rating: 4, moderationStatus: 'approved', likeCount: 0, likedByMe: false, commentCount: 0, viewCount: 0,
+});
 
 const httpAnswering = (answer: unknown) => {
   const http = { post: jest.fn().mockResolvedValue(answer), delete: jest.fn().mockResolvedValue(answer), get: jest.fn().mockResolvedValue(answer) };
@@ -23,6 +32,17 @@ describe('FavoritesRepository', () => {
     const result = await repo.listFavorites();
     expect(result.ok && result.value.items).toEqual([]);
     expect(http.get).toHaveBeenCalledWith(ApiRoutes.me.favorites, expect.objectContaining({ params: expect.any(Object) }));
+  });
+
+  // The symptom: one saved recipe with a blank name emptied Saved, and its tab lost its count.
+  it('keeps the readable saves and the server total when one row cannot be read', async () => {
+    const { repo } = httpAnswering(ok({ items: [recipe('a', 'Soup'), recipe('b', ''), recipe('c', 'Kek')], total: 3, page: 1, pageSize: 100 }));
+    const result = await repo.listFavorites();
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.items.map((r) => r.id)).toEqual(['a', 'c']);
+      expect(result.value.total).toBe(3);
+    }
   });
 
   it('passes HTTP failures through', async () => {
