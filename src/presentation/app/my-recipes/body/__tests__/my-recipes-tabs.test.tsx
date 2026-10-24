@@ -112,9 +112,11 @@ describe('MyRecipesTabs', () => {
 
     expect(badge).not.toBeNull();
 
-    expect(style.left).toBe('100%');
-    expect(style.bottom).toBe('100%');
-    // The bug: an anchor on the right edge pins the far side and widens inward.
+    // Android resolved `left: '100%'` against the tab COLUMN, so every count sat over
+    // the next tab (Saved's 7 above Liked, Drafts' count off-screen). Numbers only.
+    expect(typeof style.left).toBe('number');
+    expect(typeof style.bottom).toBe('number');
+    // The earlier bug: an anchor on the right edge pins the far side and widens inward.
     expect(style.right).toBeUndefined();
   });
 });
