@@ -2,6 +2,7 @@ import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-
 import { HttpHeader, HttpMediaType, BEARER_PREFIX } from '@infrastructure/network/http/http-header';
 import { ATTESTED_ROUTES } from '@infrastructure/constants/api/attested-routes';
 import { requestBinding } from '@infrastructure/integrity/request-binding';
+import { boundedAttestation } from '@infrastructure/integrity/bounded-attestation';
 
 /** The verb and route a header set is for; only attestation reads it. */
 interface OutgoingRequest {
@@ -17,7 +18,7 @@ interface OutgoingRequest {
  * one path and missed by the other.
  *
  * An `ATTESTED_ROUTES` request also gets its attestation headers, bound to its
- * verb, path and request id.
+ * verb, path and request id — or none, if the proof fails or is slow.
  */
 export const buildCommonHeaders = async (
   options: AxiosHttpClientOptions,
@@ -30,7 +31,8 @@ export const buildCommonHeaders = async (
     const requestId = options.requestIdProvider();
     headers[HttpHeader.requestId] = requestId;
     if (request !== undefined && options.attestationProvider !== undefined && ATTESTED_ROUTES.has(request.url)) {
-      Object.assign(headers, await options.attestationProvider(requestBinding(request.method, request.url, requestId)));
+      const binding = requestBinding(request.method, request.url, requestId);
+      Object.assign(headers, await boundedAttestation(options.attestationProvider, binding));
     }
   }
   if (options.cookieSession === true) {

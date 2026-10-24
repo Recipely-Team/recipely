@@ -116,4 +116,16 @@ describe('AppAttestAttestor', () => {
     expect(await new AppAttestAttestor(memoryStore(), repo).headersFor('b')).toBeNull();
     expect(repo.fetchChallenge).not.toHaveBeenCalled();
   });
+
+  it('keeps a replacement key when a late failure names the key it replaced', async () => {
+    const store = memoryStore({ [APP_ATTEST_KEY_STORAGE_KEY]: 'new-key' });
+    assert.mockRejectedValue(Object.assign(new Error('gone'), { code: 'ERR_APP_INTEGRITY_INVALID_KEY' }));
+    const attestor = new AppAttestAttestor(store, repository());
+
+    await attestor.headersFor('b');
+    store.values.set(APP_ATTEST_KEY_STORAGE_KEY, 'newer-key');
+    await (attestor as unknown as { forgetKey(lost: string): Promise<void> }).forgetKey('new-key');
+
+    expect(store.values.get(APP_ATTEST_KEY_STORAGE_KEY)).toBe('newer-key');
+  });
 });

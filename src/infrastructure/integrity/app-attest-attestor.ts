@@ -5,6 +5,7 @@ import { HttpHeader } from '@infrastructure/network/http/http-header';
 import { APP_ATTEST_KEY_STORAGE_KEY } from '@infrastructure/constants/storage';
 import type { AppAttestorInterface } from '@infrastructure/integrity/app-attestor-interface';
 import type { AttestationRepository } from '@infrastructure/integrity/attestation-repository';
+import { hasKey } from '@core/guards/type-guards';
 
 /** The code `generateAssertionAsync` rejects with when the OS no longer holds the key. */
 const INVALID_KEY_ERROR = 'ERR_APP_INTEGRITY_INVALID_KEY';
@@ -44,7 +45,7 @@ export class AppAttestAttestor implements AppAttestorInterface {
         [HttpHeader.appAttestation]: assertion,
       };
     } catch (error: unknown) {
-      if ((error as { code?: unknown } | null)?.code === INVALID_KEY_ERROR) await this.forgetKey();
+      if (hasKey(error, 'code') && error.code === INVALID_KEY_ERROR) await this.forgetKey(keyId);
       return null;
     }
   }
@@ -79,8 +80,11 @@ export class AppAttestAttestor implements AppAttestorInterface {
     }
   }
 
-  private async forgetKey(): Promise<void> {
+  /** Forgets `lost` only while it is still the current key, so a racing failure cannot drop its replacement. */
+  private async forgetKey(lost: string): Promise<void> {
+    if (this.keyId !== null && (await this.keyId) !== lost) return;
     this.keyId = null;
-    await this.store.removeItem(APP_ATTEST_KEY_STORAGE_KEY);
+    const stored = await this.store.getItem(APP_ATTEST_KEY_STORAGE_KEY);
+    if (stored.ok && stored.value === lost) await this.store.removeItem(APP_ATTEST_KEY_STORAGE_KEY);
   }
 }

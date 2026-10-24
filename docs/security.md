@@ -127,7 +127,9 @@ sign-up, AI generation and refinement, imports, fridge scan and ideas, meal
 photo parsing, voice-assistant sessions. Play Integrity is metered per day and
 these are the routes that cost money or mint accounts.
 
-**The binding.** Every proof is over `METHOD path\nX-Request-Id` (`requestBinding`).
+**The binding.** Every proof is over `METHOD path\nX-Request-Id` (`requestBinding`),
+where `path` is the route relative to `/api/v1` with no query string — Express's
+`req.path` inside the v1 router (`POST /recipes/generate`), not `originalUrl`.
 The backend rebuilds the string from the request it received, so a proof cannot
 be moved onto another call, and remembering accepted request ids stops a replay.
 
@@ -146,8 +148,12 @@ SHA-256 of the challenge, and `POST /attestation/apple-key`
 the backend accepted it; an assertion failing with "invalid key" (restored backup,
 reinstall) forgets it and the next request registers a new one.
 
+**Assertion counters can arrive out of order** — two requests signed back to back
+race on the network. The backend keeps the highest counter seen and does not
+refuse a lower one; the request id is what stops replays.
+
 **Fail open on the client.** No proof (unsupported device, Play services
-missing, an outage) means the request goes without the headers. The backend
+missing, an outage, or slower than `ATTESTATION_TIMEOUT_MS`) means the request goes without the headers. The backend
 decides: log-only first, then refuse on the attested routes once the numbers
 say real users are not caught.
 
