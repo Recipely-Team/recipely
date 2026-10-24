@@ -148,9 +148,11 @@ SHA-256 of the challenge, and `POST /attestation/apple-key`
 the backend accepted it; an assertion failing with "invalid key" (restored backup,
 reinstall) forgets it and the next request registers a new one.
 
-**Assertion counters can arrive out of order** — two requests signed back to back
-race on the network. The backend keeps the highest counter seen and does not
-refuse a lower one; the request id is what stops replays.
+**On iOS the counter stops replays.** An assertion carries no timestamp, so the
+backend requires its counter to strictly rise (Apple's rule), checked and stored
+atomically; the remembered request id covers Android, whose token is dated. An
+assertion overtaken by a later one is refused too — attested routes are single
+user actions, never fired in parallel.
 
 **Fail open on the client.** No proof (unsupported device, Play services
 missing, an outage, or slower than `ATTESTATION_TIMEOUT_MS`) means the request goes without the headers. The backend
