@@ -10,6 +10,7 @@ import { spacing } from '@presentation/base/theme';
 import { pluralCount, useTranslations } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
+import { ListConstants } from '@presentation/base/constants';
 
 export interface RecipeSearchOverlayProps {
   /** Backend results for the current query — `RecipeFilters.search`, not a local filter. */
@@ -89,6 +90,9 @@ export const RecipeSearchOverlay = ({
         <FlatList
           // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
           removeClippedSubviews={false}
+          initialNumToRender={ListConstants.initialRows}
+          maxToRenderPerBatch={ListConstants.rowsPerBatch}
+          windowSize={ListConstants.windowSize}
           {...assistantScroll}
           data={recipes}
           keyExtractor={(r) => r.id}

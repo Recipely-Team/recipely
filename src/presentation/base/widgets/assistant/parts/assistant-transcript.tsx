@@ -10,6 +10,7 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { ListConstants } from '@presentation/base/constants';
 
 export interface AssistantTranscriptProps {
   lines: AssistantTranscriptLineType[];
@@ -53,6 +54,9 @@ export const AssistantTranscript = ({ lines }: AssistantTranscriptProps): React.
     <FlatList
       // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
       removeClippedSubviews={false}
+      initialNumToRender={ListConstants.initialRows}
+      maxToRenderPerBatch={ListConstants.rowsPerBatch}
+      windowSize={ListConstants.windowSize}
       ref={list}
       data={lines}
       keyExtractor={(line) => line.id}

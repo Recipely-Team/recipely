@@ -16,6 +16,7 @@ import { useTranslations } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
+import { ListConstants } from '@presentation/base/constants';
 
 const GRID_GAP = spacing.lg2;
 /** Skeleton rows shown in the grid area while the list (re)loads. */
@@ -182,6 +183,9 @@ export const WebRecipeGrid = ({
         <FlatList
           // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
           removeClippedSubviews={false}
+          initialNumToRender={ListConstants.initialRows}
+          maxToRenderPerBatch={ListConstants.rowsPerBatch}
+          windowSize={ListConstants.windowSize}
           key={`web-grid-${gridColumns}`}
           data={recipes}
           keyExtractor={(r) => r.id}
