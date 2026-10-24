@@ -44,6 +44,9 @@ export interface MyRecipesTabsProps {
  *   than sitting on it. Overlapping cost more than it saved: at two digits the
  *   count covered the icon it was counting, which is the one thing the column
  *   uses to say which tab it is.
+ * - **The badge is placed in numbers, not percentages** — Android resolved a
+ *   percentage offset against the tab column, and every count landed on the
+ *   tab to its right.
  * - **A tab with nothing in it wears no badge** — `CountBadge` renders nothing
  *   at zero, so an empty Drafts tab is quiet instead of showing a "0".
  */
@@ -110,17 +113,17 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
     paddingHorizontal: spacing.xxs,
   },
-  // Sized to the glyph; overflow stays visible so the badge can escape it.
+  // Sized to the glyph explicitly; overflow stays visible so the badge can escape it.
   glyph: {
+    width: iconSizes.lg,
+    minHeight: iconSizes.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Anchored by bottom/left so a wider count grows away from the icon.
+  // Numbers from the glyph's own box (see head doc); bottom/left so a wider count grows away from the icon.
   badge: {
-    bottom: '100%',
-    left: '100%',
-    marginBottom: -spacing.xs,
-    marginLeft: -spacing.xs,
+    bottom: iconSizes.lg - spacing.xs,
+    left: iconSizes.lg - spacing.xs,
   },
   label: {
     fontSize: fontSizes.micro,
