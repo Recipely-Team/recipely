@@ -12,7 +12,7 @@ voice assistant that uses the app on your behalf.
 [![React Native 0.86](https://img.shields.io/badge/React%20Native-0.86-61DAFB?logo=react&logoColor=black)](https://reactnative.dev)
 [![React Compiler](https://img.shields.io/badge/React%2019.2-Compiler%20on-149ECA?logo=react&logoColor=white)](https://react.dev/learn/react-compiler)
 [![TypeScript strictest](https://img.shields.io/badge/TypeScript-strictest-3178C6?logo=typescript&logoColor=white)](#checking-your-work)
-[![Tests](https://img.shields.io/badge/tests-4%2C487-3FB950)](#checking-your-work)
+[![Tests](https://img.shields.io/badge/tests-4%2C512-3FB950)](#checking-your-work)
 [![License AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-lightgrey)](#license)
 
 [**recipely.net**](https://recipely.net) · [About](https://recipely.net/about) · [App Store](https://apps.apple.com/us/app/recipely/id6787391255) · [Google Play](https://play.google.com/store/apps/details?id=com.recipely.app)
@@ -38,17 +38,17 @@ voice assistant that uses the app on your behalf.
 
 ## What it does
 
-| | |
-|---|---|
-| **Discover** | A recipe feed with search, filters and sorting, cuisines and trending recipes. Guests can browse without an account. |
-| **Import** | Share a recipe from Instagram, TikTok, YouTube, Facebook or Pinterest, paste any recipe website, or photograph a cookbook page or pick a PDF. The app turns it into a structured recipe with a link back to the source. |
-| **Create with AI** | Describe a dish or list what is in your fridge; AI drafts the recipe, and you refine it by chatting. |
-| **Voice assistant** | Tap the chef and talk. It searches, filters, opens and creates recipes on screen while you watch, and answers out loud. Siri and Android shortcuts reach it too. |
-| **Cook** | Ingredient checklist, numbered steps, timers inside the step that mentions them, a cooking mode, and metric/US units. |
-| **Plan and shop** | Plan the week from saved recipes and get one shopping list. The shopping list and saved recipes open offline. |
-| **Track** | A food diary with nutrition per 100 g or per serving. |
-| **Creators** | Creator pages, creator tags, stats, and Instagram comment-to-DM recipe delivery. |
-| **Everywhere** | Four themes with light and dark modes, 14 languages, and a web app with its own desktop layout and prerendered recipe pages. |
+| | Feature | What you get |
+|:---:|---|---|
+| 🔎 | **Discover** | A recipe feed with search, filters and sorting, cuisines and trending recipes. Guests can browse without an account. |
+| 📥 | **Import** | Share a recipe from Instagram, TikTok, YouTube, Facebook or Pinterest, paste any recipe website, or photograph a cookbook page or pick a PDF. The app turns it into a structured recipe with a link back to the source. |
+| ✨ | **Create with AI** | Describe a dish or list what is in your fridge; AI drafts the recipe, and you refine it by chatting. |
+| 🎙️ | **Voice assistant** | Tap the chef and talk. It searches, filters, opens and creates recipes on screen while you watch, and answers out loud. Siri and Android shortcuts reach it too. |
+| 🍳 | **Cook** | Ingredient checklist, numbered steps, timers inside the step that mentions them, a cooking mode, and metric/US units. |
+| 🛒 | **Plan and shop** | Plan the week from saved recipes and get one shopping list. The shopping list and saved recipes open offline. |
+| 📊 | **Track** | A food diary with nutrition per 100 g or per serving. |
+| ⭐ | **Creators** | Creator pages, creator tags, stats, and Instagram comment-to-DM recipe delivery. |
+| 🌍 | **Everywhere** | Four themes with light and dark modes, 14 languages, and a web app with its own desktop layout and prerendered recipe pages. |
 
 The app talks to its own API at `api.recipely.net` (the separate `recipely-backend` repository),
 and uses Firebase for Google and Apple sign-in, push, analytics and crash reports.
@@ -57,18 +57,18 @@ and uses Firebase for Google and Apple sign-in, push, analytics and crash report
 
 Five layers. A layer may use the layers below it, never the ones above. Every layer may use **core**.
 
-```
-presentation   screens, widgets, page hooks, theme, translations
-     ↓
-application    stores (Zustand) and use cases: one class per thing a user can do
-     ↓
-domain         entities and value objects with their rules; ports (interfaces) for the outside world
-     ↑ implemented by
-infrastructure the API client and repositories, encryption, secure storage, Firebase,
-               notifications, audio, ads, device, the Siri and Android bridges
-─────────────────────────────────────────────────────────────────────────────────────────
-core           Result, Failure, base entity and value object, the DI container, constants
-               (used by every layer above)
+```mermaid
+flowchart TB
+  subgraph layers [" "]
+    direction TB
+    P["<b>presentation</b><br/>screens · widgets · page hooks · theme · translations"]
+    A["<b>application</b><br/>Zustand stores · use cases"]
+    D["<b>domain</b><br/>entities · value objects · ports"]
+    I["<b>infrastructure</b><br/>API client · repositories · encryption · storage<br/>Firebase · audio · ads · Siri and Android bridges"]
+    P --> A --> D
+    I -. implements ports .-> D
+  end
+  layers ==> C["<b>core</b> · used by every layer<br/>Result · Failure · base classes · DI container · constants"]
 ```
 
 The ideas behind it:
@@ -81,14 +81,14 @@ The ideas behind it:
   `Result<T, Failure>`, and the API sends a message key the app shows in the user's language.
 - **State lives in stores; rendering is compiled.** Components read one slice with
   `useStore(store, selector)`, and the React Compiler memoizes, so only what changed re-renders.
-- **Every request is sealed.** JSON bodies travel in an AES-256-GCM envelope inside TLS, and native
-  release builds pin the API's certificate roots.
+- **Every request is sealed.** JSON bodies travel in an AES-256-GCM envelope inside TLS, native
+  release builds pin the API's certificate roots, and the costly routes can carry an app attestation proof.
 
 Pages live in `src/presentation/app/<route>/index.tsx`, with their parts beside them in `body/`,
 `items/`, `sheets/`, `hooks/` and `model/`. The full rules, with the reason for each, are in
 [`architecture.md`](architecture.md) and [`CLAUDE.md`](CLAUDE.md).
 
-| | |
+| Area | Choice |
 |---|---|
 | Framework | Expo SDK 57 · React Native 0.86 (New Architecture) · React 19.2 with the React Compiler |
 | Language | TypeScript, strict plus `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` |
@@ -97,7 +97,8 @@ Pages live in `src/presentation/app/<route>/index.tsx`, with their parts beside 
 | Network | Axios with an AES-256-GCM envelope, session renewal with single-use refresh tokens |
 | Web | react-native-web, static export to Firebase Hosting |
 | Voice | [`@live-assistant/*`](https://github.com/Recipely-Team/live-assistant) on Gemini Live |
-| Tests | Jest + jest-expo (4,487 tests), Playwright and Maestro in `recipely-tests` |
+| Security | TLS with pinned roots, AES-256-GCM envelope, Play Integrity and App Attest |
+| Tests | Jest + jest-expo (4,512 tests), Playwright and Maestro in `recipely-tests` |
 
 ## Getting started
 
@@ -120,6 +121,9 @@ npm run android
 
 ### Environment
 
+<details>
+<summary><b>Keys for <code>.env.local</code></b></summary>
+
 Create `.env.local` in the repo root. Every key is `EXPO_PUBLIC_*` because the app reads it on the
 device; the full list is declared in [`process-env.d.ts`](process-env.d.ts).
 
@@ -134,13 +138,19 @@ EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
 EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=
 EXPO_PUBLIC_FIREBASE_VAPID_KEY=      # web push only
+EXPO_PUBLIC_PLAY_INTEGRITY_PROJECT_NUMBER=  # optional: Android attestation (docs/security.md)
 ```
+
+</details>
 
 > [!WARNING]
 > The AES key ships inside every app and the web bundle. It detects tampering; TLS is what keeps
 > traffic private. See [`docs/security.md`](docs/security.md).
 
 ### Build variants
+
+<details>
+<summary><b>Development and production side by side</b></summary>
 
 `APP_VARIANT` picks the whole environment, so both variants can sit on one phone.
 
@@ -151,6 +161,12 @@ EXPO_PUBLIC_FIREBASE_VAPID_KEY=      # web push only
 | iOS bundle id | `net.recipely.app.dev` | `net.recipely.app` |
 | API | `dev-api.recipely.net` | `api.recipely.net` |
 | Web | `dev.recipely.net` (team only) | `recipely.net` |
+
+</details>
+
+> [!TIP]
+> Simulators, emulators and the browser work for development as they are. They cannot produce an
+> app attestation proof, so the app sends none and development servers only log its absence.
 
 ## Checking your work
 
@@ -216,7 +232,15 @@ you change, and open a PR to `dev`. Questions and bugs go to
 
 ## Security
 
-The threat model, the request envelope and what the shipped keys do and do not protect are in
+| Layer | What it does |
+|---|---|
+| **TLS, pinned** | Release builds allow no plain HTTP and pin `api.recipely.net` to the Let's Encrypt root keys. |
+| **Envelope** | Every JSON body and reply is sealed with AES-256-GCM, so tampering is detected. |
+| **Sessions** | Short-lived access tokens; refresh tokens are single-use, stored as hashes on the server, and kept in the Keychain or Keystore on the phone. |
+| **App attestation** | Play Integrity (Android) and App Attest (iOS) prove that a costly request came from the genuine app. Built on both sides and switched off until the store set-up is done. |
+| **The server decides** | The app's checks are for a good experience; authorisation and limits live in the API. |
+
+The threat model and what the shipped keys do and do not protect are in
 [`docs/security.md`](docs/security.md). Please report a vulnerability privately to
 recep@recipely.net rather than in a public issue.
 
