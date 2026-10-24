@@ -103,21 +103,23 @@ Firebase for Google and Apple sign-in, push, analytics and crash reports.
 
 ## 🧱 How it is built
 
-Five layers. A layer may use the layers below it, never the ones above, and every layer may use **core**.
+Four layers on a shared core. Arrows point the only way imports may go.
 
 ```mermaid
-flowchart TB
-  subgraph layers [" "]
-    direction TB
-    P["<b>presentation</b><br/>screens · widgets · page hooks · theme · translations"]
-    A["<b>application</b><br/>Zustand stores · use cases"]
-    D["<b>domain</b><br/>entities · value objects · ports"]
-    I["<b>infrastructure</b><br/>API client · repositories · encryption · storage<br/>Firebase · audio · ads · Siri and Android bridges"]
-    P --> A --> D
-    I -. implements ports .-> D
-  end
-  layers ==> C["<b>core</b> · used by every layer<br/>Result · Failure · base classes · DI container · constants"]
+flowchart LR
+  P["<b>presentation</b><br/>screens · hooks · theme"] --> A["<b>application</b><br/>stores · use cases"] --> D["<b>domain</b><br/>entities · ports"]
+  I["<b>infrastructure</b><br/>API · storage · Firebase"] -. implements .-> D
+  classDef pres fill:#0f7f93,stroke:#0f7f93,color:#ffffff
+  classDef app fill:#2747d6,stroke:#2747d6,color:#ffffff
+  classDef dom fill:#1d7a4c,stroke:#1d7a4c,color:#ffffff
+  classDef infra fill:#b45a0c,stroke:#b45a0c,color:#ffffff
+  class P pres
+  class A app
+  class D dom
+  class I infra
 ```
+
+<sub>Underneath them all, **core** holds `Result`, `Failure`, the base classes, the DI container and the named constants; every layer may use it.</sub>
 
 | Idea | In practice |
 |---|---|
