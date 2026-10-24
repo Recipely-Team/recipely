@@ -157,6 +157,20 @@ missing, an outage, or slower than `ATTESTATION_TIMEOUT_MS`) means the request g
 decides: log-only first, then refuse on the attested routes once the numbers
 say real users are not caught.
 
+**Development keeps working on simulators, emulators and the web.** None of them
+can attest, and none is blocked:
+
+| runtime | what the app sends | why |
+|---|---|---|
+| web (any browser, `npm run web`) | no headers | `createAppAttestor` has no attestor for the web; the native module is never called |
+| iOS Simulator | no headers, at once | App Attest reports `isSupported = false` |
+| Android Emulator | no headers, or a low-integrity token | Play services missing fails fast; otherwise the verdict lacks device integrity. Bounded at 3 s either way |
+
+The backend only refuses in `enforce`, and refuses to **boot** in `enforce` unless it
+serves the production app (`NODE_ENV=production`, the store package and bundle id,
+production App Attest keys). Dev servers stay on `monitor`, so a request without a
+proof is logged, never refused, and the web app passes on its rate limits.
+
 **Before turning the flag on:**
 
 1. Backend verifies both platforms (recipely-backend `docs/roadmap.md`).
