@@ -5,6 +5,7 @@ import { CancelledFailure, UnknownFailure, type Failure } from '@core/failure';
 import { GOOGLE_WEB_CLIENT_ID } from '@infrastructure/constants/build-secrets';
 import { generateNonce, hashNonce } from '@infrastructure/auth/social/nonce-generator';
 import { isCancellationError } from '@infrastructure/auth/social/is-cancellation-error';
+import { describeSocialError } from '@infrastructure/auth/social/describe-social-error';
 import type { GoogleSigninMod } from '@infrastructure/auth/social/google-signin-mod';
 import type { FirebaseAuthMod } from '@infrastructure/auth/social/firebase-auth-mod';
 import * as AppleAuthentication from 'expo-apple-authentication';
@@ -61,8 +62,7 @@ export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failu
     if (isErrorWithCode(e) && e.code === statusCodes.SIGN_IN_CANCELLED) {
       return fail(new CancelledFailure(DiagnosticMessage.socialAuth.googleCancelled));
     }
-    const msg = e instanceof Error ? e.message : DiagnosticMessage.socialAuth.googleFailed;
-    return fail(new UnknownFailure(msg));
+    return fail(new UnknownFailure(describeSocialError(e, DiagnosticMessage.socialAuth.googleFailed)));
   }
 };
 
@@ -106,7 +106,6 @@ export const acquireAppleFirebaseToken = async (): Promise<Result<string, Failur
     if (isCancellationError(e)) {
       return fail(new CancelledFailure(DiagnosticMessage.socialAuth.appleCancelled));
     }
-    const msg = e instanceof Error ? e.message : DiagnosticMessage.socialAuth.appleFailed;
-    return fail(new UnknownFailure(msg));
+    return fail(new UnknownFailure(describeSocialError(e, DiagnosticMessage.socialAuth.appleFailed)));
   }
 };

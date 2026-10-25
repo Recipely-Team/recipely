@@ -1,7 +1,7 @@
-Daha hızlı ekranlar, açık kalan oturum, çevrimdışı alışveriş listesi ve düzeltmeler.
+Android'de daha kararlı asistan, doğru Tariflerim sayıları ve düzeltmeler.
 
-• Daha akıcı ekranlar: asistan, tarif sayfaları ve akış daha hızlı tepki veriyor.
-• Oturumun açık kalıyor: oturum kapanmak yerine kendiliğinden yenileniyor.
-• Alışveriş listen ve kaydettiğin tarifler internet olmadan da açılıyor.
-• Kaydırırken eklenen bir tarif artık iki kez görünmüyor.
-• Dili değiştirince tüm ekranlar hemen güncelleniyor.
+• Sesli asistan bazı Android telefonlarda açılırken uygulamayı kapatmıyor.
+• Tariflerim sayıları artık kendi sekmesinin üstünde ve tek satırda.
+• Kaydedilenler ve Beğenilenler yalnızca açabildiğin tarifleri sayıyor.
+• Okunamayan tek bir tarif artık bir listeyi ya da yorumları boşaltmıyor.
+• Güvenlik altyapısı: uygulama artık sunucularımıza gerçek uygulama olduğunu kanıtlayabiliyor.

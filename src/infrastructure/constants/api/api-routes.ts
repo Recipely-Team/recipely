@@ -154,4 +154,11 @@ export const ApiRoutes = {
     message: '/assistant/message',
     intentToken: '/assistant/intent-token',
   },
+  /** App Attest / Play Integrity: the one-time Apple key registration (docs/security.md §Attestation). */
+  attestation: {
+    /** GET a single-use challenge for attesting a new App Attest key. */
+    challenge: '/attestation/challenge',
+    /** POST `{ keyId, attestation, challenge }` — registers the attested key's public half. */
+    appleKey: '/attestation/apple-key',
+  },
 } as const;

@@ -355,6 +355,9 @@ jobs:
     env:
       APP_VARIANT: development
       EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
+      # Play Integrity's Google Cloud project number (not a secret). Unset means
+      # Android builds send no attestation; docs/security.md §Attestation.
+      EXPO_PUBLIC_PLAY_INTEGRITY_PROJECT_NUMBER: ${{ vars.PLAY_INTEGRITY_PROJECT_NUMBER }}
       EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 421167568469-kqknuidq9mtu66llumtdcitsr5j4j497.apps.googleusercontent.com
       BUILD_NUMBER: ${{ github.run_number }}
     steps:
@@ -419,31 +422,34 @@ jobs:
           fi
           echo "OK — shortcuts wired and resolved"
 
-      - name: Restore upload keystore
+      - name: Restore dev signing keystore
         env:
-          ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          ANDROID_DEV_KEYSTORE_BASE64: ${{ secrets.ANDROID_DEV_KEYSTORE_BASE64 }}
+          ANDROID_DEV_STORE_PASSWORD: ${{ secrets.ANDROID_DEV_STORE_PASSWORD }}
         run: |
-          # Reuse the same upload keystore for the dev variant so consecutive
-          # dev App Distribution releases install over one another.
-          if [ -z "$ANDROID_UPLOAD_KEYSTORE_BASE64" ]; then
-            echo "::error::ANDROID_UPLOAD_KEYSTORE_BASE64 secret is empty"
+          # The dev variant has its own key (alias recipely-dev), registered in
+          # Firebase for com.recipely.app.dev. It used to borrow the Play upload
+          # key, whose SHA-1 Firebase did not know for the dev package, so Google
+          # sign-in answered 10 DEVELOPER_ERROR — and a dev build had no business
+          # holding the production upload key anyway.
+          if [ -z "$ANDROID_DEV_KEYSTORE_BASE64" ] || [ -z "$ANDROID_DEV_STORE_PASSWORD" ]; then
+            echo "::error::ANDROID_DEV_KEYSTORE_BASE64 or ANDROID_DEV_STORE_PASSWORD secret is empty"
             exit 1
           fi
-          printf '%s' "$ANDROID_UPLOAD_KEYSTORE_BASE64" | tr -d ' \t\r\n' \
-            | base64 -d > android/app/upload.keystore
-          keytool -list -keystore android/app/upload.keystore \
-            -alias "${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}" \
-            -storepass "${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}" >/dev/null \
-            || { echo "::error::upload.keystore invalid, wrong store password, or missing key alias"; exit 1; }
+          printf '%s' "$ANDROID_DEV_KEYSTORE_BASE64" | tr -d ' \t\r\n' \
+            | base64 -d > android/app/dev.keystore
+          keytool -list -keystore android/app/dev.keystore -storetype PKCS12 \
+            -alias recipely-dev -storepass "$ANDROID_DEV_STORE_PASSWORD" >/dev/null \
+            || { echo "::error::dev.keystore invalid, wrong password, or missing alias recipely-dev"; exit 1; }
 
       - name: Write signing properties
         run: |
           {
             echo ""
-            echo "RECIPELY_UPLOAD_STORE_FILE=upload.keystore"
-            echo "RECIPELY_UPLOAD_STORE_PASSWORD=${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}"
-            echo "RECIPELY_UPLOAD_KEY_ALIAS=${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}"
-            echo "RECIPELY_UPLOAD_KEY_PASSWORD=${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}"
+            echo "RECIPELY_UPLOAD_STORE_FILE=dev.keystore"
+            echo "RECIPELY_UPLOAD_STORE_PASSWORD=${{ secrets.ANDROID_DEV_STORE_PASSWORD }}"
+            echo "RECIPELY_UPLOAD_KEY_ALIAS=recipely-dev"
+            echo "RECIPELY_UPLOAD_KEY_PASSWORD=${{ secrets.ANDROID_DEV_STORE_PASSWORD }}"
             echo "org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g"
             # Reuse task outputs from the cached Gradle home and run independent
             # tasks in parallel — both meaningfully cut the assemble/bundle time.
@@ -866,6 +872,9 @@ jobs:
     env:
       APP_VARIANT: production
       EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
+      # Play Integrity's Google Cloud project number (not a secret). Unset means
+      # Android builds send no attestation; docs/security.md §Attestation.
+      EXPO_PUBLIC_PLAY_INTEGRITY_PROJECT_NUMBER: ${{ vars.PLAY_INTEGRITY_PROJECT_NUMBER }}
       # OAuth web client ID (type=3) used by GoogleSignin.configure on Android
       # to request an idToken. Not sensitive — same value is bundled into the
       # APK via google-services.json. Must match Firebase Authentication → Web

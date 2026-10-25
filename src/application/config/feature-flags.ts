@@ -17,9 +17,14 @@ import { FeatureAvailability } from '@application/config/feature-availability';
  *   (backend #392) reached production.
  * - `fridgeToRecipe`: Cook from my fridge (photo → ingredients → ideas → AI recipe). On since
  *   `/fridge/*` (backend #393) reached production.
+ * - `appAttestation`: Play Integrity / App Attest proofs on the costly routes
+ *   (`ATTESTED_ROUTES`). DevOnly since the dev server verifies them in
+ *   `monitor` (2026-10-25); production follows through the admin panel once its
+ *   server is in `monitor` too (docs/security.md §Attestation).
  */
 export const FeatureFlags = {
   instagramAutomations: FeatureAvailability.DevOnly,
   mealPlanner: FeatureAvailability.On,
   fridgeToRecipe: FeatureAvailability.On,
+  appAttestation: FeatureAvailability.DevOnly,
 } as const;

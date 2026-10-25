@@ -27,7 +27,10 @@ export const buildRequestInterceptor = (
 ) => {
   return async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
     const { headers } = config;
-    const common = await buildCommonHeaders(options);
+    const common = await buildCommonHeaders(options, {
+      method: config.method ?? CharConstants.empty,
+      url: config.url ?? CharConstants.empty,
+    });
     for (const [name, value] of Object.entries(common)) {
       // set(): AxiosHeaders has its own normalised storage.
       headers.set(name, value);

@@ -44,6 +44,11 @@ export interface MyRecipesTabsProps {
  *   than sitting on it. Overlapping cost more than it saved: at two digits the
  *   count covered the icon it was counting, which is the one thing the column
  *   uses to say which tab it is.
+ * - **The badge is placed in numbers, not percentages** — Android resolved a
+ *   percentage offset against the tab column, and every count landed on the
+ *   tab to its right. It sits in its own fixed-width slot: an absolute child
+ *   measured against the glyph's width had room for one digit, so "99+" wrapped
+ *   onto two lines over the icon.
  * - **A tab with nothing in it wears no badge** — `CountBadge` renders nothing
  *   at zero, so an empty Drafts tab is quiet instead of showing a "0".
  */
@@ -67,7 +72,9 @@ export const MyRecipesTabs = ({ tabs, active, onChange }: MyRecipesTabsProps): R
           >
             <View style={styles.glyph}>
               <MaterialCommunityIcons name={TabIcons[key]} size={iconSizes.lg} color={tint} />
-              <CountBadge count={count} tone={CountBadgeTone.Tally} style={styles.badge} />
+              <View style={styles.badgeSlot} pointerEvents="none">
+                <CountBadge count={count} tone={CountBadgeTone.Tally} style={styles.badge} />
+              </View>
             </View>
             <ThemedText
               variant="caption"
@@ -110,18 +117,23 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
     paddingHorizontal: spacing.xxs,
   },
-  // Sized to the glyph; overflow stays visible so the badge can escape it.
+  // Sized to the glyph explicitly; overflow stays visible so the badge can escape it.
   glyph: {
+    width: iconSizes.lg,
+    minHeight: iconSizes.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Anchored by bottom/left so a wider count grows away from the icon.
-  badge: {
-    bottom: '100%',
-    left: '100%',
-    marginBottom: -spacing.xs,
-    marginLeft: -spacing.xs,
+  // Numbers from the glyph's own box (see head doc); bottom/left so a wider count grows away from the icon.
+  badgeSlot: {
+    position: 'absolute',
+    bottom: iconSizes.lg - spacing.xxs,
+    left: iconSizes.lg - spacing.xxs,
+    width: iconSizes.lg + iconSizes.lg,
+    alignItems: 'flex-start',
   },
+  // In flow inside its slot, so "99+" gets the slot's width instead of the glyph's.
+  badge: { position: 'relative' },
   label: {
     fontSize: fontSizes.micro,
     letterSpacing: letterSpacings.tight,

@@ -104,14 +104,15 @@ describe('RecipeRepository.listTrendingRecipes', () => {
     if (!r.ok) expect(r.failure).toBe(failure);
   });
 
-  it('returns the validation failure from toRecipeSummary when a DTO is malformed (e.g. empty name)', async () => {
+  // The symptom: one recipe with a blank name emptied the whole list (Saved lost its badge).
+  it('skips a malformed DTO (e.g. empty name) and keeps the rest of the list', async () => {
     const malformed: RecipeListItemDto = { ...validDto, id: 'bad-id', name: '' };
     const { http } = makeHttp(ok(makeList([validDto, malformed])));
     const repo = new RecipeRepository(http);
 
     const r = await repo.listTrendingRecipes();
 
-    expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.failure.code).toBe('validation');
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.map((s) => s.id)).toEqual([validDto.id]);
   });
 });

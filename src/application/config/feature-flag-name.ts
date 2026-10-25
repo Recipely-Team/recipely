@@ -8,4 +8,5 @@ export const FeatureFlagName = {
   InstagramAutomations: 'instagramAutomations',
   MealPlanner: 'mealPlanner',
   FridgeToRecipe: 'fridgeToRecipe',
+  AppAttestation: 'appAttestation',
 } as const satisfies Record<string, keyof typeof FeatureFlags>;

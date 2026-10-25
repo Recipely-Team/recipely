@@ -1,5 +1,5 @@
-• Smoother screens: the assistant, recipe pages and the feed respond faster.
-• You stay signed in: your session renews itself instead of ending.
-• Your shopping list and saved recipes open without a connection.
-• A recipe added while you scroll no longer shows up twice.
-• Changing the language updates every screen at once.
+• The voice assistant no longer closes the app when it starts on some Android phones.
+• My Recipes counts each sit on their own tab and stay on one line.
+• Saved and Liked count only recipes you can still open.
+• One unreadable recipe no longer empties a list or a comment thread.
+• Security groundwork: the app can now prove to our servers that it is the genuine app.

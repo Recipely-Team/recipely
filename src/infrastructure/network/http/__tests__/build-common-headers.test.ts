@@ -63,4 +63,33 @@ describe('buildCommonHeaders', () => {
     expect(first['X-Request-Id']).toBe('rid-1');
     expect(second['X-Request-Id']).toBe('rid-2');
   });
+
+  it('attests a costly route, bound to its verb, path and request id', async () => {
+    const attestationProvider = jest.fn().mockResolvedValue({ 'X-App-Attestation': 'proof' });
+    const options = makeOptions({ requestIdProvider: () => 'rid-1', attestationProvider });
+
+    const headers = await buildCommonHeaders(options, { method: 'post', url: '/recipes/generate' });
+
+    expect(attestationProvider).toHaveBeenCalledWith('POST /recipes/generate\nrid-1');
+    expect(headers['X-App-Attestation']).toBe('proof');
+  });
+
+  it('spends no attestation on a route outside the attested list', async () => {
+    const attestationProvider = jest.fn().mockResolvedValue({ 'X-App-Attestation': 'proof' });
+    const options = makeOptions({ requestIdProvider: () => 'rid-1', attestationProvider });
+
+    const headers = await buildCommonHeaders(options, { method: 'get', url: '/recipes' });
+
+    expect(attestationProvider).not.toHaveBeenCalled();
+    expect(headers['X-App-Attestation']).toBeUndefined();
+  });
+
+  it('still sends the request when the attestor has no proof to give', async () => {
+    const options = makeOptions({ requestIdProvider: () => 'rid-1', attestationProvider: () => Promise.resolve(null) });
+
+    const headers = await buildCommonHeaders(options, { method: 'post', url: '/recipes/generate' });
+
+    expect(headers['X-Request-Id']).toBe('rid-1');
+    expect(headers['X-App-Attestation']).toBeUndefined();
+  });
 });

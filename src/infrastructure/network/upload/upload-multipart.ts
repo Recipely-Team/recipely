@@ -36,7 +36,7 @@ export const uploadMultipart = async <T>(
   timeoutMs: number = MULTIPART_UPLOAD_TIMEOUT_MS,
 ): Promise<Result<T, Failure>> => {
   const fullUrl = joinUrl(options.baseUrl, url);
-  const commonHeaders = await buildCommonHeaders(options);
+  const commonHeaders = await buildCommonHeaders(options, { method: HttpMethod.Post, url });
   const isLoggingEnabled = options.enableLogging === true;
 
   return new Promise<Result<T, Failure>>((resolve) => {

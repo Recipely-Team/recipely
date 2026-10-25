@@ -57,8 +57,9 @@ export const LoginForm = (): React.JSX.Element => {
     async (signInWith: () => Promise<Failure | null>) => {
       setErrorMessage(undefined);
       const failure = await signInWith();
-      if (failure?.code === FailureCode.Network) FailureReporter.reportDiagnostic(failure, LOGIN_SOCIAL_CONTEXT);
+      // Every refusal but a cancel is reported: the provider's code is the only diagnosis.
       if (failure && failure.code !== FailureCode.Cancelled) {
+        FailureReporter.reportDiagnostic(failure, LOGIN_SOCIAL_CONTEXT);
         setErrorMessage(authFormMessage(t, failure, {}));
       }
     },
