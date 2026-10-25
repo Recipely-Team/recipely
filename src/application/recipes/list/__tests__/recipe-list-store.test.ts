@@ -120,6 +120,24 @@ describe('recipe-list-store', () => {
     expect(store.getState().state).toEqual({ status: 'loaded', recipes: second, query: '', page: 1, hasMore: false, total: second.length });
   });
 
+  // FlatList rebuilds its rows only when `recipes` changes reference; a flag flipping must not.
+  it('keeps the same recipes array while a refresh or a next page is in flight', async () => {
+    const useCase = { execute: jest.fn().mockResolvedValue(ok({ ...recipePageOf([makeRecipe({ id: 'r1' })]), hasMore: true })) };
+    const store = configureRecipeListStore({ listRecipes: useCase as unknown as ListRecipesUseCase });
+    await store.getState().load();
+    const loaded = store.getState().state;
+    if (loaded.status !== 'loaded') throw new Error('not loaded');
+
+    useCase.execute.mockReturnValue(makeDeferred().promise);
+    void store.getState().loadMore();
+    const loadingMore = store.getState().state;
+    void store.getState().load();
+    const refreshing = store.getState().state;
+
+    expect(loadingMore.status === 'loaded' && loadingMore.recipes).toBe(loaded.recipes);
+    expect(refreshing.status === 'loaded' && refreshing.recipes).toBe(loaded.recipes);
+  });
+
   it('a failed refresh keeps the previous recipes and surfaces refreshFailure instead of blanking the screen', async () => {
     const first = [makeRecipe({ id: 'r1' })];
     const useCase = { execute: jest.fn().mockResolvedValue(ok(recipePageOf(first))) };
