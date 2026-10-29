@@ -32,30 +32,22 @@ caption covers most food posts on its own.
 ## 2. Import a recipe from **YouTube**
 
 **Status:** `shipped` — YouTube and Facebook in #475 (YouTube links go through the YouTube
-Data API importer, not yt-dlp); TikTok links are imported too.
+Data API importer, not yt-dlp); TikTok links are imported too; Pinterest pins in #602
+(backend #415).
 
 **Open:** do we cap video length, and what do we tell the user when we do? Many
 channels put the full recipe in the description; check that before transcribing.
 
-**Pinterest:** `built, PR open` — app #602, backend #415. A pin (`pinterest.*/pin/<id>`,
-`pin.it/<code>`) gets its own label, seal and importing look; a video or idea pin imports the
-recipe in the pin, and any other pin follows its link to the recipe site.
-
 ## 2a. Import review and suggested recipes
 
-**Status:** `built, PR open` — app #607, backend #418
+**Status:** `shipped` — app #607, backend #418
 
-An imported draft shows **what we read** (caption, transcript, page) and marks the lines the
-model **guessed** rather than read, so the user checks those before saving. When a post names a
-dish but has no recipe in it, the import offers a **suggested recipe** for that dish, labelled
-as a suggestion, instead of failing with "no recipe found".
-
-**Open:** not yet seen on a live import — check one reel without a recipe on dev after the
-backend deploys.
+**Open:** a suggested recipe has not been seen on a live import yet — check one reel without
+a recipe on dev.
 
 ## 3. Persistent Recipe & Timer view in Background
 
-**Status:** `ready` — platform strategy & automatic trigger defined
+**Status:** `shaped` — platform strategy & automatic trigger defined; nothing built (native work)
 
 The goal: keep the active recipe step, ingredients, and timer visible while the user navigates away or uses other apps during cooking.
 
@@ -152,11 +144,9 @@ on dev; Advanced Access needs Meta App Review and Business Verification.
 
 ## 10. Creator storefront
 
-**Status:** `partly shipped` — creator pages (`/creators`, `/creators/<userId>`),
-Instagram/TikTok creator tags and follow shipped in #496. `built, PR open`: the page address
-is the creator's approved Instagram handle (`/creators/<handle>`; old id links keep working)
-and followers get a "New recipe from {creator}" notification in their own language — app
-#603 and #606, backend #420.
+**Status:** `shipped` — creator pages, creator tags and follow in #496; the Instagram-handle
+address (`/creators/<handle>`) and the "New recipe from {creator}" notification in #603 and
+#606 (backend #420).
 
 **Still open:** a creator without an Instagram handle keeps the id address; decide whether
 a TikTok handle may stand in.
@@ -191,37 +181,21 @@ verify with a real call before designing v2's labels.
 
 ## 13. Plan my week
 
-**Status:** `built, PR open` — app #608, backend #419 (`GET /me/meal-plan/suggestion`)
-
-The meal planner drafts the rest of the week from the user's saved, liked and own recipes:
-no recipe twice in a week, nothing from the last 14 days while something fresh fits, no same
-category two days running. The user swaps or shuffles before **Add to plan**; nothing is
-written until then, and Undo removes exactly what was added.
+**Status:** `shipped` — app #608, backend #419 (`GET /me/meal-plan/suggestion`)
 
 **Open:** dietary filters (the draft ignores them), and an on-screen check against the
 prototype with a signed-in account that has saved recipes.
 
 ## 14. Every recipe in every app language, with nutrition
 
-**Status:** `built, PR open` — backend #417 (all 14 locales stored), #416 (nutrition measured
-on save)
+**Status:** `shipped` — backend #417 (all 14 locales stored), #416 (nutrition measured on save)
 
-A recipe is stored in all 14 app languages, not only the one it was written in, so a reader
-sees it in their own language and search matches its name in every language. New recipes are
-translated on save; a sweep fills in the backlog (2 recipes every 10 minutes).
-Nutrition is measured as soon as a recipe is saved, closing the gap where new recipes showed
-no values.
-
-**Open:** no live translation has run yet — check `translation_sweep_tick` in the dev logs
-after deploy.
+**Open:** confirm the backlog sweep (2 recipes every 10 minutes) actually runs — check
+`translation_sweep_tick` in the dev logs.
 
 ## 15. Onboarding 2026
 
-**Status:** `built, PR open` — app #604 (copy only claims what the app does, with a test that
-blocks counts like "thousands of recipes"), #609 (redesign; board `Board · Onboarding 2026`)
-
-Four slides — save from anywhere, cook hands-free, plan the week, cook with what you have —
-with live art, autoplay and a single Skip in place of "Explore" and "Don't show again".
+**Status:** `shipped` — app #604 (honest copy), #609 (redesign; board `Board · Onboarding 2026`)
 
 **Open:** the fridge slide uses a drawn camera frame; swap in a real photo if one is made.
 
@@ -232,7 +206,7 @@ on purpose. Each line is what, why, and what decides it.
 
 | What | Why | Depends on / open |
 |---|---|---|
-| App Attest and Play Integrity instead of relying on the envelope | The envelope key ships in every app, so it detects tampering but cannot prove a request came from a real install. | Apple and Google console setup plus a server-side verifier; a product decision. |
+| App Attest and Play Integrity instead of relying on the envelope | The envelope key ships in every app, so it detects tampering but cannot prove a request came from a real install. | App half built behind `appAttestation` (#637), on in dev builds (#645); the server-side verifier (backend) is still to do before it is on in production. |
 | Count voice time per user, not per credential | The backend caps one minted credential at the remaining budget, but a client that skips heartbeats and re-mints is never charged. | Charge or reserve seconds at mint, or charge the time between mints (backend). |
 | Restore web sessions on `*.web.app` and `localhost` | The refresh cookie is `SameSite=Strict`, so from those origins a reload sends no cookie and the session is not restored. | Decide whether those origins matter; if so, `Lax` or `None` per host (backend). |
 | Prune old refresh tokens | `refresh_tokens` gains a row on every renewal and nothing deletes expired or revoked rows. | A scheduled sweep (backend). |
