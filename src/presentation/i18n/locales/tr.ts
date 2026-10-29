@@ -2184,4 +2184,24 @@ export const tr: TranslationsType = {
     promptDiet: "Beslenme: {diet}",
     promptServings: "{n} porsiyon olsun",
   },
+  appVersion: {
+    soft: {
+      title: 'Yeni bir sürüm var',
+      body: '{latest} sürümü düzeltmeler ve iyileştirmeler içeriyor.',
+      update: 'Güncelle',
+      notNow: 'Şimdi değil',
+    },
+    required: {
+      title: 'Güncelleme gerekli',
+      body: 'Recipely\'nin bu sürümü artık desteklenmiyor. Yemek yapmaya devam etmek için güncelle.',
+      blockedBody: 'Bu sürümde bilinen bir sorun var. Devam etmek için lütfen güncelle.',
+      versions: 'Sürümün {current} · Gerekli {required}',
+      versionsA11y: 'Sürümün {current}. Gerekli sürüm {required}.',
+      updateNow: 'Şimdi güncelle',
+      tryAgain: 'Tekrar dene',
+    },
+    a11y: {
+      tryHint: 'Zaten güncellediysen tekrar kontrol eder',
+    },
+  },
 };

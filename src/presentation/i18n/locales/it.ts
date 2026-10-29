@@ -2180,4 +2180,24 @@ export const it = {
     promptDiet: "Dieta: {diet}",
     promptServings: "Per {n} porzioni",
   },
+  appVersion: {
+    soft: {
+      title: 'È disponibile una nuova versione',
+      body: 'La versione {latest} porta correzioni e miglioramenti.',
+      update: 'Aggiorna',
+      notNow: 'Non ora',
+    },
+    required: {
+      title: 'Aggiornamento necessario',
+      body: 'Questa versione di Recipely non è più supportata. Aggiorna per continuare a cucinare.',
+      blockedBody: 'Questa versione ha un problema noto. Aggiorna per continuare.',
+      versions: 'La tua versione {current} · Richiesta {required}',
+      versionsA11y: 'La tua versione è {current}. La versione richiesta è {required}.',
+      updateNow: 'Aggiorna ora',
+      tryAgain: 'Riprova',
+    },
+    a11y: {
+      tryHint: 'Ricontrolla se hai già aggiornato',
+    },
+  },
 };

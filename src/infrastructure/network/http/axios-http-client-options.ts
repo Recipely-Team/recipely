@@ -46,4 +46,11 @@ export interface AxiosHttpClientOptions {
    * the crash log's breadcrumbs. Diagnostic only; never user copy.
    */
   onRequestFailed?: (summary: string) => void;
+  /**
+   * Store builds only: sent as `X-App-Platform` / `X-App-Version` so the
+   * backend can refuse a build that must update. Absent on the web.
+   */
+  appBuild?: { platform: string; version: string };
+  /** Invoked on every 426 from the version gate, so the app re-checks and shows its update gate. */
+  onUpgradeRequired?: () => void;
 }

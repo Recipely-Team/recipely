@@ -60,6 +60,8 @@ export interface ThemeColors {
    * is always a green tinted toward 0.4-0.5 luminance and requires dark text.
    */
   onSuccess: string;
+  /** Text or a glyph on a `danger` fill. */
+  onDanger: string;
   /** Rose-red used for liked/active heart icons — consistent across all themes. */
   likeActive: string;
   /** Semi-transparent dark overlay for image overlays and floating buttons. */

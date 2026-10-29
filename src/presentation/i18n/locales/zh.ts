@@ -2184,4 +2184,24 @@ export const zh = {
     promptDiet: "饮食：{diet}",
     promptServings: "{n} 人份",
   },
+  appVersion: {
+    soft: {
+      title: '有新版本可用',
+      body: '{latest} 版本带来了修复和改进。',
+      update: '更新',
+      notNow: '以后再说',
+    },
+    required: {
+      title: '需要更新',
+      body: '此版本的 Recipely 已不再受支持。请更新以继续使用。',
+      blockedBody: '此版本存在已知问题。请更新后继续。',
+      versions: '当前版本 {current} · 需要 {required}',
+      versionsA11y: '你的版本是 {current}。需要的版本是 {required}。',
+      updateNow: '立即更新',
+      tryAgain: '重试',
+    },
+    a11y: {
+      tryHint: '如果你已更新，将重新检查',
+    },
+  },
 };

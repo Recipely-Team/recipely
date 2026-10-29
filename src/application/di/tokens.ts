@@ -31,6 +31,7 @@ export const TOKENS = {
   FridgeRepository: Symbol.for('FridgeRepository'),
   UserProfileRepository: Symbol.for('UserProfileRepository'),
   FeedbackRepository: Symbol.for('FeedbackRepository'),
+  AppVersionRepository: Symbol.for('AppVersionRepository'),
   FeatureFlagResolver: Symbol.for('FeatureFlagResolver'),
   KeyValueStore: Symbol.for('KeyValueStore'),
   PreferenceStore: Symbol.for('PreferenceStore'),

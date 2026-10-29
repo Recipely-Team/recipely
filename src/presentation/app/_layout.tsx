@@ -19,6 +19,7 @@ import { ActiveTimersBar } from '@presentation/base/widgets/timers/active-timers
 import { AssistantPill } from '@presentation/base/widgets/assistant/assistant-pill';
 import { ToastHost } from '@presentation/base/feedback/toast-host';
 import { SplashOverlay } from '@presentation/base/widgets/loading/splash-overlay';
+import { AppUpdateHost } from '@presentation/base/widgets/app-update/app-update-host';
 import { WebHeader } from '@presentation/base/widgets/web-header/web-header';
 import { RootTabBar } from '@presentation/base/widgets/navigation/root-tab-bar';
 import { AlarmScreen } from '@presentation/navigation/alarm-screen';
@@ -193,6 +194,7 @@ const RootStack = (): React.JSX.Element => {
       <ToastHost />
       <AlarmOverlay />
       <SplashOverlay />
+      <AppUpdateHost />
       <StatusBar style="auto" />
       </View>
     </ThemeProvider>

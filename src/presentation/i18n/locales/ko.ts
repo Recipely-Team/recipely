@@ -2176,4 +2176,24 @@ export const ko: TranslationsType = {
     promptDiet: "식단: {diet}",
     promptServings: "{n}인분",
   },
+  appVersion: {
+    soft: {
+      title: '새 버전이 나왔어요',
+      body: '{latest} 버전에는 수정 사항과 개선 사항이 있어요.',
+      update: '업데이트',
+      notNow: '나중에',
+    },
+    required: {
+      title: '업데이트가 필요해요',
+      body: '이 버전의 Recipely는 더 이상 지원되지 않아요. 계속 요리하려면 업데이트하세요.',
+      blockedBody: '이 버전에는 알려진 문제가 있어요. 계속하려면 업데이트하세요.',
+      versions: '내 버전 {current} · 필요 {required}',
+      versionsA11y: '내 버전은 {current}입니다. 필요한 버전은 {required}입니다.',
+      updateNow: '지금 업데이트',
+      tryAgain: '다시 시도',
+    },
+    a11y: {
+      tryHint: '이미 업데이트했다면 다시 확인해요',
+    },
+  },
 };

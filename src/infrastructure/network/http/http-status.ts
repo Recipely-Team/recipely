@@ -19,6 +19,8 @@ export const HttpStatus = {
   forbidden: 403,
   notFound: 404,
   conflict: 409,
+  /** The backend's version gate: this build must update. */
+  upgradeRequired: 426,
   tooManyRequests: 429,
   badGateway: 502,
   serviceUnavailable: 503,

@@ -33,15 +33,21 @@ export interface AppBootstrapProps {
 // `expireSession`, breaking the chicken-and-egg without infra importing
 // application.
 let onSessionExpired: () => void = () => {};
+// Same late binding for the backend's 426 version gate: re-check, which raises the update gate.
+let onUpgradeRequired: () => void = () => {};
 
 // Initialize stores synchronously on module load
 const initializeStores = (): ApplicationStores => {
   registerInfrastructure(container, {
     onUnauthorized: () => onSessionExpired(),
+    onUpgradeRequired: () => onUpgradeRequired(),
   });
   const created = registerApplication(container);
   onSessionExpired = () => {
     void created.authStore.getState().expireSession();
+  };
+  onUpgradeRequired = () => {
+    void created.appVersionStore.getState().check();
   };
   return created;
 };

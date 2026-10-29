@@ -25,6 +25,7 @@ import type { FavoritesStore } from '@application/favorites/favorites-store-cont
 import type { ImportJobStore } from '@application/recipes/import/import-job-store-contract';
 import type { FileImportStore } from '@application/recipes/import-file/file-import-store-contract';
 import type { FeedbackStore } from '@application/feedback/feedback-store-contract';
+import type { AppVersionStore } from '@application/app-version/app-version-store-contract';
 import type { LikesStore } from '@application/likes/likes-store-contract';
 import type { StepProgressStore } from '@application/recipes/cooking/step-progress-store-contract';
 import type { PortionChoiceStore } from '@application/recipes/cooking/portion-choice-store-contract';
@@ -82,6 +83,7 @@ export interface ApplicationStores {
   userProfileStore: StoreApi<UserProfileStore>;
   taxonomyStore: StoreApi<TaxonomyStore>;
   feedbackStore: StoreApi<FeedbackStore>;
+  appVersionStore: StoreApi<AppVersionStore>;
   /** The Explore creators strip. Public, so it survives sign-out. */
   creatorsStore: StoreApi<CreatorsStore>;
   /** One creator's page: profile, recipes, follow. Viewer-scoped, cleared on sign-out. */

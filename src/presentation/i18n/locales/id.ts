@@ -2180,4 +2180,24 @@ export const id = {
     promptDiet: "Diet: {diet}",
     promptServings: "Untuk {n} porsi",
   },
+  appVersion: {
+    soft: {
+      title: 'Versi baru tersedia',
+      body: 'Versi {latest} membawa perbaikan dan peningkatan.',
+      update: 'Perbarui',
+      notNow: 'Nanti saja',
+    },
+    required: {
+      title: 'Pembaruan diperlukan',
+      body: 'Versi Recipely ini tidak lagi didukung. Perbarui untuk terus memasak.',
+      blockedBody: 'Versi ini punya masalah yang diketahui. Perbarui untuk melanjutkan.',
+      versions: 'Versimu {current} · Diperlukan {required}',
+      versionsA11y: 'Versimu {current}. Versi yang diperlukan {required}.',
+      updateNow: 'Perbarui sekarang',
+      tryAgain: 'Coba lagi',
+    },
+    a11y: {
+      tryHint: 'Memeriksa lagi jika kamu sudah memperbarui',
+    },
+  },
 };

@@ -2176,4 +2176,24 @@ export const hi: TranslationsType = {
     promptDiet: "आहार: {diet}",
     promptServings: "{n} सर्विंग के लिए",
   },
+  appVersion: {
+    soft: {
+      title: 'नया संस्करण उपलब्ध है',
+      body: 'संस्करण {latest} में सुधार और बेहतरियाँ हैं।',
+      update: 'अपडेट करें',
+      notNow: 'अभी नहीं',
+    },
+    required: {
+      title: 'अपडेट ज़रूरी है',
+      body: 'Recipely का यह संस्करण अब समर्थित नहीं है। खाना बनाते रहने के लिए अपडेट करें।',
+      blockedBody: 'इस संस्करण में एक ज्ञात समस्या है। जारी रखने के लिए कृपया अपडेट करें।',
+      versions: 'आपका संस्करण {current} · ज़रूरी {required}',
+      versionsA11y: 'आपका संस्करण {current} है। ज़रूरी संस्करण {required} है।',
+      updateNow: 'अभी अपडेट करें',
+      tryAgain: 'फिर से कोशिश करें',
+    },
+    a11y: {
+      tryHint: 'अगर आपने अपडेट कर लिया है तो फिर से जाँचता है',
+    },
+  },
 };

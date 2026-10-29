@@ -7,6 +7,7 @@ import {
   LANGUAGE_STORAGE_KEY,
   ONBOARDING_SEEN_STORAGE_KEY,
   FIRST_OPEN_AT_STORAGE_KEY,
+  DISMISSED_UPDATE_VERSION_STORAGE_KEY,
   REMINDERS_CHOICE_STORAGE_KEY,
   TIMERS_STORAGE_KEY,
 } from '@infrastructure/constants/storage';
@@ -18,6 +19,7 @@ const KEY_BY_SLOT: Record<PreferenceSlotType, string> = {
   [PreferenceSlot.OnboardingSeen]: ONBOARDING_SEEN_STORAGE_KEY,
   [PreferenceSlot.RemindersChoice]: REMINDERS_CHOICE_STORAGE_KEY,
   [PreferenceSlot.FirstOpenAt]: FIRST_OPEN_AT_STORAGE_KEY,
+  [PreferenceSlot.DismissedUpdateVersion]: DISMISSED_UPDATE_VERSION_STORAGE_KEY,
 };
 
 /**

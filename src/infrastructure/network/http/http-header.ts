@@ -25,6 +25,10 @@ export const HttpHeader = {
   appAttestationPlatform: 'X-App-Attestation-Platform',
   /** iOS only: the registered App Attest key the assertion was signed with. */
   appAttestationKey: 'X-App-Attestation-Key',
+  /** Store builds only: `ios` or `android`, read by the backend's 426 version gate. */
+  appPlatform: 'X-App-Platform',
+  /** Store builds only: the installed `major.minor.patch`. */
+  appVersion: 'X-App-Version',
 } as const;
 
 /** Header values this client sends. */
