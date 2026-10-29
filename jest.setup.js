@@ -44,3 +44,17 @@ jest.mock('react-native-google-mobile-ads', () => ({
     OBTAINED: 'OBTAINED',
   },
 }));
+
+// FlashList measures its viewport and rows through native layout, which the test
+// renderer never reports, so it would render no rows. This is the measuring half
+// of the package's own jestSetup.js (a 400×900 viewport, 100×100 rows); its other
+// half swaps FlashList for a `RecyclerView` export 2.0.x does not have.
+jest.mock('@shopify/flash-list/dist/recyclerview/utils/measureLayout', () => {
+  const box = (width, height) => jest.fn(() => ({ x: 0, y: 0, width, height }));
+  return {
+    ...jest.requireActual('@shopify/flash-list/dist/recyclerview/utils/measureLayout'),
+    measureParentSize: box(400, 900),
+    measureFirstChildLayout: box(400, 900),
+    measureItemLayout: box(100, 100),
+  };
+});

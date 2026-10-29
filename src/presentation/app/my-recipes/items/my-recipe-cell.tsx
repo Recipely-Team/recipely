@@ -4,6 +4,7 @@ import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { WebRecipeListItem } from '@presentation/base/widgets/cards/web-recipe-list-item';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
+import { GRID_CELL_INSET, GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
 
 export interface MyRecipeCellProps {
   recipe: RecipeSummaryEntity;
@@ -56,5 +57,7 @@ export const MyRecipeCell = memo(MyRecipeCellComponent);
 const styles = StyleSheet.create({
   gridCell: {
     flex: ValueConstants.one,
+    paddingHorizontal: GRID_CELL_INSET,
+    paddingBottom: GRID_GAP,
   },
 });

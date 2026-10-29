@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { ValueConstants } from '@core/constants';
 import { StoreStatus } from '@application/store/store-status';
 import type { ShoppingItemEntity } from '@domain/shopping/items/shopping-item-entity';
@@ -26,8 +27,8 @@ export interface ShoppingListBodyProps {
 
 /**
  * The loaded list: the add field and the clears above, "To buy" then
- * "Completed", the next page on scroll and pull-to-refresh. Rows are bounded
- * with `windowSize` and the batch sizes, never `removeClippedSubviews`.
+ * "Completed", the next page on scroll and pull-to-refresh. A FlashList: rows
+ * are recycled, and `getItemType` keeps a heading's view out of an item's.
  * `renderRow` and `keyExtractor` keep their identity so the memoised rows hold.
  */
 export const ShoppingListBody = ({ vm, scrollable, onEdit }: ShoppingListBodyProps): React.JSX.Element => {
@@ -48,12 +49,11 @@ export const ShoppingListBody = ({ vm, scrollable, onEdit }: ShoppingListBodyPro
     [onToggle, onEdit, onRemove],
   );
   return (
-    <FlatList
-      // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
-      removeClippedSubviews={false}
+    <FlashList
       {...scrollable}
       data={vm.rows}
       keyExtractor={rowKey}
+      getItemType={rowType}
       renderItem={renderRow}
       ItemSeparatorComponent={Separator}
       ListHeaderComponent={
@@ -79,9 +79,6 @@ export const ShoppingListBody = ({ vm, scrollable, onEdit }: ShoppingListBodyPro
       refreshControl={<RefreshControl refreshing={vm.isRefreshing} onRefresh={vm.onRefresh} tintColor={colors.primary} />}
       onEndReached={vm.onEndReached}
       onEndReachedThreshold={ListConstants.endReachedThreshold}
-      initialNumToRender={ListConstants.initialRows}
-      maxToRenderPerBatch={ListConstants.rowsPerBatch}
-      windowSize={ListConstants.windowSize}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={styles.content}
     />
@@ -90,6 +87,7 @@ export const ShoppingListBody = ({ vm, scrollable, onEdit }: ShoppingListBodyPro
 
 const Separator = (): React.JSX.Element => <View style={styles.separator} />;
 const rowKey = (row: ShoppingRow): string => row.key;
+const rowType = (row: ShoppingRow): string => row.kind;
 
 const styles = StyleSheet.create({
   content: { padding: spacing.lg, paddingBottom: spacing.xxl, flexGrow: ValueConstants.one },
