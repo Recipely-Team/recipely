@@ -19,7 +19,8 @@ interface LaunchCampaignStoreDeps {
  * - **Never on the startup path.** The pick reads the device cache only; the network refresh
  *   runs after it and only feeds the NEXT launch, so a slow or offline backend changes nothing now.
  * - **Once per process.** Returning to the foreground is not a launch; a second `prepare` is a no-op.
- * - **Seen is remembered on dismissal**, whatever the way out, so a campaign never comes back.
+ * - **Seen is remembered on dismissal**, whatever the way out, so a dialog never comes back; a
+ *   splash shows on every launch while its window is open (`CampaignLineup`).
  */
 export const configureLaunchCampaignStore = (deps: LaunchCampaignStoreDeps): StoreApi<LaunchCampaignStore> => {
   let isPrepared = false;

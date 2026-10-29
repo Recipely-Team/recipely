@@ -3263,7 +3263,7 @@ Source in the prototype: `src/launch-campaign.jsx` (app) and `src/campaign-admin
 A seasonal or promotional moment set in the admin panel (System → LaunchCampaign, or the **Campaign calendar**
 page): a time window, regions (ISO codes, empty = everywhere), platforms, priority, a variant and its copy.
 
-**Rules (board):** at most once per campaign per device; never over onboarding, sign-in or an update
+**Rules (board):** a splash on every launch while its window is open (changed 2026-10-30 — once was too easy to miss); a dialog at most once per campaign per device; never over onboarding, sign-in or an update
 prompt (the update wins); never delays startup — the app shows only what it cached on an earlier launch;
 one campaign at a time, highest priority first.
 
