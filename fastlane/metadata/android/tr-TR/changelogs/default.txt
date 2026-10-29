@@ -1,3 +1,4 @@
-• Kayıt daha güvenilir: e-postanı iki kez ya da yavaş bağlantıda doğrulamak artık baştan başlatmıyor, seni içeri alıyor.
-• Doğrulama e-postasında 3 gün geçerli "Hesabımı oluşturmayı bitir" düğmesi var; uygulamayı kapatmış olsan bile çalışır.
-• Uygulama artık yeni sürüm çıktığında haber veriyor, sürümün desteklenmediğinde de güncellemeni istiyor.
+• Açılışta kutlamalar: Cumhuriyet Bayramı gibi özel günlerde Recipely seni kısa bir kutlama ekranıyla karşılar. İstediğin an geçebilirsin.
+• Alışveriş listen çevrimdışı çalışır: sinyal yokken işaretlediğin ve sildiğin ürünler kalır, bağlantı gelince eşitlenir.
+• Tariflerim, alışveriş listesi ve yiyecek seçicide daha hızlı, akıcı listeler.
+• Zayıf bağlantıda daha güvenilir yükleme ve ayarlarına daha hızlı erişim.

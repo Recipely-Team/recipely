@@ -1,3 +1,4 @@
-• Signing up is more reliable: verifying your email twice, or after a slow connection, now signs you in instead of asking you to start over.
-• The verification email has a "Finish creating my account" button that works for 3 days, even if you closed the app.
-• The app now tells you when an update is available, and asks you to update when your version is no longer supported.
+• Celebrations at launch: on special days like Republic Day, Recipely greets you with a short festive screen. Skip it anytime.
+• Your shopping list works offline: ticks and removals made without signal stay put and sync when you are back online.
+• Faster, smoother lists in My Recipes, the shopping list and the food picker.
+• More reliable loading on weak connections, and quicker access to your settings.
