@@ -22,6 +22,13 @@ on:
         description: 'Build & ship the iOS dev IPA to Firebase App Distribution'
         type: boolean
         default: false
+      ota:
+        # An over-the-air JS update instead of (or with) a build. Its channel
+        # follows the ref: main publishes to `production`, any other branch to
+        # `development`. Only binaries with the same native fingerprint take it.
+        description: 'Publish an over-the-air update (main → production, else → development)'
+        type: boolean
+        default: false
 
 # Tag-and-deploy on main needs write access to push the new annotated tag.
 permissions:
@@ -125,6 +132,7 @@ jobs:
     outputs:
       android: ${{ steps.decide.outputs.android }}
       ios: ${{ steps.decide.outputs.ios }}
+      ota: ${{ steps.decide.outputs.ota }}
     steps:
       - name: Decide which dev mobile builds to ship
         id: decide
@@ -134,13 +142,16 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           INPUT_ANDROID: ${{ inputs.android }}
           INPUT_IOS: ${{ inputs.ios }}
+          INPUT_OTA: ${{ inputs.ota }}
         run: |
           set -euo pipefail
           android=false
           ios=false
+          ota=false
           if [ "${{ github.event_name }}" = 'workflow_dispatch' ]; then
             android="$INPUT_ANDROID"
             ios="$INPUT_IOS"
+            ota="$INPUT_OTA"
           else
             # SUBJECT LINE ONLY. Scanning the whole message meant a commit that
             # merely MENTIONED the markers — a note in the body explaining what
@@ -164,12 +175,17 @@ jobs:
             case "$subject" in
               *'[dist:ios]'*) ios=true ;;
             esac
+            case "$subject" in
+              *'[ota]'*) ota=true ;;
+            esac
           fi
           echo "android=$android" >>"$GITHUB_OUTPUT"
           echo "ios=$ios" >>"$GITHUB_OUTPUT"
+          echo "ota=$ota" >>"$GITHUB_OUTPUT"
           {
             echo "Android dev APK: $android"
             echo "iOS dev IPA: $ios"
+            echo "Over-the-air update: $ota"
             echo ""
             echo "Opt in with a marker in the merge commit SUBJECT line, or run the workflow manually on dev."
           } >>"$GITHUB_STEP_SUMMARY"
@@ -486,6 +502,71 @@ jobs:
         run: rm -f android/app/upload.keystore android/gradle.properties
 
   # --- Dev iOS (dev only) → Firebase App Distribution (net.recipely.app.dev) ---
+  ota-update:
+    name: Publish OTA update (EAS Update)
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, test, dev-distribution-gate]
+    # Opt-in like the dev builds: `[ota]` in a dev merge subject, or a manual run
+    # with `-f ota=true`. The channel follows the ref (below).
+    if: needs.dev-distribution-gate.outputs.ota == 'true'
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      # The bundle must be built with exactly what the installed binaries were
+      # built with, or the fingerprint (runtime) differs and no build takes it.
+      # main → production, everything else → development — same env as the
+      # matching distribute job.
+      APP_VARIANT: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+      CHANNEL: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+      # Production ships both stores; dev builds are Android-only.
+      PLATFORM: ${{ github.ref == 'refs/heads/main' && 'all' || 'android' }}
+      EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
+      EXPO_PUBLIC_PLAY_INTEGRITY_PROJECT_NUMBER: ${{ vars.PLAY_INTEGRITY_PROJECT_NUMBER }}
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 421167568469-kqknuidq9mtu66llumtdcitsr5j4j497.apps.googleusercontent.com
+      # Real ad ids only on production, as in distribute-prod / distribute-ios-prod;
+      # blank elsewhere, which app.config.ts reads as unset (test ads).
+      ADMOB_ANDROID_APP_ID: ${{ github.ref == 'refs/heads/main' && secrets.ADMOB_ANDROID_APP_ID || '' }}
+      ADMOB_IOS_APP_ID: ${{ github.ref == 'refs/heads/main' && secrets.ADMOB_IOS_APP_ID || '' }}
+      EXPO_PUBLIC_ADMOB_ANDROID_FEED_BANNER_UNIT_ID: ${{ github.ref == 'refs/heads/main' && secrets.ADMOB_ANDROID_FEED_BANNER_UNIT_ID || '' }}
+      EXPO_PUBLIC_ADMOB_IOS_FEED_BANNER_UNIT_ID: ${{ github.ref == 'refs/heads/main' && secrets.ADMOB_IOS_FEED_BANNER_UNIT_ID || '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Check the Expo token is set
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::EXPO_TOKEN secret is empty"
+            exit 1
+          fi
+
+      - name: Publish the update
+        env:
+          # Via env: a commit message is untrusted input.
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message || github.sha }}
+        run: |
+          set -euo pipefail
+          subject="${COMMIT_MESSAGE%%$'\n'*}"
+          npx --yes eas-cli@27.1.0 update \
+            --channel "$CHANNEL" \
+            --platform "$PLATFORM" \
+            --message "$subject" \
+            --non-interactive
+          {
+            echo "Published to channel \`$CHANNEL\` ($PLATFORM)."
+            echo "Runtime (fingerprint):"
+            echo '```'
+            npx expo-updates runtimeversion:resolve --platform android | tail -1 | grep -o '"runtimeVersion":"[a-f0-9]*"' || true
+            echo '```'
+          } >>"$GITHUB_STEP_SUMMARY"
+
   distribute-ios-dev:
     name: Distribute iOS Dev (Firebase IPA)
     runs-on: macos-26
