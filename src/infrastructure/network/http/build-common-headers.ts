@@ -12,7 +12,8 @@ interface OutgoingRequest {
 
 /**
  * Builds the headers every backend request carries, regardless of transport:
- * the JWT bearer token and the active language. This is the ONE place the
+ * the JWT bearer token, the active language and, on a store build, its
+ * platform and version. This is the ONE place the
  * request locale is read — the axios interceptor and the raw-XHR multipart
  * uploader both go through it, so a language switch can never be picked up by
  * one path and missed by the other.
@@ -34,6 +35,10 @@ export const buildCommonHeaders = async (
       const binding = requestBinding(request.method, request.url, requestId);
       Object.assign(headers, await boundedAttestation(options.attestationProvider, binding));
     }
+  }
+  if (options.appBuild !== undefined) {
+    headers[HttpHeader.appPlatform] = options.appBuild.platform;
+    headers[HttpHeader.appVersion] = options.appBuild.version;
   }
   if (options.cookieSession === true) {
     headers[HttpHeader.recipelySession] = HttpMediaType.cookieSession;

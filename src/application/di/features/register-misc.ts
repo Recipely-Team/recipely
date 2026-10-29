@@ -24,10 +24,14 @@ import { LoadTaxonomyUseCase } from '@application/recipes/taxonomy/load-taxonomy
 import { configureTaxonomyStore } from '@application/recipes/taxonomy/taxonomy-store';
 import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
 import { configureFeedbackStore } from '@application/feedback/feedback-store';
+import type { AppVersionRepositoryInterface } from '@domain/app-version/app-version-repository-interface';
+import { CheckAppVersionUseCase } from '@application/app-version/check-app-version-use-case';
+import { DismissUpdateUseCase } from '@application/app-version/dismiss-update-use-case';
+import { configureAppVersionStore } from '@application/app-version/app-version-store';
 
 /**
  * **Small-feature composition** — notifications, the signed-in user's profile, the recipe
- * taxonomy and feedback: each one store over use cases built on its repository port; plus the
+ * taxonomy, feedback and the app version check: each one store over use cases built on its repository port; plus the
  * come-back reminders, use cases over the notification and preference ports.
  */
 export const registerMisc = (
@@ -44,11 +48,13 @@ export const registerMisc = (
   | 'getUserProfile'
   | 'taxonomyStore'
   | 'feedbackStore'
+  | 'appVersionStore'
 > => {
   const notificationRepo = container.resolve<NotificationRepositoryInterface>(TOKENS.NotificationRepository);
   const userProfileRepo = container.resolve<UserProfileRepositoryInterface>(TOKENS.UserProfileRepository);
   const taxonomyRepo = container.resolve<TaxonomyRepositoryInterface>(TOKENS.TaxonomyRepository);
   const feedbackRepo = container.resolve<FeedbackRepositoryInterface>(TOKENS.FeedbackRepository);
+  const appVersionRepo = container.resolve<AppVersionRepositoryInterface>(TOKENS.AppVersionRepository);
 
   const notificationsStore = configureNotificationsStore({
     listNotifications: new ListNotificationsUseCase(notificationRepo),
@@ -78,5 +84,9 @@ export const registerMisc = (
     getUserProfile,
     taxonomyStore,
     feedbackStore,
+    appVersionStore: configureAppVersionStore({
+      checkAppVersion: new CheckAppVersionUseCase(appVersionRepo, preferences),
+      dismissUpdate: new DismissUpdateUseCase(preferences),
+    }),
   };
 };

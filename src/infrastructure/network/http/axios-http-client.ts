@@ -15,7 +15,7 @@ import { buildRequestInterceptor } from '@infrastructure/network/http/build-requ
 import { buildResponseInterceptor } from '@infrastructure/network/http/build-response-interceptor';
 import { uploadMultipart } from '@infrastructure/network/upload/upload-multipart';
 import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
-import { isSuccessStatus } from '@infrastructure/network/http/http-status';
+import { HttpStatus, isSuccessStatus } from '@infrastructure/network/http/http-status';
 import { HttpMethod } from '@infrastructure/network/http/http-method';
 import { CharConstants } from '@core/constants';
 import { isString } from '@core/guards/type-guards';
@@ -131,6 +131,7 @@ export class AxiosHttpClient {
       }
       // Typed as always present; a response built outside axios (an adapter, a test) can lack it.
       const sentConfig = response.config as typeof response.config | undefined;
+      if (response.status === HttpStatus.upgradeRequired) this.options.onUpgradeRequired?.();
       return this.failed(config, sentConfig?.headers, failureFromResponse(response.status, response.data));
     } catch (error: unknown) {
       const sent = (error as { config?: { headers?: unknown } } | null)?.config?.headers;

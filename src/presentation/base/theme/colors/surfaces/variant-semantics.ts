@@ -7,6 +7,7 @@ export interface VariantSemantics {
   shadow: string;
   onOverlay: string;
   onSuccess: string;
+  onDanger: string;
   likeActive: string;
   overlayLight: string;
   scrim: string;

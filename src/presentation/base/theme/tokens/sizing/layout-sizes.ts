@@ -35,6 +35,9 @@ export const layoutSizes = {
   maxContentMd: 340,
   maxContentLg: 420,
   maxContentXl: 460,
+  /** The update-required gate's text column: a phone, then a tablet. */
+  updateGateMaxWidth: 360,
+  updateGateMaxWidthTablet: 440,
   /** Cap on the centered FeedbackDialog card (phone-sized on tablet/web). */
   dialogMaxWidth: 400,
   /**

@@ -69,6 +69,7 @@ const LIGHT_TEXT_MUTED = '#64748B';
 
 const darkSemantics: VariantSemantics = {
   danger: '#F6A39C',
+  onDanger: '#1F1F1F',
   success: '#81C995',
   warning: '#FDD663',
   starFilled: '#FFD54F',
@@ -85,6 +86,7 @@ const darkSemantics: VariantSemantics = {
 
 const lightSemantics: VariantSemantics = {
   danger: '#D93025',
+  onDanger: '#FFFFFF',
   success: '#34A853',
   warning: '#FBBC04',
   starFilled: '#FFB800',
@@ -142,6 +144,7 @@ const makeColors = (palette: Palette, semantics: VariantSemantics, surface: stri
   sectionBackground: surface,
   onOverlay: semantics.onOverlay,
   onSuccess: semantics.onSuccess,
+  onDanger: semantics.onDanger,
   likeActive: semantics.likeActive,
   overlayLight: semantics.overlayLight,
   scrim: semantics.scrim,

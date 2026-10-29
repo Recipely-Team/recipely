@@ -2180,4 +2180,24 @@ export const ar = {
     promptDiet: "النظام الغذائي: {diet}",
     promptServings: "لعدد {n} حصص",
   },
+  appVersion: {
+    soft: {
+      title: 'يتوفر إصدار جديد',
+      body: 'يتضمن الإصدار {latest} إصلاحات وتحسينات.',
+      update: 'تحديث',
+      notNow: 'ليس الآن',
+    },
+    required: {
+      title: 'التحديث مطلوب',
+      body: 'لم يعد هذا الإصدار من Recipely مدعومًا. حدّث التطبيق لتواصل الطبخ.',
+      blockedBody: 'في هذا الإصدار مشكلة معروفة. يرجى التحديث للمتابعة.',
+      versions: 'إصدارك {current} · المطلوب {required}',
+      versionsA11y: 'إصدارك هو {current}. الإصدار المطلوب هو {required}.',
+      updateNow: 'حدّث الآن',
+      tryAgain: 'حاول مرة أخرى',
+    },
+    a11y: {
+      tryHint: 'يتحقق مجددًا إن كنت قد حدّثت بالفعل',
+    },
+  },
 };

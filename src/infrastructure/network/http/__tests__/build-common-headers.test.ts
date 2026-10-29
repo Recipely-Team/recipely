@@ -93,3 +93,19 @@ describe('buildCommonHeaders', () => {
     expect(headers['X-App-Attestation']).toBeUndefined();
   });
 });
+
+describe('buildCommonHeaders — the app build', () => {
+  it('names the store build so the backend can refuse one that must update', async () => {
+    const headers = await buildCommonHeaders(makeOptions({ appBuild: { platform: 'ios', version: '1.4.0' } }));
+
+    expect(headers['X-App-Platform']).toBe('ios');
+    expect(headers['X-App-Version']).toBe('1.4.0');
+  });
+
+  it('sends neither on the web', async () => {
+    const headers = await buildCommonHeaders(makeOptions());
+
+    expect(headers['X-App-Platform']).toBeUndefined();
+    expect(headers['X-App-Version']).toBeUndefined();
+  });
+});

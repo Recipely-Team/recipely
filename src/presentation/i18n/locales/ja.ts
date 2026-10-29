@@ -2180,4 +2180,24 @@ export const ja = {
     promptDiet: "食事スタイル：{diet}",
     promptServings: "{n}人分で",
   },
+  appVersion: {
+    soft: {
+      title: '新しいバージョンがあります',
+      body: 'バージョン {latest} では修正と改善が行われています。',
+      update: 'アップデート',
+      notNow: '後で',
+    },
+    required: {
+      title: 'アップデートが必要です',
+      body: 'このバージョンの Recipely はサポートが終了しました。料理を続けるにはアップデートしてください。',
+      blockedBody: 'このバージョンには既知の問題があります。続けるにはアップデートしてください。',
+      versions: '現在のバージョン {current} · 必要なバージョン {required}',
+      versionsA11y: '現在のバージョンは {current} です。必要なバージョンは {required} です。',
+      updateNow: '今すぐアップデート',
+      tryAgain: 'もう一度試す',
+    },
+    a11y: {
+      tryHint: 'アップデート済みなら再確認します',
+    },
+  },
 };
