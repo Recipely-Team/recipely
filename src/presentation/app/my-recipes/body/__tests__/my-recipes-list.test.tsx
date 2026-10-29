@@ -14,7 +14,8 @@
  */
 
 import { act } from 'react-test-renderer';
-import { FlatList, RefreshControl, ScrollView } from 'react-native';
+import { RefreshControl, ScrollView } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import type { ReactTestInstance } from 'react-test-renderer';
 import { renderComponent, textContent, allByTestId } from '@presentation/base/test-support/render-component';
 import { t } from '@presentation/i18n';
@@ -245,7 +246,7 @@ describe('MyRecipesList — RefreshControl wiring', () => {
 
       const root = render({ tab: 'drafts', drafts: [makeDraft('d1')], onRefresh });
 
-      expect(root.findByType(FlatList).props['refreshControl']).toBeDefined();
+      expect(root.findByType(FlashList).props['refreshControl']).toBeDefined();
       expect(root.findByType(RefreshControl).props['onRefresh']).toBe(onRefresh);
     });
 
@@ -254,7 +255,7 @@ describe('MyRecipesList — RefreshControl wiring', () => {
 
       const root = render({ tab: 'saved', items: [makeRecipe('r1')], onRefresh });
 
-      expect(root.findByType(FlatList).props['refreshControl']).toBeDefined();
+      expect(root.findByType(FlashList).props['refreshControl']).toBeDefined();
       expect(root.findByType(RefreshControl).props['onRefresh']).toBe(onRefresh);
     });
 
@@ -268,7 +269,7 @@ describe('MyRecipesList — RefreshControl wiring', () => {
 
       // The grid remounts on a column change (`key={grid-${gridColumns}}`), an
       // easy place to drop the prop.
-      expect(root.findByType(FlatList).props['refreshControl']).toBeDefined();
+      expect(root.findByType(FlashList).props['refreshControl']).toBeDefined();
     });
   });
 

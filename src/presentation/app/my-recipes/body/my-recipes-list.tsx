@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { FlatList, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { ListConstants } from '@presentation/base/constants';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { EmptyTab } from '@presentation/app/my-recipes/items/empty-tab';
@@ -7,7 +8,7 @@ import { DraftCard } from '@presentation/app/my-recipes/items/draft-card';
 import { MyRecipesSkeleton } from '@presentation/app/my-recipes/body/my-recipes-skeleton';
 import { MyRecipeCell } from '@presentation/app/my-recipes/items/my-recipe-cell';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
-import { GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
+import { GRID_EDGE_INSET } from '@presentation/app/my-recipes/model/grid-metrics';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
@@ -85,9 +86,9 @@ export interface MyRecipesListProps {
  * rendering "you have saved nothing yet" while the request was still in flight
  * is what made every cold open flash an empty screen before filling in.
  *
- * Rows are memoised and get only the screen's stable id handlers (`FlatList`
+ * Rows are memoised and get only the screen's stable id handlers (`FlashList`
  * calls `renderItem` for every visible cell on each render, so a fresh arrow
- * per row re-rendered them all); both lists are windowed with `ListConstants`.
+ * per row re-rendered them all); both lists recycle their rows (FlashList).
  */
 export const MyRecipesList = ({
   tab,
@@ -177,18 +178,13 @@ export const MyRecipesList = ({
       );
     }
     return (
-      <FlatList
-        // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
-        removeClippedSubviews={false}
+      <FlashList
         {...scrollable}
         refreshControl={refreshControl}
         data={drafts}
         keyExtractor={idKey}
         renderItem={renderDraft}
         ItemSeparatorComponent={Separator}
-        initialNumToRender={ListConstants.initialRows}
-        maxToRenderPerBatch={ListConstants.rowsPerBatch}
-        windowSize={ListConstants.windowSize}
         contentContainerStyle={styles.listContent}
         style={styles.list}
         onEndReached={onDraftsEndReached}
@@ -214,9 +210,7 @@ export const MyRecipesList = ({
   }
 
   return (
-    <FlatList
-      // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
-      removeClippedSubviews={false}
+    <FlashList
       {...scrollable}
       refreshControl={refreshControl}
       key={`grid-${gridColumns}`}
@@ -224,13 +218,9 @@ export const MyRecipesList = ({
       keyExtractor={idKey}
       numColumns={gridColumns}
       renderItem={renderRecipe}
-      initialNumToRender={ListConstants.initialRows}
-      maxToRenderPerBatch={ListConstants.rowsPerBatch}
-      windowSize={ListConstants.windowSize}
       onEndReached={onItemsEndReached}
       onEndReachedThreshold={ListConstants.endReachedThreshold}
       ListFooterComponent={<FeedFooter isLoadingMore={isLoadingMoreItems} failure={itemsMoreFailure} onRetry={onItemsEndReached} />}
-      columnWrapperStyle={gridColumns > ValueConstants.one ? styles.gridRow : undefined}
       ItemSeparatorComponent={gridColumns === ValueConstants.one ? Separator : undefined}
       contentContainerStyle={[styles.listContent, gridColumns > ValueConstants.one ? styles.gridContent : null]}
       style={styles.list}
@@ -249,14 +239,10 @@ const styles = StyleSheet.create({
   separator: {
     height: spacing.md,
   },
-  gridRow: {
-    gap: GRID_GAP,
-    paddingHorizontal: spacing.lg,
-  },
+  // Cells pad half the gutter each side and below (my-recipe-cell.tsx); FlashList has no row style.
   gridContent: {
-    paddingHorizontal: ValueConstants.zero,
+    paddingHorizontal: GRID_EDGE_INSET,
     paddingTop: spacing.md,
-    gap: GRID_GAP,
   },
   // flexGrow keeps the empty state pullable.
   emptyContent: {

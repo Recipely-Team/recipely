@@ -1,5 +1,5 @@
 import { act } from 'react-test-renderer';
-import { FlatList } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { ok } from '@core/result/result-helpers';
 import { configureFoodSearchStore } from '@application/diary/foods/food-search-store';
 import { SearchFoodsUseCase } from '@application/diary/foods/search/search-foods-use-case';
@@ -77,7 +77,7 @@ describe('AddFoodPickStep', () => {
 
   it('loads the next page of the first group with more when the list reaches its end', async () => {
     const { repo, view } = await setup();
-    const onEndReached: unknown = view.root.findByType(FlatList).props['onEndReached'];
+    const onEndReached: unknown = view.root.findByType(FlashList).props['onEndReached'];
     if (typeof onEndReached !== 'function') throw new Error('the list does not page');
     await act(async () => onEndReached());
     expect(repo.searchRecipes).toHaveBeenCalledWith('tomato', 'saved', 2, 8);
@@ -99,8 +99,10 @@ describe('AddFoodPickStep', () => {
     await act(async () => typeInBox('ayran'));
     await act(() => new Promise((resolve) => setTimeout(resolve, ADD_FOOD_SEARCH_DEBOUNCE_MS + 50)));
     expect(repo.search).toHaveBeenLastCalledWith('ayran', 8);
-    // Cleared while on Recent: the tab comes back, not a search of the recipe groups.
+    // Cleared while on Recent: the tab comes back, not a listing of the recipe groups.
+    // (A next page of the search's own groups may load as its short list reaches its end.)
     await act(async () => typeInBox(''));
-    expect(repo.searchRecipes).toHaveBeenCalledTimes(3);
+    const unfiltered = repo.searchRecipes.mock.calls.filter(([query]) => query === '');
+    expect(unfiltered).toHaveLength(3);
   });
 });
