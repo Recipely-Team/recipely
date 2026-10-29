@@ -13,6 +13,7 @@ import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { VerifyHero } from '@presentation/app/verify-code/body/verify-hero';
 import { VerifyCodeCard } from '@presentation/app/verify-code/body/verify-code-card';
+import { VerifyLinkCard } from '@presentation/app/verify-code/body/verify-link-card';
 import { useTwoPaneSplit } from '@presentation/base/responsive/fold/use-two-pane-split';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
@@ -33,7 +34,9 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   const split = useTwoPaneSplit();
   const isLandscapeShell = split.isSplit;
 
-  const params = useLocalSearchParams<{ email?: string; expiresAt?: string; redirect?: string }>();
+  const params = useLocalSearchParams<{ email?: string; expiresAt?: string; redirect?: string; token?: string }>();
+  // Opened from the email's link: finish from the token, no code to type.
+  const linkToken = isString(params.token) && params.token.length > ValueConstants.zero ? params.token : null;
   const email = isString(params.email) ? params.email : CharConstants.empty;
   const initialExpiresAt = isString(params.expiresAt) ? params.expiresAt : CharConstants.empty;
 
@@ -57,7 +60,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
             end={{ x: ValueConstants.one, y: ValueConstants.one }}
             style={[styles.splitHero, split.firstPaneStyle]}
           >
-            <VerifyHero isLandscapeShell={isLandscapeShell} email={email} />
+            <VerifyHero isLandscapeShell={isLandscapeShell} email={email} isLinkMode={linkToken !== null} />
           </LinearGradient>
           <ScrollView
             keyboardShouldPersistTaps="handled"
@@ -72,7 +75,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
                 shadows.lg,
               ]}
             >
-              <VerifyCodeCard email={email} initialExpiresAt={initialExpiresAt} />
+              {linkToken !== null ? <VerifyLinkCard token={linkToken} /> : <VerifyCodeCard email={email} initialExpiresAt={initialExpiresAt} />}
             </View>
           </ScrollView>
         </View>
@@ -103,7 +106,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
           <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
         </Pressable>
 
-        <VerifyHero isLandscapeShell={isLandscapeShell} email={email} />
+        <VerifyHero isLandscapeShell={isLandscapeShell} email={email} isLinkMode={linkToken !== null} />
 
         <View
           style={[
@@ -112,7 +115,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
             shadows.lg,
           ]}
         >
-          <VerifyCodeCard email={email} initialExpiresAt={initialExpiresAt} />
+          {linkToken !== null ? <VerifyLinkCard token={linkToken} /> : <VerifyCodeCard email={email} initialExpiresAt={initialExpiresAt} />}
         </View>
       </ScrollView>
     </KeyboardAvoider>

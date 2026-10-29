@@ -463,6 +463,11 @@ export const id = {
       body: 'Pendaftaran tertunda untuk email ini sudah tidak ada. Masukkan detail kamu lagi.',
       short: 'Pendaftaran kedaluwarsa — mulai lagi',
     },
+    registrationLinkExpired: {
+      title: 'Tautan ini sudah kedaluwarsa',
+      body: 'Tautan berlaku 3 hari dan hanya sekali. Daftar lagi, kami akan mengirim yang baru.',
+      short: 'Tautan kedaluwarsa — daftar lagi',
+    },
     invalidMediaType: {
       title: 'File itu tidak bisa digunakan',
       body: 'Hanya gambar (jpeg, png, gif, webp) dan video (mp4, webm, mov) yang dapat diunggah. Pilih file lain.',
@@ -1455,6 +1460,8 @@ export const id = {
     changeEmail: 'Gunakan email lain',
     errorCode: 'Masukkan kode 6 digit.',
     invalidCode: 'Kode itu salah atau sudah kedaluwarsa. Coba lagi atau kirim ulang.',
+    linkFinishing: 'Menyelesaikan pendaftaranmu…',
+    startAgain: 'Mulai lagi',
   },
   ai: {
     title: 'Resep AI',
@@ -2172,5 +2179,25 @@ export const id = {
     promptMaxTime: "Siap dalam {n} menit atau kurang",
     promptDiet: "Diet: {diet}",
     promptServings: "Untuk {n} porsi",
+  },
+  appVersion: {
+    soft: {
+      title: 'Versi baru tersedia',
+      body: 'Versi {latest} membawa perbaikan dan peningkatan.',
+      update: 'Perbarui',
+      notNow: 'Nanti saja',
+    },
+    required: {
+      title: 'Pembaruan diperlukan',
+      body: 'Versi Recipely ini tidak lagi didukung. Perbarui untuk terus memasak.',
+      blockedBody: 'Versi ini punya masalah yang diketahui. Perbarui untuk melanjutkan.',
+      versions: 'Versimu {current} · Diperlukan {required}',
+      versionsA11y: 'Versimu {current}. Versi yang diperlukan {required}.',
+      updateNow: 'Perbarui sekarang',
+      tryAgain: 'Coba lagi',
+    },
+    a11y: {
+      tryHint: 'Memeriksa lagi jika kamu sudah memperbarui',
+    },
   },
 };

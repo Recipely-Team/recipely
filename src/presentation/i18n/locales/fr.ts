@@ -463,6 +463,11 @@ export const fr = {
       body: 'Il n’y a plus d’inscription en attente pour cette adresse e-mail. Saisissez à nouveau vos informations.',
       short: 'Inscription expirée — recommencez',
     },
+    registrationLinkExpired: {
+      title: 'Ce lien a expiré',
+      body: 'Il fonctionne 3 jours et une seule fois. Réinscrivez-vous et nous vous en enverrons un nouveau.',
+      short: 'Lien expiré — réinscrivez-vous',
+    },
     invalidMediaType: {
       title: 'Impossible d’utiliser ce fichier',
       body: 'Seules les images (jpeg, png, gif, webp) et vidéos (mp4, webm, mov) peuvent être envoyées. Choisissez un autre fichier.',
@@ -1455,6 +1460,8 @@ export const fr = {
     changeEmail: 'Utiliser une autre adresse e-mail',
     errorCode: 'Saisissez le code à 6 chiffres.',
     invalidCode: 'Ce code est incorrect ou a expiré. Réessayez ou renvoyez-le.',
+    linkFinishing: 'Finalisation de votre inscription…',
+    startAgain: 'Recommencer',
   },
   ai: {
     title: 'Recette IA',
@@ -2172,5 +2179,25 @@ export const fr = {
     promptMaxTime: "Prêt en {n} minutes maximum",
     promptDiet: "Régime : {diet}",
     promptServings: "Pour {n} portions",
+  },
+  appVersion: {
+    soft: {
+      title: 'Une nouvelle version est disponible',
+      body: 'La version {latest} apporte des corrections et des améliorations.',
+      update: 'Mettre à jour',
+      notNow: 'Plus tard',
+    },
+    required: {
+      title: 'Mise à jour requise',
+      body: 'Cette version de Recipely n\'est plus prise en charge. Mettez à jour pour continuer à cuisiner.',
+      blockedBody: 'Cette version présente un problème connu. Mettez à jour pour continuer.',
+      versions: 'Votre version {current} · Requise {required}',
+      versionsA11y: 'Votre version est {current}. La version requise est {required}.',
+      updateNow: 'Mettre à jour maintenant',
+      tryAgain: 'Réessayer',
+    },
+    a11y: {
+      tryHint: 'Vérifie à nouveau si vous avez déjà mis à jour',
+    },
   },
 };

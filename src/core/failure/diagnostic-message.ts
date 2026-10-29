@@ -228,6 +228,9 @@ export const DiagnosticMessage = {
     likeAlreadyInFlight: 'A like for this recipe is already in flight',
     budgetUnreadable: 'The voice budget arrived without a usable number of seconds',
   },
+  appVersion: {
+    unknownStatus: 'The version check answered with a status this build does not know',
+  },
 } as const;
 
 /**

@@ -11,6 +11,8 @@ export const PreferenceSlot = {
   OnboardingSeen: 'onboardingSeen',
   RemindersChoice: 'remindersChoice',
   FirstOpenAt: 'firstOpenAt',
+  /** Until when "Not now" keeps the optional update prompt away (epoch ms). */
+  UpdateSnoozedUntil: 'updateSnoozedUntil',
 } as const;
 
 export type PreferenceSlotType = (typeof PreferenceSlot)[keyof typeof PreferenceSlot];

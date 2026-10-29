@@ -7,6 +7,7 @@ import type { CreatorClaimRepositoryInterface } from '@domain/auth/creator-claim
 import { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
 import { RequestRegistrationUseCase } from '@application/auth/registration/request-registration-use-case';
 import { VerifyRegistrationUseCase } from '@application/auth/registration/verify-registration-use-case';
+import { VerifyRegistrationLinkUseCase } from '@application/auth/registration/verify-registration-link-use-case';
 import { ResendRegistrationCodeUseCase } from '@application/auth/registration/resend-registration-code-use-case';
 import { SignOutUseCase } from '@application/auth/session/sign-out-use-case';
 import { GetSessionUseCase } from '@application/auth/session/get-session-use-case';
@@ -53,6 +54,7 @@ export const registerAuth = (
     signInWithApple: new SignInWithAppleUseCase(authRepo),
     requestRegistration: new RequestRegistrationUseCase(authRepo),
     verifyRegistration: new VerifyRegistrationUseCase(authRepo),
+    verifyRegistrationLink: new VerifyRegistrationLinkUseCase(authRepo),
     resendRegistrationCode: new ResendRegistrationCodeUseCase(authRepo),
     requestPasswordReset: new RequestPasswordResetUseCase(authRepo),
     resetPassword: new ResetPasswordUseCase(authRepo),

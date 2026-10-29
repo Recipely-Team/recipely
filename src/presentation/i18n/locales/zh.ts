@@ -466,6 +466,11 @@ export const zh = {
       body: '这个邮箱已经没有待完成的注册记录了。请重新填写信息。',
       short: '注册已过期，请重新开始',
     },
+    registrationLinkExpired: {
+      title: '此链接已过期',
+      body: '链接 3 天内有效且只能使用一次。重新注册，我们会发送新的链接。',
+      short: '链接已过期——请重新注册',
+    },
     invalidMediaType: {
       title: '无法使用这个文件',
       body: '只能上传图片（jpeg、png、gif、webp）和视频（mp4、webm、mov）。请选择其他文件。',
@@ -1459,6 +1464,8 @@ export const zh = {
     changeEmail: '使用其他邮箱',
     errorCode: '请输入 6 位验证码。',
     invalidCode: '验证码错误或已过期。请重试或重新发送。',
+    linkFinishing: '正在完成注册…',
+    startAgain: '重新开始',
   },
   ai: {
     title: 'AI 食谱',
@@ -2176,5 +2183,25 @@ export const zh = {
     promptMaxTime: "{n} 分钟内完成",
     promptDiet: "饮食：{diet}",
     promptServings: "{n} 人份",
+  },
+  appVersion: {
+    soft: {
+      title: '有新版本可用',
+      body: '{latest} 版本带来了修复和改进。',
+      update: '更新',
+      notNow: '以后再说',
+    },
+    required: {
+      title: '需要更新',
+      body: '此版本的 Recipely 已不再受支持。请更新以继续使用。',
+      blockedBody: '此版本存在已知问题。请更新后继续。',
+      versions: '当前版本 {current} · 需要 {required}',
+      versionsA11y: '你的版本是 {current}。需要的版本是 {required}。',
+      updateNow: '立即更新',
+      tryAgain: '重试',
+    },
+    a11y: {
+      tryHint: '如果你已更新，将重新检查',
+    },
   },
 };

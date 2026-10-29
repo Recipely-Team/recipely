@@ -3233,3 +3233,23 @@ recipes", "thousands of tried recipes"); `onboarding-claims.test.ts` keeps any c
   not ship); the art is drawn from cards, chips and icons.
 - Paging stays a horizontal `ScrollView` with `pagingEnabled` on every platform (the spec allows it);
   no haptics yet, no pointer-hover pause on the web.
+
+## App version check (2026-10-29)
+
+Prototype: [Board · App Version Check](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+App+Version+Check.html).
+iOS + Android only; the web always serves the latest build and shows nothing.
+
+- **Up to date** — no UI.
+- **Update available** — the shared `BottomSheet` (centred dialog on an expanded viewport), titled
+  `appVersion.soft.title`; the 64 pt store icon (`brandMarkSizes.default`), body in `textSubtle`,
+  full-width **Update** (`PrimaryButton`) and **Not now** (`buttonSm` min height, semibold). Not now,
+  backdrop and drag all snooze the prompt for 3 days (`UPDATE_SNOOZE_MS`), then it asks again. Deviation from the board: the title
+  sits in the sheet's header row (rule 23 — every sheet is `BottomSheet`), not under the icon.
+- **Update required** — `UpdateRequiredGate`, full-screen above every layer (`zIndices.updateGate`),
+  `accessibilityViewIsModal`, Android back swallowed. Icon 96 / 112 pt (phone / `isExpanded`), corner
+  badge `round(icon × 0.36)` offset `−0.28 × badge`, 3 pt ring in `background`: arrow on `primary`,
+  "!" on `danger` for a pulled release (`onDanger`: `#FFFFFF` light, `#1F1F1F` dark). Title
+  `title` / `headline` variant, heavy; body `textSubtle`; version line caption, tabular numbers, with
+  a spoken `versionsA11y` label; column capped at `updateGateMaxWidth` 360 / 440. **Update now** opens
+  the verdict's https store link (else `StoreLinks`); **Try again** re-checks (`busy` while running).
+- Large text: no fixed heights, the gate scrolls when it does not fit, the icon does not scale.

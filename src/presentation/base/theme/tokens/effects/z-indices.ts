@@ -31,4 +31,6 @@ export const zIndices = {
   alarmOverlay: 200,
   /** Launch splash — nothing may cover it. */
   splash: 300,
+  /** The update-required gate: above everything, the splash included — nothing in the app may be reached. */
+  updateGate: 400,
 } as const;

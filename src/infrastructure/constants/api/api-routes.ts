@@ -8,6 +8,8 @@ export const ApiRoutes = {
     login: '/auth/login',
     register: '/auth/register',
     registerVerify: '/auth/register/verify',
+    /** The emailed "finish creating my account" link: token in, session out. */
+    registerVerifyLink: '/auth/register/verify-link',
     registerResend: '/auth/register/resend',
     social: '/auth/social',
     forgotPassword: '/auth/forgot-password',
@@ -113,6 +115,8 @@ export const ApiRoutes = {
   feedback: '/feedback',
   /** The admin panel's on/off overrides of the app's feature flags; open to guests. */
   flags: '/flags',
+  /** What this build must do: up to date, update available, update required. Open to guests and to blocked builds. */
+  appVersion: '/app/version',
   /** The signed-in user's food diary; every route is scoped to the session's user. */
   diary: {
     day: (date: string): string => `/diary/days/${encodeURIComponent(date)}`,

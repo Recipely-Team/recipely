@@ -463,6 +463,11 @@ export const pt = {
       body: 'Não há mais um cadastro pendente para este e-mail. Preencha seus dados novamente.',
       short: 'Cadastro expirado — comece de novo',
     },
+    registrationLinkExpired: {
+      title: 'Este link expirou',
+      body: 'Ele funciona por 3 dias e só uma vez. Cadastre-se de novo e enviaremos outro.',
+      short: 'Link expirado — cadastre-se de novo',
+    },
     invalidMediaType: {
       title: 'Não podemos usar esse arquivo',
       body: 'Só é possível enviar imagens (jpeg, png, gif, webp) e vídeos (mp4, webm, mov). Escolha outro arquivo.',
@@ -1455,6 +1460,8 @@ export const pt = {
     changeEmail: 'Usar outro e-mail',
     errorCode: 'Digite o código de 6 dígitos.',
     invalidCode: 'Esse código está incorreto ou expirou. Tente novamente ou peça outro.',
+    linkFinishing: 'Concluindo seu cadastro…',
+    startAgain: 'Começar de novo',
   },
   ai: {
     title: 'Receita com IA',
@@ -2172,5 +2179,25 @@ export const pt = {
     promptMaxTime: "Pronto em até {n} minutos",
     promptDiet: "Dieta: {diet}",
     promptServings: "Para {n} porções",
+  },
+  appVersion: {
+    soft: {
+      title: 'Há uma nova versão',
+      body: 'A versão {latest} traz correções e melhorias.',
+      update: 'Atualizar',
+      notNow: 'Agora não',
+    },
+    required: {
+      title: 'Atualização necessária',
+      body: 'Esta versão do Recipely não é mais compatível. Atualize para continuar cozinhando.',
+      blockedBody: 'Esta versão tem um problema conhecido. Atualize para continuar.',
+      versions: 'Sua versão {current} · Necessária {required}',
+      versionsA11y: 'Sua versão é {current}. A versão necessária é {required}.',
+      updateNow: 'Atualizar agora',
+      tryAgain: 'Tentar de novo',
+    },
+    a11y: {
+      tryHint: 'Verifica de novo se você já atualizou',
+    },
   },
 };

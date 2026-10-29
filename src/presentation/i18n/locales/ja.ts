@@ -463,6 +463,11 @@ export const ja = {
       body: 'このメールアドレスの保留中の登録はなくなりました。もう一度情報を入力してください。',
       short: '登録の有効期限が切れました — 最初からやり直してください',
     },
+    registrationLinkExpired: {
+      title: 'このリンクは期限切れです',
+      body: 'リンクは3日間、1回だけ有効です。もう一度登録すると、新しいリンクをお送りします。',
+      short: 'リンク期限切れ — もう一度登録',
+    },
     invalidMediaType: {
       title: 'このファイルは使用できません',
       body: 'アップロードできるのは画像（jpeg, png, gif, webp）と動画（mp4, webm, mov）のみです。別のファイルを選んでください。',
@@ -1455,6 +1460,8 @@ export const ja = {
     changeEmail: '別のメールアドレスを使う',
     errorCode: '6桁のコードを入力してください。',
     invalidCode: 'コードが間違っているか、有効期限が切れています。もう一度試すか再送してください。',
+    linkFinishing: '登録を完了しています…',
+    startAgain: '最初からやり直す',
   },
   ai: {
     title: 'AIレシピ',
@@ -2172,5 +2179,25 @@ export const ja = {
     promptMaxTime: "{n}分以内でできるように",
     promptDiet: "食事スタイル：{diet}",
     promptServings: "{n}人分で",
+  },
+  appVersion: {
+    soft: {
+      title: '新しいバージョンがあります',
+      body: 'バージョン {latest} では修正と改善が行われています。',
+      update: 'アップデート',
+      notNow: '後で',
+    },
+    required: {
+      title: 'アップデートが必要です',
+      body: 'このバージョンの Recipely はサポートが終了しました。料理を続けるにはアップデートしてください。',
+      blockedBody: 'このバージョンには既知の問題があります。続けるにはアップデートしてください。',
+      versions: '現在のバージョン {current} · 必要なバージョン {required}',
+      versionsA11y: '現在のバージョンは {current} です。必要なバージョンは {required} です。',
+      updateNow: '今すぐアップデート',
+      tryAgain: 'もう一度試す',
+    },
+    a11y: {
+      tryHint: 'アップデート済みなら再確認します',
+    },
   },
 };

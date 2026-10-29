@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2401 source files.
+[architecture.md](architecture.md). 2432 source files.
 
 ## Layers
 
@@ -27,6 +27,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 
 - `ads/` _(1)_
 - `analytics/` _(1)_
+- `app-version/` _(5)_
 - `assistant/` — actions, os, session _(25)_
 - `audio/` _(1)_
 - `auth/` _(10)_
@@ -56,9 +57,10 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/application/` — use cases, stores, DI
 
 - `ads/` _(2)_
+- `app-version/` — states _(10)_
 - `assistant/` — actions, session _(28)_
 - `audio/` _(2)_
-- `auth/` — password-reset, profile, registration, session, sign-in, states _(21)_
+- `auth/` — password-reset, profile, registration, session, sign-in, states _(22)_
 - `comments/` — add, delete, like, list _(12)_
 - `config/` _(6)_
 - `creators/` — claim, list, profile _(14)_
@@ -85,11 +87,12 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
 
 - `ads/` _(3)_
+- `app-version/` _(5)_
 - `assistant/` — message, os, token _(10)_
 - `audio/` _(2)_
-- `auth/` — dtos, registration, session, social _(30)_
+- `auth/` — dtos, registration, session, social _(31)_
 - `comments/` — dtos _(3)_
-- `constants/` — analytics, api _(21)_
+- `constants/` — analytics, api _(22)_
 - `creators/` — dtos _(14)_
 - `crypto/` _(3)_
 - `device/` _(8)_
@@ -136,15 +139,15 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(10)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, lifecycle, meal-plan, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(115)_
+- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, lifecycle, meal-plan, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(116)_
 - `responsive/` (fold) — breakpoints, LayoutProvider, viewport metrics _(13)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(6)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(53)_
 - `timers/` — timer control helpers _(9)_
-- `utils/` (diary, instagram, meal-plan) — small pure helpers _(34)_
+- `utils/` (diary, instagram, meal-plan) — small pure helpers _(35)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(221)_
+- `widgets/` (ads, app-update, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(226)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -177,4 +180,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: e141f7c4c70a5a2a -->
+<!-- fingerprint: 51c6b8a0bfca5345 -->

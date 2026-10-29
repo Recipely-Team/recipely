@@ -9,10 +9,12 @@ import { ValueConstants } from '@core/constants';
 export interface VerifyHeroProps {
   isLandscapeShell: boolean;
   email: string;
+  /** Opened from the email's link: no "enter the code we sent to" line — the card says what is happening. */
+  isLinkMode: boolean;
 }
 
 /** Mail badge + title/subtitle (and target email) atop the verify screen. */
-export const VerifyHero = ({ isLandscapeShell, email }: VerifyHeroProps): React.JSX.Element => {
+export const VerifyHero = ({ isLandscapeShell, email, isLinkMode }: VerifyHeroProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
 
@@ -24,6 +26,7 @@ export const VerifyHero = ({ isLandscapeShell, email }: VerifyHeroProps): React.
       <ThemedText variant="subtitle" style={[styles.heroTitle, { color: colors.onOverlay }]}>
         {t.verify.title}
       </ThemedText>
+      {isLinkMode ? null : (
       <View style={styles.heroSubtitleWrap}>
         <ThemedText variant="body" style={[styles.heroSubtitle, { color: colors.onOverlay }]}>
           {t.verify.subtitle}
@@ -34,6 +37,7 @@ export const VerifyHero = ({ isLandscapeShell, email }: VerifyHeroProps): React.
           </ThemedText>
         ) : null}
       </View>
+      )}
     </View>
   );
 };

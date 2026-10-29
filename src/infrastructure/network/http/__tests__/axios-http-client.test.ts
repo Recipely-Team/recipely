@@ -220,3 +220,31 @@ describe('AxiosHttpClient failure breadcrumbs', () => {
     expect(onRequestFailed).toHaveBeenCalledWith(expect.stringMatching(/^POST \/recipes\/r1\/favorite → .+ \(request rid-7\)$/));
   });
 });
+
+describe('AxiosHttpClient onUpgradeRequired hook', () => {
+  beforeEach(() => {
+    mockRequest.mockReset();
+  });
+
+  // A build the backend has pulled must show its update gate from any request, not only the launch check.
+  it('reports a 426 from the version gate', async () => {
+    mockRequest.mockResolvedValue({ status: 426, data: { error: { code: 'upgrade_required', message: 'update' } } });
+    const onUpgradeRequired = jest.fn();
+    const { client } = buildClient({ onUpgradeRequired });
+
+    const result = await client.request({ url: '/recipes' });
+
+    expect(result.ok).toBe(false);
+    expect(onUpgradeRequired).toHaveBeenCalledTimes(1);
+  });
+
+  it('stays quiet on any other failure', async () => {
+    mockRequest.mockResolvedValue({ status: 500, data: { error: { code: 'server', message: 'boom' } } });
+    const onUpgradeRequired = jest.fn();
+    const { client } = buildClient({ onUpgradeRequired });
+
+    await client.request({ url: '/recipes' });
+
+    expect(onUpgradeRequired).not.toHaveBeenCalled();
+  });
+});

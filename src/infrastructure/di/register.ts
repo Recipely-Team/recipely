@@ -23,6 +23,7 @@ import { NotificationRepository } from '@infrastructure/notifications/notificati
 import { UserProfileRepository } from '@infrastructure/user-profile/user-profile-repository';
 import { FeedbackRepository } from '@infrastructure/feedback/feedback-repository';
 import { FeatureFlagRepository } from '@infrastructure/flags/feature-flag-repository';
+import { AppVersionRepository } from '@infrastructure/app-version/app-version-repository';
 import { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
 import { FeatureFlagName } from '@application/config/feature-flag-name';
 import { AttestationRepository } from '@infrastructure/integrity/attestation-repository';
@@ -47,6 +48,7 @@ import Constants from 'expo-constants';
 import { StoredDeviceIdentity } from '@infrastructure/device/stored-device-identity';
 import { DeviceRepository } from '@infrastructure/device/device-repository';
 import { currentDevicePlatform } from '@infrastructure/device/current-device-platform';
+import { DevicePlatform } from '@domain/notifications/device-platform';
 import { API_BASE_URL } from '@infrastructure/constants/api/api-hosts';
 import { isWeb } from '@infrastructure/constants/platform';
 import { logCrashBreadcrumb, recordCrash } from '@infrastructure/firebase/crashlytics-service';
@@ -59,6 +61,8 @@ interface InfrastructureOptions {
    * logout (a 401 outside an authenticated session is a no-op).
    */
   onUnauthorized?: () => void;
+  /** Invoked on every 426 from the backend's version gate; the app re-checks and shows its update gate. */
+  onUpgradeRequired?: () => void;
 }
 
 /**
@@ -72,12 +76,19 @@ interface InfrastructureOptions {
 export const registerInfrastructure = (container: Container, opts?: InfrastructureOptions): void => {
   // Web keeps tokens in memory and the refresh token in the API's HttpOnly cookie.
   const isCookieSession = isWeb();
+  const devicePlatform = currentDevicePlatform();
+  const installedVersion = Constants.expoConfig?.version ?? null;
+  // Store builds only: the web build is always current and is never version-gated.
+  const appBuild =
+    devicePlatform !== DevicePlatform.Web && installedVersion !== null
+      ? { platform: devicePlatform, version: installedVersion }
+      : null;
   const storage = new SecureTokenStorage(!isCookieSession);
   const deviceIdentity = new StoredDeviceIdentity(
     kvStore,
     randomUUID,
-    currentDevicePlatform(),
-    Constants.expoConfig?.version ?? null,
+    devicePlatform,
+    installedVersion,
   );
 
   const preferenceStore = new PreferenceStore(kvStore);
@@ -126,6 +137,12 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   if (opts?.onUnauthorized) {
     httpClientOptions.onUnauthorized = opts.onUnauthorized;
   }
+  if (appBuild !== null) {
+    httpClientOptions.appBuild = appBuild;
+  }
+  if (opts?.onUpgradeRequired) {
+    httpClientOptions.onUpgradeRequired = opts.onUpgradeRequired;
+  }
   const http = new AxiosHttpClient(httpClientOptions);
   const authRepository = new AuthRepository(http, storage, deviceIdentity, isCookieSession);
   const featureFlags = new FeatureFlagResolver(new FeatureFlagRepository(http), IS_DEV_BUILD);
@@ -150,6 +167,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.FridgeRepository, () => new FridgeRepository(http));
   container.register(TOKENS.UserProfileRepository, () => new UserProfileRepository(http));
   container.register(TOKENS.FeedbackRepository, () => new FeedbackRepository(http));
+  container.register(TOKENS.AppVersionRepository, () => new AppVersionRepository(http, appBuild));
   container.register(TOKENS.AssistantTokenRepository, () => new AssistantTokenRepository(http));
   container.register(TOKENS.AssistantMessenger, () => new AssistantMessenger(http));
   container.register(TOKENS.FeatureFlagResolver, () => featureFlags);

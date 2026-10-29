@@ -465,6 +465,11 @@ export const ko: TranslationsType = {
       body: '이 이메일로 진행 중인 가입 정보가 더 이상 없어요. 정보를 다시 입력해 주세요.',
       short: '가입 시간이 만료됐어요 — 다시 시작해 주세요',
     },
+    registrationLinkExpired: {
+      title: '이 링크는 만료되었어요',
+      body: '링크는 3일 동안 한 번만 사용할 수 있어요. 다시 가입하면 새 링크를 보내 드릴게요.',
+      short: '링크 만료 — 다시 가입하기',
+    },
     invalidMediaType: {
       title: '이 파일은 사용할 수 없어요',
       body: '이미지(jpeg, png, gif, webp)와 영상(mp4, webm, mov)만 업로드할 수 있어요. 다른 파일을 선택해 주세요.',
@@ -1451,6 +1456,8 @@ export const ko: TranslationsType = {
     changeEmail: '다른 이메일 사용',
     errorCode: '6자리 코드를 입력해 주세요.',
     invalidCode: '코드가 올바르지 않거나 만료됐어요. 다시 입력하거나 새 코드를 요청해 주세요.',
+    linkFinishing: '가입을 마무리하는 중…',
+    startAgain: '처음부터 다시',
   },
   ai: {
     title: 'AI 레시피',
@@ -2168,5 +2175,25 @@ export const ko: TranslationsType = {
     promptMaxTime: "{n}분 이내에 완성",
     promptDiet: "식단: {diet}",
     promptServings: "{n}인분",
+  },
+  appVersion: {
+    soft: {
+      title: '새 버전이 나왔어요',
+      body: '{latest} 버전에는 수정 사항과 개선 사항이 있어요.',
+      update: '업데이트',
+      notNow: '나중에',
+    },
+    required: {
+      title: '업데이트가 필요해요',
+      body: '이 버전의 Recipely는 더 이상 지원되지 않아요. 계속 요리하려면 업데이트하세요.',
+      blockedBody: '이 버전에는 알려진 문제가 있어요. 계속하려면 업데이트하세요.',
+      versions: '내 버전 {current} · 필요 {required}',
+      versionsA11y: '내 버전은 {current}입니다. 필요한 버전은 {required}입니다.',
+      updateNow: '지금 업데이트',
+      tryAgain: '다시 시도',
+    },
+    a11y: {
+      tryHint: '이미 업데이트했다면 다시 확인해요',
+    },
   },
 };

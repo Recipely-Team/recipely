@@ -21,6 +21,8 @@ export interface AuthStore {
   ) => Promise<Result<RegistrationChallenge, Failure>>;
   /** Confirms the emailed code and, on success, authenticates the session. Returns `null` on success or the `Failure`. */
   verifyRegistration: (email: string, code: string) => Promise<Failure | null>;
+  /** Same as `verifyRegistration`, from the emailed link's token. */
+  verifyRegistrationLink: (token: string) => Promise<Failure | null>;
   /** Re-sends the registration code; returns the refreshed challenge or the `Failure` for the screen. */
   resendRegistrationCode: (email: string) => Promise<Result<RegistrationChallenge, Failure>>;
   /** Signs out. Returns `null` on success (session cleared) or the `Failure`, leaving the session intact. */

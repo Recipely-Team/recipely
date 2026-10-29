@@ -9,4 +9,6 @@ export const brandMarkSizes = {
   hero: 72,
   /** The login hero in the landscape / web shell. */
   heroLandscape: 96,
+  /** The update-required gate's app mark on a tablet (a phone uses `heroLandscape`). */
+  updateGateTablet: 112,
 } as const;

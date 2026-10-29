@@ -1,5 +1,3 @@
-• Sesli asistan bazı Android telefonlarda açılırken uygulamayı kapatmıyor.
-• Tariflerim sayıları artık kendi sekmesinin üstünde ve tek satırda.
-• Kaydedilenler ve Beğenilenler yalnızca açabildiğin tarifleri sayıyor.
-• Okunamayan tek bir tarif artık bir listeyi ya da yorumları boşaltmıyor.
-• Güvenlik altyapısı: uygulama artık sunucularımıza gerçek uygulama olduğunu kanıtlayabiliyor.
+• Kayıt daha güvenilir: e-postanı iki kez ya da yavaş bağlantıda doğrulamak artık baştan başlatmıyor, seni içeri alıyor.
+• Doğrulama e-postasında 3 gün geçerli "Hesabımı oluşturmayı bitir" düğmesi var; uygulamayı kapatmış olsan bile çalışır.
+• Uygulama artık yeni sürüm çıktığında haber veriyor, sürümün desteklenmediğinde de güncellemeni istiyor.

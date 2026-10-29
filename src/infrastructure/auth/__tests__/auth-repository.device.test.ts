@@ -50,6 +50,15 @@ describe('AuthRepository — session-opening requests carry the device', () => {
     expect(calls[0]?.data).toMatchObject({ code: '123456', device: expectedDevice });
   });
 
+  // The emailed link finishes a registration for a user who closed the app on the code screen.
+  it('the registration link sends its token and the device to verify-link', async () => {
+    const { http, calls } = makeHttp();
+    await new AuthRepository(http, storage, new FixedDeviceIdentity()).verifyRegistrationLink('t'.repeat(43));
+
+    expect(calls[0]?.url).toBe(ApiRoutes.auth.registerVerifyLink);
+    expect(calls[0]?.data).toMatchObject({ token: 't'.repeat(43), device: expectedDevice });
+  });
+
   it('social auth sends the device', async () => {
     const { http, calls } = makeHttp();
     await new AuthRepository(http, storage, new FixedDeviceIdentity()).signInWithGoogle();

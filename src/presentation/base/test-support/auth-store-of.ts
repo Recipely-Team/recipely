@@ -25,6 +25,7 @@ export const authStoreOf = (user: UserEntity | null, overrides: Partial<AuthStor
     signIn: noFailure,
     register: jest.fn(),
     verifyRegistration: noFailure,
+    verifyRegistrationLink: noFailure,
     resendRegistrationCode: jest.fn(),
     signOut: noFailure,
     expireSession: jest.fn(async () => undefined),
