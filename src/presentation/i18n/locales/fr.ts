@@ -2200,4 +2200,8 @@ export const fr = {
       tryHint: 'Vérifie à nouveau si vous avez déjà mis à jour',
     },
   },
+  launchCampaign: {
+    skip: 'Passer',
+    notNow: 'Plus tard',
+  },
 };

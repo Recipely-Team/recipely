@@ -2200,4 +2200,8 @@ export const es = {
       tryHint: 'Vuelve a comprobar si ya actualizaste',
     },
   },
+  launchCampaign: {
+    skip: 'Omitir',
+    notNow: 'Ahora no',
+  },
 };

@@ -2200,4 +2200,8 @@ export const ja = {
       tryHint: 'アップデート済みなら再確認します',
     },
   },
+  launchCampaign: {
+    skip: 'スキップ',
+    notNow: 'あとで',
+  },
 };

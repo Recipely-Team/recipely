@@ -2200,4 +2200,8 @@ export const de = {
       tryHint: 'Prüft erneut, falls du schon aktualisiert hast',
     },
   },
+  launchCampaign: {
+    skip: 'Überspringen',
+    notNow: 'Nicht jetzt',
+  },
 };

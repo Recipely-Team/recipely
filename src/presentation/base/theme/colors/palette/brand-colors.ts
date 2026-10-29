@@ -12,6 +12,8 @@ export const BrandColors = {
   white: '#FFFFFF',
   /** Apple sign-in button surface. */
   black: '#000000',
+  /** The launch campaign's Ramadan crescent — a warm moon on any night gradient. */
+  campaignCrescent: '#FFE7A3',
   /** Google sign-in button label ink. */
   googleLabel: '#1F2937',
   googleBlue: '#4285F4',

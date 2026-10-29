@@ -2200,4 +2200,8 @@ export const it = {
       tryHint: 'Ricontrolla se hai già aggiornato',
     },
   },
+  launchCampaign: {
+    skip: 'Salta',
+    notNow: 'Non ora',
+  },
 };

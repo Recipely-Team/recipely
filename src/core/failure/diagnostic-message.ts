@@ -231,6 +231,9 @@ export const DiagnosticMessage = {
   appVersion: {
     unknownStatus: 'The version check answered with a status this build does not know',
   },
+  launchCampaigns: {
+    notAList: 'The launch campaigns answer carried no campaign list',
+  },
 } as const;
 
 /**

@@ -3253,3 +3253,42 @@ iOS + Android only; the web always serves the latest build and shows nothing.
   a spoken `versionsA11y` label; column capped at `updateGateMaxWidth` 360 / 440. **Update now** opens
   the verdict's https store link (else `StoreLinks`); **Try again** re-checks (`busy` while running).
 - Large text: no fixed heights, the gate scrolls when it does not fit, the icon does not scale.
+
+## Launch campaign (2026-10-30)
+
+Prototype: [Board · Launch Campaign](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Board+%C2%B7+Launch+Campaign.html)
+(Tweaks → Launch Campaign: variant Off / Splash / Dialog, theme Ramadan / Christmas / Summer, "Replay over home feed").
+Source in the prototype: `src/launch-campaign.jsx` (app) and `src/campaign-admin.jsx` (admin calendar).
+
+A seasonal or promotional moment set in the admin panel (System → LaunchCampaign, or the **Campaign calendar**
+page): a time window, regions (ISO codes, empty = everywhere), platforms, priority, a variant and its copy.
+
+**Rules (board):** at most once per campaign per device; never over onboarding, sign-in or an update
+prompt (the update wins); never delays startup — the app shows only what it cached on an earlier launch;
+one campaign at a time, highest priority first.
+
+**Splash variant** — `base/widgets/launch-campaign/campaign-splash.tsx`. Full-screen, zIndex
+`launchCampaign` (250), i.e. *under* the brand splash (300): the brand splash fades and the campaign is
+already there behind the same 128 tile / 96 logo, so the logo does not move. Campaign gradient
+(`colorStart → colorEnd`, ~165°) + vector art (`ART_LAYOUTS`, viewBox 390×844, `xMidYMid slice`).
+Skip (15/600 white) with a 28 px countdown ring (r 12, stroke 2, track 0.28) top-right; title 32 / 800
+white; subtitle 15 / 500 white, max 300; white CTA pill (max 360, min 52, ink = darker gradient stop).
+Rise-in 500 ms (bezier .2 .9 .25 1) staggered 120 / 220 / 300 ms. Auto-closes after 3 s counted from
+when the brand splash has gone. Reduced motion: no rise, ring full, no auto-close. Android back = Skip.
+Shown only if it is mounted while the brand splash still covers the app; otherwise it waits, unseen, for
+the next launch.
+
+**Dialog variant** — `campaign-dialog.tsx`. After the brand splash has gone, on the recipes feed: dim
+(`colors.overlay`), card bottom-aligned on a phone (top radius 16), centred max 400 on an expanded
+viewport. Hero 168 (gradient + art viewBox 400×168, optional prefetched https image on top), close X
+(44 target, 32 disc on `colors.scrim`, 16 glyph). App mark 64 tile / 48 logo in a 72 wrapper with a 4
+border in the card colour, centred on the hero's lower edge. Title (`title` variant), body 2 lines
+(`textSubtle`), PrimaryButton CTA, "Not now". Slides up 24 → 0 in 260 ms.
+
+**Art presets** (`CampaignArt`): `crescent` (Ramadan: crescent `#FFE7A3` + stars + dots), `snow`
+(Christmas / winter dots), `sun` (summer rings), `none`. Board gradients: Ramadan `#0B1437 → #3730A3`,
+Christmas `#14532D → #991B1B`, Summer `#E8870A → #BF360C`; an invalid colour falls back to brand blue.
+
+**Admin calendar** — backend `infrastructure/admin/components/campaign-calendar.tsx`: UTC month grid,
+a bar per campaign spanning its days (gradient = its colours, dashed = inactive draft), region chips,
+‹ Today ›, `+` on a day creates an inactive one-day draft and opens its edit form.

@@ -1,3 +1,6 @@
+import { getLocales } from 'expo-localization';
+import { Image } from 'expo-image';
+import { ValueConstants } from '@core/constants';
 import { ShoppingListRepository } from '@infrastructure/shopping/shopping-list-repository';
 import { MealPlanRepository } from '@infrastructure/meal-plan/meal-plan-repository';
 import { FridgeRepository } from '@infrastructure/fridge/fridge-repository';
@@ -24,6 +27,7 @@ import { UserProfileRepository } from '@infrastructure/user-profile/user-profile
 import { FeedbackRepository } from '@infrastructure/feedback/feedback-repository';
 import { FeatureFlagRepository } from '@infrastructure/flags/feature-flag-repository';
 import { AppVersionRepository } from '@infrastructure/app-version/app-version-repository';
+import { LaunchCampaignRepository } from '@infrastructure/campaigns/launch-campaign-repository';
 import { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
 import { FeatureFlagName } from '@application/config/feature-flag-name';
 import { AttestationRepository } from '@infrastructure/integrity/attestation-repository';
@@ -168,6 +172,16 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.UserProfileRepository, () => new UserProfileRepository(http));
   container.register(TOKENS.FeedbackRepository, () => new FeedbackRepository(http));
   container.register(TOKENS.AppVersionRepository, () => new AppVersionRepository(http, appBuild));
+  container.register(
+    TOKENS.LaunchCampaignRepository,
+    () =>
+      new LaunchCampaignRepository(
+        http,
+        kvStore,
+        appBuild === null ? null : { platform: appBuild.platform, region: getLocales()[ValueConstants.zero]?.regionCode ?? null },
+        (urls) => void Image.prefetch(urls),
+      ),
+  );
   container.register(TOKENS.AssistantTokenRepository, () => new AssistantTokenRepository(http));
   container.register(TOKENS.AssistantMessenger, () => new AssistantMessenger(http));
   container.register(TOKENS.FeatureFlagResolver, () => featureFlags);
