@@ -9,6 +9,18 @@
  * to feel like the app is slow, shorter shows the swap.
  */
 export const durations = {
+  /** How long the brand splash stays before it fades (`SplashOverlay`). */
+  brandSplash: 1400,
+  /** The brand splash's fade-out. */
+  brandSplashFade: 400,
+  /** A launch campaign splash's countdown, once the brand splash has gone. */
+  campaignCountdown: 3000,
+  /** The campaign splash's elements rising in. */
+  campaignRise: 500,
+  /** The campaign dialog sliding up. */
+  campaignSheetRise: 260,
+  /** The campaign overlay and dim fading in. */
+  campaignFade: 300,
   /**
    * Pointer-hover lift on a card. Short enough that the card is already up by
    * the time the eye arrives, long enough not to read as a jump.

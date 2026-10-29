@@ -28,6 +28,11 @@ import type { AppVersionRepositoryInterface } from '@domain/app-version/app-vers
 import { CheckAppVersionUseCase } from '@application/app-version/check-app-version-use-case';
 import { DismissUpdateUseCase } from '@application/app-version/dismiss-update-use-case';
 import { configureAppVersionStore } from '@application/app-version/app-version-store';
+import type { LaunchCampaignRepositoryInterface } from '@domain/campaigns/launch-campaign-repository-interface';
+import { PickLaunchCampaignUseCase } from '@application/campaigns/pick-launch-campaign-use-case';
+import { RefreshLaunchCampaignsUseCase } from '@application/campaigns/refresh-launch-campaigns-use-case';
+import { DismissLaunchCampaignUseCase } from '@application/campaigns/dismiss-launch-campaign-use-case';
+import { configureLaunchCampaignStore } from '@application/campaigns/launch-campaign-store';
 
 /**
  * **Small-feature composition** — notifications, the signed-in user's profile, the recipe
@@ -49,12 +54,14 @@ export const registerMisc = (
   | 'taxonomyStore'
   | 'feedbackStore'
   | 'appVersionStore'
+  | 'launchCampaignStore'
 > => {
   const notificationRepo = container.resolve<NotificationRepositoryInterface>(TOKENS.NotificationRepository);
   const userProfileRepo = container.resolve<UserProfileRepositoryInterface>(TOKENS.UserProfileRepository);
   const taxonomyRepo = container.resolve<TaxonomyRepositoryInterface>(TOKENS.TaxonomyRepository);
   const feedbackRepo = container.resolve<FeedbackRepositoryInterface>(TOKENS.FeedbackRepository);
   const appVersionRepo = container.resolve<AppVersionRepositoryInterface>(TOKENS.AppVersionRepository);
+  const campaignRepo = container.resolve<LaunchCampaignRepositoryInterface>(TOKENS.LaunchCampaignRepository);
 
   const notificationsStore = configureNotificationsStore({
     listNotifications: new ListNotificationsUseCase(notificationRepo),
@@ -87,6 +94,11 @@ export const registerMisc = (
     appVersionStore: configureAppVersionStore({
       checkAppVersion: new CheckAppVersionUseCase(appVersionRepo, preferences),
       dismissUpdate: new DismissUpdateUseCase(preferences),
+    }),
+    launchCampaignStore: configureLaunchCampaignStore({
+      pickLaunchCampaign: new PickLaunchCampaignUseCase(campaignRepo),
+      refreshLaunchCampaigns: new RefreshLaunchCampaignsUseCase(campaignRepo),
+      dismissLaunchCampaign: new DismissLaunchCampaignUseCase(campaignRepo),
     }),
   };
 };

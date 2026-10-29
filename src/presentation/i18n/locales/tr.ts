@@ -2204,4 +2204,8 @@ export const tr: TranslationsType = {
       tryHint: 'Zaten güncellediysen tekrar kontrol eder',
     },
   },
+  launchCampaign: {
+    skip: 'Geç',
+    notNow: 'Şimdi değil',
+  },
 };

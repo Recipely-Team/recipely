@@ -2200,4 +2200,8 @@ export const pt = {
       tryHint: 'Verifica de novo se você já atualizou',
     },
   },
+  launchCampaign: {
+    skip: 'Pular',
+    notNow: 'Agora não',
+  },
 };

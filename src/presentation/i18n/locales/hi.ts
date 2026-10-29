@@ -2196,4 +2196,8 @@ export const hi: TranslationsType = {
       tryHint: 'अगर आपने अपडेट कर लिया है तो फिर से जाँचता है',
     },
   },
+  launchCampaign: {
+    skip: 'छोड़ें',
+    notNow: 'अभी नहीं',
+  },
 };

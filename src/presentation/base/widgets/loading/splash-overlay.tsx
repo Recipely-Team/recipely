@@ -6,12 +6,12 @@ import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, fontSizes, fontWeights, letterSpacings, zIndices, opacities, BrandColors, radii } from '@presentation/base/theme';
+import { durations, spacing, fontSizes, fontWeights, letterSpacings, zIndices, opacities, BrandColors, radii } from '@presentation/base/theme';
 import { useTranslations } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
-const VISIBLE_MS = 1400;
-const FADE_MS = 400;
+const VISIBLE_MS = durations.brandSplash;
+const FADE_MS = durations.brandSplashFade;
 /** How many fade-lengths to wait for the fade's callback before removing the splash anyway. */
 const FALLBACK_FADE_FACTOR = 3;
 const TILE_SIZE = 128;
