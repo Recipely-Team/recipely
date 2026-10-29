@@ -12,7 +12,7 @@ import { useTranslations } from '@presentation/i18n';
 
 export interface UpdateAvailableSheetProps {
   verdict: VersionVerdict;
-  /** "Not now", the backdrop or a drag: remembered for this release only. */
+  /** "Not now", the backdrop or a drag: snoozes the prompt for a few days. */
   onDismiss: () => void;
 }
 

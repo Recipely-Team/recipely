@@ -54,8 +54,7 @@ export const configureAppVersionStore = (deps: AppVersionStoreDeps): StoreApi<Ap
       const { state } = get();
       if (state.status !== AppVersionStatus.UpdateAvailable) return;
       set({ state: { status: AppVersionStatus.UpToDate } });
-      const latest = state.verdict.latestVersion;
-      if (latest !== null) await deps.dismissUpdate.execute(latest);
+      await deps.dismissUpdate.execute();
     },
   }));
 };
