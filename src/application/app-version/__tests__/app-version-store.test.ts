@@ -7,6 +7,7 @@ import { DismissUpdateUseCase } from '@application/app-version/dismiss-update-us
 import type { VersionVerdict } from '@domain/app-version/version-verdict';
 import type { PreferenceStoreInterface } from '@domain/storage/preference-store-interface';
 import { PreferenceSlot } from '@domain/storage/preference-slot';
+import { UPDATE_SNOOZE_MS, UpdateSnooze } from '@domain/app-version/update-snooze';
 
 const verdict = (status: VersionVerdict['status'], latestVersion: string | null = '1.4.0'): VersionVerdict => ({
   status,
@@ -28,12 +29,15 @@ const memoryPreferences = (): PreferenceStoreInterface & { values: Map<string, s
   };
 };
 
+const clock = { now: 1_000_000 };
+
 const storeAnswering = (answers: Result<VersionVerdict, Failure>[], preferences = memoryPreferences()) => {
   const check = jest.fn();
   for (const answer of answers) check.mockResolvedValueOnce(answer);
+  const now = (): number => clock.now;
   const store = configureAppVersionStore({
-    checkAppVersion: new CheckAppVersionUseCase({ check }, preferences),
-    dismissUpdate: new DismissUpdateUseCase(preferences),
+    checkAppVersion: new CheckAppVersionUseCase({ check }, preferences, now),
+    dismissUpdate: new DismissUpdateUseCase(preferences, now),
   });
   return { store, check, preferences };
 };
@@ -69,28 +73,42 @@ describe('app version store', () => {
     expect(check).toHaveBeenCalledTimes(1);
   });
 
-  it('"Not now" hides the prompt and remembers that release only', async () => {
-    const { store, preferences } = storeAnswering([
-      ok(verdict('updateAvailable')),
-      ok(verdict('updateAvailable')),
-      ok(verdict('updateAvailable', '1.5.0')),
-    ]);
+  // "Not now" must give the user a break, then ask again — not every launch, and not never.
+  it('"Not now" hides the prompt for a few days, then asks again', async () => {
+    clock.now = 1_000_000;
+    const { store, preferences } = storeAnswering([ok(verdict('updateAvailable')), ok(verdict('updateAvailable')), ok(verdict('updateAvailable', '1.5.0')), ok(verdict('updateAvailable'))]);
     await store.getState().check();
     await store.getState().dismissUpdate();
     expect(store.getState().state.status).toBe('upToDate');
-    expect(preferences.values.get(PreferenceSlot.DismissedUpdateVersion)).toBe('1.4.0');
+    expect(preferences.values.get(PreferenceSlot.UpdateSnoozedUntil)).toBe(String(1_000_000 + UPDATE_SNOOZE_MS));
 
+    clock.now += UPDATE_SNOOZE_MS - 1;
     await store.getState().check();
     expect(store.getState().state.status).toBe('upToDate');
+    await store.getState().check();
+    expect(store.getState().state.status).toBe('upToDate');
+
+    clock.now += 1;
     await store.getState().check();
     expect(store.getState().state.status).toBe('updateAvailable');
   });
 
   it('a required update ignores an earlier dismissal', async () => {
     const preferences = memoryPreferences();
-    preferences.values.set(PreferenceSlot.DismissedUpdateVersion, '1.4.0');
+    clock.now = 1_000_000;
+    preferences.values.set(PreferenceSlot.UpdateSnoozedUntil, String(clock.now + UPDATE_SNOOZE_MS));
     const { store } = storeAnswering([ok(verdict('updateRequired'))], preferences);
     await store.getState().check();
     expect(store.getState().state.status).toBe('updateRequired');
+  });
+});
+
+describe('UpdateSnooze', () => {
+  it('reads nothing it cannot trust as no snooze', () => {
+    expect(UpdateSnooze.parse(null)).toBeNull();
+    expect(UpdateSnooze.parse('1.4.0')).toBeNull();
+    expect(UpdateSnooze.parse('soon')).toBeNull();
+    expect(UpdateSnooze.parse('500')?.isActiveAt(499)).toBe(true);
+    expect(UpdateSnooze.parse('500')?.isActiveAt(500)).toBe(false);
   });
 });

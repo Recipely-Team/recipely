@@ -3243,7 +3243,7 @@ iOS + Android only; the web always serves the latest build and shows nothing.
 - **Update available** — the shared `BottomSheet` (centred dialog on an expanded viewport), titled
   `appVersion.soft.title`; the 64 pt store icon (`brandMarkSizes.default`), body in `textSubtle`,
   full-width **Update** (`PrimaryButton`) and **Not now** (`buttonSm` min height, semibold). Not now,
-  backdrop and drag all dismiss and remember that `latestVersion`. Deviation from the board: the title
+  backdrop and drag all snooze the prompt for 3 days (`UPDATE_SNOOZE_MS`), then it asks again. Deviation from the board: the title
   sits in the sheet's header row (rule 23 — every sheet is `BottomSheet`), not under the icon.
 - **Update required** — `UpdateRequiredGate`, full-screen above every layer (`zIndices.updateGate`),
   `accessibilityViewIsModal`, Android back swallowed. Icon 96 / 112 pt (phone / `isExpanded`), corner

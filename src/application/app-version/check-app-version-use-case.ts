@@ -5,27 +5,29 @@ import type { AppVersionRepositoryInterface } from '@domain/app-version/app-vers
 import type { PreferenceStoreInterface } from '@domain/storage/preference-store-interface';
 import { PreferenceSlot } from '@domain/storage/preference-slot';
 import { VersionCheckStatus } from '@domain/app-version/version-check-status';
+import { UpdateSnooze } from '@domain/app-version/update-snooze';
 import type { VersionVerdict } from '@domain/app-version/version-verdict';
 
 /**
- * Asks the backend what this build must do, minus a prompt the user already declined.
+ * Asks the backend what this build must do, minus a prompt the user snoozed.
  *
  * @remarks
- * - **"Not now" lasts one release.** An optional update whose `latestVersion`
- *   the user dismissed comes back as `upToDate`; the next release prompts again.
- * - **A required update ignores the dismissal** — nothing can opt out of it.
+ * - **"Not now" lasts a while, then asks again** (`UpdateSnooze`): an optional
+ *   update inside the snooze comes back as `upToDate`.
+ * - **A required update ignores the snooze** — nothing can opt out of it.
  */
 export class CheckAppVersionUseCase {
   constructor(
     private readonly repo: AppVersionRepositoryInterface,
     private readonly preferences: PreferenceStoreInterface,
+    private readonly now: () => number = Date.now,
   ) {}
 
   async execute(): Promise<Result<VersionVerdict, Failure>> {
     const verdict = await this.repo.check();
     if (!verdict.ok || verdict.value.status !== VersionCheckStatus.UpdateAvailable) return verdict;
-    const dismissed = await this.preferences.get(PreferenceSlot.DismissedUpdateVersion);
-    const isDismissed = dismissed.ok && dismissed.value !== null && dismissed.value === verdict.value.latestVersion;
-    return isDismissed ? ok({ ...verdict.value, status: VersionCheckStatus.UpToDate }) : verdict;
+    const stored = await this.preferences.get(PreferenceSlot.UpdateSnoozedUntil);
+    const snooze = stored.ok ? UpdateSnooze.parse(stored.value) : null;
+    return snooze?.isActiveAt(this.now()) === true ? ok({ ...verdict.value, status: VersionCheckStatus.UpToDate }) : verdict;
   }
 }
