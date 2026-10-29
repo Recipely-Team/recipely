@@ -34,15 +34,21 @@ describe('CampaignLineup', () => {
     expect(lineup.pickAt(NOW, new Set())).toBeNull();
   });
 
-  it('never shows a campaign this device has already seen', () => {
-    expect(CampaignLineup.of([campaign('a')]).pickAt(NOW, new Set(['a']))).toBeNull();
+  it('never shows a dialog this device has already seen', () => {
+    expect(CampaignLineup.of([campaign('a', { variant: 'dialog' })]).pickAt(NOW, new Set(['a']))).toBeNull();
+  });
+
+  // Reported: the splash showed once and never again, so it was easy to miss entirely.
+  it('shows a splash on every launch while its window is open, seen or not', () => {
+    expect(CampaignLineup.of([campaign('a')]).pickAt(NOW, new Set(['a']))?.id).toBe('a');
+    expect(CampaignLineup.of([campaign('a', { endsAtMs: NOW })]).pickAt(NOW, new Set())).toBeNull();
   });
 
   it('shows one at a time: highest priority, then the one that opened first', () => {
     const lineup = CampaignLineup.of([
-      campaign('late', { startsAtMs: NOW - DAY / 2 }),
-      campaign('early', { startsAtMs: NOW - DAY }),
-      campaign('urgent', { priority: 3, startsAtMs: NOW - DAY / 4 }),
+      campaign('late', { variant: 'dialog', startsAtMs: NOW - DAY / 2 }),
+      campaign('early', { variant: 'dialog', startsAtMs: NOW - DAY }),
+      campaign('urgent', { variant: 'dialog', priority: 3, startsAtMs: NOW - DAY / 4 }),
     ]);
     expect(lineup.pickAt(NOW, new Set())?.id).toBe('urgent');
     expect(lineup.pickAt(NOW, new Set(['urgent']))?.id).toBe('early');
