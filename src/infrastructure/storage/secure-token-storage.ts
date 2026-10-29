@@ -7,7 +7,7 @@ import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import type { SerializedSession } from '@infrastructure/storage/serialized-session';
-import { kvStore } from '@infrastructure/storage/kv-store';
+import { secureKvStore } from '@infrastructure/storage/secure-kv-store';
 import { optional } from '@core/guards/type-guards';
 import type { CreatorClaims } from '@domain/creators/creator-claims';
 import type { CreatorClaimDto } from '@infrastructure/creators/dtos/creator-claim-dto';
@@ -72,7 +72,7 @@ export class SecureTokenStorage {
           ...optional('creatorTags', toStoredClaims(session.user.creatorClaims)),
         },
       };
-      await kvStore.setItem(SESSION_STORAGE_KEY, JSON.stringify(payload));
+      await secureKvStore.setItem(SESSION_STORAGE_KEY, JSON.stringify(payload));
       return ok(undefined);
     } catch (error: unknown) {
       if (__DEV__) {
@@ -89,8 +89,8 @@ export class SecureTokenStorage {
     this.cached = loaded.value;
     if (!this.persistTokens && loaded.value !== null) {
       // An older web build left tokens in localStorage: keep them in memory only.
-      await kvStore.removeItem(SESSION_STORAGE_KEY);
-      await kvStore.removeItem(LEGACY_SESSION_STORAGE_KEY);
+      await secureKvStore.removeItem(SESSION_STORAGE_KEY);
+      await secureKvStore.removeItem(LEGACY_SESSION_STORAGE_KEY);
       await this.markSignedIn();
     }
     return ok(loaded.value);
@@ -98,14 +98,14 @@ export class SecureTokenStorage {
 
   /** Web: whether this browser has a sign-in the refresh cookie may restore. */
   async hasSignedInMarker(): Promise<boolean> {
-    const read = await kvStore.getItem(SIGNED_IN_MARKER_STORAGE_KEY);
+    const read = await secureKvStore.getItem(SIGNED_IN_MARKER_STORAGE_KEY);
     return read.ok && read.value === SIGNED_IN_MARKER;
   }
 
   private async readStoredSession(): Promise<Result<AuthSessionEntity | null, Failure>> {
     let raw: string | null;
     try {
-      const read = await kvStore.getItem(SESSION_STORAGE_KEY);
+      const read = await secureKvStore.getItem(SESSION_STORAGE_KEY);
       raw = read.ok ? read.value : null;
       if (raw === null) {
         raw = await this.migrateLegacySession();
@@ -157,10 +157,10 @@ export class SecureTokenStorage {
   async clear(): Promise<Result<void, Failure>> {
     this.cached = null;
     try {
-      await kvStore.removeItem(SESSION_STORAGE_KEY);
-      await kvStore.removeItem(LEGACY_SESSION_STORAGE_KEY);
-      await kvStore.removeItem(SIGNED_IN_MARKER_STORAGE_KEY);
-      for (const key of USER_SCOPED_STORAGE_KEYS) await kvStore.removeItem(key);
+      await secureKvStore.removeItem(SESSION_STORAGE_KEY);
+      await secureKvStore.removeItem(LEGACY_SESSION_STORAGE_KEY);
+      await secureKvStore.removeItem(SIGNED_IN_MARKER_STORAGE_KEY);
+      for (const key of USER_SCOPED_STORAGE_KEYS) await secureKvStore.removeItem(key);
       return ok(undefined);
     } catch (error: unknown) {
       return fail(new UnknownFailure(DiagnosticMessage.storage.clearFailed, error));
@@ -168,7 +168,7 @@ export class SecureTokenStorage {
   }
 
   private async markSignedIn(): Promise<Result<void, Failure>> {
-    const written = await kvStore.setItem(SIGNED_IN_MARKER_STORAGE_KEY, SIGNED_IN_MARKER);
+    const written = await secureKvStore.setItem(SIGNED_IN_MARKER_STORAGE_KEY, SIGNED_IN_MARKER);
     return written.ok ? ok(undefined) : fail(new UnknownFailure(DiagnosticMessage.storage.persistFailed, written.failure));
   }
 
@@ -177,12 +177,12 @@ export class SecureTokenStorage {
    * it, or `null` when there is nothing to move.
    */
   private async migrateLegacySession(): Promise<string | null> {
-    const legacy = await kvStore.getItem(LEGACY_SESSION_STORAGE_KEY);
+    const legacy = await secureKvStore.getItem(LEGACY_SESSION_STORAGE_KEY);
     if (!legacy.ok || legacy.value === null) {
       return null;
     }
-    await kvStore.setItem(SESSION_STORAGE_KEY, legacy.value);
-    await kvStore.removeItem(LEGACY_SESSION_STORAGE_KEY);
+    await secureKvStore.setItem(SESSION_STORAGE_KEY, legacy.value);
+    await secureKvStore.removeItem(LEGACY_SESSION_STORAGE_KEY);
     return legacy.value;
   }
 }

@@ -1,23 +1,21 @@
 /**
- * Contract test for the native `kvStore`: it must satisfy the `KeyValueStoreInterface`
- * port by delegating to `expo-secure-store` and round-tripping writes/reads,
- * returning `null` for absent keys. The platform module is replaced with an
- * in-memory backing because the jest-expo `expo-secure-store` mock does not
- * persist — this exercises the delegation contract, never a real device store.
+ * Moving caches and preferences from SecureStore to MMKV must not reset anyone: an update
+ * that lost the saved language, the onboarding flag or the offline shopping outbox would be
+ * a regression users notice at once. A key MMKV lacks is read from SecureStore, kept, and
+ * deleted there. MMKV runs as its own in-memory mock under jest.
  */
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
 
-const mockBacking = new Map<string, string>();
+const mockSecure = new Map<string, string>();
 
 jest.mock('expo-secure-store', () => ({
-  getItemAsync: jest.fn((key: string): Promise<string | null> =>
-    Promise.resolve(mockBacking.has(key) ? (mockBacking.get(key) as string) : null)),
+  getItemAsync: jest.fn((key: string): Promise<string | null> => Promise.resolve(mockSecure.get(key) ?? null)),
   setItemAsync: jest.fn((key: string, value: string): Promise<void> => {
-    mockBacking.set(key, value);
+    mockSecure.set(key, value);
     return Promise.resolve();
   }),
   deleteItemAsync: jest.fn((key: string): Promise<void> => {
-    mockBacking.delete(key);
+    mockSecure.delete(key);
     return Promise.resolve();
   }),
 }));
@@ -25,27 +23,27 @@ jest.mock('expo-secure-store', () => ({
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { ok } from '@core/result/result-helpers';
 
-describe('kvStore (native)', () => {
-  beforeEach(() => {
-    mockBacking.clear();
-    jest.clearAllMocks();
+describe('kvStore (native, MMKV)', () => {
+  beforeEach(() => mockSecure.clear());
+
+  it('round-trips a value without touching SecureStore', async () => {
+    await kvStore.setItem('k.round', 'v');
+    expect(await kvStore.getItem('k.round')).toEqual(ok('v'));
+    expect(mockSecure.has('k.round')).toBe(false);
   });
 
-  it('returns null for a key that was never written', async () => {
-    await expect(kvStore.getItem('session')).resolves.toEqual(ok(null));
+  it('moves a value an earlier version kept in SecureStore on its first read', async () => {
+    mockSecure.set('recipely.language.v1', 'tr');
+
+    expect(await kvStore.getItem('recipely.language.v1')).toEqual(ok('tr'));
+    expect(mockSecure.has('recipely.language.v1')).toBe(false);
+    expect(await kvStore.getItem('recipely.language.v1')).toEqual(ok('tr'));
   });
 
-  it('round-trips a written value through the secure store', async () => {
-    await kvStore.setItem('session', 'token-123');
-
-    await expect(kvStore.getItem('session')).resolves.toEqual(ok('token-123'));
-  });
-
-  it('returns null again after the key is removed', async () => {
-    await kvStore.setItem('session', 'token-123');
-
-    await kvStore.removeItem('session');
-
-    await expect(kvStore.getItem('session')).resolves.toEqual(ok(null));
+  it('answers null for a key held nowhere, and a removal clears both stores', async () => {
+    expect(await kvStore.getItem('k.none')).toEqual(ok(null));
+    mockSecure.set('k.old', 'x');
+    await kvStore.removeItem('k.old');
+    expect(await kvStore.getItem('k.old')).toEqual(ok(null));
   });
 });

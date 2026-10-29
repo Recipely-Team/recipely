@@ -1,6 +1,6 @@
 import { attestKeyAsync, generateAssertionAsync, generateKeyAsync, isSupported } from '@expo/app-integrity';
 import { DevicePlatform } from '@domain/notifications/device-platform';
-import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
+import type { SecureKeyValueStoreInterface } from '@domain/storage/secure-key-value-store-interface';
 import { HttpHeader } from '@infrastructure/network/http/http-header';
 import { APP_ATTEST_KEY_STORAGE_KEY } from '@infrastructure/constants/storage';
 import type { AppAttestorInterface } from '@infrastructure/integrity/app-attestor-interface';
@@ -29,7 +29,7 @@ export class AppAttestAttestor implements AppAttestorInterface {
   private keyId: Promise<string | null> | null = null;
 
   constructor(
-    private readonly store: KeyValueStoreInterface,
+    private readonly store: SecureKeyValueStoreInterface,
     private readonly repository: AttestationRepository,
   ) {}
 

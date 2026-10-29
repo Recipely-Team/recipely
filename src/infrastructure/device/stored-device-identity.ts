@@ -5,7 +5,7 @@ import { ValueConstants } from '@core/constants';
 import type { DevicePlatform } from '@domain/notifications/device-platform';
 import type { DeviceIdentity } from '@domain/device/device-identity';
 import type { DeviceIdentityInterface } from '@domain/device/device-identity-interface';
-import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
+import type { SecureKeyValueStoreInterface } from '@domain/storage/secure-key-value-store-interface';
 import { DEVICE_ID_STORAGE_KEY } from '@infrastructure/constants/storage';
 import { ApiLimits } from '@infrastructure/constants/api/api-limits';
 
@@ -27,7 +27,7 @@ export class StoredDeviceIdentity implements DeviceIdentityInterface {
   private pending: Promise<Result<DeviceIdentity, Failure>> | null = null;
 
   constructor(
-    private readonly store: KeyValueStoreInterface,
+    private readonly store: SecureKeyValueStoreInterface,
     private readonly generateId: () => string,
     private readonly platform: DevicePlatform,
     private readonly appVersion: string | null,

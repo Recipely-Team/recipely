@@ -1,5 +1,5 @@
 import { ValueConstants } from '@core/constants';
-import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
+import type { SecureKeyValueStoreInterface } from '@domain/storage/secure-key-value-store-interface';
 import { isAndroid, isIos } from '@infrastructure/constants/platform';
 import type { AppAttestorInterface } from '@infrastructure/integrity/app-attestor-interface';
 import { AppAttestAttestor } from '@infrastructure/integrity/app-attest-attestor';
@@ -11,7 +11,7 @@ import type { AttestationRepository } from '@infrastructure/integrity/attestatio
  * (when the build carries its Cloud project number), none on the web.
  */
 export const createAppAttestor = (
-  store: KeyValueStoreInterface,
+  store: SecureKeyValueStoreInterface,
   repository: AttestationRepository,
 ): AppAttestorInterface | null => {
   if (isIos()) return new AppAttestAttestor(store, repository);
