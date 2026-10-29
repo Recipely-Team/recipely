@@ -23,10 +23,20 @@ export const MULTIPART_UPLOAD_TIMEOUT_MS = 60_000;
 export const FILE_IMPORT_TIMEOUT_MS = 70_000;
 
 /**
- * The pause before a read is tried a second time after a timeout, a dropped
- * connection or a 502/503/504 — long enough for a restarting API to answer.
+ * The backoff ceiling of a read's first retry after a timeout, a dropped
+ * connection or a 502/503/504; it doubles per retry up to {@link READ_RETRY_CAP_MS}.
+ * Long enough for a restarting API to answer.
  */
-export const READ_RETRY_DELAY_MS = 800;
+export const READ_RETRY_BASE_MS = 800;
+
+/** No read waits longer than this between two tries. */
+export const READ_RETRY_CAP_MS = 4_000;
+
+/** Retries for a read that failed fast (dropped connection, 502/503/504) — three tries in all. */
+export const READ_RETRIES = 2;
+
+/** A read that timed out already cost the user the full timeout; it gets one retry, not two. */
+export const READ_TIMEOUT_RETRIES = 1;
 
 /**
  * Web: how long a refresh the API refused waits before asking once more. Two

@@ -101,7 +101,7 @@ describe('AxiosHttpClient onUnauthorized hook', () => {
 /**
  * The symptom: "This took a while" on the web while the API was briefly
  * unavailable — a single slow or refused read went straight to the user.
- * A GET that times out or meets a 502/503/504 is asked once more.
+ * A GET that times out or meets a 502/503/504 is asked again, with backoff.
  */
 describe('AxiosHttpClient read retry', () => {
   beforeEach(() => {
@@ -124,6 +124,16 @@ describe('AxiosHttpClient read retry', () => {
 
     expect(mockRequest).toHaveBeenCalledTimes(2);
     expect(result).toEqual({ ok: true, value: { ok: 1 } });
+  });
+
+  it('gives up after three tries when the API stays away', async () => {
+    mockRequest.mockResolvedValue({ status: 503, data: {} });
+    const { client } = buildClient();
+
+    const result = await settle(client.get('/recipes'));
+
+    expect(mockRequest).toHaveBeenCalledTimes(3);
+    expect(result.ok).toBe(false);
   });
 
   it('does not ask again when the API itself refused the read', async () => {

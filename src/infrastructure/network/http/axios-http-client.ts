@@ -4,8 +4,8 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { type Failure, UnauthorizedFailure } from '@core/failure';
 import { failureFromResponse } from '@infrastructure/network/errors/failure-from-response';
-import { DEFAULT_REQUEST_TIMEOUT_MS, READ_RETRY_DELAY_MS } from '@infrastructure/constants/api/api-timeouts';
-import { isRetryableReadFailure } from '@infrastructure/network/errors/is-retryable-read-failure';
+import { DEFAULT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
+import { readRetryDelayMs } from '@infrastructure/network/errors/read-retry-delay';
 import { API_AES_KEY_HEX } from '@infrastructure/constants/build-secrets';
 import { keyFromHex } from '@infrastructure/crypto/aes-envelope';
 import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-http-client-options';
@@ -17,7 +17,7 @@ import { uploadMultipart } from '@infrastructure/network/upload/upload-multipart
 import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
 import { HttpStatus, isSuccessStatus } from '@infrastructure/network/http/http-status';
 import { HttpMethod } from '@infrastructure/network/http/http-method';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { isString } from '@core/guards/type-guards';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 
@@ -90,12 +90,16 @@ export class AxiosHttpClient {
    * typed `'Post'` or landing on the wrong call. These read as the request they
    * make; `request` stays for the rare call needing a full Axios config.
    */
-  /** A read that timed out or found the API briefly unreachable is asked once more before the user sees "this took a while". */
+  /** A read that timed out or found the API briefly unreachable is asked again, with backoff, before the user sees "this took a while" — {@link readRetryDelayMs}. */
   async get<T>(url: string, config?: RequestConfig): Promise<Result<T, Failure>> {
-    const first = await this.request<T>({ ...config, method: HttpMethod.Get, url });
-    if (first.ok || !isRetryableReadFailure(first.failure)) return first;
-    await new Promise((resolve) => setTimeout(resolve, READ_RETRY_DELAY_MS));
-    return this.request<T>({ ...config, method: HttpMethod.Get, url });
+    let result = await this.request<T>({ ...config, method: HttpMethod.Get, url });
+    for (let attempt = ValueConstants.zero; !result.ok; attempt += ValueConstants.one) {
+      const delay = readRetryDelayMs(result.failure, attempt);
+      if (delay === null) return result;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      result = await this.request<T>({ ...config, method: HttpMethod.Get, url });
+    }
+    return result;
   }
 
   post<T>(url: string, data?: unknown, config?: RequestConfig): Promise<Result<T, Failure>> {
