@@ -55,6 +55,7 @@ const KEY_TO_SEVERITY: Partial<Record<FailureContentKeyType, SeverityType>> = {
   importTooManyFiles: SeverityType.Warning,
   importNoRecipeInFile: SeverityType.Neutral,
   registrationExpired: SeverityType.Neutral,
+  registrationLinkExpired: SeverityType.Neutral,
   resetLinkInvalid: SeverityType.Warning,
   resetLinkExpired: SeverityType.Warning,
   resetLinkUsed: SeverityType.Warning,
@@ -138,6 +139,7 @@ const KEY_TO_ICON: Partial<Record<FailureContentKeyType, IoniconNameType>> = {
   codeCooldown: 'hourglass-outline',
   tooManyAttempts: 'hourglass-outline',
   registrationExpired: 'refresh-outline',
+  registrationLinkExpired: 'link-outline',
 
   invalidMediaType: 'images-outline',
   invalidImageType: 'image-outline',

@@ -23,6 +23,7 @@ import { expiresAtFromToken } from '@infrastructure/auth/session/expires-at-from
 import type { SignInRequestDto } from '@infrastructure/auth/dtos/sign-in-request-dto';
 import type { RegisterRequestDto } from '@infrastructure/auth/dtos/register-request-dto';
 import type { VerifyRegistrationRequestDto } from '@infrastructure/auth/dtos/verify-registration-request-dto';
+import type { VerifyRegistrationLinkRequestDto } from '@infrastructure/auth/dtos/verify-registration-link-request-dto';
 import type { EmailOnlyRequestDto } from '@infrastructure/auth/dtos/email-only-request-dto';
 import type { ResetPasswordRequestDto } from '@infrastructure/auth/dtos/reset-password-request-dto';
 import type { SocialSignInRequestDto } from '@infrastructure/auth/dtos/social-sign-in-request-dto';
@@ -81,6 +82,14 @@ export class AuthRepository implements AuthRepositoryInterface {
     code: string,
   ): Promise<Result<AuthSessionEntity, Failure>> {
     const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.registerVerify, { email, code: code.trim(), ...(await this.deviceField()) } satisfies VerifyRegistrationRequestDto);
+    if (!result.ok) {
+      return result;
+    }
+    return this.persistSession(result.value);
+  }
+
+  async verifyRegistrationLink(token: string): Promise<Result<AuthSessionEntity, Failure>> {
+    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.registerVerifyLink, { token, ...(await this.deviceField()) } satisfies VerifyRegistrationLinkRequestDto);
     if (!result.ok) {
       return result;
     }

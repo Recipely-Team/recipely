@@ -66,6 +66,8 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
   const errorMessage = localError;
 
   const handleVerify = useCallback(async () => {
+    // The keyboard's Done and the button both submit; a second send while one is in flight would race it.
+    if (isLoading) return;
     if (!isCodeValid) {
       setLocalError(t.verify.errorCode);
       return;
@@ -81,7 +83,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
         }),
       );
     }
-  }, [isCodeValid, verifyRegistration, email, code, t]);
+  }, [isLoading, isCodeValid, verifyRegistration, email, code, t]);
 
   // Resend is locked until the current code expires.
   const canResend = remaining <= ValueConstants.zero && !isResending;

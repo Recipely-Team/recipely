@@ -463,6 +463,11 @@ export const id = {
       body: 'Pendaftaran tertunda untuk email ini sudah tidak ada. Masukkan detail kamu lagi.',
       short: 'Pendaftaran kedaluwarsa — mulai lagi',
     },
+    registrationLinkExpired: {
+      title: 'Tautan ini sudah kedaluwarsa',
+      body: 'Tautan berlaku 3 hari dan hanya sekali. Daftar lagi, kami akan mengirim yang baru.',
+      short: 'Tautan kedaluwarsa — daftar lagi',
+    },
     invalidMediaType: {
       title: 'File itu tidak bisa digunakan',
       body: 'Hanya gambar (jpeg, png, gif, webp) dan video (mp4, webm, mov) yang dapat diunggah. Pilih file lain.',
@@ -1455,6 +1460,8 @@ export const id = {
     changeEmail: 'Gunakan email lain',
     errorCode: 'Masukkan kode 6 digit.',
     invalidCode: 'Kode itu salah atau sudah kedaluwarsa. Coba lagi atau kirim ulang.',
+    linkFinishing: 'Menyelesaikan pendaftaranmu…',
+    startAgain: 'Mulai lagi',
   },
   ai: {
     title: 'Resep AI',

@@ -7,6 +7,7 @@ export interface FakeAuthRepositoryConfig {
   signInResult?: Result<AuthSessionEntity, Failure>;
   requestRegistrationResult?: Result<RegistrationChallenge, Failure>;
   verifyRegistrationResult?: Result<AuthSessionEntity, Failure>;
+  verifyRegistrationLinkResult?: Result<AuthSessionEntity, Failure>;
   resendRegistrationCodeResult?: Result<RegistrationChallenge, Failure>;
   signOutResult?: Result<void, Failure>;
   currentSessionResult?: Result<AuthSessionEntity | null, Failure>;

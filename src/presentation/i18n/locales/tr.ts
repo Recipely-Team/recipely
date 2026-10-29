@@ -466,6 +466,11 @@ export const tr: TranslationsType = {
       body: 'Bu e-posta için devam eden bir kayıt bulunamadı. Bilgilerini yeniden gir.',
       short: 'Kaydın süresi doldu — baştan başla',
     },
+    registrationLinkExpired: {
+      title: 'Bu bağlantının süresi doldu',
+      body: 'Bağlantı 3 gün boyunca ve yalnızca bir kez çalışır. Yeniden kaydol, sana yenisini gönderelim.',
+      short: 'Bağlantının süresi doldu — yeniden kaydol',
+    },
     invalidMediaType: {
       title: 'Bu dosyayı kullanamıyoruz',
       body: 'Yalnızca görsel (jpeg, png, gif, webp) ve video (mp4, webm, mov) yüklenebilir. Başka bir dosya seç.',
@@ -1459,6 +1464,8 @@ export const tr: TranslationsType = {
     changeEmail: 'Farklı e-posta kullan',
     errorCode: '6 haneli kodu gir.',
     invalidCode: 'Bu kod yanlış ya da süresi dolmuş. Tekrar dene veya yeniden gönder.',
+    linkFinishing: 'Kaydın tamamlanıyor…',
+    startAgain: 'Baştan başla',
   },
   ai: {
     title: 'Yapay zekâ tarifi',

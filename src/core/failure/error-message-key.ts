@@ -151,6 +151,7 @@ export const ErrorMessageKey = {
   codeCooldown: 'errors.too_many_requests.code_cooldown',
   tooManyAttempts: 'errors.too_many_requests.too_many_attempts',
   registrationExpired: 'errors.not_found.pending_registration',
+  registrationLinkExpired: 'errors.not_found.registration_link',
 
   // Media upload
   invalidMediaType: 'errors.validation.invalid_media_type',
