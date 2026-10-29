@@ -37,7 +37,7 @@ describe('ShoppingListStore', () => {
     repo.update.mockReturnValue(new Promise((resolve) => (answer = resolve)));
     const pending = store.getState().setChecked(a!, true);
     expect(ids(store)).toEqual(['b', 'a+', 'c+']);
-    answer(fail(new NetworkFailure('offline')));
+    answer(fail(new ValidationFailure('refused')));
     const r = await pending;
     expect(r.ok).toBe(false);
     expect(ids(store)).toEqual(['a', 'b', 'c+']);
@@ -127,7 +127,7 @@ describe('ShoppingListStore', () => {
     repo.remove.mockReturnValueOnce(new Promise((resolve) => { answerDelete = resolve; }));
     const removing = store.getState().remove(loadedItems(store.getState().list)[0]!);
     await store.getState().refresh();
-    answerDelete(fail(new NetworkFailure('offline')));
+    answerDelete(fail(new ValidationFailure('refused')));
     await removing;
     expect(ids(store)).toEqual(['a', 'b', 'c+']);
   });

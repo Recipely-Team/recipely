@@ -25,6 +25,13 @@ import type { DeleteShoppingItemUseCase } from '@application/shopping/write/dele
 import type { ClearCheckedShoppingItemsUseCase } from '@application/shopping/write/clear-checked-shopping-items-use-case';
 import type { ClearShoppingListUseCase } from '@application/shopping/write/clear-shopping-list-use-case';
 import type { CountShoppingToBuyUseCase } from '@application/shopping/read/count-shopping-to-buy-use-case';
+import type { QueueShoppingWriteUseCase } from '@application/shopping/sync/queue-shopping-write-use-case';
+import type { LoadShoppingOutboxUseCase } from '@application/shopping/sync/load-shopping-outbox-use-case';
+import type { FlushShoppingOutboxUseCase } from '@application/shopping/sync/flush-shopping-outbox-use-case';
+import type { ClearShoppingOutboxUseCase } from '@application/shopping/sync/clear-shopping-outbox-use-case';
+import { isOfflineFailure } from '@application/shopping/sync/is-offline-failure';
+import { applyPendingShoppingWrites } from '@application/shopping/sync/apply-pending-shopping-writes';
+import { ShoppingPendingWriteKind } from '@domain/shopping/outbox/shopping-pending-write-kind';
 
 interface ShoppingListStoreDeps {
   list: ListShoppingItemsUseCase;
@@ -37,6 +44,10 @@ interface ShoppingListStoreDeps {
   clearChecked: ClearCheckedShoppingItemsUseCase;
   clearAll: ClearShoppingListUseCase;
   countToBuy: CountShoppingToBuyUseCase;
+  queueWrite: QueueShoppingWriteUseCase;
+  loadOutbox: LoadShoppingOutboxUseCase;
+  flushOutbox: FlushShoppingOutboxUseCase;
+  clearOutbox: ClearShoppingOutboxUseCase;
 }
 
 type Items = readonly ShoppingItemEntity[];
@@ -71,14 +82,20 @@ const hasItem = (list: PagedList<ShoppingItemEntity>, id: string): boolean =>
  *   loader, so the next page re-reads from the shifted offset instead of skipping.
  * - **`toBuy` is the server's count** (the cart badge): the list is paged, so
  *   it is never counted from loaded rows; every successful change re-reads it.
- * - **User-scoped**: cleared on sign-out (`clearSessionCaches`); an answer that
- *   lands after that is dropped, so the old account's lines never come back.
+ * - **Offline ticks and deletes are kept, not undone.** When the API cannot be
+ *   reached, the change stays on screen and waits in the outbox (only changes
+ *   safe to send twice are queued — Google AIP-194); `syncPending` sends it, and
+ *   runs after every load, refresh and accepted change. A loaded page shows the
+ *   waiting changes over it; a change the server then refuses re-reads the list.
+ * - **User-scoped**: cleared on sign-out (`clearSessionCaches`), outbox included;
+ *   an answer that lands after that is dropped, so the old account's lines never come back.
  */
 export const configureShoppingListStore = (deps: ShoppingListStoreDeps): StoreApi<ShoppingListStore> => {
   const ticks = new Map<string, number>();
   const removals = new KeyedRequestEpoch();
   const session = new RequestEpoch();
   const toBuyReads = new RequestEpoch();
+  let flushing: Promise<void> | null = null;
 
   return createStore<ShoppingListStore>((set, get) => {
     const loader = new PagedListLoader<ShoppingItemEntity>(() => get().list, (list) => set({ list }), (item) => item.id);
@@ -98,6 +115,16 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): StoreAp
       if (result.ok) void loadToBuy();
       return result;
     };
+    /** Shows the waiting changes over the page just loaded, then tries to send them. */
+    const withPending = async (isSession: () => boolean): Promise<void> => {
+      const outbox = await deps.loadOutbox.execute();
+      if (!outbox.ok || outbox.value.isEmpty() || !isSession()) return;
+      const list = get().list;
+      if (list.status !== StoreStatus.Loaded) return;
+      const applied = applyPendingShoppingWrites(list.items, outbox.value);
+      loader.rewriteItems(() => orderedShoppingItems([...applied.items]), -applied.removed);
+      void get().syncPending();
+    };
     const added = (result: Result<ShoppingAddResult, Failure>, isSession: () => boolean): Result<ShoppingAddResult, Failure> => {
       if (result.ok && isSession()) place(result.value.items, result.value.added);
       return synced(result);
@@ -108,13 +135,31 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): StoreAp
       toBuy: null,
       loadToBuy,
       isRefreshing: false,
-      load: () => loader.load(fetchPage),
+      load: async () => {
+        const isSession = session.current();
+        await loader.load(fetchPage);
+        await withPending(isSession);
+      },
       loadMore: () => loader.loadMore(),
       refresh: async () => {
+        const isSession = session.current();
         set({ isRefreshing: true });
         const failure = await loader.refresh(fetchPage);
         set({ isRefreshing: false });
+        await withPending(isSession);
         return failure;
+      },
+      syncPending: () => {
+        flushing ??= (async () => {
+          const isSession = session.current();
+          const report = await deps.flushOutbox.execute();
+          if (!report.ok || !isSession()) return;
+          if (report.value.refused > ValueConstants.zero) await loader.refresh(fetchPage);
+          if (report.value.sent + report.value.refused > ValueConstants.zero) void loadToBuy();
+        })().finally(() => {
+          flushing = null;
+        });
+        return flushing;
       },
       addText: async (text) => { const isSession = session.current(); return added(await deps.addText.execute(text), isSession); },
       addFromRecipe: async (lines, recipe) => { const isSession = session.current(); return added(await deps.addFromRecipe.execute(lines, recipe), isSession); },
@@ -128,7 +173,14 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): StoreAp
         if (wasShown) place([item.withChecked(isChecked)]);
         const result = await deps.setChecked.execute(item.id, isChecked);
         if (ticks.get(item.id) !== tick || !isSession()) return ok(undefined);
-        if (result.ok) show(result.value);
+        if (!result.ok && isOfflineFailure(result.failure)) {
+          const queued = await deps.queueWrite.execute({ kind: ShoppingPendingWriteKind.Check, itemId: item.id, isChecked });
+          if (queued.ok) return ok(undefined);
+        }
+        if (result.ok) {
+          show(result.value);
+          void get().syncPending();
+        }
         else if (wasShown) place([item]);
         return synced(result.ok ? ok(undefined) : result);
       },
@@ -145,6 +197,11 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): StoreAp
         const wasShown = hasItem(get().list, item.id);
         loader.removeItem(item.id);
         const result = await deps.remove.execute(item.id);
+        if (!result.ok && isOfflineFailure(result.failure)) {
+          const queued = await deps.queueWrite.execute({ kind: ShoppingPendingWriteKind.Delete, itemId: item.id });
+          if (queued.ok) return ok(undefined);
+        }
+        if (result.ok) void get().syncPending();
         // Back only if this session's list still lacks it: a refresh may already have brought it back.
         if (!result.ok && wasShown && isCurrent() && !hasItem(get().list, item.id)) place([item], ValueConstants.one);
         return synced(result);
@@ -168,6 +225,7 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): StoreAp
         toBuyReads.invalidate();
         ticks.clear();
         loader.reset();
+        void deps.clearOutbox.execute();
         set({ isRefreshing: false, toBuy: null });
       },
     };
