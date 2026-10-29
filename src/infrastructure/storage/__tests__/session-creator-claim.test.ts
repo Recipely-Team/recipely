@@ -14,8 +14,8 @@ import { SESSION_STORAGE_KEY } from '@infrastructure/constants/storage';
 
 const mockStore = new Map<string, string>();
 
-jest.mock('@infrastructure/storage/kv-store', () => ({
-  kvStore: {
+jest.mock('@infrastructure/storage/secure-kv-store', () => ({
+  secureKvStore: {
     getItem: (key: string) => Promise.resolve({ ok: true, value: mockStore.get(key) ?? null }),
     setItem: (key: string, value: string) => {
       mockStore.set(key, value);

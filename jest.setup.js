@@ -58,3 +58,11 @@ jest.mock('@shopify/flash-list/dist/recyclerview/utils/measureLayout', () => {
     measureItemLayout: box(100, 100),
   };
 });
+
+// MMKV's entry point reaches the native Nitro module at import time, before its
+// own test detection can hand back the in-memory mock, so the suite would fail to
+// load wherever the DI graph is imported. Its official mock, wired directly.
+jest.mock('react-native-mmkv', () => {
+  const { createMockMMKV } = require('react-native-mmkv/lib/createMMKV/createMockMMKV');
+  return { createMMKV: (config) => createMockMMKV(config) };
+});

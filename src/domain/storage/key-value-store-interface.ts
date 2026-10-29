@@ -2,8 +2,9 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 
 /**
- * Port for simple string key-value persistence. Implemented per platform in the
- * infrastructure layer (secure store on native, `localStorage` on web) and
+ * Port for simple string key-value persistence, for anything that is not a secret
+ * (secrets take {@link SecureKeyValueStoreInterface}). Implemented per platform in the
+ * infrastructure layer (MMKV on native, `localStorage` on web) and
  * resolved by consumers through the DI container so no layer above depends on a
  * concrete storage backend.
  *

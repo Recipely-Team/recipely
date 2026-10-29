@@ -35,6 +35,7 @@ import { AttestationRepository } from '@infrastructure/integrity/attestation-rep
 import { createAppAttestor } from '@infrastructure/integrity/create-app-attestor';
 import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 import { kvStore } from '@infrastructure/storage/kv-store';
+import { secureKvStore } from '@infrastructure/storage/secure-kv-store';
 import { FirstPageCache } from '@infrastructure/network/paging/first-page-cache';
 import { FEED_FIRST_PAGE_STORAGE_KEY, SAVED_FIRST_PAGE_STORAGE_KEY, SHOPPING_FIRST_PAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
 import { NotificationService } from '@infrastructure/notifications/notification-service';
@@ -90,12 +91,13 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
       : null;
   const storage = new SecureTokenStorage(!isCookieSession);
   const deviceIdentity = new StoredDeviceIdentity(
-    kvStore,
+    secureKvStore,
     randomUUID,
     devicePlatform,
     installedVersion,
   );
 
+  // Secrets (session, device id, attestation key) take secureKvStore; everything else kvStore (MMKV).
   const preferenceStore = new PreferenceStore(kvStore);
   container.register(TOKENS.KeyValueStore, () => kvStore);
   container.register(TOKENS.PreferenceStore, () => preferenceStore);
@@ -151,7 +153,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   const http = new AxiosHttpClient(httpClientOptions);
   const authRepository = new AuthRepository(http, storage, deviceIdentity, isCookieSession);
   const featureFlags = new FeatureFlagResolver(new FeatureFlagRepository(http), IS_DEV_BUILD);
-  const attestor = createAppAttestor(kvStore, new AttestationRepository(http));
+  const attestor = createAppAttestor(secureKvStore, new AttestationRepository(http));
 
   container.register(TOKENS.AuthRepository, () => authRepository);
   container.register(TOKENS.AccountRepository, () => new AccountRepository(http, storage));
