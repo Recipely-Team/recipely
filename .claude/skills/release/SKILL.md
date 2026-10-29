@@ -89,3 +89,35 @@ when the user explicitly asks — never add a marker on your own initiative.
 
 Production (`main`) distribution is unaffected: every push to `main` tags a version and ships to
 Play internal + TestFlight.
+
+## Over-the-air updates (EAS Update)
+
+JS-only fixes can reach installed apps without store review. Expo project `@recepeksi/recipely`
+(`ee3b91f6-…`, in `app.config.ts`); CI publishes with the `EXPO_TOKEN` repo secret.
+
+- **Who takes an update:** only a binary with the same native fingerprint
+  (`runtimeVersion: { policy: 'fingerprint' }`, `fingerprint.config.js` skips version fields and the
+  Firebase files). A change to native deps, config plugins or app.json native config makes a new
+  runtime: that needs a store/dev build, and an update simply never reaches the old binaries.
+- **When it applies:** downloaded in the background at launch, applied on the next launch
+  (`fallbackToCacheTimeout: 0`) — never delays start-up.
+- **Channels:** each build sends `expo-channel-name` (`development` / `production`, by `APP_VARIANT`).
+- **Dev:** `[ota]` in the dev merge commit SUBJECT, or `gh workflow run ci.yml --ref dev -f ota=true -f android=false`.
+  Android only (dev builds are Android-only).
+- **Production — the owner's explicit go, like any release:** `gh workflow run ci.yml --ref main -f ota=true -f android=false`
+  (main → `production`, both platforms). Pass `-f android=false`, or the dispatch also builds a dev APK from main.
+- The `ota-update` job runs after lint/typecheck/tests and builds the bundle with the same env as the
+  matching distribute job; its summary prints the runtime it published for.
+- **Store rules (checked 2026-10-30):** an update may only **fix** what a reviewed build already
+  does — a bug, copy, styling, a server-driven value. **A new feature always goes through store
+  review.**
+  - Apple: App Review Guideline 2.5.2 forbids downloaded code that "introduces or changes features or
+    functionality". 2.5.19 forbids hidden features. 2.3.1(a) requires new features in the review notes.
+    The Developer Program License Agreement allows downloaded interpreted code only if it doesn't change
+    the app's advertised purpose and doesn't bypass OS security.
+  - Google Play: Device and Network Abuse bans downloaded dex/JAR/.so, but exempts code run by a VM or
+    interpreter (our Hermes JS bundle). JS loaded at run time must not enable any other Play policy
+    violation.
+- **Local builds:** export `APP_VARIANT` for the whole build, not just `expo prebuild` — Gradle/Xcode
+  compute the embedded fingerprint themselves, and a Gradle step without it embeds the production
+  runtime under the development channel, so no update ever matches. CI sets it per job, which is right.

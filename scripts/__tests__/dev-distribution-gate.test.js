@@ -78,6 +78,7 @@ const decide = (commitMessage, eventName = 'push') => {
         COMMIT_MESSAGE: commitMessage,
         INPUT_ANDROID: 'false',
         INPUT_IOS: 'false',
+        INPUT_OTA: 'false',
         GITHUB_OUTPUT: outputs,
         GITHUB_STEP_SUMMARY: summary,
       },
@@ -128,39 +129,46 @@ describe('dev distribution gate', () => {
   it('survives a commit message longer than a pipe buffer', () => {
     // The reported failure, exactly: an ordinary merge whose message is long.
     expect(decide(`fix(recipes): an ordinary subject (#418)\n\n${longBody}`)).toBe(
-      'android=false ios=false',
+      'android=false ios=false ota=false',
     );
   });
 
   it('still ships nothing for an unmarked merge', () => {
-    expect(decide('fix(web): something (#1)\n\nbody')).toBe('android=false ios=false');
+    expect(decide('fix(web): something (#1)\n\nbody')).toBe('android=false ios=false ota=false');
   });
 
   it('ships both when the subject carries [dist]', () => {
-    expect(decide('feat(x): ship it [dist] (#2)\n\nbody')).toBe('android=true ios=true');
+    expect(decide('feat(x): ship it [dist] (#2)\n\nbody')).toBe('android=true ios=true ota=false');
   });
 
   it('ships one platform when the subject names it', () => {
-    expect(decide('feat(x): ship it [dist:android] (#3)')).toBe('android=true ios=false');
-    expect(decide('feat(x): ship it [dist:ios] (#4)')).toBe('android=false ios=true');
+    expect(decide('feat(x): ship it [dist:android] (#3)')).toBe('android=true ios=false ota=false');
+    expect(decide('feat(x): ship it [dist:ios] (#4)')).toBe('android=false ios=true ota=false');
   });
 
   it('leaves a marker in the BODY inert', () => {
     // The older bug this step already carries a comment about: a commit that
     // merely explained what the markers do shipped an IPA nobody wanted.
     expect(decide('fix(y): clean subject (#5)\n\nthis body mentions [dist] and must not count')).toBe(
-      'android=false ios=false',
+      'android=false ios=false ota=false',
     );
   });
 
   it('handles a message with no body at all', () => {
-    expect(decide('chore: no newline anywhere')).toBe('android=false ios=false');
+    expect(decide('chore: no newline anywhere')).toBe('android=false ios=false ota=false');
+  });
+
+  it('publishes an over-the-air update only for [ota] in the subject', () => {
+    expect(decide('fix(x): a copy fix [ota] (#7)')).toBe('android=false ios=false ota=true');
+    expect(decide('fix(x): clean subject (#8)\n\nthe body says [ota] and must not count')).toBe(
+      'android=false ios=false ota=false',
+    );
   });
 
   it('takes a manual dispatch at its word', () => {
     // The subject is irrelevant on a dispatch; the inputs decide.
     expect(decide('feat(x): [dist] in the subject (#6)', 'workflow_dispatch')).toBe(
-      'android=false ios=false',
+      'android=false ios=false ota=false',
     );
   });
 });
