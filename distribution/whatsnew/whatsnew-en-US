@@ -1,5 +1,3 @@
-• The voice assistant no longer closes the app when it starts on some Android phones.
-• My Recipes counts each sit on their own tab and stay on one line.
-• Saved and Liked count only recipes you can still open.
-• One unreadable recipe no longer empties a list or a comment thread.
-• Security groundwork: the app can now prove to our servers that it is the genuine app.
+• Signing up is more reliable: verifying your email twice, or after a slow connection, now signs you in instead of asking you to start over.
+• The verification email has a "Finish creating my account" button that works for 3 days, even if you closed the app.
+• The app now tells you when an update is available, and asks you to update when your version is no longer supported.
