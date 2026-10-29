@@ -20,6 +20,7 @@ import { AssistantPill } from '@presentation/base/widgets/assistant/assistant-pi
 import { ToastHost } from '@presentation/base/feedback/toast-host';
 import { SplashOverlay } from '@presentation/base/widgets/loading/splash-overlay';
 import { AppUpdateHost } from '@presentation/base/widgets/app-update/app-update-host';
+import { LaunchCampaignHost } from '@presentation/base/widgets/launch-campaign/launch-campaign-host';
 import { WebHeader } from '@presentation/base/widgets/web-header/web-header';
 import { RootTabBar } from '@presentation/base/widgets/navigation/root-tab-bar';
 import { AlarmScreen } from '@presentation/navigation/alarm-screen';
@@ -193,6 +194,7 @@ const RootStack = (): React.JSX.Element => {
       <AssistantPill />
       <ToastHost />
       <AlarmOverlay />
+      <LaunchCampaignHost />
       <SplashOverlay />
       <AppUpdateHost />
       <StatusBar style="auto" />

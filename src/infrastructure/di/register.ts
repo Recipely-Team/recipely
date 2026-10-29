@@ -1,4 +1,8 @@
+import { getLocales } from 'expo-localization';
+import { Image } from 'expo-image';
+import { ValueConstants } from '@core/constants';
 import { ShoppingListRepository } from '@infrastructure/shopping/shopping-list-repository';
+import { ShoppingOutboxRepository } from '@infrastructure/shopping/shopping-outbox-repository';
 import { MealPlanRepository } from '@infrastructure/meal-plan/meal-plan-repository';
 import { FridgeRepository } from '@infrastructure/fridge/fridge-repository';
 import { type Container } from '@core/di/container';
@@ -24,12 +28,14 @@ import { UserProfileRepository } from '@infrastructure/user-profile/user-profile
 import { FeedbackRepository } from '@infrastructure/feedback/feedback-repository';
 import { FeatureFlagRepository } from '@infrastructure/flags/feature-flag-repository';
 import { AppVersionRepository } from '@infrastructure/app-version/app-version-repository';
+import { LaunchCampaignRepository } from '@infrastructure/campaigns/launch-campaign-repository';
 import { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
 import { FeatureFlagName } from '@application/config/feature-flag-name';
 import { AttestationRepository } from '@infrastructure/integrity/attestation-repository';
 import { createAppAttestor } from '@infrastructure/integrity/create-app-attestor';
 import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 import { kvStore } from '@infrastructure/storage/kv-store';
+import { secureKvStore } from '@infrastructure/storage/secure-kv-store';
 import { FirstPageCache } from '@infrastructure/network/paging/first-page-cache';
 import { FEED_FIRST_PAGE_STORAGE_KEY, SAVED_FIRST_PAGE_STORAGE_KEY, SHOPPING_FIRST_PAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
 import { NotificationService } from '@infrastructure/notifications/notification-service';
@@ -85,12 +91,13 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
       : null;
   const storage = new SecureTokenStorage(!isCookieSession);
   const deviceIdentity = new StoredDeviceIdentity(
-    kvStore,
+    secureKvStore,
     randomUUID,
     devicePlatform,
     installedVersion,
   );
 
+  // Secrets (session, device id, attestation key) take secureKvStore; everything else kvStore (MMKV).
   const preferenceStore = new PreferenceStore(kvStore);
   container.register(TOKENS.KeyValueStore, () => kvStore);
   container.register(TOKENS.PreferenceStore, () => preferenceStore);
@@ -146,7 +153,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   const http = new AxiosHttpClient(httpClientOptions);
   const authRepository = new AuthRepository(http, storage, deviceIdentity, isCookieSession);
   const featureFlags = new FeatureFlagResolver(new FeatureFlagRepository(http), IS_DEV_BUILD);
-  const attestor = createAppAttestor(kvStore, new AttestationRepository(http));
+  const attestor = createAppAttestor(secureKvStore, new AttestationRepository(http));
 
   container.register(TOKENS.AuthRepository, () => authRepository);
   container.register(TOKENS.AccountRepository, () => new AccountRepository(http, storage));
@@ -163,11 +170,22 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.LikeRepository, () => new LikeRepository(http));
   container.register(TOKENS.NotificationRepository, () => new NotificationRepository(http));
   container.register(TOKENS.ShoppingListRepository, () => new ShoppingListRepository(http, new FirstPageCache(kvStore, SHOPPING_FIRST_PAGE_STORAGE_KEY)));
+  container.register(TOKENS.ShoppingOutboxRepository, () => new ShoppingOutboxRepository(kvStore));
   container.register(TOKENS.MealPlanRepository, () => new MealPlanRepository(http));
   container.register(TOKENS.FridgeRepository, () => new FridgeRepository(http));
   container.register(TOKENS.UserProfileRepository, () => new UserProfileRepository(http));
   container.register(TOKENS.FeedbackRepository, () => new FeedbackRepository(http));
   container.register(TOKENS.AppVersionRepository, () => new AppVersionRepository(http, appBuild));
+  container.register(
+    TOKENS.LaunchCampaignRepository,
+    () =>
+      new LaunchCampaignRepository(
+        http,
+        kvStore,
+        appBuild === null ? null : { platform: appBuild.platform, region: getLocales()[ValueConstants.zero]?.regionCode ?? null },
+        (urls) => void Image.prefetch(urls),
+      ),
+  );
   container.register(TOKENS.AssistantTokenRepository, () => new AssistantTokenRepository(http));
   container.register(TOKENS.AssistantMessenger, () => new AssistantMessenger(http));
   container.register(TOKENS.FeatureFlagResolver, () => featureFlags);

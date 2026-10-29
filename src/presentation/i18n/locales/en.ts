@@ -2244,4 +2244,8 @@ export const en = {
       tryHint: 'Checks again if you already updated',
     },
   },
+  launchCampaign: {
+    skip: 'Skip',
+    notNow: 'Not now',
+  },
 };

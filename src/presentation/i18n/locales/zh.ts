@@ -2204,4 +2204,8 @@ export const zh = {
       tryHint: '如果你已更新，将重新检查',
     },
   },
+  launchCampaign: {
+    skip: '跳过',
+    notNow: '以后再说',
+  },
 };

@@ -13,10 +13,16 @@ import { SetShoppingItemCheckedUseCase } from '@application/shopping/write/set-s
 import { DeleteShoppingItemUseCase } from '@application/shopping/write/delete-shopping-item-use-case';
 import { ClearCheckedShoppingItemsUseCase } from '@application/shopping/write/clear-checked-shopping-items-use-case';
 import { ClearShoppingListUseCase } from '@application/shopping/write/clear-shopping-list-use-case';
+import type { ShoppingOutboxRepositoryInterface } from '@domain/shopping/outbox/shopping-outbox-repository-interface';
+import { QueueShoppingWriteUseCase } from '@application/shopping/sync/queue-shopping-write-use-case';
+import { LoadShoppingOutboxUseCase } from '@application/shopping/sync/load-shopping-outbox-use-case';
+import { FlushShoppingOutboxUseCase } from '@application/shopping/sync/flush-shopping-outbox-use-case';
+import { ClearShoppingOutboxUseCase } from '@application/shopping/sync/clear-shopping-outbox-use-case';
 
 /** **Shopping composition** — the viewer's shopping list store and one use case per action. */
 export const registerShopping = (container: Container): Pick<ApplicationStores, 'shoppingListStore'> => {
   const repo = container.resolve<ShoppingListRepositoryInterface>(TOKENS.ShoppingListRepository);
+  const outbox = container.resolve<ShoppingOutboxRepositoryInterface>(TOKENS.ShoppingOutboxRepository);
   const shoppingListStore = configureShoppingListStore({
     list: new ListShoppingItemsUseCase(repo),
     addText: new AddShoppingItemUseCase(repo),
@@ -28,6 +34,10 @@ export const registerShopping = (container: Container): Pick<ApplicationStores, 
     clearChecked: new ClearCheckedShoppingItemsUseCase(repo),
     clearAll: new ClearShoppingListUseCase(repo),
     countToBuy: new CountShoppingToBuyUseCase(repo),
+    queueWrite: new QueueShoppingWriteUseCase(outbox),
+    loadOutbox: new LoadShoppingOutboxUseCase(outbox),
+    flushOutbox: new FlushShoppingOutboxUseCase(repo, outbox),
+    clearOutbox: new ClearShoppingOutboxUseCase(outbox),
   });
   return { shoppingListStore };
 };

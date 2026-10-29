@@ -1,4 +1,5 @@
-import { FlatList, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
 import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
@@ -21,23 +22,23 @@ export interface FoodPickListProps {
 
 /**
  * The pick step's scrolling list — headings, rows and next-page rows — that
- * pages on scroll through `onEndReached` (Add food v2 spec §3, `FlatList` in
+ * pages on scroll through `onEndReached` (Add food v2 spec §3, a list in
  * place of the prototype's sentinel). Its own scroll: the sheet lays it out
  * with `scrollsItself`, so it virtualises and reaches its end.
+ *
+ * @remarks
+ * - **FlashList** — rows are recycled rather than mounted per item, and
+ *   `getItemType` keeps a heading's view from being reused for a food row.
  */
 export const FoodPickList = ({ rows, header, onEndReached, ...handlers }: FoodPickListProps): React.JSX.Element => (
-  <FlatList
-    // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
-    removeClippedSubviews={false}
+  <FlashList
     data={rows}
     keyExtractor={(row) => row.key}
+    getItemType={(row) => row.type}
     renderItem={({ item }) => <PickRowView row={item} {...handlers} />}
     ListHeaderComponent={header}
     onEndReached={onEndReached}
     onEndReachedThreshold={ListConstants.endReachedThreshold}
-    initialNumToRender={ListConstants.initialRows * ValueConstants.two}
-    maxToRenderPerBatch={ListConstants.rowsPerBatch}
-    windowSize={ListConstants.windowSize}
     keyboardShouldPersistTaps="handled"
     keyboardDismissMode="on-drag"
     showsVerticalScrollIndicator={false}

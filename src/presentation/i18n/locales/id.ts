@@ -2200,4 +2200,8 @@ export const id = {
       tryHint: 'Memeriksa lagi jika kamu sudah memperbarui',
     },
   },
+  launchCampaign: {
+    skip: 'Lewati',
+    notNow: 'Nanti saja',
+  },
 };

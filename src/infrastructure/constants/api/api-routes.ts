@@ -117,6 +117,8 @@ export const ApiRoutes = {
   flags: '/flags',
   /** What this build must do: up to date, update available, update required. Open to guests and to blocked builds. */
   appVersion: '/app/version',
+  /** Seasonal launch campaigns for this platform and region, running now or within a week. Open to guests. */
+  launchCampaigns: '/app/campaigns',
   /** The signed-in user's food diary; every route is scoped to the session's user. */
   diary: {
     day: (date: string): string => `/diary/days/${encodeURIComponent(date)}`,

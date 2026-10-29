@@ -29,6 +29,8 @@ export const zIndices = {
   toast: 150,
   /** Full-screen alarm takeover. */
   alarmOverlay: 200,
+  /** A launch campaign — under the brand splash, so the splash fades to reveal it. */
+  launchCampaign: 250,
   /** Launch splash — nothing may cover it. */
   splash: 300,
   /** The update-required gate: above everything, the splash included — nothing in the app may be reached. */

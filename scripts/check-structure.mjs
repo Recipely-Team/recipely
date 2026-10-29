@@ -78,6 +78,8 @@
  *   AZ. A `useStore` selector returns a stored value; it never builds an
  *      array, object, Set or Map (CLAUDE.md §29).
  *   BA. `useNativeDriver: false` carries a `// JS driver: <why>` line (§29).
+ *   BB. Every FlashList passes `keyExtractor` and none of the FlatList window
+ *      props it ignores (CLAUDE.md §6c, §9).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -1055,6 +1057,35 @@ if (nearSizeLimit.length > 0 && process.env.CI !== 'true') {
       if (!JS_DRIVER.test(line)) return;
       if (REASON.test(line) || REASON.test(lines[index - 1] ?? '')) return;
       errors.push(`${file}:${String(index + 1)}: useNativeDriver: false without a "// JS driver: <why>" line above it (CLAUDE.md §29)`);
+    });
+  }
+}
+
+// --- BB: a FlashList keys its rows and carries no dead FlatList props (§6c, §9) --
+// FlashList recycles row views, so a row's key decides which recycled view a
+// data item lands in: without keyExtractor it falls back to the index and a
+// prepended page re-binds every row. It sizes and windows itself, so the props
+// rules R and AY demand of a FlatList are silently ignored here — left in, they
+// read as a bound the list does not have.
+{
+  const LIST_OPEN = /^\s*<(FlashList|AnimatedFlashList)\b/;
+  const IGNORED = ['removeClippedSubviews', 'windowSize', 'initialNumToRender', 'maxToRenderPerBatch', 'estimatedItemSize'];
+  for (const file of files) {
+    if (isTest(file) || !file.endsWith('.tsx')) continue;
+    const lines = fs.readFileSync(path.join(SRC, file), 'utf8').split('\n');
+    lines.forEach((line, index) => {
+      if (!LIST_OPEN.test(line)) return;
+      const indent = /^\s*/.exec(line)?.[0] ?? '';
+      const closes = (l) => /^\s*\/?>\s*$/.test(l) && /^\s*/.exec(l)?.[0] === indent;
+      const end = /\/>\s*$/.test(line) ? index : lines.findIndex((l, i) => i > index && closes(l));
+      const tag = lines.slice(index, end === -1 ? index + 1 : end + 1).join('\n');
+      if (!/\bkeyExtractor=/.test(tag)) {
+        errors.push(`${file}:${String(index + 1)}: FlashList without keyExtractor — recycled rows re-bind by index (CLAUDE.md §9)`);
+      }
+      const dead = IGNORED.filter((prop) => new RegExp(`\\b${prop}=`).test(tag));
+      if (dead.length > 0) {
+        errors.push(`${file}:${String(index + 1)}: FlashList ignores ${dead.join(', ')} — remove them (CLAUDE.md §6c)`);
+      }
     });
   }
 }

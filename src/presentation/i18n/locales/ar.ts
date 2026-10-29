@@ -2200,4 +2200,8 @@ export const ar = {
       tryHint: 'يتحقق مجددًا إن كنت قد حدّثت بالفعل',
     },
   },
+  launchCampaign: {
+    skip: 'تخطٍّ',
+    notNow: 'ليس الآن',
+  },
 };

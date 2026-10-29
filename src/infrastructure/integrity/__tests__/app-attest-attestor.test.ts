@@ -2,7 +2,7 @@ import { attestKeyAsync, generateAssertionAsync, generateKeyAsync } from '@expo/
 import { fail, ok } from '@core/result/result-helpers';
 import { type Failure, NetworkFailure } from '@core/failure';
 import type { Result } from '@core/result/result';
-import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
+import type { SecureKeyValueStoreInterface } from '@domain/storage/secure-key-value-store-interface';
 import { AppAttestAttestor } from '@infrastructure/integrity/app-attest-attestor';
 import type { AttestationRepository } from '@infrastructure/integrity/attestation-repository';
 import { APP_ATTEST_KEY_STORAGE_KEY } from '@infrastructure/constants/storage';
@@ -21,9 +21,10 @@ const generateKey = jest.mocked(generateKeyAsync);
 const attestKey = jest.mocked(attestKeyAsync);
 const assert = jest.mocked(generateAssertionAsync);
 
-const memoryStore = (initial: Record<string, string> = {}): KeyValueStoreInterface & { values: Map<string, string> } => {
+const memoryStore = (initial: Record<string, string> = {}): SecureKeyValueStoreInterface & { values: Map<string, string> } => {
   const values = new Map(Object.entries(initial));
   return {
+    isSecretStore: true,
     values,
     getItem: (key) => Promise.resolve(ok(values.get(key) ?? null)),
     setItem: (key, value) => Promise.resolve(ok(void values.set(key, value))),

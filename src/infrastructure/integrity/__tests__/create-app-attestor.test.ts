@@ -3,12 +3,12 @@ import { createAppAttestor } from '@infrastructure/integrity/create-app-attestor
 import { AppAttestAttestor } from '@infrastructure/integrity/app-attest-attestor';
 import { PlayIntegrityAttestor } from '@infrastructure/integrity/play-integrity-attestor';
 import type { AttestationRepository } from '@infrastructure/integrity/attestation-repository';
-import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
+import type { SecureKeyValueStoreInterface } from '@domain/storage/secure-key-value-store-interface';
 
 jest.mock('@infrastructure/constants/platform', () => ({ isIos: jest.fn(), isAndroid: jest.fn() }));
 jest.mock('@expo/app-integrity', () => ({}));
 
-const store = {} as KeyValueStoreInterface;
+const store = {} as SecureKeyValueStoreInterface;
 const repo = {} as AttestationRepository;
 const projectNumber = process.env.EXPO_PUBLIC_PLAY_INTEGRITY_PROJECT_NUMBER;
 

@@ -2200,4 +2200,8 @@ export const ru = {
       tryHint: 'Проверит снова, если вы уже обновились',
     },
   },
+  launchCampaign: {
+    skip: 'Пропустить',
+    notNow: 'Не сейчас',
+  },
 };

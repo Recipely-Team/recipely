@@ -28,6 +28,10 @@ const IOS_PROD_GOOGLE_URL_SCHEME =
 const IOS_DEV_GOOGLE_URL_SCHEME =
   'com.googleusercontent.apps.421167568469-v6qorc4n7abqbb2vteulr3424p19p72o';
 
+// Expo project @recepeksi/recipely: over-the-air updates are served from u.expo.dev under it.
+const EAS_PROJECT_ID = 'ee3b91f6-fe05-4bfa-a3c7-e39604b68f53';
+const EAS_OWNER = 'recepeksi';
+
 const GOOGLE_SIGNIN_PLUGIN = '@react-native-google-signin/google-signin';
 const ADMOB_PLUGIN = 'react-native-google-mobile-ads';
 
@@ -45,6 +49,10 @@ const iosGoogleUrlScheme = isDev
   : IOS_PROD_GOOGLE_URL_SCHEME;
 const displayName = isDev ? 'Recipely (Dev)' : 'Recipely';
 const scheme = isDev ? 'recipely-dev' : 'recipely';
+// The EAS Update channel a build listens to (eas.json names the same two). Our
+// binaries come from CI's own Gradle/Xcode, not EAS Build, so the channel rides
+// in the request header expo-updates sends.
+const updatesChannel = isDev ? 'development' : 'production';
 
 const runGit = (command: string): string | null => {
   try {
@@ -144,6 +152,18 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     slug: config.slug ?? 'recipely',
     version,
     scheme,
+    owner: EAS_OWNER,
+    // An update reaches only a binary with the same native fingerprint
+    // (fingerprint.config.js), so JS never lands on native code it was not built for.
+    runtimeVersion: { policy: 'fingerprint' },
+    updates: {
+      url: `https://u.expo.dev/${EAS_PROJECT_ID}`,
+      checkAutomatically: 'ON_LOAD',
+      // Never hold the launch for a download: start on what is installed, fetch in
+      // the background, and apply on the next launch.
+      fallbackToCacheTimeout: 0,
+      requestHeaders: { 'expo-channel-name': updatesChannel },
+    },
     plugins: withRealAdMobAppIds(withVariantGoogleUrlScheme(config.plugins)) ?? [],
     ios: {
       ...config.ios,
@@ -161,6 +181,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       variant,
       eas: {
         ...(config.extra?.['eas'] ?? {}),
+        projectId: EAS_PROJECT_ID,
       },
     },
   };

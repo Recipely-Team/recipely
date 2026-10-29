@@ -1,6 +1,6 @@
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
 const mockDraftRenders = jest.fn();
-// Memoised like the real card: `FlatList` (outside `strictMode`) calls `renderItem` for every
+// Memoised like the real card: `FlashList` (outside `strictMode`) calls `renderItem` for every
 // visible cell on each of its renders, so only stable props let a row bail out.
 jest.mock('@presentation/app/my-recipes/items/draft-card', () => {
   const { memo } = jest.requireActual<typeof import('react')>('react');

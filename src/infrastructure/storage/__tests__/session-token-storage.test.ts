@@ -6,8 +6,8 @@ import { SESSION_STORAGE_KEY, SHOPPING_FIRST_PAGE_STORAGE_KEY, SIGNED_IN_MARKER_
 const mockStore = new Map<string, string>();
 const mockReads = jest.fn();
 
-jest.mock('@infrastructure/storage/kv-store', () => ({
-  kvStore: {
+jest.mock('@infrastructure/storage/secure-kv-store', () => ({
+  secureKvStore: {
     getItem: (key: string) => {
       mockReads(key);
       return Promise.resolve({ ok: true, value: mockStore.get(key) ?? null });

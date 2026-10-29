@@ -2196,4 +2196,8 @@ export const ko: TranslationsType = {
       tryHint: '이미 업데이트했다면 다시 확인해요',
     },
   },
+  launchCampaign: {
+    skip: '건너뛰기',
+    notNow: '나중에',
+  },
 };

@@ -2,12 +2,13 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { DevicePlatform } from '@domain/notifications/device-platform';
-import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
+import type { SecureKeyValueStoreInterface } from '@domain/storage/secure-key-value-store-interface';
 import { StoredDeviceIdentity } from '@infrastructure/device/stored-device-identity';
 import { DEVICE_ID_STORAGE_KEY } from '@infrastructure/constants/storage';
 
 /** An in-memory key-value store; the application fixture is out of this layer's reach. */
-class MemoryStore implements KeyValueStoreInterface {
+class MemoryStore implements SecureKeyValueStoreInterface {
+  readonly isSecretStore = true as const;
   private readonly entries = new Map<string, string>();
 
   getItem(key: string): Promise<Result<string | null, Failure>> {
@@ -89,6 +90,7 @@ describe('StoredDeviceIdentity', () => {
     const store = new MemoryStore();
     let writes = 0;
     const flaky = {
+      isSecretStore: true as const,
       getItem: (key: string) => store.getItem(key),
       removeItem: (key: string) => store.removeItem(key),
       setItem: (key: string, value: string): Promise<Result<void, Failure>> => {

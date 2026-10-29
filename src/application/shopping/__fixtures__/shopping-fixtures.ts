@@ -13,6 +13,12 @@ import { SetShoppingItemCheckedUseCase } from '@application/shopping/write/set-s
 import { DeleteShoppingItemUseCase } from '@application/shopping/write/delete-shopping-item-use-case';
 import { ClearCheckedShoppingItemsUseCase } from '@application/shopping/write/clear-checked-shopping-items-use-case';
 import { ClearShoppingListUseCase } from '@application/shopping/write/clear-shopping-list-use-case';
+import { ShoppingOutbox } from '@domain/shopping/outbox/shopping-outbox';
+import type { ShoppingOutboxRepositoryInterface } from '@domain/shopping/outbox/shopping-outbox-repository-interface';
+import { QueueShoppingWriteUseCase } from '@application/shopping/sync/queue-shopping-write-use-case';
+import { LoadShoppingOutboxUseCase } from '@application/shopping/sync/load-shopping-outbox-use-case';
+import { FlushShoppingOutboxUseCase } from '@application/shopping/sync/flush-shopping-outbox-use-case';
+import { ClearShoppingOutboxUseCase } from '@application/shopping/sync/clear-shopping-outbox-use-case';
 
 /** A shopping line for tests. */
 export const shoppingItemOf = (over: Partial<ShoppingItemEntityProps> = {}): ShoppingItemEntity => {
@@ -44,8 +50,24 @@ export const fakeShoppingRepository = (): jest.Mocked<ShoppingListRepositoryInte
   removeAll: jest.fn().mockResolvedValue(ok(0)),
 });
 
-/** The real store over a fake repository. */
-export const shoppingStoreOf = (repo: ShoppingListRepositoryInterface = fakeShoppingRepository()) =>
+/** An outbox kept in memory; `held()` is what a device would have stored. */
+export const memoryShoppingOutbox = (initial: ShoppingOutbox = ShoppingOutbox.empty()) => {
+  let held = initial;
+  const repo: ShoppingOutboxRepositoryInterface = {
+    load: () => Promise.resolve(ok(held)),
+    save: (outbox) => {
+      held = outbox;
+      return Promise.resolve(ok(undefined));
+    },
+  };
+  return { repo, held: (): ShoppingOutbox => held };
+};
+
+/** The real store over a fake repository and an in-memory outbox. */
+export const shoppingStoreOf = (
+  repo: ShoppingListRepositoryInterface = fakeShoppingRepository(),
+  outbox: ShoppingOutboxRepositoryInterface = memoryShoppingOutbox().repo,
+) =>
   configureShoppingListStore({
     list: new ListShoppingItemsUseCase(repo),
     addText: new AddShoppingItemUseCase(repo),
@@ -57,4 +79,8 @@ export const shoppingStoreOf = (repo: ShoppingListRepositoryInterface = fakeShop
     clearChecked: new ClearCheckedShoppingItemsUseCase(repo),
     clearAll: new ClearShoppingListUseCase(repo),
     countToBuy: new CountShoppingToBuyUseCase(repo),
+    queueWrite: new QueueShoppingWriteUseCase(outbox),
+    loadOutbox: new LoadShoppingOutboxUseCase(outbox),
+    flushOutbox: new FlushShoppingOutboxUseCase(repo, outbox),
+    clearOutbox: new ClearShoppingOutboxUseCase(outbox),
   });

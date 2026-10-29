@@ -3,6 +3,7 @@ import type { ApplicationStores } from '@application/di/application-stores';
 import { useTimerNotificationSync } from '@presentation/base/hooks/timers/use-timer-notification-sync';
 import { useUnreadNotificationsSync } from '@presentation/base/hooks/sync/use-unread-notifications-sync';
 import { useTaxonomySync } from '@presentation/base/hooks/sync/use-taxonomy-sync';
+import { useShoppingOutboxSync } from '@presentation/base/hooks/sync/use-shopping-outbox-sync';
 import { useAdsWarmup } from '@presentation/base/hooks/ads/use-ads-warmup';
 import { useScreenTracking } from '@presentation/bootstrap/use-screen-tracking';
 import { useEngagementReminders } from '@presentation/bootstrap/use-engagement-reminders';
@@ -27,6 +28,7 @@ export const AppSyncs = ({ stores, children }: AppSyncsProps): React.JSX.Element
   useTimerNotificationSync();
   useUnreadNotificationsSync(stores.notificationsStore, stores.authStore);
   useTaxonomySync(stores.taxonomyStore, stores.authStore);
+  useShoppingOutboxSync(stores.shoppingListStore, stores.authStore);
   useAdsWarmup();
   useScreenTracking();
   useEngagementReminders(stores.refreshReminders);

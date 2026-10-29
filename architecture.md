@@ -199,7 +199,12 @@ Implements domain interfaces with concrete I/O.
   replays the request; only a refused refresh signs the user out.
 - **Storage** — `SecureTokenStorage` serves the session from memory after the first read; on native it
   persists to SecureStore, on web it keeps tokens in memory only (the refresh token lives in the API's
-  HttpOnly cookie). Platform-specific `kv-store.ts` / `kv-store.web.ts`. `FirstPageCache` keeps the last
+  HttpOnly cookie). **Two key-value stores behind two ports:** `secureKvStore`
+  (`SecureKeyValueStoreInterface`, Expo SecureStore) holds only secrets — session, device id,
+  attestation key — and its consumers declare that port, so the compiler refuses the everyday store in
+  its place; `kvStore` (`KeyValueStoreInterface`, MMKV) holds everything else — caches, preferences,
+  timers, the shopping outbox — and moves a key out of SecureStore on its first read. Web: both are
+  `localStorage` (`*.web.ts` pairs). `FirstPageCache` keeps the last
   first page of the feed, the shopping list and saved recipes for offline starts; user-scoped copies are
   wiped at sign-out.
 - **Constants** — `src/infrastructure/constants/api.ts` (URLs, limits) and `storage.ts` (storage keys).
