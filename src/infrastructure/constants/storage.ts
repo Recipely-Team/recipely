@@ -38,6 +38,8 @@ export const UPDATE_SNOOZED_UNTIL_STORAGE_KEY = 'recipely.update.snoozed-until.v
 export const LAUNCH_CAMPAIGNS_STORAGE_KEY = 'recipely.campaigns.cache.v1';
 /** Ids of the launch campaigns this device has already shown, newest last. */
 export const LAUNCH_CAMPAIGNS_SEEN_STORAGE_KEY = 'recipely.campaigns.seen.v1';
+/** Shopping-list ticks and deletes made while offline, oldest first; cleared on sign-out. */
+export const SHOPPING_OUTBOX_STORAGE_KEY = 'recipely.shopping.outbox.v1';
 export const TIMERS_BAR_COLLAPSED_STORAGE_KEY = 'recipely.timers.bar.collapsed.v1';
 
 /**

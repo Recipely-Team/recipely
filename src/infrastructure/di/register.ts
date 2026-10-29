@@ -2,6 +2,7 @@ import { getLocales } from 'expo-localization';
 import { Image } from 'expo-image';
 import { ValueConstants } from '@core/constants';
 import { ShoppingListRepository } from '@infrastructure/shopping/shopping-list-repository';
+import { ShoppingOutboxRepository } from '@infrastructure/shopping/shopping-outbox-repository';
 import { MealPlanRepository } from '@infrastructure/meal-plan/meal-plan-repository';
 import { FridgeRepository } from '@infrastructure/fridge/fridge-repository';
 import { type Container } from '@core/di/container';
@@ -167,6 +168,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.LikeRepository, () => new LikeRepository(http));
   container.register(TOKENS.NotificationRepository, () => new NotificationRepository(http));
   container.register(TOKENS.ShoppingListRepository, () => new ShoppingListRepository(http, new FirstPageCache(kvStore, SHOPPING_FIRST_PAGE_STORAGE_KEY)));
+  container.register(TOKENS.ShoppingOutboxRepository, () => new ShoppingOutboxRepository(kvStore));
   container.register(TOKENS.MealPlanRepository, () => new MealPlanRepository(http));
   container.register(TOKENS.FridgeRepository, () => new FridgeRepository(http));
   container.register(TOKENS.UserProfileRepository, () => new UserProfileRepository(http));

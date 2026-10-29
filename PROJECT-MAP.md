@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2463 source files.
+[architecture.md](architecture.md). 2477 source files.
 
 ## Layers
 
@@ -50,7 +50,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `meal-plan/` — shopping, suggest, week _(19)_
 - `notifications/` — reminders _(21)_
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(76)_
-- `shopping/` — items, recipe _(14)_
+- `shopping/` — items, outbox, recipe _(18)_
 - `storage/` _(3)_
 - `timers/` _(4)_
 - `user-profile/` _(5)_
@@ -80,7 +80,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `notifications/` — list, read, reminders _(15)_
 - `onboarding/` _(2)_
 - `recipes/` — cooking, create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(96)_
-- `shopping/` — read, write _(13)_
+- `shopping/` — read, sync, write _(20)_
 - `storage/` _(4)_
 - `store/` — paging _(14)_
 - `timers/` _(7)_
@@ -117,7 +117,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `network/` — envelope, errors, http, jwt, paging, upload _(30)_
 - `notifications/` — dtos _(13)_
 - `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(33)_
-- `shopping/` — dtos _(11)_
+- `shopping/` — dtos _(13)_
 - `storage/` _(7)_
 - `user-profile/` _(4)_
 
@@ -142,7 +142,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(10)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, lifecycle, meal-plan, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(118)_
+- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, lifecycle, meal-plan, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(119)_
 - `responsive/` (fold) — breakpoints, LayoutProvider, viewport metrics _(13)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(6)_
@@ -183,4 +183,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: d1195ac929703ab4 -->
+<!-- fingerprint: 919387aafb6a16c7 -->

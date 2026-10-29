@@ -25,13 +25,15 @@ export interface ShoppingListStore {
   addFromRecipe: (lines: readonly string[], recipe: ShoppingRecipeRef | null) => Promise<Result<ShoppingAddResult, Failure>>;
   /** Lines already read into label, amount and unit — a planned week's merged ingredients. */
   addDrafts: (drafts: readonly ShoppingItemDraft[]) => Promise<Result<ShoppingAddResult, Failure>>;
-  /** Ticks at once; a refusal puts the old tick back unless a later tick of the same line overtook it. */
+  /** Ticks at once; a refusal puts the old tick back unless a later tick of the same line overtook it. Offline, the tick stays and waits. */
   setChecked: (item: ShoppingItemEntity, checked: boolean) => Promise<Result<void, Failure>>;
   edit: (id: string, edit: ShoppingItemEdit) => Promise<Result<ShoppingItemEntity, Failure>>;
-  /** Removes at once; a refusal puts the line back where it was. */
+  /** Removes at once; a refusal puts the line back where it was. Offline, the delete stays and waits. */
   remove: (item: ShoppingItemEntity) => Promise<Result<void, Failure>>;
   clearChecked: () => Promise<Result<number, Failure>>;
   clearAll: () => Promise<Result<number, Failure>>;
-  /** Drops everything. Called when the session ends. */
+  /** Sends the ticks and deletes that waited for the API; one pass at a time, a second call joins it. */
+  syncPending: () => Promise<void>;
+  /** Drops everything, the outbox included. Called when the session ends. */
   clear: () => void;
 }
