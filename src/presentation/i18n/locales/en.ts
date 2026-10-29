@@ -469,6 +469,11 @@ export const en = {
       body: 'We have no pending sign-up for this email anymore. Enter your details again.',
       short: 'Sign-up expired — start over',
     },
+    registrationLinkExpired: {
+      title: 'This link has expired',
+      body: 'It works for 3 days and only once. Sign up again and we\'ll send you a new one.',
+      short: 'Link expired — sign up again',
+    },
     invalidMediaType: {
       title: "We can't use that file",
       body: 'Only images (jpeg, png, gif, webp) and videos (mp4, webm, mov) can be uploaded. Pick a different file.',
@@ -1467,6 +1472,8 @@ export const en = {
     changeEmail: 'Use a different email',
     errorCode: 'Enter the 6-digit code.',
     invalidCode: 'That code is wrong or expired. Try again or resend it.',
+    linkFinishing: 'Finishing your registration…',
+    startAgain: 'Start again',
   },
   ai: {
     title: 'AI Recipe',

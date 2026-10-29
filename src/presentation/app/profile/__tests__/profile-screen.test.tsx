@@ -101,6 +101,7 @@ const makeAuthStore = (bio: string | undefined) =>
     signIn: jest.fn(),
     register: jest.fn(),
     verifyRegistration: jest.fn(),
+    verifyRegistrationLink: jest.fn(),
     resendRegistrationCode: jest.fn(),
     signOut: jest.fn(),
     expireSession: jest.fn(),

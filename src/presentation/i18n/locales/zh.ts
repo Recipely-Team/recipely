@@ -466,6 +466,11 @@ export const zh = {
       body: '这个邮箱已经没有待完成的注册记录了。请重新填写信息。',
       short: '注册已过期，请重新开始',
     },
+    registrationLinkExpired: {
+      title: '此链接已过期',
+      body: '链接 3 天内有效且只能使用一次。重新注册，我们会发送新的链接。',
+      short: '链接已过期——请重新注册',
+    },
     invalidMediaType: {
       title: '无法使用这个文件',
       body: '只能上传图片（jpeg、png、gif、webp）和视频（mp4、webm、mov）。请选择其他文件。',
@@ -1459,6 +1464,8 @@ export const zh = {
     changeEmail: '使用其他邮箱',
     errorCode: '请输入 6 位验证码。',
     invalidCode: '验证码错误或已过期。请重试或重新发送。',
+    linkFinishing: '正在完成注册…',
+    startAgain: '重新开始',
   },
   ai: {
     title: 'AI 食谱',

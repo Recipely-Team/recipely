@@ -463,6 +463,11 @@ export const fr = {
       body: 'Il n’y a plus d’inscription en attente pour cette adresse e-mail. Saisissez à nouveau vos informations.',
       short: 'Inscription expirée — recommencez',
     },
+    registrationLinkExpired: {
+      title: 'Ce lien a expiré',
+      body: 'Il fonctionne 3 jours et une seule fois. Réinscrivez-vous et nous vous en enverrons un nouveau.',
+      short: 'Lien expiré — réinscrivez-vous',
+    },
     invalidMediaType: {
       title: 'Impossible d’utiliser ce fichier',
       body: 'Seules les images (jpeg, png, gif, webp) et vidéos (mp4, webm, mov) peuvent être envoyées. Choisissez un autre fichier.',
@@ -1455,6 +1460,8 @@ export const fr = {
     changeEmail: 'Utiliser une autre adresse e-mail',
     errorCode: 'Saisissez le code à 6 chiffres.',
     invalidCode: 'Ce code est incorrect ou a expiré. Réessayez ou renvoyez-le.',
+    linkFinishing: 'Finalisation de votre inscription…',
+    startAgain: 'Recommencer',
   },
   ai: {
     title: 'Recette IA',

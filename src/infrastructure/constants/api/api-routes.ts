@@ -8,6 +8,8 @@ export const ApiRoutes = {
     login: '/auth/login',
     register: '/auth/register',
     registerVerify: '/auth/register/verify',
+    /** The emailed "finish creating my account" link: token in, session out. */
+    registerVerifyLink: '/auth/register/verify-link',
     registerResend: '/auth/register/resend',
     social: '/auth/social',
     forgotPassword: '/auth/forgot-password',

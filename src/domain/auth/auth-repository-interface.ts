@@ -23,6 +23,8 @@ export interface AuthRepositoryInterface {
   ): Promise<Result<RegistrationChallenge, Failure>>;
   /** Confirms the emailed code and, on success, creates the account + session. */
   verifyRegistration(email: string, code: string): Promise<Result<AuthSessionEntity, Failure>>;
+  /** Finishes a registration from the emailed link's token, with no code. */
+  verifyRegistrationLink(token: string): Promise<Result<AuthSessionEntity, Failure>>;
   /** Re-sends the registration code to a pending email. */
   resendRegistrationCode(email: string): Promise<Result<RegistrationChallenge, Failure>>;
   signOut(): Promise<Result<void, Failure>>;

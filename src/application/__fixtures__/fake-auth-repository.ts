@@ -44,6 +44,12 @@ export class FakeAuthRepository
     );
   }
 
+  verifyRegistrationLink(_token: string): Promise<Result<AuthSessionEntity, Failure>> {
+    return Promise.resolve(
+      this.config.verifyRegistrationLinkResult ?? fail(new UnknownFailure('not configured')),
+    );
+  }
+
   resendRegistrationCode(_email: string): Promise<Result<RegistrationChallenge, Failure>> {
     return Promise.resolve(
       this.config.resendRegistrationCodeResult ?? fail(new UnknownFailure('not configured')),

@@ -463,6 +463,11 @@ export const es = {
       body: 'Ya no tenemos un registro pendiente para este correo. Introduce tus datos otra vez.',
       short: 'El registro caducó — empieza de nuevo',
     },
+    registrationLinkExpired: {
+      title: 'Este enlace ha caducado',
+      body: 'Funciona durante 3 días y solo una vez. Regístrate de nuevo y te enviaremos otro.',
+      short: 'Enlace caducado: regístrate de nuevo',
+    },
     invalidMediaType: {
       title: 'No podemos usar ese archivo',
       body: 'Solo se pueden subir imágenes (jpeg, png, gif, webp) y vídeos (mp4, webm, mov). Elige otro archivo.',
@@ -1455,6 +1460,8 @@ export const es = {
     changeEmail: 'Usar otro correo electrónico',
     errorCode: 'Introduce el código de 6 dígitos.',
     invalidCode: 'Ese código es incorrecto o ha caducado. Inténtalo de nuevo o reenvíalo.',
+    linkFinishing: 'Completando tu registro…',
+    startAgain: 'Empezar de nuevo',
   },
   ai: {
     title: 'Receta con IA',

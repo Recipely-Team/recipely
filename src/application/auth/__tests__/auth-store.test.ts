@@ -5,6 +5,7 @@ import { GetSessionUseCase } from '@application/auth/session/get-session-use-cas
 import { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
 import { RequestRegistrationUseCase } from '@application/auth/registration/request-registration-use-case';
 import { VerifyRegistrationUseCase } from '@application/auth/registration/verify-registration-use-case';
+import { VerifyRegistrationLinkUseCase } from '@application/auth/registration/verify-registration-link-use-case';
 import { ResendRegistrationCodeUseCase } from '@application/auth/registration/resend-registration-code-use-case';
 import { SignOutUseCase } from '@application/auth/session/sign-out-use-case';
 import { SignInWithGoogleUseCase } from '@application/auth/sign-in/sign-in-with-google-use-case';
@@ -103,6 +104,7 @@ const makeStore = (
     signIn: new SignInUseCase(repo),
     requestRegistration: new RequestRegistrationUseCase(repo),
     verifyRegistration: new VerifyRegistrationUseCase(repo),
+    verifyRegistrationLink: new VerifyRegistrationLinkUseCase(repo),
     resendRegistrationCode: new ResendRegistrationCodeUseCase(repo),
     signOut: new SignOutUseCase(repo),
     getSession: new GetSessionUseCase(repo),
@@ -201,6 +203,15 @@ describe('auth-store', () => {
     const s = store.getState().state;
     expect(s.status).toBe('authenticated');
     if (s.status === 'authenticated') expect(s.session).toBe(session);
+  });
+
+  it('verifyRegistrationLink signs in from the emailed link', async () => {
+    const session = buildSession();
+    const store = makeStore(new FakeAuthRepository({ verifyRegistrationLinkResult: ok(session) }));
+
+    expect(await store.getState().verifyRegistrationLink('t'.repeat(43))).toBeNull();
+
+    expect(store.getState().state.status).toBe('authenticated');
   });
 
   it('verifyRegistration returns the failure and flips to unauthenticated on failure', async () => {

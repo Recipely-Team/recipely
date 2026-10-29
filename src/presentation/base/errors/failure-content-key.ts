@@ -107,6 +107,7 @@ export type FailureContentKeyType =
   | 'codeCooldown'
   | 'tooManyAttempts'
   | 'registrationExpired'
+  | 'registrationLinkExpired'
   // ── key-tier: media upload ─────────────────────────────────────────────────
   | 'invalidMediaType'
   | 'invalidImageType'

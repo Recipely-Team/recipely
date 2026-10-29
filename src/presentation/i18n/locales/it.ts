@@ -463,6 +463,11 @@ export const it = {
       body: 'Non c’è più una registrazione in sospeso per questa e-mail. Inserisci di nuovo i tuoi dati.',
       short: 'Registrazione scaduta — ricomincia',
     },
+    registrationLinkExpired: {
+      title: 'Questo link è scaduto',
+      body: 'Funziona per 3 giorni e una sola volta. Registrati di nuovo e te ne invieremo uno nuovo.',
+      short: 'Link scaduto: registrati di nuovo',
+    },
     invalidMediaType: {
       title: 'Non possiamo usare quel file',
       body: 'Puoi caricare solo immagini (jpeg, png, gif, webp) e video (mp4, webm, mov). Scegli un altro file.',
@@ -1455,6 +1460,8 @@ export const it = {
     changeEmail: 'Usa un’altra e-mail',
     errorCode: 'Inserisci il codice di 6 cifre.',
     invalidCode: 'Quel codice è errato o scaduto. Riprova o richiedine un altro.',
+    linkFinishing: 'Completamento della registrazione…',
+    startAgain: 'Ricomincia',
   },
   ai: {
     title: 'Ricetta IA',

@@ -463,6 +463,11 @@ export const de = {
       body: 'Für diese E-Mail-Adresse gibt es keine ausstehende Registrierung mehr. Gib deine Daten erneut ein.',
       short: 'Registrierung abgelaufen — neu beginnen',
     },
+    registrationLinkExpired: {
+      title: 'Dieser Link ist abgelaufen',
+      body: 'Er gilt 3 Tage und nur einmal. Registriere dich erneut, dann schicken wir dir einen neuen.',
+      short: 'Link abgelaufen — erneut registrieren',
+    },
     invalidMediaType: {
       title: 'Diese Datei können wir nicht verwenden',
       body: 'Es können nur Bilder (jpeg, png, gif, webp) und Videos (mp4, webm, mov) hochgeladen werden. Wähle eine andere Datei.',
@@ -1455,6 +1460,8 @@ export const de = {
     changeEmail: 'Andere E-Mail-Adresse verwenden',
     errorCode: 'Gib den 6-stelligen Code ein.',
     invalidCode: 'Dieser Code ist falsch oder abgelaufen. Versuch es erneut oder lass ihn noch einmal senden.',
+    linkFinishing: 'Registrierung wird abgeschlossen…',
+    startAgain: 'Neu starten',
   },
   ai: {
     title: 'KI-Rezept',

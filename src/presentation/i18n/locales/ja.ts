@@ -463,6 +463,11 @@ export const ja = {
       body: 'このメールアドレスの保留中の登録はなくなりました。もう一度情報を入力してください。',
       short: '登録の有効期限が切れました — 最初からやり直してください',
     },
+    registrationLinkExpired: {
+      title: 'このリンクは期限切れです',
+      body: 'リンクは3日間、1回だけ有効です。もう一度登録すると、新しいリンクをお送りします。',
+      short: 'リンク期限切れ — もう一度登録',
+    },
     invalidMediaType: {
       title: 'このファイルは使用できません',
       body: 'アップロードできるのは画像（jpeg, png, gif, webp）と動画（mp4, webm, mov）のみです。別のファイルを選んでください。',
@@ -1455,6 +1460,8 @@ export const ja = {
     changeEmail: '別のメールアドレスを使う',
     errorCode: '6桁のコードを入力してください。',
     invalidCode: 'コードが間違っているか、有効期限が切れています。もう一度試すか再送してください。',
+    linkFinishing: '登録を完了しています…',
+    startAgain: '最初からやり直す',
   },
   ai: {
     title: 'AIレシピ',

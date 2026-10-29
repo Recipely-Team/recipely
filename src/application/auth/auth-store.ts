@@ -6,6 +6,7 @@ import { ClaimWriteQueue } from '@application/auth/claim-write-queue';
 import type { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
 import type { RequestRegistrationUseCase } from '@application/auth/registration/request-registration-use-case';
 import type { VerifyRegistrationUseCase } from '@application/auth/registration/verify-registration-use-case';
+import type { VerifyRegistrationLinkUseCase } from '@application/auth/registration/verify-registration-link-use-case';
 import type { ResendRegistrationCodeUseCase } from '@application/auth/registration/resend-registration-code-use-case';
 import type { SignOutUseCase } from '@application/auth/session/sign-out-use-case';
 import type { GetSessionUseCase } from '@application/auth/session/get-session-use-case';
@@ -29,6 +30,7 @@ interface AuthStoreDeps {
   signIn: SignInUseCase;
   requestRegistration: RequestRegistrationUseCase;
   verifyRegistration: VerifyRegistrationUseCase;
+  verifyRegistrationLink: VerifyRegistrationLinkUseCase;
   resendRegistrationCode: ResendRegistrationCodeUseCase;
   signOut: SignOutUseCase;
   getSession: GetSessionUseCase;
@@ -176,6 +178,8 @@ export const configureAuthStore = (deps: AuthStoreDeps): StoreApi<AuthStore> => 
 
       verifyRegistration: (email: string, code: string) =>
         authenticate(() => deps.verifyRegistration.execute(email, code)),
+
+      verifyRegistrationLink: (token: string) => authenticate(() => deps.verifyRegistrationLink.execute(token)),
 
       resendRegistrationCode: async (email: string) => {
         // The verify-code screen handles the result; no global state change.
