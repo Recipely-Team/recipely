@@ -8,8 +8,6 @@ export interface UseCreatorsScreenResult {
   columns: number;
   /** Between cards, both ways. */
   gap: number;
-  /** One card's width, so a short last row keeps the grid's columns. */
-  cellWidth: number;
   isPullRefreshing: boolean;
   isLoadingMore: boolean;
   onRefresh: () => void;

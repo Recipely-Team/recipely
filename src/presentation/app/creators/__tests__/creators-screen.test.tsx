@@ -76,9 +76,11 @@ describe('CreatorsScreen', () => {
     const { root } = renderComponent(<CreatorsScreen />, { creatorsStore });
 
     const list = root.find((n) => typeof n.props['onEndReached'] === 'function' && n.props['numColumns'] !== undefined);
+    // A short list already reaches its end once laid out; count what this call adds.
+    const before = jest.mocked(creatorsStore.getState().loadMore).mock.calls.length;
     act(() => (list.props['onEndReached'] as () => void)());
 
-    expect(creatorsStore.getState().loadMore).toHaveBeenCalledTimes(1);
+    expect(creatorsStore.getState().loadMore).toHaveBeenCalledTimes(before + 1);
   });
 
   it('shows the coming-soon placeholder, without the grid subtitle, when the list is empty', () => {
