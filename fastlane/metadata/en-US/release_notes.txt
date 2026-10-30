@@ -1,6 +1,5 @@
-Festive launch moments and an offline shopping list.
+Fewer interruptions and smoother scrolling.
 
-• Celebrations at launch: on special days like Republic Day, Recipely greets you with a short festive screen. Skip it anytime.
-• Your shopping list works offline: ticks and removals made without signal stay put and sync when you are back online.
-• Faster, smoother lists in My Recipes, the shopping list and the food picker.
-• More reliable loading on weak connections, and quicker access to your settings.
+• No more notification prompt every time you open the app: Recipely asks only when you start a timer, ask to be notified, or turn on reminders.
+• Signing in on the web at desktop size no longer loses what you type in the first moments.
+• Faster, smoother scrolling in the recipe feed and the Chefs page.
