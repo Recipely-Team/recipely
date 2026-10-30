@@ -3,6 +3,7 @@ import { scrollThrottleMs , ListConstants } from '@presentation/base/constants';
 import { Platform, RefreshControl, StyleSheet, View } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
 import Animated from 'react-native-reanimated';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RecipeSearchOverlay } from '@presentation/app/recipes/sheets/recipe-search-overlay';
 import { RecipesAppHeader } from '@presentation/app/recipes/body/recipes-app-header';
@@ -40,6 +41,11 @@ export interface RecipeListBodyProps {
 
 const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />;
 
+/** FlashList on Reanimated's animated host, so the worklet scroll handler drives the collapsing header. */
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList<FeedRowType>);
+
+const rowType = (row: FeedRowType): string => row.kind;
+
 /**
  * Renders the recipe-list shell (web app header + centered grid, or the mobile
  * collapsing-header feed) and the state-dependent body (error / loading / search
@@ -54,6 +60,9 @@ const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />
  *   to un-tap it, and the only thing left was "Clear all". The empty copy is a
  *   `ListEmptyComponent` under the header instead of a replacement for it, and
  *   `contentContainerStyle: flexGrow 1` keeps a surface for pull-to-refresh.
+ * - **The mobile feed recycles its rows (FlashList)** on Reanimated's animated
+ *   host: `useAnimatedScrollHandler` only runs on a Reanimated component, and
+ *   FlashList's own `AnimatedFlashList` wraps React Native's `Animated` instead.
  * - **Search progress reads `vm.isRefetching`, not the store.** The web header
  *   search is debounced, so the store looks idle for the first few hundred ms
  *   after a keystroke; once the request is in flight the grid is already on
@@ -113,18 +122,14 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
     );
   } else {
     body = (
-      <Animated.FlatList
-        // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
-        removeClippedSubviews={false}
+      <AnimatedFlashList
         ref={attachList}
         // Emptied while the next set loads; the header stays.
         data={rows}
         keyExtractor={keyExtractor}
+        // Recipe cards and ad banners recycle in separate pools.
+        getItemType={rowType}
         renderItem={renderItem}
-        // Tuned for tall photo cards (the defaults keep far too many mounted).
-        initialNumToRender={ListConstants.initialRows}
-        maxToRenderPerBatch={ListConstants.rowsPerBatch}
-        windowSize={ListConstants.windowSize}
         ListHeaderComponent={
           <MobileFeedHeader
             filters={vm.filters}
