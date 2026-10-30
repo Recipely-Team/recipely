@@ -1,12 +1,13 @@
 import type { WindowPosture } from '@domain/display/window-posture';
 
 /**
- * Port for the window's fold posture: Jetpack WindowManager on Android, the
- * Viewport Segments API on the web.
+ * Port for the window's fold posture: Jetpack WindowManager on Android, UIKit's
+ * division reserved region on iOS 27.1+ (iPhone Duo), the Viewport Segments API
+ * on the web.
  *
  * @remarks
- * - **`null` means no fold crosses the window** — a phone, a tablet, iOS, a
- *   browser without the API, or a Fold's cover screen.
+ * - **`null` means no fold crosses the window** — a phone, a tablet, iOS below
+ *   27.1, a browser without the API, or a Fold's cover screen.
  * - **`current` is synchronous** so the first layout pass already knows the
  *   posture; `subscribe` reports every change after it.
  */

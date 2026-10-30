@@ -13,12 +13,13 @@ interface NativeModuleShape {
 }
 
 /**
- * The JavaScript half of `RecipelyWindowPostureModule` (Android only).
+ * The JavaScript half of `RecipelyWindowPostureModule`: Jetpack WindowManager on
+ * Android, UIKit's division reserved region and `UIHingeInteraction` on iOS 27.1+.
  *
  * @remarks
- * - **Optional on purpose.** The module is not linked on iOS (no foldables) and
- *   not bundled on the web, so `requireOptionalNativeModule` answers `null`
- *   there and every call here degrades to "no fold" instead of throwing.
+ * - **Optional on purpose.** The module is not bundled on the web, so
+ *   `requireOptionalNativeModule` answers `null` there and every call here
+ *   degrades to "no fold" instead of throwing. Below iOS 27.1 it answers `null`.
  * - **The getter is synchronous** so the first layout already splits at the
  *   hinge; the event carries every later change (unfold, rotate, span).
  */

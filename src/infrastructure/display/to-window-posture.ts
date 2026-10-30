@@ -10,7 +10,7 @@ const isOrientation = (value: string): value is FoldOrientationType => ORIENTATI
 const isState = (value: string): value is FoldStateType => STATES.has(value);
 
 /**
- * Maps the Kotlin module's folding feature to the domain posture. A word this
+ * Maps the native module's fold (Kotlin or Swift) to the domain posture. A word this
  * build does not know (a newer native side) is dropped as "no fold" rather than
  * guessed, so a layout never splits along an axis it misread.
  */

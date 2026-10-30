@@ -2,6 +2,7 @@ import { isAndroid } from '@infrastructure/constants/platform';
 import { LogTag, LogMessage } from '@infrastructure/constants/log-tag';
 import { isNonEmptyString } from '@core/guards/type-guards';
 import { PermissionStatus } from 'expo-modules-core';
+import type * as NotificationsType from 'expo-notifications';
 import type { RegisterTokenFn } from '@infrastructure/notifications/register-token-fn';
 import { DevicePlatform } from '@domain/notifications/device-platform';
 
@@ -16,7 +17,13 @@ import { DevicePlatform } from '@domain/notifications/device-platform';
  * which the backend's FCM sender cannot address — bridging it requires
  * `@react-native-firebase/messaging` and a native rebuild (out of scope here).
  *
- * Fully defensive: any missing capability (Expo Go, denied permission, no
+ * Never asks for permission: it runs on every launch, and asking there put the
+ * system prompt in front of the user on every open until they allowed it.
+ * Permission is asked where a feature needs it (a timer, "notify me", the
+ * reminders question), and each of those calls `ensurePushRegistration` once
+ * it is granted.
+ *
+ * Fully defensive: any missing capability (Expo Go, no permission, no
  * Google Play services) results in a logged skip rather than a thrown error.
  * The web counterpart (`push-token-registrar.web.ts`) registers via the
  * Firebase JS SDK.
@@ -24,13 +31,11 @@ import { DevicePlatform } from '@domain/notifications/device-platform';
 export const registerPushToken = async (register: RegisterTokenFn): Promise<void> => {
   if (!isAndroid()) return;
   try {
-    const Notifications = await import('expo-notifications');
+    // Lazy, as before: loaded only on Android, and a plain require (as in notification-service) is what Jest can run.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const Notifications = require('expo-notifications') as typeof NotificationsType;
 
-    const { status: existing } = await Notifications.getPermissionsAsync();
-    const status =
-      existing === PermissionStatus.GRANTED
-        ? existing
-        : (await Notifications.requestPermissionsAsync()).status;
+    const { status } = await Notifications.getPermissionsAsync();
     if (status !== PermissionStatus.GRANTED) return;
 
     const token = await Notifications.getDevicePushTokenAsync();

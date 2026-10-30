@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { StoreStatus } from '@application/store/store-status';
 import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 import { ValueConstants } from '@core/constants';
@@ -27,18 +28,24 @@ const keyOf = (creator: CreatorSummaryEntity): string => creator.id;
  * The Chefs tab's body under its heading, by list state: a spinner before the
  * first answer, the error with a retry, the "coming soon" placeholder, or the card grid.
  * Every settled branch is pull-to-refresh.
+ *
+ * @remarks
+ * - **Rows are recycled (FlashList).** It gives every column an equal share and
+ *   has no `columnWrapperStyle`, so each cell pads half the gap on both sides and
+ *   the gap below; the list pads the rest of the gutter at the edges.
  */
 export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
-  const { listState, onOpenCreator, cellWidth, gap } = vm;
+  const { listState, onOpenCreator, gap } = vm;
+  const cellInset = gap / ValueConstants.two;
   const renderItem = useCallback(
     ({ item }: { item: CreatorSummaryEntity }) => (
-      <View style={{ width: cellWidth }}>
+      <View style={{ paddingHorizontal: cellInset, paddingBottom: gap }}>
         <CreatorCard creator={item} onOpen={onOpenCreator} />
       </View>
     ),
-    [cellWidth, onOpenCreator],
+    [cellInset, gap, onOpenCreator],
   );
   const refreshControl = (
     <RefreshControl refreshing={vm.isPullRefreshing} onRefresh={vm.onRefresh} tintColor={colors.textMuted} colors={[colors.primary]} />
@@ -73,17 +80,14 @@ export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.E
         );
       }
       return (
-        <FlatList
-          // Explicit: FlatList clips by default on Android, which crashes Fabric (rule R).
-          removeClippedSubviews={false}
+        <FlashList
           {...scrollable}
           key={`creators-${vm.columns}`}
           data={vm.creators}
           keyExtractor={keyOf}
           numColumns={vm.columns}
           renderItem={renderItem}
-          columnWrapperStyle={{ gap }}
-          contentContainerStyle={[styles.content, { gap }]}
+          contentContainerStyle={[styles.content, { paddingHorizontal: CreatorsGridMetrics.gutter - cellInset }]}
           refreshControl={refreshControl}
           onEndReached={vm.onEndReached}
           onEndReachedThreshold={ListConstants.endReachedThreshold}
@@ -94,9 +98,6 @@ export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.E
               onRetry={vm.onEndReached}
             />
           }
-          initialNumToRender={ListConstants.initialRows}
-          maxToRenderPerBatch={ListConstants.rowsPerBatch}
-          windowSize={ListConstants.windowSize}
         />
       );
   }
@@ -109,7 +110,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
-    paddingHorizontal: CreatorsGridMetrics.gutter,
     paddingBottom: spacing.xxl,
   },
   emptyContent: {
