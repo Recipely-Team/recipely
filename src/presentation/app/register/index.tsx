@@ -1,27 +1,22 @@
 import { useEffect } from 'react';
 import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
-import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
+import { Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { type Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { resolveRedirect } from '@presentation/navigation/resolve-redirect';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { HeroCardShell } from '@presentation/base/widgets/layout/hero-card-shell';
 import { RegisterHero } from '@presentation/app/register/body/register-hero';
 import { RegisterForm } from '@presentation/app/register/body/register-form';
-import { useTwoPaneSplit } from '@presentation/base/responsive/fold/use-two-pane-split';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, radii, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices } from '@presentation/base/theme';
+import { spacing, radii, iconSizes, controlSizes, decorSizes, borderWidths, zIndices } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
 import { useTranslations } from '@presentation/i18n';
-
-const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const RegisterScreen = (): React.JSX.Element => {
   const t = useTranslations();
@@ -29,9 +24,6 @@ export const RegisterScreen = (): React.JSX.Element => {
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const goBack = useGoBackOrHome(RoutePaths.login);
   const colors = useTheme().colors;
-  const scrollEndPadding = useScrollEndPadding();
-  const split = useTwoPaneSplit();
-  const isLandscapeShell = split.isSplit;
 
   const { authStore } = useStores();
   const authStatus = useStore(authStore, (s) => s.state.status);
@@ -43,83 +35,36 @@ export const RegisterScreen = (): React.JSX.Element => {
     }
   }, [authStatus, router, redirect]);
 
-  if (isLandscapeShell) {
-    return (
-      <KeyboardAvoider style={styles.flex}>
-        <View style={[styles.splitRoot, split.rowStyle, { backgroundColor: colors.background }]}>
+  return (
+    <HeroCardShell
+      splitHero={<RegisterHero isLandscapeShell />}
+      stackedHeader={
+        <>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
             end={{ x: ValueConstants.one, y: ValueConstants.one }}
-            style={[styles.splitHero, split.firstPaneStyle]}
+            style={styles.gradient}
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t.common.back}
+            onPress={goBack}
+            style={[styles.backButton, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}
           >
-            <RegisterHero isLandscapeShell={isLandscapeShell} />
-          </LinearGradient>
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.splitFormContent}
-            style={styles.splitFormPane}
-          >
-            <View
-              style={[
-                styles.card,
-                styles.cardSplit,
-                { backgroundColor: colors.cardBackground, ...shadows.lg },
-              ]}
-            >
-              <RegisterForm />
-            </View>
-          </ScrollView>
-        </View>
-      </KeyboardAvoider>
-    );
-  }
-
-  return (
-    <KeyboardAvoider style={styles.flex}>
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollEndPadding }]}
-        style={{ backgroundColor: colors.background }}
-      >
-        <LinearGradient
-          colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: ValueConstants.one, y: ValueConstants.one }}
-          style={styles.gradient}
-        />
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t.common.back}
-          onPress={goBack}
-          style={[styles.backButton, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}
-        >
-          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
-        </Pressable>
-
-        <RegisterHero isLandscapeShell={isLandscapeShell} />
-
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: colors.cardBackground, ...shadows.lg },
-          ]}
-        >
-          <RegisterForm />
-        </View>
-      </ScrollView>
-    </KeyboardAvoider>
+            <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
+          </Pressable>
+          <RegisterHero isLandscapeShell={false} />
+        </>
+      }
+      stackedCardStyle={styles.card}
+    >
+      <RegisterForm />
+    </HeroCardShell>
   );
 };
 
 const styles = StyleSheet.create({
-  flex: {
-    flex: ValueConstants.one,
-  },
-  scrollContent: {
-    flexGrow: ValueConstants.one,
-  },
   gradient: {
     position: 'absolute',
     top: ValueConstants.zero,
@@ -142,36 +87,7 @@ const styles = StyleSheet.create({
     zIndex: zIndices.raised,
   },
   card: {
-    borderRadius: radii.xxl,
-    padding: spacing.xl,
-    marginHorizontal: spacing.lg,
     marginTop: -decorSizes.cardOverlap,
-  },
-  splitRoot: {
-    flex: ValueConstants.one,
-    flexDirection: 'row',
-  },
-  splitHero: {
-    flex: ValueConstants.one,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xxl,
-  },
-  splitFormPane: {
-    flex: ValueConstants.one,
-  },
-  splitFormContent: {
-    flexGrow: ValueConstants.one,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: spacing.xxxl,
-    paddingHorizontal: spacing.xxl,
-  },
-  cardSplit: {
-    width: '100%',
-    maxWidth: AUTH_CARD_MAX_WIDTH,
-    marginHorizontal: ValueConstants.zero,
-    marginTop: ValueConstants.zero,
   },
 });
 

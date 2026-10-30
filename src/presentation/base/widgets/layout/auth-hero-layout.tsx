@@ -1,18 +1,13 @@
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
-import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
+import { HeroCardShell } from '@presentation/base/widgets/layout/hero-card-shell';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTwoPaneSplit } from '@presentation/base/responsive/fold/use-two-pane-split';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontWeights, iconSizes, controlSizes, avatarSizes, mediaSizes, decorSizes, layoutSizes, zIndices, opacities } from '@presentation/base/theme';
 import type { IoniconNameType } from '@presentation/base/errors/ionicon-name';
 import { ValueConstants } from '@core/constants';
-
-const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export interface AuthHeroLayoutProps {
   icon: IoniconNameType;
@@ -33,14 +28,12 @@ export interface AuthHeroLayoutProps {
  *   half-opened Fold), whatever the width — see `useTwoPaneSplit`.
  * - **The back button lives only in the stacked layout**; the split layout's card carries
  *   its own back link.
+ * - **Built on `HeroCardShell`**, so the card keeps its state when the layout changes.
  */
 export const AuthHeroLayout = ({ icon, title, subtitle, backLabel, onBack, children }: AuthHeroLayoutProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const scrollEndPadding = useScrollEndPadding();
-  const split = useTwoPaneSplit();
-  const isLandscapeShell = split.isSplit;
 
-  const hero = (
+  const hero = (isLandscapeShell: boolean): React.JSX.Element => (
     <View style={[styles.gradientCenter, isLandscapeShell ? styles.heroLandscape : null]}>
       <View style={[styles.iconBadge, { backgroundColor: colors.gradientSurface }]}>
         <Ionicons name={icon} size={isLandscapeShell ? iconSizes.xxxl : iconSizes.xxl} color={colors.onOverlay} />
@@ -56,66 +49,37 @@ export const AuthHeroLayout = ({ icon, title, subtitle, backLabel, onBack, child
     </View>
   );
 
-  if (isLandscapeShell) {
-    return (
-      <KeyboardAvoider style={styles.flex}>
-        <View style={[styles.splitRoot, split.rowStyle, { backgroundColor: colors.background }]}>
+  return (
+    <HeroCardShell
+      splitHero={hero(true)}
+      stackedHeader={
+        <>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
             end={{ x: ValueConstants.one, y: ValueConstants.one }}
-            style={[styles.splitHero, split.firstPaneStyle]}
+            style={styles.gradient}
           >
-            {hero}
+            {hero(false)}
           </LinearGradient>
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.splitFormContent}
-            style={styles.splitFormPane}
+          <Pressable
+            onPress={onBack}
+            style={[styles.backBtn, { backgroundColor: colors.gradientSurface }]}
+            accessibilityRole="button"
+            accessibilityLabel={backLabel}
           >
-            <View style={[styles.card, styles.cardSplit, { backgroundColor: colors.cardBackground }, shadows.lg]}>
-              {children}
-            </View>
-          </ScrollView>
-        </View>
-      </KeyboardAvoider>
-    );
-  }
-
-  return (
-    <KeyboardAvoider style={styles.flex}>
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollEndPadding }]}
-        style={{ backgroundColor: colors.background }}
-      >
-        <LinearGradient
-          colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: ValueConstants.one, y: ValueConstants.one }}
-          style={styles.gradient}
-        >
-          {hero}
-        </LinearGradient>
-        <Pressable
-          onPress={onBack}
-          style={[styles.backBtn, { backgroundColor: colors.gradientSurface }]}
-          accessibilityRole="button"
-          accessibilityLabel={backLabel}
-        >
-          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
-        </Pressable>
-        <View style={[styles.card, { backgroundColor: colors.cardBackground }, shadows.lg]}>
-          {children}
-        </View>
-      </ScrollView>
-    </KeyboardAvoider>
+            <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
+          </Pressable>
+        </>
+      }
+      stackedCardStyle={styles.card}
+    >
+      {children}
+    </HeroCardShell>
   );
 };
 
 const styles = StyleSheet.create({
-  flex: { flex: ValueConstants.one },
-  scrollContent: { flexGrow: ValueConstants.one },
   gradient: {
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
@@ -157,41 +121,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   card: {
-    borderRadius: radii.xxl,
-    padding: spacing.xl,
-    marginHorizontal: spacing.lg,
     marginTop: -decorSizes.cardOverlap,
     marginBottom: spacing.xxl,
-  },
-  splitRoot: {
-    flex: ValueConstants.one,
-    flexDirection: 'row',
-  },
-  splitHero: {
-    flex: ValueConstants.one,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xxl,
   },
   heroLandscape: {
     minHeight: ValueConstants.zero,
     maxWidth: layoutSizes.maxContentLg,
-  },
-  splitFormPane: {
-    flex: ValueConstants.one,
-  },
-  splitFormContent: {
-    flexGrow: ValueConstants.one,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: spacing.xxxl,
-    paddingHorizontal: spacing.xxl,
-  },
-  cardSplit: {
-    width: '100%',
-    maxWidth: AUTH_CARD_MAX_WIDTH,
-    marginHorizontal: ValueConstants.zero,
-    marginTop: ValueConstants.zero,
-    marginBottom: ValueConstants.zero,
   },
 });
