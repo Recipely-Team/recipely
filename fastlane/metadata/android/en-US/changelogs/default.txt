@@ -1,3 +1,5 @@
-• No more notification prompt every time you open the app: Recipely asks only when you start a timer, ask to be notified, or turn on reminders.
-• Signing in on the web at desktop size no longer loses what you type in the first moments.
-• Faster, smoother scrolling in the recipe feed and the Chefs page.
+• Festive moments: on special days like Republic Day, Recipely greets you with a short screen you can skip.
+• Your shopping list works offline and syncs when you are back online.
+• No notification prompt on every open: Recipely asks only for a timer, an alert or reminders.
+• Faster, smoother scrolling in the feed, Chefs, My Recipes and the shopping list.
+• More reliable loading on weak connections; web sign-in keeps what you type.

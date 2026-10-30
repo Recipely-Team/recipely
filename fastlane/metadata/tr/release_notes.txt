@@ -1,5 +1,7 @@
-Daha az kesinti, daha akıcı kaydırma.
+Kutlama anları, çevrimdışı alışveriş listesi ve daha az kesinti.
 
-• Uygulamayı her açtığında bildirim izni sorulmaz: Recipely yalnızca zamanlayıcı başlattığında, haber verilmesini istediğinde ya da hatırlatıcıları açtığında sorar.
-• Web'de geniş ekranda giriş yaparken ilk anda yazdıkların artık kaybolmaz.
-• Tarif akışında ve Şefler sayfasında daha hızlı, akıcı kaydırma.
+• Kutlama anları: Cumhuriyet Bayramı gibi özel günlerde Recipely seni geçebileceğin kısa bir ekranla karşılar.
+• Alışveriş listen çevrimdışı çalışır, bağlantı gelince eşitlenir.
+• Her açılışta bildirim izni sorulmaz: yalnızca zamanlayıcı, haber verme ya da hatırlatıcı için sorulur.
+• Akışta, Şefler'de, Tariflerim'de ve alışveriş listesinde daha akıcı kaydırma.
+• Zayıf bağlantıda daha güvenilir yükleme; web'de girişte yazdıkların kaybolmaz.
