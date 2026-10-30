@@ -64,7 +64,6 @@ export const useCreatorsScreen = (): UseCreatorsScreenResult => {
     listState,
     columns,
     gap,
-    cellWidth: (contentWidth - gap * (columns - ValueConstants.one)) / columns,
     isPullRefreshing,
     isLoadingMore: listState.status === StoreStatus.Loaded && listState.isLoadingMore,
     onRefresh,
