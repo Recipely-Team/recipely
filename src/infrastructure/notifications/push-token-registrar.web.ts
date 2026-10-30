@@ -15,8 +15,9 @@ const WEB_NOTIFICATION_API = 'Notification';
 const VAPID_KEY = process.env.EXPO_PUBLIC_FIREBASE_VAPID_KEY;
 
 /**
- * Requests notification permission and registers the browser's FCM token with
- * the backend. Fully defensive: any missing capability (unsupported browser,
+ * Registers the browser's FCM token with the backend once notifications are
+ * allowed. Never asks: it runs on every page load, and a prompt nobody asked
+ * for on load is what browsers quieten and users block. Fully defensive: any missing capability (unsupported browser,
  * missing VAPID key, denied permission, missing service worker) results in a
  * logged skip rather than a thrown error.
  */
@@ -34,11 +35,7 @@ export const registerPushToken = async (register: RegisterTokenFn): Promise<void
     const app = getFirebaseApp();
     if (app === null) return;
 
-    const permission =
-      Notification.permission === 'granted'
-        ? 'granted'
-        : await Notification.requestPermission();
-    if (permission !== 'granted') return;
+    if (Notification.permission !== 'granted') return;
 
     // Deprecated signature kept: Expo web does not register the messaging service worker.
     const token = await getToken(getMessaging(app), { vapidKey: VAPID_KEY });

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { ensurePushRegistration } from '@application/notifications/ensure-push-registration';
 import { isWeb } from '@infrastructure/constants/platform';
 import { showWarningToast } from '@presentation/base/feedback/show-toast';
 import { useTranslations } from '@presentation/i18n';
@@ -46,6 +47,7 @@ export const useRemindersOffer = (isBlocked: boolean): RemindersOffer => {
       void setRemindersChoice
         .execute(isAccepted, t.reminders.messages, Date.now())
         .then((isOn) => {
+          if (isOn) ensurePushRegistration();
           if (isAccepted && !isOn) showWarningToast(t.reminders.permissionDenied);
         })
         .catch(() => undefined);

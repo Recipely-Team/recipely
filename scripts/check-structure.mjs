@@ -80,6 +80,8 @@
  *   BA. `useNativeDriver: false` carries a `// JS driver: <why>` line (§29).
  *   BB. Every FlashList passes `keyExtractor` and none of the FlatList window
  *      props it ignores (CLAUDE.md §6c, §9).
+ *   BD. Only `notification-service.ts` asks for notification permission — never
+ *      code that runs on its own at launch (docs/regressions.md).
  *   BC. Only `HeroCardShell` reads `useTwoPaneSplit`: a screen that returns one
  *      tree stacked and another split remounts its form when the width changes.
  *   T. Ads only on screens carrying publisher content, and the ad loader only
@@ -1105,6 +1107,22 @@ if (nearSizeLimit.length > 0 && process.env.CI !== 'true') {
     if (isTest(file) || ALLOWED.has(file)) continue;
     if (SPLIT_HOOK.test(fs.readFileSync(path.join(SRC, file), 'utf8'))) {
       errors.push(`${file}: reads useTwoPaneSplit — build the screen on HeroCardShell, which keeps one tree for both layouts (docs/regressions.md)`);
+    }
+  }
+}
+
+// --- BD: notification permission is asked only on a user's request ----------
+// Push registration runs at every signed-in launch and asked for permission
+// whenever it was missing, so the Android prompt (and the browser's) met users
+// on every open. Asking belongs to the one port a feature calls when the user
+// has just asked for something that notifies — a timer, "notify me", reminders.
+{
+  const ASK = /Notifications\.requestPermissionsAsync\s*\(|Notification\.requestPermission\s*\(/;
+  const ALLOWED = new Set(['infrastructure/notifications/notification-service.ts']);
+  for (const file of files) {
+    if (isTest(file) || ALLOWED.has(file)) continue;
+    if (ASK.test(fs.readFileSync(path.join(SRC, file), 'utf8'))) {
+      errors.push(`${file}: asks for notification permission — only NotificationService.requestPermissions may, from a user action (docs/regressions.md)`);
     }
   }
 }
