@@ -24,7 +24,8 @@ import { act } from 'react-test-renderer';
 import { Platform, RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
-import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
+import { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
+import { FlashList } from '@shopify/flash-list';
 import { create } from 'zustand';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
@@ -35,7 +36,6 @@ import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-re
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import { t } from '@presentation/i18n';
 import { layoutSizes } from '@presentation/base/theme';
-import { ListConstants } from '@presentation/base/constants';
 import type { TaxonomyStore } from '@application/recipes/taxonomy/taxonomy-store-contract';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
@@ -492,9 +492,7 @@ describe('RecipeListBody — the feed does not clip its own children', () => {
   // a different list, without this prop, sits under that route.
   //
   // The prop moves views in and out of the native hierarchy outside React's
-  // reconciliation, which the New Architecture does not tolerate. Windowing —
-  // `windowSize` / `maxToRenderPerBatch` / `initialNumToRender`, all still set
-  // above — is the supported way to bound how many rows stay mounted.
+  // reconciliation, which the New Architecture does not tolerate.
   // Asserted with `Platform.OS` forced to 'android', which is the whole point:
   // the prop was written as `Platform.OS === 'android'`, so under Jest's default
   // 'ios' it evaluates to false and a test that just reads it back passes
@@ -504,25 +502,31 @@ describe('RecipeListBody — the feed does not clip its own children', () => {
   // leaves FlatList's own default — `removeClippedSubviews ?? Platform.OS ===
   // 'android'` — ON on Android. v1.7.0 crashed on "Open draft" exactly as before,
   // while this test, then `toBeFalsy()`, passed on `undefined`.
-  it('turns removeClippedSubviews off explicitly on the mobile feed, on Android', () => {
+  //
+  // The feed is a FlashList now: it never passes the prop, and the ScrollView
+  // under it defaults it off on every platform (only FlatList turned it on for
+  // Android). So the assertion moved from the list to every scroll view the feed
+  // renders — whatever the list, nothing under it may clip on Android.
+  it('lets no scroll view under the mobile feed clip its children, on Android', () => {
     const platform = jest.replaceProperty(Platform, 'OS', 'android');
 
     try {
-      const list = render({}).findByType(Animated.FlatList);
+      const root = render({});
+      const scrollViews = root.findAllByType(ScrollView);
 
-      expect(list.props['removeClippedSubviews']).toBe(false);
+      expect(scrollViews.length).toBeGreaterThan(0);
+      for (const scrollView of scrollViews) expect(scrollView.props['removeClippedSubviews']).not.toBe(true);
     } finally {
       platform.restore();
     }
   });
 
-  // The windowing that actually bounds mounted rows must survive: dropping the
-  // clipping prop is only safe while these are the thing doing the work.
-  it('still bounds the mounted rows with windowing props', () => {
-    const list = render({}).findByType(Animated.FlatList);
+  // What bounds the mounted rows now: FlashList recycles row views by key and
+  // by row type (recipe cards and ad banners in separate pools).
+  it('recycles its rows by key and by row type', () => {
+    const list = render({}).findByType(FlashList);
 
-    expect(list.props['windowSize']).toBe(ListConstants.windowSize);
-    expect(list.props['maxToRenderPerBatch']).toBe(ListConstants.rowsPerBatch);
-    expect(list.props['initialNumToRender']).toBe(ListConstants.initialRows);
+    expect(list.props['keyExtractor']).toEqual(expect.any(Function));
+    expect(list.props['getItemType']).toEqual(expect.any(Function));
   });
 });
