@@ -8,7 +8,8 @@
  *   `app-bootstrap` already uses for `onSessionExpired`, and for the same
  *   chicken-and-egg reason.
  * - **Why it can be asked for again.** Registration runs once at startup, and
- *   it gives up silently when notification permission has not been granted. A
+ *   it gives up silently when notification permission has not been granted —
+ *   it never asks, or the system prompt would greet every launch. A
  *   user who grants permission later — which is exactly what "notify me" now
  *   asks them to do — would otherwise have no token until the next cold start,
  *   so the promise on screen would stay unkept for the whole session.
@@ -23,7 +24,7 @@ export const setPushRegistrationHandler = (fn: () => void): void => {
   handler = fn;
 };
 
-/** Requests permission if needed and registers the token — safe to call again. */
+/** Registers the token if notifications are allowed — never asks; safe to call again. */
 export const ensurePushRegistration = (): void => {
   handler();
 };

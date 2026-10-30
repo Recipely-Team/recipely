@@ -9,6 +9,7 @@ import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { timerWarnings } from '@domain/timers/timer-warnings';
 import type { TimerWarningAlert } from '@domain/timers/timer-warning-alert';
+import { ensurePushRegistration } from '@application/notifications/ensure-push-registration';
 
 /**
  * True when this recipe already has a timer going, which makes starting a
@@ -65,7 +66,7 @@ export const startTimer = async (
   triggeredAlarms.release(timerId);
   // Stop the previous run first so its notifications are cancelled.
   if (timerStore.getState().timers[timerId] !== undefined) await stopTimer(timerId);
-  await getNotificationService().requestPermissions();
+  if (await getNotificationService().requestPermissions()) ensurePushRegistration();
   const durationSeconds = Math.round(minutes * TimerTimeConstants.secondsPerMinute);
   // One clock reading: a second one makes a 10-minute timer read as under 10 and drop its 5-minute heads-up.
   const nowMs = Date.now();

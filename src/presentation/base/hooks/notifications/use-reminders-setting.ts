@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { ensurePushRegistration } from '@application/notifications/ensure-push-registration';
 import { showWarningToast } from '@presentation/base/feedback/show-toast';
 import { useTranslations } from '@presentation/i18n';
 
@@ -42,6 +43,7 @@ export const useRemindersSetting = (): RemindersSetting => {
         .execute(isNextEnabled, t.reminders.messages, Date.now())
         .then((isOn) => {
           setEnabled(isOn);
+          if (isOn) ensurePushRegistration();
           if (isNextEnabled && !isOn) showWarningToast(t.reminders.permissionDenied);
         })
         .catch(() => setEnabled(false))
