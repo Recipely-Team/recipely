@@ -2,43 +2,36 @@ import { useEffect } from 'react';
 import { useStore } from 'zustand';
 import { isString } from '@core/guards/type-guards';
 import { StoreStatus } from '@application/store/store-status';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
-import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
+import { Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { type Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { resolveRedirect } from '@presentation/navigation/resolve-redirect';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { HeroCardShell } from '@presentation/base/widgets/layout/hero-card-shell';
 import { VerifyHero } from '@presentation/app/verify-code/body/verify-hero';
 import { VerifyCodeCard } from '@presentation/app/verify-code/body/verify-code-card';
 import { VerifyLinkCard } from '@presentation/app/verify-code/body/verify-link-card';
-import { useTwoPaneSplit } from '@presentation/base/responsive/fold/use-two-pane-split';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, radii, iconSizes, controlSizes, mediaSizes, decorSizes, layoutSizes, zIndices } from '@presentation/base/theme';
+import { spacing, radii, iconSizes, controlSizes, mediaSizes, decorSizes, zIndices } from '@presentation/base/theme';
 import { useTranslations } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
-
-const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const VerifyCodeScreen = (): React.JSX.Element => {
   const t = useTranslations();
   const router = useRouter();
   const goBack = useGoBackOrHome(RoutePaths.login);
   const colors = useTheme().colors;
-  const scrollEndPadding = useScrollEndPadding();
-  const split = useTwoPaneSplit();
-  const isLandscapeShell = split.isSplit;
 
   const params = useLocalSearchParams<{ email?: string; expiresAt?: string; redirect?: string; token?: string }>();
   // Opened from the email's link: finish from the token, no code to type.
   const linkToken = isString(params.token) && params.token.length > ValueConstants.zero ? params.token : null;
   const email = isString(params.email) ? params.email : CharConstants.empty;
   const initialExpiresAt = isString(params.expiresAt) ? params.expiresAt : CharConstants.empty;
+  const isLinkMode = linkToken !== null;
 
   const { authStore } = useStores();
   const authStatus = useStore(authStore, (s) => s.state.status);
@@ -50,81 +43,36 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
     }
   }, [authStatus, router, params.redirect]);
 
-  if (isLandscapeShell) {
-    return (
-      <KeyboardAvoider style={styles.flex}>
-        <View style={[styles.splitRoot, split.rowStyle, { backgroundColor: colors.background }]}>
+  return (
+    <HeroCardShell
+      splitHero={<VerifyHero isLandscapeShell email={email} isLinkMode={isLinkMode} />}
+      stackedHeader={
+        <>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
             end={{ x: ValueConstants.one, y: ValueConstants.one }}
-            style={[styles.splitHero, split.firstPaneStyle]}
+            style={styles.gradient}
+          />
+          <Pressable
+            onPress={goBack}
+            style={[styles.backBtn, { backgroundColor: colors.gradientSurface }]}
+            accessibilityRole="button"
+            accessibilityLabel={t.verify.changeEmail}
           >
-            <VerifyHero isLandscapeShell={isLandscapeShell} email={email} isLinkMode={linkToken !== null} />
-          </LinearGradient>
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.splitFormContent}
-            style={styles.splitFormPane}
-          >
-            <View
-              style={[
-                styles.card,
-                styles.cardSplit,
-                { backgroundColor: colors.cardBackground },
-                shadows.lg,
-              ]}
-            >
-              {linkToken !== null ? <VerifyLinkCard token={linkToken} /> : <VerifyCodeCard email={email} initialExpiresAt={initialExpiresAt} />}
-            </View>
-          </ScrollView>
-        </View>
-      </KeyboardAvoider>
-    );
-  }
-
-  return (
-    <KeyboardAvoider style={styles.flex}>
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollEndPadding }]}
-        style={{ backgroundColor: colors.background }}
-      >
-        <LinearGradient
-          colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: ValueConstants.one, y: ValueConstants.one }}
-          style={styles.gradient}
-        />
-
-        <Pressable
-          onPress={goBack}
-          style={[styles.backBtn, { backgroundColor: colors.gradientSurface }]}
-          accessibilityRole="button"
-          accessibilityLabel={t.verify.changeEmail}
-        >
-          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
-        </Pressable>
-
-        <VerifyHero isLandscapeShell={isLandscapeShell} email={email} isLinkMode={linkToken !== null} />
-
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: colors.cardBackground },
-            shadows.lg,
-          ]}
-        >
-          {linkToken !== null ? <VerifyLinkCard token={linkToken} /> : <VerifyCodeCard email={email} initialExpiresAt={initialExpiresAt} />}
-        </View>
-      </ScrollView>
-    </KeyboardAvoider>
+            <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
+          </Pressable>
+          <VerifyHero isLandscapeShell={false} email={email} isLinkMode={isLinkMode} />
+        </>
+      }
+      stackedCardStyle={styles.card}
+    >
+      {linkToken !== null ? <VerifyLinkCard token={linkToken} /> : <VerifyCodeCard email={email} initialExpiresAt={initialExpiresAt} />}
+    </HeroCardShell>
   );
 };
 
 const styles = StyleSheet.create({
-  flex: { flex: ValueConstants.one },
-  scrollContent: { flexGrow: ValueConstants.one },
   gradient: {
     position: 'absolute',
     top: ValueConstants.zero,
@@ -146,38 +94,8 @@ const styles = StyleSheet.create({
     zIndex: zIndices.raised,
   },
   card: {
-    borderRadius: radii.xxl,
-    padding: spacing.xl,
-    marginHorizontal: spacing.lg,
     marginTop: -decorSizes.cardOverlap,
     marginBottom: spacing.xxl,
-  },
-  splitRoot: {
-    flex: ValueConstants.one,
-    flexDirection: 'row',
-  },
-  splitHero: {
-    flex: ValueConstants.one,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xxl,
-  },
-  splitFormPane: {
-    flex: ValueConstants.one,
-  },
-  splitFormContent: {
-    flexGrow: ValueConstants.one,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: spacing.xxxl,
-    paddingHorizontal: spacing.xxl,
-  },
-  cardSplit: {
-    width: '100%',
-    maxWidth: AUTH_CARD_MAX_WIDTH,
-    marginHorizontal: ValueConstants.zero,
-    marginTop: ValueConstants.zero,
-    marginBottom: ValueConstants.zero,
   },
 });
 

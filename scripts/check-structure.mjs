@@ -80,6 +80,8 @@
  *   BA. `useNativeDriver: false` carries a `// JS driver: <why>` line (§29).
  *   BB. Every FlashList passes `keyExtractor` and none of the FlatList window
  *      props it ignores (CLAUDE.md §6c, §9).
+ *   BC. Only `HeroCardShell` reads `useTwoPaneSplit`: a screen that returns one
+ *      tree stacked and another split remounts its form when the width changes.
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -1087,6 +1089,23 @@ if (nearSizeLimit.length > 0 && process.env.CI !== 'true') {
         errors.push(`${file}:${String(index + 1)}: FlashList ignores ${dead.join(', ')} — remove them (CLAUDE.md §6c)`);
       }
     });
+  }
+}
+
+// --- BC: the hero | card split lives in one shell (docs/regressions.md) ------
+// Five sign-in and recovery screens each returned one tree for the stacked
+// layout and a different one for the split. The static web export renders
+// stacked (it knows no width), so on a desktop hydration flipped to split a few
+// hundred ms after load and the form remounted — typed text was lost.
+// `HeroCardShell` keeps one tree for both; nothing else may branch on the split.
+{
+  const SPLIT_HOOK = /from '@presentation\/base\/responsive\/fold\/use-two-pane-split'/;
+  const ALLOWED = new Set(['presentation/base/widgets/layout/hero-card-shell.tsx']);
+  for (const file of files) {
+    if (isTest(file) || ALLOWED.has(file)) continue;
+    if (SPLIT_HOOK.test(fs.readFileSync(path.join(SRC, file), 'utf8'))) {
+      errors.push(`${file}: reads useTwoPaneSplit — build the screen on HeroCardShell, which keeps one tree for both layouts (docs/regressions.md)`);
+    }
   }
 }
 
