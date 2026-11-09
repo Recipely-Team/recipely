@@ -1,0 +1,41 @@
+# Keeps Actions storage far under the org's 0.5 GB free quota.
+#
+# WHY: release web builds and IPAs piled up to ~465 MB and GitHub mailed
+# "100% of Actions storage used" (2026-11-09). Retention is capped at 7 days
+# (scripts/__tests__/artifact-retention-cap.test.js); this deletes everything
+# but the newest copy of each artifact family (name minus its trailing run
+# number, e.g. ios-prod-1540 -> ios-prod) every day, so a burst of builds in
+# one week cannot fill the quota either.
+name: Artifact cleanup
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+concurrency:
+  group: artifact-cleanup
+  cancel-in-progress: true
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Delete all but the newest artifact of each family
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$REPO/actions/artifacts?per_page=100" --paginate \
+            -q '.artifacts[] | select(.expired == false) | "\(.id) \(.name) \(.created_at)"' \
+            | sort -k3,3r \
+            | awk '{ family = $2; sub(/-[0-9]+$/, "", family); if (seen[family]++) print $1, $2 }' \
+            | while read -r id name; do
+                echo "delete $name ($id)"
+                gh api -X DELETE "repos/$REPO/actions/artifacts/$id"
+              done
