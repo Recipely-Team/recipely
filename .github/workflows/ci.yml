@@ -293,7 +293,7 @@ jobs:
         with:
           name: web-build-prod-${{ github.run_number }}
           path: dist
-          retention-days: 30
+          retention-days: 3
 
       - name: Deploy to Firebase Hosting (prod)
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -349,7 +349,7 @@ jobs:
         with:
           name: web-build-dev-${{ github.run_number }}
           path: dist
-          retention-days: 7
+          retention-days: 3
 
       - name: Deploy to Firebase Hosting (dev)
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -1479,7 +1479,7 @@ jobs:
         with:
           name: ios-prod-${{ github.run_number }}
           path: ${{ env.IPA_PATH }}
-          retention-days: 30
+          retention-days: 7
 
       - name: Upload to TestFlight
         env:
