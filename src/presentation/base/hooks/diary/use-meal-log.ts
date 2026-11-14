@@ -5,6 +5,7 @@ import type { MealCandidate } from '@domain/diary/meal/meal-candidate';
 import type { MealParseInputType } from '@domain/diary/meal/meal-parse-input';
 import { MealParseInputKind } from '@domain/diary/meal/meal-parse-input-kind';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { toPhotoNote } from '@domain/common/photo-note';
 import { useMealPhotoPick } from '@presentation/base/hooks/diary/use-meal-photo-pick';
 import { parseDecimalInput } from '@presentation/base/utils/diary/parse-decimal-input';
 import { MealLogPhase } from '@presentation/base/widgets/diary/add-food/meal/state/meal-log-phase';
@@ -108,7 +109,7 @@ export const useMealLog = ({ initialText, onLog }: MealLogOptions): MealLog => {
     parseText: () => void parse({ kind: MealParseInputKind.Text, text, locale }),
     pickPhoto: () => {
       setPhotoDenied(false);
-      void pickPhotoInput().then((picked) => {
+      void pickPhotoInput(toPhotoNote(text)).then((picked) => {
         if (picked.photo !== null) void parse(picked.photo);
         else if (picked.denied) setPhotoDenied(true);
       });

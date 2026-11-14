@@ -2205,4 +2205,10 @@ export const id = {
     skip: 'Lewati',
     notNow: 'Nanti saja',
   },
+  photoNote: {
+    label: "Tambahkan catatan (opsional)",
+    fridgePlaceholder: "mis. Abaikan sausnya, rak atas bukan punyaku",
+    importPlaceholder: "mis. Hanya resep kedua di halaman",
+    counterA11y: "{count} dari {max} karakter",
+  },
 };

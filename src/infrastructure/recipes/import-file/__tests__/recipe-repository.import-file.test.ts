@@ -39,13 +39,14 @@ describe('RecipeRepository.importRecipeFromFiles', () => {
     });
     try {
       const { http, calls } = makeHttp(ok({ draftId: 'd-42' }));
-      const result = await new RecipeRepository(http).importRecipeFromFiles(batchOf(['1.jpg', '2.jpg']));
+      const result = await new RecipeRepository(http).importRecipeFromFiles(batchOf(['1.jpg', '2.jpg']), 'only page two');
 
       expect(result.ok && result.value).toEqual({ draftId: 'd-42' });
       expect(calls).toEqual([{ url: ApiRoutes.recipes.importFile, timeoutMs: FILE_IMPORT_TIMEOUT_MS }]);
       expect(ApiRoutes.recipes.importFile).toBe('/recipes/import/file');
-      expect(appends.map(([field]) => field)).toEqual(['files', 'files']);
-      expect(appends.map(([, value]) => (value as { name: string }).name)).toEqual(['1.jpg', '2.jpg']);
+      expect(appends.map(([field]) => field)).toEqual(['files', 'files', 'note']);
+      expect(appends[2]?.[1]).toBe('only page two');
+      expect(appends.slice(0, 2).map(([, value]) => (value as { name: string }).name)).toEqual(['1.jpg', '2.jpg']);
     } finally {
       spy.mockRestore();
     }

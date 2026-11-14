@@ -20,6 +20,7 @@ import type { FilePage } from '@presentation/app/import-recipe/model/file/file-p
 import { FileDropZone } from '@presentation/app/import-recipe/body/file/file-drop-zone';
 import { FileSourceOptions } from '@presentation/app/import-recipe/body/file/file-source-options';
 import { FilePageGrid } from '@presentation/app/import-recipe/body/file/file-page-grid';
+import { PhotoNoteField } from '@presentation/base/widgets/inputs/photo-note-field';
 import { FileReadButton } from '@presentation/app/import-recipe/items/file-read-button';
 
 export interface FilePickerViewProps {
@@ -28,6 +29,8 @@ export interface FilePickerViewProps {
   isPdf: boolean;
   isFull: boolean;
   isDragging: boolean;
+  note: string;
+  onChangeNote: (note: string) => void;
   onPick: (source: PickSource) => void;
   onAddPage: () => void;
   onSelect: (index: number) => void;
@@ -88,15 +91,18 @@ export const FilePickerView = (props: FilePickerViewProps): React.JSX.Element =>
         ) : null}
 
         {!isEmpty ? (
-          <FilePageGrid
-            pages={pages}
-            isPdf={props.isPdf}
-            isFull={props.isFull}
-            isDragging={props.isDragging}
-            onSelect={props.onSelect}
-            onRemove={props.onRemove}
-            onAdd={props.onAddPage}
-          />
+          <>
+            <FilePageGrid
+              pages={pages}
+              isPdf={props.isPdf}
+              isFull={props.isFull}
+              isDragging={props.isDragging}
+              onSelect={props.onSelect}
+              onRemove={props.onRemove}
+              onAdd={props.onAddPage}
+            />
+            <PhotoNoteField value={props.note} onChangeText={props.onChangeNote} placeholder={t.photoNote.importPlaceholder} editable />
+          </>
         ) : isWeb() ? (
           <FileDropZone isDragging={props.isDragging} onChoose={props.onAddPage} />
         ) : (

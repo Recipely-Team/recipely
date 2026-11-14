@@ -21,11 +21,12 @@ type MealPhotoPick = { photo: MealParseInputType } | { photo: null; denied: bool
  * Camera or library → a shrunk local photo ready for the meal parser. The same
  * picker, permission checks and `shrinkForUpload` as the avatar and recipe
  * photos; no new native module. The camera-or-library question is skipped on web.
+ * The caller passes the note typed beside the photo (`toPhotoNote`), sent with it to the AI.
  */
-export const useMealPhotoPick = (locale: string): (() => Promise<MealPhotoPick>) =>
+export const useMealPhotoPick = (locale: string): ((note: string | null) => Promise<MealPhotoPick>) =>
   {
   const t = useTranslations();
-  return useCallback(async (): Promise<MealPhotoPick> => {
+  return useCallback(async (note: string | null): Promise<MealPhotoPick> => {
     const source = await askPickSource(t.diary.mealLogPhoto);
     if (source === null) return { photo: null, denied: false };
     const isCamera = source === PickSource.Camera;
@@ -36,6 +37,6 @@ export const useMealPhotoPick = (locale: string): (() => Promise<MealPhotoPick>)
     if (asset === undefined) return { photo: null, denied: false };
     const uri = await shrinkForUpload({ uri: asset.uri, width: asset.width, height: asset.height }, MEDIA_UPLOAD_MAX_EDGE);
     const { fileName, mimeType } = uploadFileMeta(uri, MEAL_FILE_PREFIX, String(Date.now()));
-    return { photo: { kind: MealParseInputKind.Photo, uri, fileName, mimeType, locale } };
+    return { photo: { kind: MealParseInputKind.Photo, uri, fileName, mimeType, locale, note } };
   }, [locale, t]);
 };

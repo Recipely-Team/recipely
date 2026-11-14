@@ -11,6 +11,8 @@ import type { IngredientSourceType } from '@presentation/app/fridge/model/flow/i
  */
 export interface FridgeFlowState {
   readonly photos: readonly FridgePhoto[];
+  /** The optional note typed under the photos, sent with them to the scan. */
+  readonly note: string;
   readonly chips: readonly FridgeChip[];
   readonly source: IngredientSourceType;
   readonly filters: FridgeFilters;

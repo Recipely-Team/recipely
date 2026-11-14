@@ -53,7 +53,7 @@ export interface RecipeRepositoryInterface {
    * Synchronous, unlike the link import: a reading takes 10-30 s, so it holds
    * the request open on its own timeout rather than going through the queue.
    */
-  importRecipeFromFiles(batch: ImportFileBatch): Promise<Result<FileImportReceipt, Failure>>;
+  importRecipeFromFiles(batch: ImportFileBatch, note: string | null): Promise<Result<FileImportReceipt, Failure>>;
   /**
    * Refines an in-progress recipe against a free-text instruction and returns a
    * `RefinedRecipe` read model: the full preview `Recipe` plus the AI's

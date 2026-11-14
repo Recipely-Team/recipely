@@ -2205,4 +2205,10 @@ export const ar = {
     skip: 'تخطٍّ',
     notNow: 'ليس الآن',
   },
+  photoNote: {
+    label: "أضف ملاحظة (اختياري)",
+    fridgePlaceholder: "مثلًا: تجاهل الصلصات، الرف العلوي ليس لي",
+    importPlaceholder: "مثلًا: الوصفة الثانية في الصفحة فقط",
+    counterA11y: "{count} من {max} حرفًا",
+  },
 };

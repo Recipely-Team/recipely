@@ -2205,4 +2205,10 @@ export const it = {
     skip: 'Salta',
     notNow: 'Non ora',
   },
+  photoNote: {
+    label: "Aggiungi una nota (facoltativa)",
+    fridgePlaceholder: "es. Ignora le salse, il ripiano in alto non è mio",
+    importPlaceholder: "es. Solo la seconda ricetta della pagina",
+    counterA11y: "{count} di {max} caratteri",
+  },
 };

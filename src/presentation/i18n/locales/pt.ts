@@ -2205,4 +2205,10 @@ export const pt = {
     skip: 'Pular',
     notNow: 'Agora não',
   },
+  photoNote: {
+    label: "Adicione uma nota (opcional)",
+    fridgePlaceholder: "ex.: Ignore os molhos, a prateleira de cima não é minha",
+    importPlaceholder: "ex.: Só a segunda receita da página",
+    counterA11y: "{count} de {max} caracteres",
+  },
 };

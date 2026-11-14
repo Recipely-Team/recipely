@@ -2201,4 +2201,10 @@ export const ko: TranslationsType = {
     skip: '건너뛰기',
     notNow: '나중에',
   },
+  photoNote: {
+    label: "메모 추가 (선택)",
+    fridgePlaceholder: "예: 소스는 빼 주세요, 맨 위 칸은 제 것이 아니에요",
+    importPlaceholder: "예: 페이지의 두 번째 레시피만",
+    counterA11y: "{max}자 중 {count}자",
+  },
 };

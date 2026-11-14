@@ -154,7 +154,7 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
   /** The batch the last file import was asked to read, so a test can see it reached the port. */
   lastImportFilesCall: ImportFileBatch | null = null;
 
-  importRecipeFromFiles(batch: ImportFileBatch): Promise<Result<FileImportReceipt, Failure>> {
+  importRecipeFromFiles(batch: ImportFileBatch, _note: string | null = null): Promise<Result<FileImportReceipt, Failure>> {
     this.lastImportFilesCall = batch;
     return Promise.resolve(this.config.importRecipeFromFilesResult ?? ok({ draftId: 'draft-1' }));
   }
