@@ -41,6 +41,8 @@ import { FEED_FIRST_PAGE_STORAGE_KEY, SAVED_FIRST_PAGE_STORAGE_KEY, SHOPPING_FIR
 import { NotificationService } from '@infrastructure/notifications/notification-service';
 import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 import { AdsService } from '@infrastructure/ads/ads-service';
+import { IapSubscriptionStore } from '@infrastructure/subscriptions/iap-subscription-store';
+import { reactNativeIapModule } from '@infrastructure/subscriptions/react-native-iap-module';
 import { OsAssistantBridge } from '@infrastructure/assistant/os/os-assistant-bridge';
 import { WindowPostureBridge } from '@infrastructure/display/window-posture-bridge';
 import { AssistantMessenger } from '@infrastructure/assistant/message/assistant-messenger';
@@ -108,6 +110,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.CrashReporter, () => ({ record: recordCrash }));
   container.register(TOKENS.AlarmAudioService, () => new AlarmAudioService());
   container.register(TOKENS.AdsService, () => new AdsService());
+  container.register(TOKENS.SubscriptionStore, () => new IapSubscriptionStore(reactNativeIapModule));
   container.register(TOKENS.AssistantSession, () => new GeminiLiveSession());
   container.register(TOKENS.AssistantMicrophone, () => new Microphone());
   container.register(TOKENS.AssistantPlayer, () => new PcmPlayer());

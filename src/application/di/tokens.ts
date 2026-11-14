@@ -44,6 +44,7 @@ export const TOKENS = {
   CrashReporter: Symbol.for('CrashReporter'),
   AlarmAudioService: Symbol.for('AlarmAudioService'),
   AdsService: Symbol.for('AdsService'),
+  SubscriptionStore: Symbol.for('SubscriptionStore'),
   AssistantSession: Symbol.for('AssistantSession'),
   AssistantMicrophone: Symbol.for('AssistantMicrophone'),
   AssistantPlayer: Symbol.for('AssistantPlayer'),
