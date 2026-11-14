@@ -21,6 +21,8 @@ interface AssistantShoppingActionsDeps {
   listState: ListStateType;
   onToggle: (item: ShoppingItemEntity) => void;
   onReload: () => void;
+  /** Shares the list as a checklist; false when there is nothing on it. */
+  onShare: () => boolean;
 }
 
 /** What the screen line calls the list. */
@@ -40,8 +42,10 @@ const MODEL_DECIMAL_MARK = CharConstants.dot;
  *   uses for ticking an ingredient off — resolved by position or by name the
  *   way every list resolves a row. A line already ticked is success, not a
  *   second toggle that would undo it.
+ * - **"Send my list to …" is `shareShoppingList`**: the system share sheet with
+ *   the list as a checklist; the user picks where it goes.
  */
-export const useAssistantShoppingActions = ({ items, listState, onToggle, onReload }: AssistantShoppingActionsDeps): void => {
+export const useAssistantShoppingActions = ({ items, listState, onToggle, onReload, onShare }: AssistantShoppingActionsDeps): void => {
   const names = items.map(lineName);
 
   useAssistantScreenContent(() =>
@@ -70,6 +74,14 @@ export const useAssistantShoppingActions = ({ items, listState, onToggle, onRelo
       onReload();
       return { ok: true };
     }, [onReload]),
+  );
+
+  useAssistantAction(
+    AssistantAction.ShareShoppingList,
+    useCallback(
+      async (): Promise<AssistantActionResultType> => (onShare() ? { ok: true } : { ok: false, error: AssistantActionError.Empty }),
+      [onShare],
+    ),
   );
 };
 

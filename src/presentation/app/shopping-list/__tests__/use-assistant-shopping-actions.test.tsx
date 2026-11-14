@@ -21,7 +21,7 @@ const ITEMS = [
 
 function harness(items: readonly ShoppingItemEntity[] = ITEMS) {
   const registry = new AssistantActionRegistry();
-  const spies = { onToggle: jest.fn(), onReload: jest.fn() };
+  const spies = { onToggle: jest.fn(), onReload: jest.fn(), onShare: jest.fn(() => items.length > 0) };
   const Probe = (): null => {
     useAssistantShoppingActions({ items, listState: ListState.Ready, ...spies });
     return null;
@@ -35,6 +35,18 @@ function harness(items: readonly ShoppingItemEntity[] = ITEMS) {
 }
 
 describe('useAssistantShoppingActions', () => {
+  it('shares the list by voice, and says an empty list is empty instead of claiming it shared', async () => {
+    const full = harness();
+    const empty = harness([]);
+
+    await act(async () => {
+      await expect(full.registry.run(AssistantAction.ShareShoppingList)).resolves.toMatchObject({ ok: true });
+      await expect(empty.registry.run(AssistantAction.ShareShoppingList)).resolves.toMatchObject({ ok: false, error: AssistantActionError.Empty });
+    });
+
+    expect(full.spies.onShare).toHaveBeenCalledTimes(1);
+  });
+
   it('ticks the line the user named', async () => {
     const { registry, spies } = harness();
 

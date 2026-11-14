@@ -1333,6 +1333,7 @@ export const zh = {
     moreCalories: '增加 50 千卡',
   },
   shopping: {
+    share: "分享清单",
     toBuyCount: "待买 {n} 项",
     listEmptyShort: "空",
     cartA11y: "购物清单，待买 {n} 项",

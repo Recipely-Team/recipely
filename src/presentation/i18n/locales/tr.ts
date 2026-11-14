@@ -1333,6 +1333,7 @@ export const tr: TranslationsType = {
     moreCalories: '50 kcal artır',
   },
   shopping: {
+    share: "Listeyi paylaş",
     toBuyCount: "{n} ürün alınacak",
     listEmptyShort: "Boş",
     cartA11y: "Alışveriş listesi, {n} ürün alınacak",

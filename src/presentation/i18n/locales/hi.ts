@@ -1325,6 +1325,7 @@ export const hi: TranslationsType = {
     moreCalories: '50 kcal ज़्यादा',
   },
   shopping: {
+    share: "सूची शेयर करें",
     toBuyCount: "{n} खरीदने हैं",
     listEmptyShort: "खाली",
     cartA11y: "खरीदारी सूची, {n} खरीदने हैं",
