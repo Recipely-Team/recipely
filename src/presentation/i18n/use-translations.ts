@@ -1,6 +1,8 @@
+import { useContext } from 'react';
 import type { TranslationsType } from '@presentation/i18n/translations';
 import { translationsFor } from '@presentation/i18n/i18n';
 import { useLocale } from '@presentation/i18n/use-locale';
+import { LocalePreviewContext } from '@presentation/i18n/locale-preview-context';
 
 /**
  * The catalogue in the language the user chose, re-read when they choose another.
@@ -10,8 +12,14 @@ import { useLocale } from '@presentation/i18n/use-locale';
  *   {@link useLocale}; the catalogue it returns is a different object for each
  *   language and the same object otherwise, so a switch re-renders exactly the
  *   components that show text, and the React Compiler's caches key on it.
+ * - **A preview wins over the app language.** Inside a {@link LocalePreviewContext}
+ *   the catalogue is the previewed one; outside it, nothing changes.
  * - **Pure helpers take the catalogue as a parameter** rather than reading it
  *   themselves: a helper that read the language on its own would be cached on
  *   its other arguments and keep the old language.
  */
-export const useTranslations = (): TranslationsType => translationsFor(useLocale());
+export const useTranslations = (): TranslationsType => {
+  const appLocale = useLocale();
+  const previewLocale = useContext(LocalePreviewContext);
+  return translationsFor(previewLocale ?? appLocale);
+};

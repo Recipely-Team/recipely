@@ -16,7 +16,7 @@ import { ApiErrorCode } from '@infrastructure/constants/api/api-error-code';
 
 /**
  * The Recipely backend wraps every error as
- * `{ error: { code, message, messageKey, field? } }` inside the AES envelope.
+ * `{ error: { code, message, messageKey, field?, details? } }` inside the AES envelope.
  * The HTTP client decrypts the envelope, then hands the decrypted body here.
  *
  * `messageKey` is a stable key from the backend error catalogue (e.g.
@@ -67,7 +67,7 @@ export const failureFromResponse = (status: number, body: unknown): Failure => {
         return new ConflictFailure(message, envelope.field, messageKey);
       case ApiErrorCode.RateLimit:
       case ApiErrorCode.TooManyRequests:
-        return new RateLimitFailure(message, undefined, messageKey);
+        return new RateLimitFailure(message, undefined, messageKey, isObject(envelope.details) ? envelope.details : undefined);
       case ApiErrorCode.Server:
       case ApiErrorCode.Internal:
         return new ServerFailure(message, status, messageKey);

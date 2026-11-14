@@ -22,8 +22,15 @@ const mockState: Recorded = {
   holdRun: null,
 };
 
+/** The event listener the hook subscribed, so a test can announce a request the way the native module does. */
+let mockDeliver: ((invocation: unknown) => void) | null = null;
+
 const mockAppStateListeners: ((next: string) => void)[] = [];
 const mockAppState = { current: 'active' };
+
+// With react-native mocked whole, Expo's lazy `fetch` global cannot load its native module, and
+// jest touches it at teardown — a warning logged after the tests, which fails the run.
+Object.defineProperty(globalThis, 'fetch', { value: jest.fn(), configurable: true, writable: true });
 
 jest.mock('react-native', () => ({
   // `Platform` is not what this test is about, but jest-expo's SDK 57 setup
@@ -88,7 +95,10 @@ jest.mock('@presentation/bootstrap/use-stores', () => ({
         if (mockState.failAcknowledge) throw new Error('bridge unavailable');
         mockState.acknowledged.push(id);
       },
-      subscribe: () => () => undefined,
+      subscribe: (listener: (invocation: unknown) => void) => {
+        mockDeliver = listener;
+        return () => undefined;
+      },
     },
   }),
 }));
@@ -293,6 +303,19 @@ describe('useOsAssistantInvocations — a second drain must not repeat the first
     mockState.holdRun = () => undefined;
 
     await mount();
+    await foreground();
+
+    expect(mockState.ran).toHaveLength(1);
+  });
+
+  // The iOS module announces a request to a running app AND it sits in the queue
+  // until acknowledged. Both roads reach the same id, so it must run once.
+  it('runs a request once when the event and the queue both deliver it', async () => {
+    mockState.queue = [invocation('inv-1')];
+    mockState.holdRun = () => undefined;
+
+    await mount();
+    mockDeliver?.(invocation('inv-1'));
     await foreground();
 
     expect(mockState.ran).toHaveLength(1);

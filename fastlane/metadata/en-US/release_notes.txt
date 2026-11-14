@@ -1,7 +1,8 @@
-Festive moments, an offline shopping list and fewer interruptions.
+Recipely Premium, notes on your photos and a shopping list you can share.
 
-• Festive moments: on special days like Republic Day, Recipely greets you with a short screen you can skip.
-• Your shopping list works offline and syncs when you are back online.
-• No notification prompt on every open: Recipely asks only for a timer, an alert or reminders.
-• Faster, smoother scrolling in the feed, Chefs, My Recipes and the shopping list.
-• More reliable loading on weak connections; web sign-in keeps what you type.
+• Recipely Premium: unlimited AI recipes and no ads, monthly or yearly. The free plan includes 200 AI requests a day, 2,000 a month.
+• Add a note to your photos: tell the AI what to skip in your fridge or which recipe to import.
+• Share your shopping list as a checklist.
+• Cook from my fridge, the shopping list and the edit screen's language now work by voice.
+• See a recipe in another language while you edit it.
+• Siri: when Recipely is open, a request runs right away.

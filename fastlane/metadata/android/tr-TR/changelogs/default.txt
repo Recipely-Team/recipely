@@ -1,5 +1,6 @@
-• Kutlama anları: Cumhuriyet Bayramı gibi özel günlerde Recipely seni geçebileceğin kısa bir ekranla karşılar.
-• Alışveriş listen çevrimdışı çalışır, bağlantı gelince eşitlenir.
-• Her açılışta bildirim izni sorulmaz: yalnızca zamanlayıcı, haber verme ya da hatırlatıcı için sorulur.
-• Akışta, Şefler'de, Tariflerim'de ve alışveriş listesinde daha akıcı kaydırma.
-• Zayıf bağlantıda daha güvenilir yükleme; web'de girişte yazdıkların kaybolmaz.
+• Recipely Premium: sınırsız yapay zekâ tarifi, reklamsız; aylık ya da yıllık. Ücretsiz plan: günde 200, ayda 2.000 yapay zekâ isteği.
+• Fotoğraflarına not ekle: yapay zekâya buzdolabında neyi atlayacağını ya da hangi tarifi alacağını söyle.
+• Alışveriş listeni işaretlenebilir liste olarak paylaş.
+• Buzdolabımdan pişir, alışveriş listesi ve düzenleme ekranının dili artık sesle de çalışır.
+• Düzenlerken tarifi başka bir dilde gör.
+• Siri: Recipely açıksa istek hemen çalışır.

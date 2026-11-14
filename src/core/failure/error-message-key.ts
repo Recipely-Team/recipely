@@ -18,6 +18,8 @@ export const ErrorMessageKey = {
   aiInvalidResponse: 'errors.ai.invalid_response',
   aiUpstreamFailed: 'errors.ai.upstream_failed',
   aiCooldown: 'errors.too_many_requests.ai_cooldown',
+  /** The free plan's daily or monthly AI cap (429 with `details` scope / limit / used / resetsAt). */
+  aiUsageLimit: 'errors.too_many_requests.ai_usage_limit',
   promptRequired: 'errors.validation.prompt_required',
   // The backend's over-long prompt/refine key.
   promptTooLong: 'errors.validation.prompt_too_long',

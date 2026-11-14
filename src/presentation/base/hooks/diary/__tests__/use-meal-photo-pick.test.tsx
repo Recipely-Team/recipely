@@ -24,7 +24,7 @@ const picker = jest.mocked(ImagePicker);
 const ask = jest.mocked(askPickSource);
 const ASSET = { uri: 'file:///raw.jpg', width: 4000, height: 3000 };
 
-const pickWith = (locale = 'tr') => {
+const pickWith = (locale = 'tr', note: string | null = null) => {
   const box: { pick: ReturnType<typeof useMealPhotoPick> | null } = { pick: null };
   const Probe = (): null => {
     box.pick = useMealPhotoPick(locale);
@@ -32,7 +32,7 @@ const pickWith = (locale = 'tr') => {
   };
   renderComponent(<Probe />);
   if (box.pick === null) throw new Error('hook did not render');
-  return box.pick();
+  return box.pick(note);
 };
 
 describe('useMealPhotoPick', () => {

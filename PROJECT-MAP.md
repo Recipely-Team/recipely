@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2481 source files.
+[architecture.md](architecture.md). 2535 source files.
 
 ## Layers
 
@@ -16,7 +16,7 @@ Never upward. Exceptions: `infrastructure/constants/*` is importable anywhere;
 
 ## Routes — `src/presentation/app/<segment>/index.tsx`
 
-`ai-generate` · `automations` · `create-recipe` · `creators` · `diary` · `edit-profile` · `forgot-password` · `fridge` · `import-recipe` · `instagram-connected` · `login` · `my-recipes` · `notifications` · `onboarding` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `shopping-list` · `verify-code`
+`ai-generate` · `automations` · `create-recipe` · `creators` · `diary` · `edit-profile` · `forgot-password` · `fridge` · `import-recipe` · `instagram-connected` · `login` · `my-recipes` · `notifications` · `onboarding` · `premium` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `shopping-list` · `verify-code`
 
 Nested detail pages: `creators/[…]`, `recipes/[…]`.
 Each page folder holds `body/ items/ sheets/ hooks/ model/` (+ `shared/` when
@@ -28,12 +28,12 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `ads/` _(1)_
 - `analytics/` _(1)_
 - `app-version/` _(5)_
-- `assistant/` — actions, os, session _(25)_
+- `assistant/` — actions, os, session _(26)_
 - `audio/` _(1)_
 - `auth/` _(10)_
 - `campaigns/` _(5)_
 - `comments/` _(5)_
-- `common/` _(5)_
+- `common/` _(6)_
 - `creators/` _(14)_
 - `device/` _(3)_
 - `diagnostics/` _(1)_
@@ -52,6 +52,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(76)_
 - `shopping/` — items, outbox, recipe _(18)_
 - `storage/` _(4)_
+- `subscriptions/` _(9)_
 - `timers/` _(4)_
 - `user-profile/` _(5)_
 
@@ -67,7 +68,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `config/` _(6)_
 - `creators/` — claim, list, profile _(14)_
 - `device/` _(2)_
-- `di/` — features _(17)_
+- `di/` — features _(18)_
 - `diary/` — day, entries, foods, goals, meal, month, states _(36)_
 - `drafts/` — list, read, write _(8)_
 - `favorites/` _(5)_
@@ -83,6 +84,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `shopping/` — read, sync, write _(20)_
 - `storage/` _(4)_
 - `store/` — paging _(14)_
+- `subscriptions/` _(9)_
 - `timers/` _(7)_
 - `user-profile/` — follow, recipes, states _(12)_
 
@@ -119,6 +121,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(33)_
 - `shopping/` — dtos _(13)_
 - `storage/` _(9)_
+- `subscriptions/` — dtos _(9)_
 - `user-profile/` _(4)_
 
 ## `src/core/` — building blocks only
@@ -142,15 +145,15 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(10)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, lifecycle, meal-plan, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(119)_
+- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, lifecycle, meal-plan, navigation, notifications, profile, recipes, subscriptions, sync, timers) — shared hooks, grouped by capability _(121)_
 - `responsive/` (fold) — breakpoints, LayoutProvider, viewport metrics _(13)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
-- `test-support/` — render harness for component tests _(6)_
+- `test-support/` — render harness for component tests _(7)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(53)_
 - `timers/` — timer control helpers _(9)_
-- `utils/` (diary, instagram, meal-plan) — small pure helpers _(36)_
+- `utils/` (diary, instagram, meal-plan, subscriptions) — small pure helpers _(37)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, app-update, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, launch-campaign, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(234)_
+- `widgets/` (ads, app-update, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, launch-campaign, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(238)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -183,4 +186,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 1ec75352b6c3fe65 -->
+<!-- fingerprint: f15fd85244ecb519 -->

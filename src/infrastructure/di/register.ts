@@ -41,6 +41,9 @@ import { FEED_FIRST_PAGE_STORAGE_KEY, SAVED_FIRST_PAGE_STORAGE_KEY, SHOPPING_FIR
 import { NotificationService } from '@infrastructure/notifications/notification-service';
 import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 import { AdsService } from '@infrastructure/ads/ads-service';
+import { IapSubscriptionStore } from '@infrastructure/subscriptions/iap-subscription-store';
+import { reactNativeIapModule } from '@infrastructure/subscriptions/react-native-iap-module';
+import { SubscriptionVerifierRepository } from '@infrastructure/subscriptions/subscription-verifier-repository';
 import { OsAssistantBridge } from '@infrastructure/assistant/os/os-assistant-bridge';
 import { WindowPostureBridge } from '@infrastructure/display/window-posture-bridge';
 import { AssistantMessenger } from '@infrastructure/assistant/message/assistant-messenger';
@@ -58,6 +61,7 @@ import { DevicePlatform } from '@domain/notifications/device-platform';
 import { API_BASE_URL } from '@infrastructure/constants/api/api-hosts';
 import { isWeb } from '@infrastructure/constants/platform';
 import { logCrashBreadcrumb, recordCrash } from '@infrastructure/firebase/crashlytics-service';
+import type { AiUsageLimit } from '@domain/subscriptions/ai-usage-limit';
 
 /** Host-app callbacks and providers injected into the infrastructure wiring. */
 interface InfrastructureOptions {
@@ -69,6 +73,8 @@ interface InfrastructureOptions {
   onUnauthorized?: () => void;
   /** Invoked on every 426 from the backend's version gate; the app re-checks and shows its update gate. */
   onUpgradeRequired?: () => void;
+  /** Invoked when the free plan's AI cap refuses a request; the app shows its limit dialog. */
+  onAiLimitReached?: (limit: AiUsageLimit) => void;
 }
 
 /**
@@ -108,6 +114,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.CrashReporter, () => ({ record: recordCrash }));
   container.register(TOKENS.AlarmAudioService, () => new AlarmAudioService());
   container.register(TOKENS.AdsService, () => new AdsService());
+  container.register(TOKENS.SubscriptionStore, () => new IapSubscriptionStore(reactNativeIapModule));
   container.register(TOKENS.AssistantSession, () => new GeminiLiveSession());
   container.register(TOKENS.AssistantMicrophone, () => new Microphone());
   container.register(TOKENS.AssistantPlayer, () => new PcmPlayer());
@@ -150,6 +157,9 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   if (opts?.onUpgradeRequired) {
     httpClientOptions.onUpgradeRequired = opts.onUpgradeRequired;
   }
+  if (opts?.onAiLimitReached) {
+    httpClientOptions.onAiLimitReached = opts.onAiLimitReached;
+  }
   const http = new AxiosHttpClient(httpClientOptions);
   const authRepository = new AuthRepository(http, storage, deviceIdentity, isCookieSession);
   const featureFlags = new FeatureFlagResolver(new FeatureFlagRepository(http), IS_DEV_BUILD);
@@ -173,6 +183,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.ShoppingOutboxRepository, () => new ShoppingOutboxRepository(kvStore));
   container.register(TOKENS.MealPlanRepository, () => new MealPlanRepository(http));
   container.register(TOKENS.FridgeRepository, () => new FridgeRepository(http));
+  container.register(TOKENS.SubscriptionVerifier, () => new SubscriptionVerifierRepository(http));
   container.register(TOKENS.UserProfileRepository, () => new UserProfileRepository(http));
   container.register(TOKENS.FeedbackRepository, () => new FeedbackRepository(http));
   container.register(TOKENS.AppVersionRepository, () => new AppVersionRepository(http, appBuild));

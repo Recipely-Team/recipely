@@ -20,9 +20,9 @@ import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repositor
 export class ImportRecipeFromFilesUseCase {
   constructor(private readonly repo: RecipeRepositoryInterface) {}
 
-  execute(files: readonly ImportFile[]): Promise<Result<FileImportReceipt, Failure>> {
+  execute(files: readonly ImportFile[], note: string | null = null): Promise<Result<FileImportReceipt, Failure>> {
     const batch = ImportFileBatch.create(files);
     if (!batch.ok) return Promise.resolve(fail(batch.failure));
-    return this.repo.importRecipeFromFiles(batch.value);
+    return this.repo.importRecipeFromFiles(batch.value, note);
   }
 }

@@ -1,6 +1,7 @@
 import { webFeedSlotId } from '@infrastructure/constants/ads';
 import { WebBannerAd } from '@presentation/base/widgets/ads/web-banner-ad';
 import type { AdSlotProps } from '@presentation/base/widgets/ads/ad-slot-props';
+import { useIsPremium } from '@presentation/base/hooks/subscriptions/use-is-premium';
 
 /**
  * Web build of the ad slot: the AdSense unit that stands in for the AdMob
@@ -18,6 +19,9 @@ import type { AdSlotProps } from '@presentation/base/widgets/ads/ad-slot-props';
  *   renders only where `AdSlot` already renders, which `check:structure` rule T
  *   holds to the feed.
  */
-export const AdSlot = ({ accessibilityLabel }: AdSlotProps): React.JSX.Element | null => (
-  <WebBannerAd slotId={webFeedSlotId()} accessibilityLabel={accessibilityLabel} />
-);
+export const AdSlot = ({ accessibilityLabel }: AdSlotProps): React.JSX.Element | null => {
+  // Premium shows no ads: no unit is mounted, so AdSense is never asked to fill one.
+  const isPremium = useIsPremium();
+  if (isPremium) return null;
+  return <WebBannerAd slotId={webFeedSlotId()} accessibilityLabel={accessibilityLabel} />;
+};

@@ -10,13 +10,16 @@ import { useTranslations } from '@presentation/i18n';
 
 export interface ShoppingListBarProps {
   onBack: () => void;
+  /** Shares the list as a checklist; null hides the button (nothing on the list). */
+  onShare: (() => void) | null;
 }
 
 /**
  * The screen's top bar: back and the title. In the web shell the site header
  * is already above it, so the bar drops the safe-area inset and its hairline.
+ * Share sits at the trailing end, the same round button the recipe page uses.
  */
-export const ShoppingListBar = ({ onBack }: ShoppingListBarProps): React.JSX.Element => {
+export const ShoppingListBar = ({ onBack, onShare }: ShoppingListBarProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
@@ -38,6 +41,9 @@ export const ShoppingListBar = ({ onBack }: ShoppingListBarProps): React.JSX.Ele
       >
         {t.shopping.title}
       </SizedText>
+      {onShare === null ? null : (
+        <RoundIconButton icon="share-outline" accessibilityLabel={t.shopping.share} onPress={onShare} size={controlSizes.touchTarget} />
+      )}
     </View>
   );
 };

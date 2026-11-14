@@ -2,6 +2,7 @@ import { useCallback, useReducer, useRef } from 'react';
 import { useLatestRef } from '@presentation/base/hooks/lifecycle/use-latest-ref';
 import { ValueConstants } from '@core/constants';
 import { FridgeLimits } from '@domain/fridge/fridge-limits';
+import { toPhotoNote } from '@domain/common/photo-note';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useLocale, useTranslations } from '@presentation/i18n';
 import { toastStore } from '@presentation/base/feedback/toast-store';
@@ -55,11 +56,11 @@ export const useFridgeFlow = () => {
   );
 
   const findIngredients = useCallback(async (): Promise<void> => {
-    const { photos } = latest.current;
+    const { photos, note } = latest.current;
     if (photos.length === ValueConstants.zero) return;
     const mine = next();
     dispatch({ type: 'scanStarted' });
-    const result = await fridgeStore.getState().scan({ photos, locale });
+    const result = await fridgeStore.getState().scan({ photos, locale, note: toPhotoNote(note) });
     if (mine !== ticket.current) return;
     dispatch(result.ok ? { type: 'scanSucceeded', ingredients: result.value } : { type: 'scanFailed', failure: result.failure });
   }, [fridgeStore, locale, latest]);
@@ -109,6 +110,7 @@ export const useFridgeFlow = () => {
     state,
     addPhotos,
     removePhoto: (index: number) => dispatch({ type: 'photoRemoved', index }),
+    changeNote: (note: string) => dispatch({ type: 'noteChanged', note }),
     findIngredients,
     cancelScan: () => {
       next();

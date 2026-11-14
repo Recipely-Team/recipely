@@ -35,4 +35,5 @@ export const createClearSessionCaches = (stores: Omit<ApplicationStores, 'authSt
   stores.userProfileStore.getState().reset();
   stores.creatorProfileStore.getState().clear();
   stores.assistantSessionStore.getState().reset();
+  stores.premiumStore.getState().clear();
 };

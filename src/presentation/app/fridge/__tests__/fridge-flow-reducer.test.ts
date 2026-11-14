@@ -20,6 +20,12 @@ const scanned: FridgeFlowActionType[] = [
 ];
 
 describe('fridgeFlowReducer', () => {
+  it('keeps the note through a cancelled scan, cuts it at 300 and clears it on retake', () => {
+    const typed = run({ type: 'photosAdded', photos: [photo(1)] }, { type: 'noteChanged', note: 'x'.repeat(320) }, { type: 'scanStarted' }, { type: 'scanCancelled' });
+    expect(typed.note).toHaveLength(300);
+    expect(fridgeFlowReducer(typed, { type: 'retake' }).note).toBe('');
+  });
+
   it('keeps at most three photos', () => {
     const state = run({ type: 'photosAdded', photos: [photo(1), photo(2)] }, { type: 'photosAdded', photos: [photo(3), photo(4)] });
     expect(state.photos).toHaveLength(3);

@@ -37,6 +37,10 @@ export const ASSISTANT_NAVIGATION_TARGETS = {
   profile: RoutePaths.profile,
   editProfile: RoutePaths.editProfile,
   settings: RoutePaths.profile,
+  // The paywall: "open premium", "subscribe", "upgrade".
+  premium: RoutePaths.premium,
+  subscription: RoutePaths.premium,
+  upgrade: RoutePaths.premium,
 } as const satisfies Readonly<Record<string, string>>;
 
 /** A screen the assistant can be asked for, by the name the model is given. */

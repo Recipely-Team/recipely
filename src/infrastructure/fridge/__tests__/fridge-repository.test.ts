@@ -29,11 +29,12 @@ describe('FridgeRepository', () => {
   it('uploads every photo under `photos`, with the locale and the AI timeout, and maps the ingredients', async () => {
     const { http, uploads } = makeHttp();
     const photo = (n: number) => ({ uri: `file:///fridge-${n}.jpg`, fileName: `fridge-${n}.jpg`, mimeType: 'image/jpeg' });
-    const r = await new FridgeRepository(http).scan({ photos: [photo(1), photo(2)], locale: 'tr' });
+    const r = await new FridgeRepository(http).scan({ photos: [photo(1), photo(2)], locale: 'tr', note: null });
     expect(uploads[0]?.url).toBe('/fridge/scan');
     expect(uploads[0]?.timeout).toBe(AI_REQUEST_TIMEOUT_MS);
     expect(uploads[0]?.form.getAll('photos')).toHaveLength(2);
     expect(uploads[0]?.form.get('locale')).toBe('tr');
+    expect(uploads[0]?.form.has('note')).toBe(false);
     expect(r.ok && r.value).toEqual([{ name: 'eggs', confidence: 'high' }]);
   });
 

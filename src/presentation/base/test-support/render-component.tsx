@@ -6,6 +6,7 @@ import { AppThemeProvider } from '@presentation/base/theme/context/theme-context
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import { configurePortionChoiceStore } from '@application/recipes/cooking/portion-choice-store';
+import { freePremiumStore } from '@presentation/base/test-support/free-premium-store';
 import type { ApplicationStores } from '@application/di/application-stores';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -64,13 +65,15 @@ const SAFE_AREA_METRICS = {
  * - **A test wanting specific stores still wraps its own `StoresProvider`**
  *   inside `element` — the inner provider wins, so existing suites are
  *   unaffected. The in-memory `portionChoiceStore` is supplied too: every
- *   recipe surface reads its servings from it.
+ *   recipe surface reads its servings from it, and a free-account
+ *   `premiumStore`, which every ad slot reads.
  */
 export const renderComponent = (element: ReactElement, stores?: Partial<ApplicationStores>): RenderResult => {
   let renderer!: ReactTestRenderer;
   const value = {
     assistantActionRegistry: new AssistantActionRegistry(),
     portionChoiceStore: configurePortionChoiceStore(),
+    premiumStore: freePremiumStore(),
     ...stores,
   } as unknown as ApplicationStores;
 

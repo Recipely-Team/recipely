@@ -15,10 +15,28 @@ public final class RecipelyAssistantKitModule: Module {
   /// The catalogue kind the app publishes recipes under; `OsAssistantBridge` spells the same word.
   static let recipeEntityKind = "recipe"
 
+  /// Held so the announcement observer can be removed when the module goes.
+  private var announcementObserver: NSObjectProtocol?
+
   public func definition() -> ModuleDefinition {
     Name("RecipelyAssistantKit")
 
     Events(Self.invocationEvent)
+
+    // A running app hears a request as it is announced. The queue still holds
+    // it, and the JavaScript side claims each id once, so a request is never run twice.
+    OnCreate { [weak self] in
+      self?.announcementObserver = NotificationCenter.default.addObserver(
+        forName: RecipelyAssistantStore.invocationAnnounced, object: nil, queue: .main
+      ) { [weak self] note in
+        guard let invocation = note.userInfo as? [String: Any] else { return }
+        self?.sendEvent(RecipelyAssistantKitModule.invocationEvent, invocation)
+      }
+    }
+
+    OnDestroy { [weak self] in
+      if let observer = self?.announcementObserver { NotificationCenter.default.removeObserver(observer) }
+    }
 
     Property("isAvailable") {
       RecipelyAssistantStore.appGroupIdentifier != nil

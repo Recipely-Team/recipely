@@ -4,6 +4,7 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTranslations } from '@presentation/i18n';
+import { LanguagePreviewFrame } from '@presentation/app/create-recipe/body/language-preview-frame';
 import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
 import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/assistant/use-assistant-draft-actions';
 import { useAssistantExitActions } from '@presentation/app/create-recipe/hooks/assistant/use-assistant-exit-actions';
@@ -21,7 +22,7 @@ import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dial
 import { CharConstants, ValueConstants } from '@core/constants';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
-export const CreateRecipeScreen = (): React.JSX.Element => {
+const CreateRecipeContent = (): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
   const vm = useCreateRecipe();
@@ -127,7 +128,9 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   return (
     <KeyboardAvoider style={[styles.root, { backgroundColor: colors.background }]}>
       <ResponsiveContainer route="createRecipe" gutter={false} fill>
-        <CreateRecipePreview vm={vm} />
+        <LanguagePreviewFrame>
+          <CreateRecipePreview vm={vm} />
+        </LanguagePreviewFrame>
       </ResponsiveContainer>
 
       <PhotosSheet
@@ -183,5 +186,7 @@ const styles = StyleSheet.create({
     flex: ValueConstants.one,
   },
 });
+
+export const CreateRecipeScreen = CreateRecipeContent;
 
 export default CreateRecipeScreen;

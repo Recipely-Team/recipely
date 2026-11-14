@@ -5,6 +5,7 @@ import type { FridgeScanInput } from '@domain/fridge/scan/fridge-scan-input';
 const FridgeScanField = {
   Photos: 'photos',
   Locale: 'locale',
+  Note: 'note',
 } as const;
 
 /** Photos (and the locale) → the multipart body: one `photos` file part per photo, in order, then `locale` when known. */
@@ -14,5 +15,6 @@ export const toFridgeScanForm = async (input: FridgeScanInput): Promise<FormData
     await appendFilePart(form, FridgeScanField.Photos, photo);
   }
   if (input.locale !== null) form.append(FridgeScanField.Locale, input.locale);
+  if (input.note !== null) form.append(FridgeScanField.Note, input.note);
   return form;
 };

@@ -10,6 +10,7 @@ import { registerMisc } from '@application/di/features/register-misc';
 import { registerShopping } from '@application/di/features/register-shopping';
 import { registerMealPlan } from '@application/di/features/register-meal-plan';
 import { registerFridge } from '@application/di/features/register-fridge';
+import { registerPremium } from '@application/di/features/register-premium';
 import { registerCreators } from '@application/di/features/register-creators';
 import { registerAssistant } from '@application/di/features/register-assistant';
 import { registerAuth } from '@application/di/features/register-auth';
@@ -34,6 +35,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const shopping = registerShopping(container);
   const mealPlan = registerMealPlan(container);
   const fridge = registerFridge(container);
+  const premium = registerPremium(container);
   const creators = registerCreators(container);
   const assistant = registerAssistant(container);
   const features = {
@@ -46,6 +48,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     ...shopping,
     ...mealPlan,
     ...fridge,
+    ...premium,
     ...creators,
     ...diary,
     ...instagram,

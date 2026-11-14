@@ -6,6 +6,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { PageTitle } from '@presentation/base/widgets/head/page-title';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
+import { useAssistantPhotoNote } from '@presentation/base/hooks/assistant/actions/use-assistant-photo-note';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { RoutePaths } from '@presentation/base/constants';
 import { PickSource } from '@presentation/base/utils/pick-source';
@@ -17,6 +18,7 @@ import { IdeasStep } from '@presentation/app/fridge/body/ideas-step';
 import { FridgeMessageState } from '@presentation/app/fridge/body/fridge-message-state';
 import { FridgeFooter } from '@presentation/app/fridge/body/fridge-footer';
 import { useFridgeFlow } from '@presentation/app/fridge/hooks/use-fridge-flow';
+import { useAssistantFridgeActions } from '@presentation/app/fridge/hooks/use-assistant-fridge-actions';
 import { useFridgeIdeaActions } from '@presentation/app/fridge/hooks/use-fridge-idea-actions';
 import { FridgeStep } from '@presentation/app/fridge/model/flow/fridge-step';
 import { FridgeProgress } from '@presentation/app/fridge/model/flow/fridge-progress';
@@ -44,6 +46,7 @@ export const FridgeScreen = (): React.JSX.Element => {
   const { isExpanded, isWebShell } = useLayout();
   const flow = useFridgeFlow();
   const scrollable = useAssistantScrollable();
+  useAssistantPhotoNote(flow.changeNote);
   const close = useGoBackOrHome(RoutePaths.createRecipe);
   const { state } = flow;
   const { view } = state;
@@ -51,6 +54,7 @@ export const FridgeScreen = (): React.JSX.Element => {
   const strings = t.fridge;
   const isClose = view.step === FridgeStep.Capture || view.step === FridgeStep.NothingFound || view.step === FridgeStep.Limit;
   const onBack = view.step === FridgeStep.Analysing ? flow.cancelScan : isClose ? close : flow.back;
+  useAssistantFridgeActions({ flow, cook: ideas.cook, addMissing: ideas.addMissing, onBack });
   const maxWidth = view.step === FridgeStep.Ideas && isExpanded ? WEB_CONTENT_MAX_WIDTH.fridgeIdeas : WEB_CONTENT_MAX_WIDTH.fridge;
 
   return (
@@ -63,6 +67,8 @@ export const FridgeScreen = (): React.JSX.Element => {
             {view.step === FridgeStep.Capture ? (
               <CaptureStep
                 photos={state.photos}
+                note={state.note}
+                onChangeNote={flow.changeNote}
                 failure={view.failure}
                 canUseCamera={Platform.OS !== 'web'}
                 onTakePhoto={() => void flow.addPhotos(PickSource.Camera)}
