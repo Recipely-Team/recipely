@@ -9,7 +9,9 @@
  *   raw, 1.89 MB gzip). Growing past it is a decision: raise the number in the
  *   same PR, with the reason in its description, as with coverage minimums.
  *   Raised 2026-11-14 from 1.95 to 1.98 MB gzip for the premium paywall (its screen,
- *   purchase flow and copy in 14 languages).
+ *   purchase flow and copy in 14 languages), then to 8.10 MB raw / 2.00 MB gzip
+ *   for the limit dialog, the edit-screen language combo and the Siri hand-off
+ *   that landed beside it (measured 8.02 MB raw, 1.98 MB gzip).
  *
  * Usage: node scripts/assert-bundle-size.mjs dist
  */
@@ -17,7 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
 
-const BUDGET = { rawBytes: 8_000_000, gzipBytes: 1_980_000 };
+const BUDGET = { rawBytes: 8_100_000, gzipBytes: 2_000_000 };
 
 const dist = process.argv[2] ?? 'dist';
 const jsDir = path.join(dist, '_expo/static/js/web');
