@@ -1325,6 +1325,7 @@ export const hi: TranslationsType = {
     moreCalories: '50 kcal ज़्यादा',
   },
   shopping: {
+    share: "सूची शेयर करें",
     toBuyCount: "{n} खरीदने हैं",
     listEmptyShort: "खाली",
     cartA11y: "खरीदारी सूची, {n} खरीदने हैं",
@@ -2199,5 +2200,11 @@ export const hi: TranslationsType = {
   launchCampaign: {
     skip: 'छोड़ें',
     notNow: 'अभी नहीं',
+  },
+  photoNote: {
+    label: "नोट जोड़ें (वैकल्पिक)",
+    fridgePlaceholder: "जैसे: सॉस छोड़ दें, ऊपर वाला खाना मेरा नहीं है",
+    importPlaceholder: "जैसे: पेज पर सिर्फ़ दूसरी रेसिपी",
+    counterA11y: "{max} में से {count} अक्षर",
   },
 };

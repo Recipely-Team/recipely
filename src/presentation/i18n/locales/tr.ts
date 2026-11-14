@@ -1333,6 +1333,7 @@ export const tr: TranslationsType = {
     moreCalories: '50 kcal artır',
   },
   shopping: {
+    share: "Listeyi paylaş",
     toBuyCount: "{n} ürün alınacak",
     listEmptyShort: "Boş",
     cartA11y: "Alışveriş listesi, {n} ürün alınacak",
@@ -2207,5 +2208,11 @@ export const tr: TranslationsType = {
   launchCampaign: {
     skip: 'Geç',
     notNow: 'Şimdi değil',
+  },
+  photoNote: {
+    label: "Not ekle (isteğe bağlı)",
+    fridgePlaceholder: "ör. Sosları sayma, üst raf benim değil",
+    importPlaceholder: "ör. Sayfadaki yalnızca ikinci tarif",
+    counterA11y: "{count} / {max} karakter",
   },
 };

@@ -1329,6 +1329,7 @@ export const ja = {
     moreCalories: '50 kcal 増やす',
   },
   shopping: {
+    share: "リストを共有",
     toBuyCount: "未購入 {n} 件",
     listEmptyShort: "空です",
     cartA11y: "買い物リスト、未購入 {n} 件",
@@ -2203,5 +2204,11 @@ export const ja = {
   launchCampaign: {
     skip: 'スキップ',
     notNow: 'あとで',
+  },
+  photoNote: {
+    label: "メモを追加（任意）",
+    fridgePlaceholder: "例：ソースは除外、上の段は私のものではありません",
+    importPlaceholder: "例：ページの2番目のレシピだけ",
+    counterA11y: "{max}文字中{count}文字",
   },
 };

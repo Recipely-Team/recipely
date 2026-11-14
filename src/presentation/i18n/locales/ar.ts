@@ -1329,6 +1329,7 @@ export const ar = {
     moreCalories: "50 سعرة أكثر",
   },
   shopping: {
+    share: "مشاركة القائمة",
     toBuyCount: "{n} للشراء",
     listEmptyShort: "فارغة",
     cartA11y: "قائمة التسوق، {n} للشراء",
@@ -2203,5 +2204,11 @@ export const ar = {
   launchCampaign: {
     skip: 'تخطٍّ',
     notNow: 'ليس الآن',
+  },
+  photoNote: {
+    label: "أضف ملاحظة (اختياري)",
+    fridgePlaceholder: "مثلًا: تجاهل الصلصات، الرف العلوي ليس لي",
+    importPlaceholder: "مثلًا: الوصفة الثانية في الصفحة فقط",
+    counterA11y: "{count} من {max} حرفًا",
   },
 };

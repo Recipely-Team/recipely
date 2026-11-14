@@ -1329,6 +1329,7 @@ export const fr = {
     moreCalories: '50 kcal de plus',
   },
   shopping: {
+    share: "Partager la liste",
     toBuyCount: "{n} à acheter",
     listEmptyShort: "Vide",
     cartA11y: "Liste de courses, {n} à acheter",
@@ -2203,5 +2204,11 @@ export const fr = {
   launchCampaign: {
     skip: 'Passer',
     notNow: 'Plus tard',
+  },
+  photoNote: {
+    label: "Ajouter une note (facultatif)",
+    fridgePlaceholder: "ex. : Ignore les sauces, l'étagère du haut n'est pas à moi",
+    importPlaceholder: "ex. : Seulement la deuxième recette de la page",
+    counterA11y: "{count} sur {max} caractères",
   },
 };

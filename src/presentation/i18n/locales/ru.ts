@@ -1329,6 +1329,7 @@ export const ru = {
     moreCalories: 'На 50 ккал больше',
   },
   shopping: {
+    share: "Поделиться списком",
     toBuyCount: "Купить: {n}",
     listEmptyShort: "Пусто",
     cartA11y: "Список покупок, купить: {n}",
@@ -2203,5 +2204,11 @@ export const ru = {
   launchCampaign: {
     skip: 'Пропустить',
     notNow: 'Не сейчас',
+  },
+  photoNote: {
+    label: "Добавить заметку (необязательно)",
+    fridgePlaceholder: "напр. Не считай соусы, верхняя полка не моя",
+    importPlaceholder: "напр. Только второй рецепт на странице",
+    counterA11y: "{count} из {max} символов",
   },
 };

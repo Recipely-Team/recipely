@@ -55,6 +55,8 @@ export const AssistantAction = {
   PublishDraft: 'publishDraft',
   DeleteRecipe: 'deleteRecipe',
   ShareRecipe: 'shareRecipe',
+  /** On the shopping list: opens the share sheet with the list as a checklist. */
+  ShareShoppingList: 'shareShoppingList',
   /** Opens the create screen already filled with an existing recipe, to change and re-publish. */
   DuplicateRecipe: 'duplicateRecipe',
   AddComment: 'addComment',
@@ -123,6 +125,15 @@ export const AssistantAction = {
   AddToShoppingList: 'addToShoppingList',
   /** Reads a described meal into Add food's confirm list; the user ticks and adds. */
   LogMeal: 'logMeal',
+  /**
+   * On the fridge scan or file import: writes the optional note sent with the
+   * photos (arg the note, up to 300 characters; no arg clears it).
+   */
+  SetPhotoNote: 'setPhotoNote',
+  /** On Cook from my fridge: reads the photos for ingredients (the "Find ingredients" button). */
+  ScanFridge: 'scanFridge',
+  /** On Cook from my fridge: asks for recipe ideas from the ingredients, or more ideas when some are shown. */
+  ShowFridgeIdeas: 'showFridgeIdeas',
   /**
    * On the create/edit screen: shows the screen in another language (arg a
    * language code such as `de`, or its own name such as `Deutsch`).

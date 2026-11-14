@@ -24,10 +24,10 @@ export const configureFileImportStore = (deps: FileImportStoreDeps): StoreApi<Fi
 
   return createStore<FileImportStore>((set) => ({
     state: { status: StoreStatus.Idle },
-    importFiles: async (files) => {
+    importFiles: async (files, note = null) => {
       const requested = session;
       set({ state: { status: StoreStatus.Loading } });
-      const result = await deps.importRecipeFromFilesUseCase.execute(files);
+      const result = await deps.importRecipeFromFilesUseCase.execute(files, note);
       if (requested !== session) return;
       set({
         state: result.ok

@@ -1333,6 +1333,7 @@ export const zh = {
     moreCalories: '增加 50 千卡',
   },
   shopping: {
+    share: "分享清单",
     toBuyCount: "待买 {n} 项",
     listEmptyShort: "空",
     cartA11y: "购物清单，待买 {n} 项",
@@ -2207,5 +2208,11 @@ export const zh = {
   launchCampaign: {
     skip: '跳过',
     notNow: '以后再说',
+  },
+  photoNote: {
+    label: "添加备注（可选）",
+    fridgePlaceholder: "例如：忽略酱料，最上层不是我的",
+    importPlaceholder: "例如：只要页面上的第二个食谱",
+    counterA11y: "{count}/{max} 个字符",
   },
 };

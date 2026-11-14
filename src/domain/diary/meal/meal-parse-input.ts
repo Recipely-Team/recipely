@@ -12,4 +12,6 @@ export type MealParseInputType =
       readonly fileName: string;
       readonly mimeType: string;
       readonly locale: string | null;
+      /** What the user typed with the photo, e.g. "half portion, no bread"; null for none. */
+      readonly note: string | null;
     };

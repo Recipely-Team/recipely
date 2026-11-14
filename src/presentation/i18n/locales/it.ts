@@ -1329,6 +1329,7 @@ export const it = {
     moreCalories: '50 kcal in più',
   },
   shopping: {
+    share: "Condividi lista",
     toBuyCount: "{n} da comprare",
     listEmptyShort: "Vuota",
     cartA11y: "Lista della spesa, {n} da comprare",
@@ -2203,5 +2204,11 @@ export const it = {
   launchCampaign: {
     skip: 'Salta',
     notNow: 'Non ora',
+  },
+  photoNote: {
+    label: "Aggiungi una nota (facoltativa)",
+    fridgePlaceholder: "es. Ignora le salse, il ripiano in alto non è mio",
+    importPlaceholder: "es. Solo la seconda ricetta della pagina",
+    counterA11y: "{count} di {max} caratteri",
   },
 };

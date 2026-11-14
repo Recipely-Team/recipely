@@ -4,7 +4,7 @@ import type { FileImportState } from '@application/recipes/import-file/file-impo
 export interface FileImportStore {
   state: FileImportState;
   /** Sends the pages, in order, to be read into a draft. */
-  importFiles: (files: readonly ImportFile[]) => Promise<void>;
+  importFiles: (files: readonly ImportFile[], note?: string | null) => Promise<void>;
   /** Forgets the reading. Called when the screen is left and on sign-out. */
   clear: () => void;
 }

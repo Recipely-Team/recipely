@@ -1325,6 +1325,7 @@ export const ko: TranslationsType = {
     moreCalories: '50 kcal 늘리기',
   },
   shopping: {
+    share: "목록 공유",
     toBuyCount: "살 것 {n}개",
     listEmptyShort: "비어 있음",
     cartA11y: "장보기 목록, 살 것 {n}개",
@@ -2199,5 +2200,11 @@ export const ko: TranslationsType = {
   launchCampaign: {
     skip: '건너뛰기',
     notNow: '나중에',
+  },
+  photoNote: {
+    label: "메모 추가 (선택)",
+    fridgePlaceholder: "예: 소스는 빼 주세요, 맨 위 칸은 제 것이 아니에요",
+    importPlaceholder: "예: 페이지의 두 번째 레시피만",
+    counterA11y: "{max}자 중 {count}자",
   },
 };

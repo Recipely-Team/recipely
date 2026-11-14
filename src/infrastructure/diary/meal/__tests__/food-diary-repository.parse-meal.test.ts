@@ -48,13 +48,13 @@ describe('FoodDiaryRepository.parseMeal', () => {
   it('uploads a photo as multipart with a `photo` file part and a `locale` field', async () => {
     const { http, requests, uploads } = makeHttp();
     const r = await new FoodDiaryRepository(http).parseMeal({
-      kind: MealParseInputKind.Photo, uri: 'file:///meal.jpg', fileName: 'meal-1.jpg', mimeType: 'image/jpeg', locale: 'en',
+      kind: MealParseInputKind.Photo, uri: 'file:///meal.jpg', fileName: 'meal-1.jpg', mimeType: 'image/jpeg', locale: 'en', note: 'half portion',
     });
     expect(requests).toHaveLength(0);
     expect(uploads[0]?.url).toBe('/diary/meal-parse');
     expect(uploads[0]?.timeout).toBe(AI_REQUEST_TIMEOUT_MS);
     const form = uploads[0]?.form;
-    expect([form?.has('photo'), form?.get('locale')]).toEqual([true, 'en']);
+    expect([form?.has('photo'), form?.get('locale'), form?.get('note')]).toEqual([true, 'en', 'half portion']);
     expect(r.ok && r.value.items).toHaveLength(1);
   });
 });

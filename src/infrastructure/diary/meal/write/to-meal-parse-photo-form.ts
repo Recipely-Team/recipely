@@ -4,6 +4,7 @@ import { appendFilePart } from '@infrastructure/network/upload/append-file-part'
 const MealParseField = {
   Photo: 'photo',
   Locale: 'locale',
+  Note: 'note',
 } as const;
 
 /** A local photo (and its locale) → the multipart body: the `photo` file part, then `locale` when known. */
@@ -12,9 +13,11 @@ export const toMealParsePhotoForm = async (input: {
   fileName: string;
   mimeType: string;
   locale: string | null;
+  note: string | null;
 }): Promise<FormData> => {
   const form = new FormData();
   await appendFilePart(form, MealParseField.Photo, { uri: input.uri, fileName: input.fileName, mimeType: input.mimeType });
   if (input.locale !== null) form.append(MealParseField.Locale, input.locale);
+  if (input.note !== null) form.append(MealParseField.Note, input.note);
   return form;
 };

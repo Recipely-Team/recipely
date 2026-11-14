@@ -3,7 +3,9 @@ import { useStore } from 'zustand';
 import { useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import type { Failure } from '@core/failure';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
+import { toPhotoNote } from '@domain/common/photo-note';
+import { useAssistantPhotoNote } from '@presentation/base/hooks/assistant/actions/use-assistant-photo-note';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
@@ -23,6 +25,9 @@ interface UseFileImportResult {
   pickFailure: Failure | null;
   isPdf: boolean;
   isFull: boolean;
+  /** The optional note read with the pages ("only the second recipe"). */
+  note: string;
+  onChangeNote: (note: string) => void;
   /** True while a file is being dragged over the window (web). */
   isDragging: boolean;
   /** The page whose sheet is open, or null. */
@@ -73,6 +78,8 @@ export const useFileImport = (): UseFileImportResult => {
   const pick = usePickImportFiles();
   const isDragging = useFileDrop(pages.add);
   const [selected, setSelected] = useState<number | null>(null);
+  const [note, setNote] = useState<string>(CharConstants.empty);
+  useAssistantPhotoNote(setNote);
   // Tagged with whether a read is running: a new read starts its stages from the first.
   const [stage, setStage] = useState({ isReading: false, ticks: ValueConstants.zero });
 
@@ -133,8 +140,8 @@ export const useFileImport = (): UseFileImportResult => {
 
   const onSubmit = useCallback((): void => {
     if (pages.pages.length === ValueConstants.zero) return;
-    void fileImportStore.getState().importFiles(pages.pages.map((page) => page.file));
-  }, [fileImportStore, pages.pages]);
+    void fileImportStore.getState().importFiles(pages.pages.map((page) => page.file), toPhotoNote(note));
+  }, [fileImportStore, pages.pages, note]);
 
   const onChoosePages = useCallback(() => fileImportStore.getState().clear(), [fileImportStore]);
 
@@ -150,6 +157,8 @@ export const useFileImport = (): UseFileImportResult => {
     pickFailure: pages.failure,
     isPdf: pages.isPdf,
     isFull: pages.isFull,
+    note,
+    onChangeNote: setNote,
     isDragging,
     selected,
     isReading,

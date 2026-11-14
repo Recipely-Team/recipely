@@ -62,6 +62,8 @@ export const FileImportFlow = (): React.JSX.Element => {
             isPdf={vm.isPdf}
             isFull={vm.isFull}
             isDragging={vm.isDragging}
+            note={vm.note}
+            onChangeNote={vm.onChangeNote}
             onPick={vm.onPick}
             onAddPage={vm.onAddPage}
             onSelect={vm.onSelect}

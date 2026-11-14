@@ -1329,6 +1329,7 @@ export const id = {
     moreCalories: 'Tambah 50 kkal',
   },
   shopping: {
+    share: "Bagikan daftar",
     toBuyCount: "{n} perlu dibeli",
     listEmptyShort: "Kosong",
     cartA11y: "Daftar belanja, {n} perlu dibeli",
@@ -2203,5 +2204,11 @@ export const id = {
   launchCampaign: {
     skip: 'Lewati',
     notNow: 'Nanti saja',
+  },
+  photoNote: {
+    label: "Tambahkan catatan (opsional)",
+    fridgePlaceholder: "mis. Abaikan sausnya, rak atas bukan punyaku",
+    importPlaceholder: "mis. Hanya resep kedua di halaman",
+    counterA11y: "{count} dari {max} karakter",
   },
 };
