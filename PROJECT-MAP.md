@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2523 source files.
+[architecture.md](architecture.md). 2534 source files.
 
 ## Layers
 
@@ -33,7 +33,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `auth/` _(10)_
 - `campaigns/` _(5)_
 - `comments/` _(5)_
-- `common/` _(5)_
+- `common/` _(6)_
 - `creators/` _(14)_
 - `device/` _(3)_
 - `diagnostics/` _(1)_
@@ -145,7 +145,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(10)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, lifecycle, meal-plan, navigation, notifications, profile, recipes, subscriptions, sync, timers) — shared hooks, grouped by capability _(120)_
+- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, lifecycle, meal-plan, navigation, notifications, profile, recipes, subscriptions, sync, timers) — shared hooks, grouped by capability _(121)_
 - `responsive/` (fold) — breakpoints, LayoutProvider, viewport metrics _(13)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(7)_
@@ -153,7 +153,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(9)_
 - `utils/` (diary, instagram, meal-plan, subscriptions) — small pure helpers _(37)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, app-update, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, launch-campaign, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(237)_
+- `widgets/` (ads, app-update, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, launch-campaign, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(238)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -186,4 +186,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: fc21cdcd9583d9a4 -->
+<!-- fingerprint: 167efd236f4d9cca -->
