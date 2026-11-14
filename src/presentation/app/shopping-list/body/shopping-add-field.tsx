@@ -1,4 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { isBlank } from '@core/guards/type-guards';
 import { ValueConstants } from '@core/constants';

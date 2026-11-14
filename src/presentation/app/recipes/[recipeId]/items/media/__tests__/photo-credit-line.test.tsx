@@ -6,7 +6,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { t } from '@presentation/i18n';
 
 const links = (root: ReturnType<typeof renderComponent>['root']) =>
-  root.findAll((n) => n.props['accessibilityRole'] === 'link' && typeof n.props['onPress'] === 'function');
+  root.findAll((n) => n.props['accessibilityRole'] === 'link' && typeof n.props['onPress'] === 'function', { deep: false });
 
 describe('PhotoCreditLine', () => {
   it('renders nothing when the photo needs no credit', () => {

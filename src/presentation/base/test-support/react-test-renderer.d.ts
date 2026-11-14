@@ -12,7 +12,8 @@ declare module 'react-test-renderer' {
     parent: ReactTestInstance | null;
     children: (ReactTestInstance | string)[];
     find(predicate: (instance: ReactTestInstance) => boolean): ReactTestInstance;
-    findAll(predicate: (instance: ReactTestInstance) => boolean): ReactTestInstance[];
+    /** `deep: false` stops at a match: a wrapper and the component it renders count once. */
+    findAll(predicate: (instance: ReactTestInstance) => boolean, options?: { deep?: boolean }): ReactTestInstance[];
     findByType(type: unknown): ReactTestInstance;
     findAllByType(type: unknown): ReactTestInstance[];
   }

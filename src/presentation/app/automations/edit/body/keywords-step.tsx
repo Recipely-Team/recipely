@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import type { DmKeywords } from '@domain/instagram/dm/dm-keywords';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';

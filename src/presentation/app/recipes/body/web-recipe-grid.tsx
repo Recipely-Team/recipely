@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { NoResultsState } from '@presentation/app/recipes/items/banners/no-results-state';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

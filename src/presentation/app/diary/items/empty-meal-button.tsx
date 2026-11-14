@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { borderWidths, diarySizes, fontSizes, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';

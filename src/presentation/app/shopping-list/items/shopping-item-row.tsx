@@ -1,5 +1,6 @@
 import { memo } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { CharConstants, ValueConstants } from '@core/constants';
 import type { ShoppingItemEntity } from '@domain/shopping/items/shopping-item-entity';
 import { shoppingAmountText } from '@domain/shopping/items/shopping-amount-text';

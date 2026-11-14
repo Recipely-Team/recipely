@@ -41,7 +41,7 @@ async function render(store = premiumStore()) {
 }
 
 const pressable = (root: ReactTestInstance, text: string): ReactTestInstance => {
-  const matches = root.findAll((n) => typeof n.props['onPress'] === 'function' && textContent(n).includes(text));
+  const matches = root.findAll((n) => typeof n.props['onPress'] === 'function' && textContent(n).includes(text), { deep: false });
   const node = matches[matches.length - 1];
   if (node === undefined) throw new Error(`no pressable with "${text}"`);
   return node;
@@ -49,7 +49,7 @@ const pressable = (root: ReactTestInstance, text: string): ReactTestInstance => 
 
 const press = (node: ReactTestInstance | undefined): unknown => (node?.props['onPress'] as () => unknown)();
 
-const radios = (root: ReactTestInstance) => root.findAll((n) => n.props['accessibilityRole'] === 'radio' && typeof n.props['onPress'] === 'function');
+const radios = (root: ReactTestInstance) => root.findAll((n) => n.props['accessibilityRole'] === 'radio' && typeof n.props['onPress'] === 'function', { deep: false });
 
 afterEach(() => jest.clearAllMocks());
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { StyleSheet, View, Pressable, type LayoutChangeEvent } from 'react-native';
+import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Animated, {
   interpolate,
   Extrapolation,

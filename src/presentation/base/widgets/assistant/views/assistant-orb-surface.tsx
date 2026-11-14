@@ -2,7 +2,8 @@ import type { AssistantOrbMenuItem } from '@presentation/base/widgets/assistant/
 import type { TranslationsType } from '@presentation/i18n';
 import { useState } from 'react';
 import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
-import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AssistantOrb } from '@presentation/base/widgets/assistant/parts/assistant-orb';
 import { AssistantWaitingLine } from '@presentation/base/widgets/assistant/parts/assistant-waiting-line';

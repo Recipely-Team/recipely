@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
 import {
   Keyboard,
-  Pressable,
   ScrollView,
   StyleSheet,
   TextInput,
   View,
 } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RefineTranscript } from '@presentation/app/create-recipe/body/refine-transcript';

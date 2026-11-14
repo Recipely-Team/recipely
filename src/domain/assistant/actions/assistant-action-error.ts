@@ -9,6 +9,7 @@
  * - Diary argument errors keep their own vocabulary (`DiaryArgError`).
  */
 export const AssistantActionError = {
+  AmbiguousControl: 'ambiguous_control',
   Empty: 'empty',
   EmptyPrompt: 'empty_prompt',
   ExpectedFieldEqualsValue: 'expected_field_equals_value',

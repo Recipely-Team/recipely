@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ALL_LOCALE_LIST, isPreviewLocale } from '@application/i18n/supported-locales';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';

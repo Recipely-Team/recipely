@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ImportFile } from '@domain/recipes/import-file/import-file';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

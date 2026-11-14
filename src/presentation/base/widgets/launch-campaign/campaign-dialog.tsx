@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Animated, BackHandler, Easing, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, BackHandler, Easing, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';

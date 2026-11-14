@@ -1,4 +1,5 @@
-import { Animated, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { opacities, radii, targetSizes } from '@presentation/base/theme';
 import { useTranslations } from '@presentation/i18n';

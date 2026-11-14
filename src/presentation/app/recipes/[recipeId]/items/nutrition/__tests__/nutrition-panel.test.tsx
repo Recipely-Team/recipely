@@ -11,7 +11,7 @@ const factsOf = (caloriesPerServing: number, nutrition: RecipeNutrition | undefi
   NutritionFacts.of({ caloriesPerServing, servings: 4, nutrition });
 
 const radios = (root: ReactTestInstance): ReactTestInstance[] =>
-  root.findAll((node) => node.props['accessibilityRole'] === 'radio' && typeof node.props['onPress'] === 'function');
+  root.findAll((node) => node.props['accessibilityRole'] === 'radio' && typeof node.props['onPress'] === 'function', { deep: false });
 
 describe('NutritionPanel — basis switch', () => {
   const nutrition = { protein: 24, carbs: 60, fat: 18, fiber: 6, servingWeightGrams: 400 };

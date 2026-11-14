@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { SocialProvider } from '@presentation/app/login/model/social-provider';
 import { GoogleLogo } from '@presentation/app/login/items/google-logo';
 import { AppleLogo } from '@presentation/app/login/items/apple-logo';

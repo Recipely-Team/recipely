@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import type { FridgeIdea } from '@domain/fridge/ideas/fridge-idea';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { autoFillColumns } from '@presentation/base/widgets/creators/auto-fill-columns';

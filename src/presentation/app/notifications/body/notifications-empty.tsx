@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { controlSizes, fontWeights, spacing } from '@presentation/base/theme';

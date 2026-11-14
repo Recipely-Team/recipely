@@ -11,6 +11,7 @@ import { waitForRecipeListQuery } from '@application/recipes/list/wait-for-recip
 import { RoutePaths } from '@presentation/base/constants/route-paths';
 import { StoreStatus } from '@application/store/store-status';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
+import { useAssistantPressOnScreen } from '@presentation/base/hooks/assistant/actions/use-assistant-press-on-screen';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
@@ -47,6 +48,7 @@ const looksLikeId = (arg: string): boolean =>
 export const useAssistantGlobalActions = (): void => {
   const { assistantActionRegistry: registry, assistantSessionStore, recipeListStore } = useStores();
   const stopVoice = useStore(assistantSessionStore, (s) => s.stopVoice);
+  useAssistantPressOnScreen();
 
   useAssistantAction(
     AssistantAction.ReadScreen,

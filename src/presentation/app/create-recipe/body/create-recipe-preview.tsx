@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RecipePreviewEditor } from '@presentation/app/create-recipe/body/recipe-preview-editor';
 import { RefineDock } from '@presentation/app/create-recipe/body/refine-dock';

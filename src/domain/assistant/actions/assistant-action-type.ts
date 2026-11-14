@@ -92,6 +92,12 @@ export const AssistantAction = {
    */
   ReadScreen: 'readScreen',
   /**
+   * Presses a control on screen by the label `readScreen` listed under Buttons
+   * (arg the label, or enough of it to pick one). The same handler as the
+   * user's tap; for anything a dedicated action covers, use that action.
+   */
+  PressOnScreen: 'pressOnScreen',
+  /**
    * Sends a problem report to the developers, with what went wrong attached.
    *
    * Told about a save that had just failed, the assistant explained where the

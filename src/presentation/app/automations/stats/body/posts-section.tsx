@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { ValueConstants } from '@core/constants';
 import type { StatsPost } from '@domain/instagram/stats/stats-post';
 import { useTheme } from '@presentation/base/theme/context/use-theme';

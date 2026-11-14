@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { AssistantOrbMenuItem } from '@presentation/base/widgets/assistant/views/assistant-orb-menu-item';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AiBannerCard } from '@presentation/app/recipes/items/banners/ai-banner-card';
 import { CuisineStrip } from '@presentation/app/recipes/body/cuisine-strip';

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { assistantNoticeTone } from '@presentation/base/widgets/assistant/assistant-notice-tone';
-import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantComposer } from '@presentation/base/widgets/assistant/views/assistant-composer';

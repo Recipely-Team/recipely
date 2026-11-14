@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { RoutePaths } from '@presentation/base/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';

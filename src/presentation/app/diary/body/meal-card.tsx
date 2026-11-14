@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import type { MealGroup } from '@domain/diary/day/meal-group';
 import type { FoodLogEntryEntity } from '@domain/diary/food-log-entry-entity';
 import type { MealSlotType } from '@domain/diary/meal-slot';

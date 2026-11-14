@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AssistantTranscript } from '@presentation/base/widgets/assistant/parts/assistant-transcript';
 import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';

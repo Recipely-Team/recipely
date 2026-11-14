@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { isWeb } from '@infrastructure/constants/platform';
-import { StyleSheet, View, ScrollView, Pressable } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, avatarSizes, borderWidths, maxFontScales } from '@presentation/base/theme';

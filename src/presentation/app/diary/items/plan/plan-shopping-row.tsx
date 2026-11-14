@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { PlanShoppingLine } from '@domain/meal-plan/shopping/plan-shopping-line';
 import { shoppingAmountText } from '@domain/shopping/items/shopping-amount-text';

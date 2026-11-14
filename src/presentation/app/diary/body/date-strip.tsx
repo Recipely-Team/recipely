@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import type { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { CalorieStatus } from '@domain/diary/nutrition/calorie-status';
 import { useTheme } from '@presentation/base/theme/context/use-theme';

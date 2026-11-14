@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import { useTheme } from '@presentation/base/theme/context/use-theme';

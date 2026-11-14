@@ -1,4 +1,5 @@
-import { FlatList, Pressable, StyleSheet } from 'react-native';
+import { FlatList, StyleSheet } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import type { FoodCategory } from '@domain/diary/foods/food-category';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';

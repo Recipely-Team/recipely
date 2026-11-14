@@ -59,7 +59,7 @@ const button = (root: ReactTestInstance, label: string): ReactTestInstance =>
   root.find((node) => node.props['accessibilityRole'] === 'button' && node.props['accessibilityLabel'] === label && typeof node.props['onPress'] === 'function');
 
 const buttons = (root: ReactTestInstance, label: string): ReactTestInstance[] =>
-  root.findAll((node) => node.props['accessibilityRole'] === 'button' && node.props['accessibilityLabel'] === label && typeof node.props['onPress'] === 'function');
+  root.findAll((node) => node.props['accessibilityRole'] === 'button' && node.props['accessibilityLabel'] === label && typeof node.props['onPress'] === 'function', { deep: false });
 
 const press = async (node: ReactTestInstance): Promise<void> => {
   await act(async () => {
@@ -193,8 +193,8 @@ describe('CreatorAccountSection', () => {
     ]);
 
     expect(textContent(root)).toEqual(expect.arrayContaining([copy().approved, copy().approvedBody, copy().pending]));
-    expect(root.findAll((n) => n.props['role'] === 'status').length).toBeGreaterThanOrEqual(2);
-    expect(root.findAll((n) => n.props['accessibilityRole'] === 'link').length).toBeGreaterThan(0);
+    expect(root.findAll((n) => n.props['role'] === 'status', { deep: false }).length).toBeGreaterThanOrEqual(2);
+    expect(root.findAll((n) => n.props['accessibilityRole'] === 'link', { deep: false }).length).toBeGreaterThan(0);
     expect(buttons(root, linkLabel('Instagram'))).toHaveLength(0);
     await press(button(root, copy().remove));
 

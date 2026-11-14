@@ -1,4 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { controlSizes, fontSizes, fontWeights, opacities, radii } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';

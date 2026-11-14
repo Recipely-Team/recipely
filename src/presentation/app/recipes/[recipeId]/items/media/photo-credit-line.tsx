@@ -1,4 +1,5 @@
-import { Linking, Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
+import { Linking, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import type { ImageCredit } from '@domain/recipes/media/image-credit';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';

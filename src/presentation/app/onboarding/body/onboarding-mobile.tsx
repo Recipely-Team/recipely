@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { Pressable } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { useOnboardingAutoplay } from '@presentation/app/onboarding/hooks/use-onboarding-autoplay';
 import { useTranslations } from '@presentation/i18n';
 import { scrollThrottleMs } from '@presentation/base/constants';
