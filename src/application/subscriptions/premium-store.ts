@@ -1,14 +1,16 @@
-import { createStore } from 'zustand/vanilla';
-import type { StoreApi } from 'zustand/vanilla';
-import type { PremiumStore } from '@application/subscriptions/premium-store-contract';
-import type { LoadPremiumPlansUseCase } from '@application/subscriptions/load-premium-plans-use-case';
-import type { PurchasePremiumUseCase } from '@application/subscriptions/purchase-premium-use-case';
-import type { RestorePremiumUseCase } from '@application/subscriptions/restore-premium-use-case';
+import { createStore } from "zustand/vanilla";
+import type { StoreApi } from "zustand/vanilla";
+import type { PremiumStore } from "@application/subscriptions/premium-store-contract";
+import type { LoadPremiumPlansUseCase } from "@application/subscriptions/load-premium-plans-use-case";
+import type { PurchasePremiumUseCase } from "@application/subscriptions/purchase-premium-use-case";
+import type { RestorePremiumUseCase } from "@application/subscriptions/restore-premium-use-case";
+import type { LoadPremiumStatusUseCase } from "@application/subscriptions/load-premium-status-use-case";
 
 interface PremiumStoreDeps {
   loadPlans: LoadPremiumPlansUseCase;
   purchase: PurchasePremiumUseCase;
   restore: RestorePremiumUseCase;
+  loadStatus: LoadPremiumStatusUseCase;
 }
 
 /**
@@ -19,19 +21,34 @@ interface PremiumStoreDeps {
  *   screen's own; this keeps only what other screens read, the entitlement.
  * - **Cleared with the session**, because premium belongs to one account.
  */
-export const configurePremiumStore = (deps: PremiumStoreDeps): StoreApi<PremiumStore> =>
-  createStore<PremiumStore>((set) => ({
-    entitlement: null,
-    loadPlans: () => deps.loadPlans.execute(),
-    purchase: async (productId) => {
-      const result = await deps.purchase.execute(productId);
-      if (result.ok) set({ entitlement: result.value });
-      return result;
-    },
-    restore: async () => {
-      const result = await deps.restore.execute();
-      if (result.ok && result.value !== null) set({ entitlement: result.value });
-      return result;
-    },
-    clear: () => set({ entitlement: null }),
-  }));
+export const configurePremiumStore = (
+  deps: PremiumStoreDeps,
+): StoreApi<PremiumStore> =>
+  createStore<PremiumStore>((set) => {
+    let asking: Promise<void> | null = null;
+    return {
+      entitlement: null,
+      hasChecked: false,
+      refresh: () => {
+        asking ??= deps.loadStatus.execute().then((result) => {
+          asking = null;
+          // A failed check leaves premium unknown (shown as free) and lets the next screen ask again.
+          if (result.ok) set({ entitlement: result.value, hasChecked: true });
+        });
+        return asking;
+      },
+      loadPlans: () => deps.loadPlans.execute(),
+      purchase: async (productId) => {
+        const result = await deps.purchase.execute(productId);
+        if (result.ok) set({ entitlement: result.value });
+        return result;
+      },
+      restore: async () => {
+        const result = await deps.restore.execute();
+        if (result.ok && result.value !== null)
+          set({ entitlement: result.value });
+        return result;
+      },
+      clear: () => set({ entitlement: null, hasChecked: false }),
+    };
+  });

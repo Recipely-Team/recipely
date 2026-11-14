@@ -12,4 +12,6 @@ import type { PremiumEntitlement } from '@domain/subscriptions/premium-entitleme
  */
 export interface SubscriptionVerifierInterface {
   verify(purchase: SubscriptionPurchase): Promise<Result<PremiumEntitlement, Failure>>;
+  /** Whether the signed-in account is premium right now, as the backend has it. */
+  status(): Promise<Result<PremiumEntitlement, Failure>>;
 }

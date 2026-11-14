@@ -24,6 +24,8 @@ const PLANS = [
 function premiumStore(overrides: Partial<PremiumStore> = {}) {
   return createStore<PremiumStore>(() => ({
     entitlement: null,
+    hasChecked: true,
+    refresh: async () => undefined,
     loadPlans: async () => ok(PLANS),
     purchase: async () => ok({ isPremium: true, expiresAt: null }),
     restore: async () => ok(null),

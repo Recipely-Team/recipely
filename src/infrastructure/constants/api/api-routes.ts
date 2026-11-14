@@ -171,5 +171,7 @@ export const ApiRoutes = {
   subscriptions: {
     /** POST `{ platform, productId, transactionId, purchaseToken }` → `{ isPremium, expiresAt }`. */
     verify: '/subscriptions/verify',
+    /** GET → `{ isPremium, expiresAt }` for the signed-in account. */
+    status: '/subscriptions/status',
   },
 } as const;

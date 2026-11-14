@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2510 source files.
+[architecture.md](architecture.md). 2513 source files.
 
 ## Layers
 
@@ -84,7 +84,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `shopping/` — read, sync, write _(20)_
 - `storage/` _(4)_
 - `store/` — paging _(14)_
-- `subscriptions/` _(6)_
+- `subscriptions/` _(7)_
 - `timers/` _(7)_
 - `user-profile/` — follow, recipes, states _(12)_
 
@@ -145,10 +145,10 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(10)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, lifecycle, meal-plan, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(119)_
+- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, lifecycle, meal-plan, navigation, notifications, profile, recipes, subscriptions, sync, timers) — shared hooks, grouped by capability _(120)_
 - `responsive/` (fold) — breakpoints, LayoutProvider, viewport metrics _(13)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
-- `test-support/` — render harness for component tests _(6)_
+- `test-support/` — render harness for component tests _(7)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(53)_
 - `timers/` — timer control helpers _(9)_
 - `utils/` (diary, instagram, meal-plan) — small pure helpers _(36)_
@@ -186,4 +186,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 9cb85be2be55c69a -->
+<!-- fingerprint: 21b9be1f030ff191 -->

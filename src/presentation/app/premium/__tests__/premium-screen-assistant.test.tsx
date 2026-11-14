@@ -22,6 +22,8 @@ async function setup() {
   const restore = jest.fn(async () => ok(null));
   const premiumStore = createStore<PremiumStore>(() => ({
     entitlement: null,
+    hasChecked: true,
+    refresh: async () => undefined,
     loadPlans: async () => ok([
       { id: 'premium_monthly', displayPrice: '$4.99' },
       { id: 'premium_yearly', displayPrice: '$39.99' },

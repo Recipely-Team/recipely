@@ -12,6 +12,10 @@ export interface PremiumStore {
   purchase: (productId: string) => Promise<Result<PremiumEntitlement, Failure>>;
   /** Restores from the store; `null` means nothing to restore. On success the entitlement is stored. */
   restore: () => Promise<Result<PremiumEntitlement | null, Failure>>;
+  /** True once the backend has answered this session, so a screen asks at most once. */
+  hasChecked: boolean;
+  /** Asks the backend whether the account is premium; concurrent calls share one request. */
+  refresh: () => Promise<void>;
   /** Forgets the entitlement (sign-out, account switch). */
   clear: () => void;
 }

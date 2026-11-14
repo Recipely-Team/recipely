@@ -29,6 +29,7 @@ function setup(store: Partial<SubscriptionStoreInterface>, verify: SubscriptionV
     ...store,
   };
   const verifier: SubscriptionVerifierInterface = {
+    status: async () => ok({ isPremium: false, expiresAt: null }),
     verify: async (p) => {
       calls.push(`verify:${p.transactionId}`);
       return verify(p);

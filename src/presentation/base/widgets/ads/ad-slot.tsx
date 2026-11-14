@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import { useAdsReady } from '@presentation/base/hooks/ads/use-ads-ready';
+import { useIsPremium } from '@presentation/base/hooks/subscriptions/use-is-premium';
 import { spacing } from '@presentation/base/theme';
 import type { AdSlotProps } from '@presentation/base/widgets/ads/ad-slot-props';
 import { UnknownFailure } from '@core/failure';
@@ -44,6 +45,7 @@ const reported = new Set<string>();
  */
 export const AdSlot = ({ unitId, accessibilityLabel, width }: AdSlotProps): React.JSX.Element | null => {
   const isReady = useAdsReady();
+  const isPremium = useIsPremium();
   const [isLoaded, setLoaded] = useState(false);
   const [hasFailed, setFailed] = useState(false);
 
@@ -60,7 +62,8 @@ export const AdSlot = ({ unitId, accessibilityLabel, width }: AdSlotProps): Reac
     [unitId],
   );
 
-  if (!isReady || hasFailed) return null;
+  // Premium shows no ads, anywhere.
+  if (isPremium || !isReady || hasFailed) return null;
 
   return (
     <View

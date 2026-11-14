@@ -7,6 +7,7 @@ import { configurePremiumStore } from '@application/subscriptions/premium-store'
 import { LoadPremiumPlansUseCase } from '@application/subscriptions/load-premium-plans-use-case';
 import { PurchasePremiumUseCase } from '@application/subscriptions/purchase-premium-use-case';
 import { RestorePremiumUseCase } from '@application/subscriptions/restore-premium-use-case';
+import { LoadPremiumStatusUseCase } from '@application/subscriptions/load-premium-status-use-case';
 
 export const registerPremium = (container: Container): Pick<ApplicationStores, 'premiumStore'> => {
   const store = container.resolve<SubscriptionStoreInterface>(TOKENS.SubscriptionStore);
@@ -15,6 +16,7 @@ export const registerPremium = (container: Container): Pick<ApplicationStores, '
     loadPlans: new LoadPremiumPlansUseCase(store),
     purchase: new PurchasePremiumUseCase(store, verifier),
     restore: new RestorePremiumUseCase(store, verifier),
+    loadStatus: new LoadPremiumStatusUseCase(verifier),
   });
   return { premiumStore };
 };

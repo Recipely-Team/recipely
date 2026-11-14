@@ -29,4 +29,9 @@ export class SubscriptionVerifierRepository implements SubscriptionVerifierInter
     );
     return result.ok ? toPremiumEntitlement(result.value) : result;
   }
+
+  async status(): Promise<Result<PremiumEntitlement, Failure>> {
+    const result = await this.http.get<PremiumEntitlementDto>(ApiRoutes.subscriptions.status);
+    return result.ok ? toPremiumEntitlement(result.value) : result;
+  }
 }
