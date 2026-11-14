@@ -105,7 +105,7 @@ export default PremiumScreen;
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  closeRow: { flexDirection: 'row', paddingHorizontal: spacing.md },
+  closeRow: { flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: spacing.md },
   close: { width: controlSizes.settingsRow, height: controlSizes.settingsRow, borderRadius: radii.round, alignItems: 'center', justifyContent: 'center' },
   scroll: { flexGrow: 1, gap: spacing.xl, paddingHorizontal: spacing.xl, paddingVertical: spacing.lg, width: '100%', maxWidth: PaywallMetrics.contentMaxWidth, alignSelf: 'center' },
   hero: { alignItems: 'center', gap: spacing.sm },
