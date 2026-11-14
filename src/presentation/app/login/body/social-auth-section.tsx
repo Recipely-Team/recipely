@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { isAndroid } from '@infrastructure/constants/platform';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SocialSignInButton } from '@presentation/app/login/items/social-sign-in-button';

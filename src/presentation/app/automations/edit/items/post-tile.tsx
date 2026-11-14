@@ -1,5 +1,6 @@
 import { memo } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { InstagramMedia } from '@domain/instagram/instagram-media';
 import { InstagramMediaType } from '@domain/instagram/instagram-media-type';

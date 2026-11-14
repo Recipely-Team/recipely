@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ALL_CUISINES_KEY } from '@presentation/app/recipes/model/filtering/cuisine-filter';
 import { railChipCount } from '@presentation/app/recipes/model/filtering/cuisine-rail-rows';

@@ -1,4 +1,5 @@
-import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { AssistantDenialReason, type AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';

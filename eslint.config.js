@@ -19,6 +19,14 @@ const VECTOR_ICONS_ROOT = {
   message: "Import the family's own path, e.g. '@expo/vector-icons/Ionicons' — the root index bundles every icon font.",
 };
 
+// The assistant sees and presses what the user can: a Pressable from
+// react-native is invisible to it. The app's own wrapper is the same component.
+const NATIVE_PRESSABLE = {
+  name: 'react-native',
+  importNames: ['Pressable'],
+  message: "Import Pressable from '@presentation/base/widgets/buttons/pressable' so the assistant can see and press it.",
+};
+
 module.exports = defineConfig([
   expoConfig,
   {
@@ -108,6 +116,13 @@ module.exports = defineConfig([
     },
   },
   {
+    files: ['src/**/*.tsx'],
+    ignores: ['**/__tests__/**', '**/__mocks__/**', 'src/presentation/base/test-support/**'],
+    rules: {
+      'no-restricted-imports': ['error', { paths: [VECTOR_ICONS_ROOT, NATIVE_PRESSABLE] }],
+    },
+  },
+  {
     // The language is state. A component, hook or text helper that reads it
     // from the global `t()` during render is cached by the React Compiler on
     // its other inputs and keeps the old language after a switch. Components
@@ -133,6 +148,7 @@ module.exports = defineConfig([
         {
           paths: [
             VECTOR_ICONS_ROOT,
+            NATIVE_PRESSABLE,
             ...['@presentation/i18n', '@presentation/i18n/i18n'].map((name) => ({
               name,
               importNames: ['t'],

@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import type { FoodLogEntryEntity } from '@domain/diary/food-log-entry-entity';
 import { FoodThumb } from '@presentation/base/widgets/diary/food-thumb';
 import { FoodThumbIcon } from '@presentation/base/widgets/diary/food-thumb-icon';

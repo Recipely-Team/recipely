@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { DmMessageToken } from "@domain/instagram/dm/dm-message-token";
 import { DmRuleLimits } from "@domain/instagram/dm/dm-rule-limits";
 import { DmRuleDraft } from "@domain/instagram/dm/dm-rule-draft";

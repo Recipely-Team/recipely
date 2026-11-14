@@ -1,7 +1,8 @@
 import { isBlank } from '@core/guards/type-guards';
 import { useState } from 'react';
 import { TaxonomyPickerKind } from '@presentation/app/create-recipe/model/taxonomy-picker-kind';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';

@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { SEVERITY_ICON } from '@presentation/base/theme/colors/surfaces/severity-icon';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAnnounce } from '@presentation/base/hooks/accessibility/use-announce';

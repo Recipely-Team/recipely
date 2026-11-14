@@ -6,7 +6,7 @@ import { NotificationFilter } from '@presentation/app/notifications/model/notifi
 import { t } from '@presentation/i18n';
 
 const pressables = (root: ReactTestInstance, label: string): ReactTestInstance[] =>
-  root.findAll((node) => node.props['accessibilityLabel'] === label && typeof node.props['onPress'] === 'function');
+  root.findAll((node) => node.props['accessibilityLabel'] === label && typeof node.props['onPress'] === 'function', { deep: false });
 
 describe('NotificationsHeader', () => {
   it('offers Mark all read only while something is unread, and runs it', () => {

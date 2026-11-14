@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { FocalPoint } from '@domain/recipes/media/focal-point';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';

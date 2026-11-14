@@ -1,4 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { type Href, useRouter } from 'expo-router';
 import { RoutePaths } from '@presentation/base/constants';
 import { StoreStatus } from '@application/store/store-status';

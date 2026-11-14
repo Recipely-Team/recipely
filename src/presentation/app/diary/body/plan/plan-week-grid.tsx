@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import type { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { MealSlot, type MealSlotType } from '@domain/diary/meal-slot';
 import type { MealPlanEntryEntity } from '@domain/meal-plan/meal-plan-entry-entity';

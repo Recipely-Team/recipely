@@ -1,5 +1,6 @@
 import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { Failure } from '@core/failure';
 import { ValueConstants } from '@core/constants';

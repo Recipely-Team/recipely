@@ -1,9 +1,9 @@
 import {
   ActivityIndicator,
-  Pressable,
   StyleSheet,
   View,
-} from "react-native";
+} from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { StoreStatus } from "@application/store/store-status";
 import { ValueConstants } from "@core/constants";
 import { useTheme } from "@presentation/base/theme/context/use-theme";

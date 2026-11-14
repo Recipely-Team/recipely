@@ -5,7 +5,7 @@ import { NotificationFilterPills } from '@presentation/app/notifications/body/no
 import { NotificationsHeader } from '@presentation/app/notifications/body/notifications-header';
 
 const buttons = (root: ReturnType<typeof renderComponent>['root']) =>
-  root.findAll((node) => node.props['accessibilityRole'] === 'button' && typeof node.props['onPress'] === 'function');
+  root.findAll((node) => node.props['accessibilityRole'] === 'button' && typeof node.props['onPress'] === 'function', { deep: false });
 
 /**
  * Review findings: the All / Unread pills showed which filter was on by colour

@@ -22,6 +22,8 @@
 // a platform pair, so it must be rendered by the web implementation.
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- a jest.mock factory is hoisted above imports and can only require
 jest.mock('react-native', () => require('react-native-web'));
+// The assistant's screen registry reads navigation, which react-native-web cannot load here.
+jest.mock('@presentation/base/hooks/assistant/screen/use-screen-element', () => ({ useScreenElement: () => undefined }));
 
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';

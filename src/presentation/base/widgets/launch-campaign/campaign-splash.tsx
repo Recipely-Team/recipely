@@ -1,5 +1,6 @@
 import { useEffect, useEffectEvent } from 'react';
-import { Animated, BackHandler, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, BackHandler, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { LaunchCampaign } from '@domain/campaigns/launch-campaign';

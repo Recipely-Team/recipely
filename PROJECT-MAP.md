@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2535 source files.
+[architecture.md](architecture.md). 2548 source files.
 
 ## Layers
 
@@ -28,7 +28,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `ads/` _(1)_
 - `analytics/` _(1)_
 - `app-version/` _(5)_
-- `assistant/` — actions, os, session _(26)_
+- `assistant/` — actions, os, screen, session _(29)_
 - `audio/` _(1)_
 - `auth/` _(10)_
 - `campaigns/` _(5)_
@@ -60,7 +60,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 
 - `ads/` _(2)_
 - `app-version/` — states _(10)_
-- `assistant/` — actions, session _(28)_
+- `assistant/` — actions, screen, session _(33)_
 - `audio/` _(2)_
 - `auth/` — password-reset, profile, registration, session, sign-in, states _(22)_
 - `campaigns/` — states _(9)_
@@ -145,7 +145,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(10)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, lifecycle, meal-plan, navigation, notifications, profile, recipes, subscriptions, sync, timers) — shared hooks, grouped by capability _(121)_
+- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, lifecycle, meal-plan, navigation, notifications, profile, recipes, subscriptions, sync, timers) — shared hooks, grouped by capability _(125)_
 - `responsive/` (fold) — breakpoints, LayoutProvider, viewport metrics _(13)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(7)_
@@ -153,7 +153,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(9)_
 - `utils/` (diary, instagram, meal-plan, subscriptions) — small pure helpers _(37)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, app-update, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, launch-campaign, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(238)_
+- `widgets/` (ads, app-update, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, launch-campaign, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(239)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -186,4 +186,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: f15fd85244ecb519 -->
+<!-- fingerprint: bc5924ded2bf7188 -->

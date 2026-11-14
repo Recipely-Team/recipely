@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BrandColors } from '@presentation/base/theme/colors/palette/brand-colors';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';

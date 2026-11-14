@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import type { VersionVerdict } from '@domain/app-version/version-verdict';
 import { CharConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';

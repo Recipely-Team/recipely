@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { FridgeIdea } from '@domain/fridge/ideas/fridge-idea';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';

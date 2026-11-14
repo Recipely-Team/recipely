@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Animated, Easing, Pressable, StyleSheet } from 'react-native';
+import { Animated, Easing, StyleSheet } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assistant-mascot';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';

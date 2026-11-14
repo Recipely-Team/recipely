@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 import { StoreStatus } from '@application/store/store-status';
-import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
+import { StyleSheet, View, type TextInput } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { resolveRedirect } from '@presentation/navigation/resolve-redirect';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';

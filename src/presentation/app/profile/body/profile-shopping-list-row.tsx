@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useStore } from 'zustand';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';

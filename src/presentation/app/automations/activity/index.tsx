@@ -1,5 +1,6 @@
 import { useScrollEndPadding } from '@presentation/base/hooks/interaction/use-scroll-end-padding';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { StoreStatus } from '@application/store/store-status';
 import { ValueConstants } from '@core/constants';

@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { CountBadge } from '@presentation/base/widgets/text/count-badge';
 import { CountBadgeTone } from '@presentation/base/widgets/text/count-badge-tone';
 import Ionicons from '@expo/vector-icons/Ionicons';

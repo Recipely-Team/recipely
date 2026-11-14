@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
-import { Animated, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Animated, Modal, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { BottomSheetHeader } from '@presentation/base/widgets/sheets/bottom-sheet-header';

@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import type { FoodUnit } from '@domain/diary/foods/units/food-unit';
 import { isBaseUnitKey } from '@domain/diary/foods/units/is-base-unit-key';
 import { ValueConstants } from '@core/constants';

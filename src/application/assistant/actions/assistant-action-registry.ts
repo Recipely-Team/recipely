@@ -4,6 +4,8 @@ import type { AssistantActionResultType } from '@domain/assistant/actions/assist
 import { CharConstants, ValueConstants } from '@core/constants';
 import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
+import { ScreenElementRegistry } from '@application/assistant/screen/screen-element-registry';
+import { formatScreenSnapshot } from '@application/assistant/screen/format-screen-snapshot';
 
 /** Between the route and what is on it — "screen=/recipes; recipes=1) Baklava". */
 const SCREEN_LINE_SEPARATOR = CharConstants.semicolonSpace;
@@ -57,6 +59,8 @@ const UNNAMED_ERROR = 'failed';
  *   nothing else.
  */
 export class AssistantActionRegistry {
+  /** Every text and control the UI registered itself, so a reading covers what no screen described. */
+  readonly screenElements = new ScreenElementRegistry();
   private readonly handlers = new Map<AssistantActionType, AssistantActionHandlerType[]>();
   /**
    * Handlers of last resort, kept OUT of the stack.
@@ -204,7 +208,10 @@ export class AssistantActionRegistry {
   get screenReading(): string {
     const last = this.readingDescribers[this.readingDescribers.length - ValueConstants.one];
     const reading = last === undefined ? CharConstants.empty : this.describe(last);
-    return reading === CharConstants.empty ? this.screenContext : reading;
+    const seen = this.describe(() => formatScreenSnapshot(this.screenElements.snapshot()));
+    return [reading === CharConstants.empty ? this.screenContext : reading, seen]
+      .filter((part) => part !== CharConstants.empty)
+      .join(CharConstants.newline);
   }
 
   /** The last failure this session produced, or null if nothing has failed. */

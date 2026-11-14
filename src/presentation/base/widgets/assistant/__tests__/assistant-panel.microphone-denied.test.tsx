@@ -74,12 +74,11 @@ beforeEach(() => {
   mockSession.error = null;
 });
 
-const settingsControl = (root: { findAll: (m: (n: { props: Record<string, unknown> }) => boolean) => { props: Record<string, unknown> }[] }) =>
+const settingsControl = (root: { findAll: (m: (n: { props: Record<string, unknown> }) => boolean, options?: { deep?: boolean }) => { props: Record<string, unknown> }[] }) =>
   root.findAll(
     (n) =>
       n.props['accessibilityLabel'] === t().common.openSettings &&
-      typeof n.props['onPress'] === 'function',
-  );
+      typeof n.props['onPress'] === 'function', { deep: false });
 
 describe('AssistantPanel — a microphone iOS will not ask about again', () => {
   it('offers the way out, not just the sentence', () => {

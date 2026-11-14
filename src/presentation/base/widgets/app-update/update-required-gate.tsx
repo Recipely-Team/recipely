@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, BackHandler, findNodeHandle, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, BackHandler, findNodeHandle, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from 'zustand';
 import type { VersionVerdict } from '@domain/app-version/version-verdict';

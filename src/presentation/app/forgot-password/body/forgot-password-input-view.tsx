@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@presentation/base/widgets/buttons/pressable';
 import { AuthAutofill } from '@presentation/base/widgets/inputs/auth-autofill';
 import { AuthTextField } from '@presentation/base/widgets/inputs/auth-text-field';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

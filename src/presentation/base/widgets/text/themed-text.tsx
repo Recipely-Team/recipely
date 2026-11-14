@@ -1,11 +1,15 @@
 import { StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
 import { isString } from '@core/guards/type-guards';
+import { CharConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { themedTextVariants } from '@presentation/base/widgets/text/themed-text-variants';
 import { fontSizes, fontWeights, letterSpacings } from '@presentation/base/theme';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { ThemedTextVariant } from '@presentation/base/widgets/text/themed-text-variant';
+import { ScreenElementKind } from '@domain/assistant/screen/screen-element-kind';
+import { useScreenElement } from '@presentation/base/hooks/assistant/screen/use-screen-element';
+import { textOfChildren } from '@presentation/base/hooks/assistant/screen/text-of-children';
 
 export interface ThemedTextProps extends TextProps {
   variant?: ThemedTextVariant;
@@ -32,6 +36,10 @@ export const ThemedText = ({
   // Upper-cased here with the app locale; textTransform ignores the language (Turkish i).
   const content =
     variant === 'label' && isString(children) ? upperCase(children) : children;
+  // The assistant reads what the user reads; hidden-from-a11y text is hidden from it too.
+  useScreenElement(ScreenElementKind.Text, () => ({
+    label: rest.accessibilityElementsHidden === true || rest.importantForAccessibility === 'no-hide-descendants' ? CharConstants.empty : textOfChildren(content, false),
+  }));
   return (
     <Text {...rest} style={[styles[variant], { color, lineHeight }, style]}>
       {content}
