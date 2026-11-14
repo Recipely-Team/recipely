@@ -23,8 +23,8 @@ const ideasInput = (over: Partial<FridgeIdeasInput> = {}): FridgeIdeasInput => (
 describe('ScanFridgeUseCase', () => {
   it('refuses no photo and more than three with the server keys, without a request', async () => {
     const r = repo();
-    const none = await new ScanFridgeUseCase(r).execute({ photos: [], locale: null });
-    const many = await new ScanFridgeUseCase(r).execute({ photos: [photo, photo, photo, photo], locale: null });
+    const none = await new ScanFridgeUseCase(r).execute({ photos: [], locale: null, note: null });
+    const many = await new ScanFridgeUseCase(r).execute({ photos: [photo, photo, photo, photo], locale: null, note: null });
     expect(!none.ok && none.failure.messageKey).toBe(ErrorMessageKey.fridgeNoPhotos);
     expect(!many.ok && many.failure.messageKey).toBe(ErrorMessageKey.fridgeTooManyPhotos);
     expect(r.scan).not.toHaveBeenCalled();
@@ -32,8 +32,8 @@ describe('ScanFridgeUseCase', () => {
 
   it('passes one to three photos on', async () => {
     const r = repo();
-    await new ScanFridgeUseCase(r).execute({ photos: [photo, photo, photo], locale: 'en' });
-    expect(r.scan).toHaveBeenCalledWith({ photos: [photo, photo, photo], locale: 'en' });
+    await new ScanFridgeUseCase(r).execute({ photos: [photo, photo, photo], locale: 'en', note: 'top shelf' });
+    expect(r.scan).toHaveBeenCalledWith({ photos: [photo, photo, photo], locale: 'en', note: 'top shelf' });
   });
 });
 

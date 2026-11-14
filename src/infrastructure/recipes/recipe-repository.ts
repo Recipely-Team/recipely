@@ -150,8 +150,8 @@ export class RecipeRepository implements RecipeRepositoryInterface {
    * The XHR multipart path, like every upload here, on its own 70 s budget:
    * the reading itself takes 10-30 s and the backend stops at 60.
    */
-  async importRecipeFromFiles(batch: ImportFileBatch): Promise<Result<FileImportReceipt, Failure>> {
-    const formData = await buildImportFileFormData(batch);
+  async importRecipeFromFiles(batch: ImportFileBatch, note: string | null): Promise<Result<FileImportReceipt, Failure>> {
+    const formData = await buildImportFileFormData(batch, note);
     const result = await this.http.uploadMultipart<FileImportResponseDto>(
       ApiRoutes.recipes.importFile,
       formData,

@@ -10,6 +10,7 @@ import type { FridgeIdeasQuery } from '@presentation/app/fridge/model/ideas/frid
 export type FridgeFlowActionType =
   | { readonly type: 'photosAdded'; readonly photos: readonly FridgePhoto[] }
   | { readonly type: 'photoRemoved'; readonly index: number }
+  | { readonly type: 'noteChanged'; readonly note: string }
   | { readonly type: 'scanStarted' }
   | { readonly type: 'scanSucceeded'; readonly ingredients: readonly FridgeIngredient[] }
   | { readonly type: 'scanFailed'; readonly failure: Failure }

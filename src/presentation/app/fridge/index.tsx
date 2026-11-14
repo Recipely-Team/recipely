@@ -6,6 +6,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { PageTitle } from '@presentation/base/widgets/head/page-title';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
+import { useAssistantPhotoNote } from '@presentation/base/hooks/assistant/actions/use-assistant-photo-note';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { RoutePaths } from '@presentation/base/constants';
 import { PickSource } from '@presentation/base/utils/pick-source';
@@ -44,6 +45,7 @@ export const FridgeScreen = (): React.JSX.Element => {
   const { isExpanded, isWebShell } = useLayout();
   const flow = useFridgeFlow();
   const scrollable = useAssistantScrollable();
+  useAssistantPhotoNote(flow.changeNote);
   const close = useGoBackOrHome(RoutePaths.createRecipe);
   const { state } = flow;
   const { view } = state;
@@ -63,6 +65,8 @@ export const FridgeScreen = (): React.JSX.Element => {
             {view.step === FridgeStep.Capture ? (
               <CaptureStep
                 photos={state.photos}
+                note={state.note}
+                onChangeNote={flow.changeNote}
                 failure={view.failure}
                 canUseCamera={Platform.OS !== 'web'}
                 onTakePhoto={() => void flow.addPhotos(PickSource.Camera)}

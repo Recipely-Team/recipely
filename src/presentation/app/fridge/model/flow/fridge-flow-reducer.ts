@@ -1,6 +1,7 @@
 import type { Failure } from '@core/failure';
 import { ErrorMessageKey } from '@core/failure';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
+import { PHOTO_NOTE_MAX_CHARS } from '@domain/common/photo-note';
 import { FridgeConfidence } from '@domain/fridge/scan/fridge-confidence';
 import { FridgeLimits } from '@domain/fridge/fridge-limits';
 import { normalizeFridgeIngredients } from '@domain/fridge/normalize-fridge-ingredients';
@@ -50,6 +51,8 @@ export const fridgeFlowReducer = (state: FridgeFlowState, action: FridgeFlowActi
       return { ...state, photos: [...state.photos, ...action.photos].slice(ValueConstants.zero, FridgeLimits.photosMax) };
     case 'photoRemoved':
       return { ...state, photos: state.photos.filter((_, index) => index !== action.index) };
+    case 'noteChanged':
+      return { ...state, note: action.note.slice(ValueConstants.zero, PHOTO_NOTE_MAX_CHARS) };
     case 'scanStarted':
       return state.photos.length === ValueConstants.zero ? state : { ...state, view: { step: FridgeStep.Analysing } };
     case 'scanSucceeded': {
@@ -66,7 +69,7 @@ export const fridgeFlowReducer = (state: FridgeFlowState, action: FridgeFlowActi
     case 'scanCancelled':
       return { ...state, view: { step: FridgeStep.Capture, failure: null } };
     case 'retake':
-      return { ...state, photos: [], view: { step: FridgeStep.Capture, failure: null } };
+      return { ...state, photos: [], note: CharConstants.empty, view: { step: FridgeStep.Capture, failure: null } };
     case 'typeInstead':
       return { ...state, chips: [], source: IngredientSource.Typed, view: { step: FridgeStep.Ingredients, failure: null, startAdding: true } };
     case 'chipRemoved':

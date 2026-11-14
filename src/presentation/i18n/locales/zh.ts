@@ -2208,4 +2208,10 @@ export const zh = {
     skip: '跳过',
     notNow: '以后再说',
   },
+  photoNote: {
+    label: "添加备注（可选）",
+    fridgePlaceholder: "例如：忽略酱料，最上层不是我的",
+    importPlaceholder: "例如：只要页面上的第二个食谱",
+    counterA11y: "{count}/{max} 个字符",
+  },
 };

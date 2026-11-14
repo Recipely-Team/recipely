@@ -4,4 +4,6 @@ import type { FridgePhoto } from '@domain/fridge/scan/fridge-photo';
 export interface FridgeScanInput {
   readonly photos: readonly FridgePhoto[];
   readonly locale: string | null;
+  /** What the user wants from these photos, e.g. "only the top shelf"; null for none. */
+  readonly note: string | null;
 }

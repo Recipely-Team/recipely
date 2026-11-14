@@ -123,6 +123,11 @@ export const AssistantAction = {
   AddToShoppingList: 'addToShoppingList',
   /** Reads a described meal into Add food's confirm list; the user ticks and adds. */
   LogMeal: 'logMeal',
+  /**
+   * On the fridge scan or file import: writes the optional note sent with the
+   * photos (arg the note, up to 300 characters; no arg clears it).
+   */
+  SetPhotoNote: 'setPhotoNote',
 } as const;
 
 export type AssistantActionType = (typeof AssistantAction)[keyof typeof AssistantAction];

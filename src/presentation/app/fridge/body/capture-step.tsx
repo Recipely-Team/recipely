@@ -4,6 +4,7 @@ import type { Failure } from '@core/failure';
 import { FridgeLimits } from '@domain/fridge/fridge-limits';
 import type { FridgePhoto } from '@domain/fridge/scan/fridge-photo';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
+import { PhotoNoteField } from '@presentation/base/widgets/inputs/photo-note-field';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, fontSizes, fontWeights, fridgeSizes, iconSizes, lineHeights, radii, spacing } from '@presentation/base/theme';
@@ -17,6 +18,9 @@ import { ValueConstants } from '@core/constants';
 
 export interface CaptureStepProps {
   photos: readonly FridgePhoto[];
+  /** The optional note sent with the photos; its field appears once there is a photo. */
+  note: string;
+  onChangeNote: (note: string) => void;
   failure: Failure | null;
   /** False where there is no camera to open (the web shell's file picker covers both). */
   canUseCamera: boolean;
@@ -30,7 +34,7 @@ export interface CaptureStepProps {
  * photos, a three-column 3:4 grid whose empty slots add more. A failed scan
  * comes back here with a danger banner and the photos kept.
  */
-export const CaptureStep = ({ photos, failure, canUseCamera, onTakePhoto, onChoosePhotos, onRemovePhoto }: CaptureStepProps): React.JSX.Element => {
+export const CaptureStep = ({ photos, note, onChangeNote, failure, canUseCamera, onTakePhoto, onChoosePhotos, onRemovePhoto }: CaptureStepProps): React.JSX.Element => {
   const t = useTranslations();
   const colors = useTheme().colors;
   const copy = t.fridge;
@@ -77,6 +81,7 @@ export const CaptureStep = ({ photos, failure, canUseCamera, onTakePhoto, onChoo
             ))}
           </View>
           {room > ValueConstants.zero ? sources(true) : null}
+          <PhotoNoteField value={note} onChangeText={onChangeNote} placeholder={t.photoNote.fridgePlaceholder} editable />
         </>
       )}
 

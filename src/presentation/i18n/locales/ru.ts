@@ -2204,4 +2204,10 @@ export const ru = {
     skip: 'Пропустить',
     notNow: 'Не сейчас',
   },
+  photoNote: {
+    label: "Добавить заметку (необязательно)",
+    fridgePlaceholder: "напр. Не считай соусы, верхняя полка не моя",
+    importPlaceholder: "напр. Только второй рецепт на странице",
+    counterA11y: "{count} из {max} символов",
+  },
 };

@@ -85,6 +85,10 @@ export const controlSizes = {
   textArea: scale(60),
   /** Minimum width of the compact "Save" action. */
   saveBtnMinWidth: scale(72),
+  /** Resting height of the note under photos sent to the AI (specs/photo-note-rn-spec.md). */
+  photoNoteField: scale(72),
+  /** Tallest the photo note grows before it scrolls inside itself. */
+  photoNoteFieldMax: scale(160),
   /** Width of the two-segment language selector. */
   languageSelectorWidth: scale(100),
   /** Multi-line AI prompt field. */

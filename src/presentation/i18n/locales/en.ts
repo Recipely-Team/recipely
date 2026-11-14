@@ -2248,4 +2248,10 @@ export const en = {
     skip: 'Skip',
     notNow: 'Not now',
   },
+  photoNote: {
+    label: "Add a note (optional)",
+    fridgePlaceholder: "e.g. Ignore the sauces, the top shelf isn't mine",
+    importPlaceholder: "e.g. Only the second recipe on the page",
+    counterA11y: "{count} of {max} characters",
+  },
 };

@@ -2208,4 +2208,10 @@ export const tr: TranslationsType = {
     skip: 'Geç',
     notNow: 'Şimdi değil',
   },
+  photoNote: {
+    label: "Not ekle (isteğe bağlı)",
+    fridgePlaceholder: "ör. Sosları sayma, üst raf benim değil",
+    importPlaceholder: "ör. Sayfadaki yalnızca ikinci tarif",
+    counterA11y: "{count} / {max} karakter",
+  },
 };

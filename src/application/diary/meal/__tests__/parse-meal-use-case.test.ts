@@ -35,7 +35,7 @@ describe('ParseMealUseCase', () => {
 
   it('passes a photo straight through', async () => {
     const { repo, parseMeal } = makeRepo();
-    const input = { kind: MealParseInputKind.Photo, uri: 'file:///m.jpg', fileName: 'meal-1.jpg', mimeType: 'image/jpeg', locale: null } as const;
+    const input = { kind: MealParseInputKind.Photo, uri: 'file:///m.jpg', fileName: 'meal-1.jpg', mimeType: 'image/jpeg', locale: null, note: null } as const;
     await new ParseMealUseCase(repo).execute(input);
     expect(parseMeal).toHaveBeenCalledWith(input);
   });

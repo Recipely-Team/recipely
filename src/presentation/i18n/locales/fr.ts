@@ -2204,4 +2204,10 @@ export const fr = {
     skip: 'Passer',
     notNow: 'Plus tard',
   },
+  photoNote: {
+    label: "Ajouter une note (facultatif)",
+    fridgePlaceholder: "ex. : Ignore les sauces, l'étagère du haut n'est pas à moi",
+    importPlaceholder: "ex. : Seulement la deuxième recette de la page",
+    counterA11y: "{count} sur {max} caractères",
+  },
 };

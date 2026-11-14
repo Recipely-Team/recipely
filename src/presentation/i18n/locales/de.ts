@@ -2204,4 +2204,10 @@ export const de = {
     skip: 'Überspringen',
     notNow: 'Nicht jetzt',
   },
+  photoNote: {
+    label: "Notiz hinzufügen (optional)",
+    fridgePlaceholder: "z. B. Soßen ignorieren, das obere Fach gehört nicht mir",
+    importPlaceholder: "z. B. Nur das zweite Rezept auf der Seite",
+    counterA11y: "{count} von {max} Zeichen",
+  },
 };
