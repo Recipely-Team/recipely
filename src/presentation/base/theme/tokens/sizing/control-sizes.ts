@@ -87,8 +87,6 @@ export const controlSizes = {
   saveBtnMinWidth: scale(72),
   /** Resting height of the note under photos sent to the AI (specs/photo-note-rn-spec.md). */
   photoNoteField: scale(72),
-  /** Tallest the photo note grows before it scrolls inside itself. */
-  photoNoteFieldMax: scale(160),
   /** Width of the two-segment language selector. */
   languageSelectorWidth: scale(100),
   /** Multi-line AI prompt field. */
@@ -97,6 +95,8 @@ export const controlSizes = {
   messageField: scale(112),
   /** Minimum width of a docked timer chip. */
   timerChipMinWidth: scale(150),
+  /** Tallest the photo note grows before it scrolls inside itself. */
+  photoNoteFieldMax: scale(160),
   /** Maximum width of a docked timer chip, past which its name truncates. */
   timerChipMaxWidth: scale(210),
 } as const;
