@@ -128,7 +128,9 @@ const CreateRecipeContent = (): React.JSX.Element => {
   return (
     <KeyboardAvoider style={[styles.root, { backgroundColor: colors.background }]}>
       <ResponsiveContainer route="createRecipe" gutter={false} fill>
-        <CreateRecipePreview vm={vm} />
+        <LanguagePreviewFrame>
+          <CreateRecipePreview vm={vm} />
+        </LanguagePreviewFrame>
       </ResponsiveContainer>
 
       <PhotosSheet
@@ -185,10 +187,6 @@ const styles = StyleSheet.create({
   },
 });
 
-export const CreateRecipeScreen = (): React.JSX.Element => (
-  <LanguagePreviewFrame>
-    <CreateRecipeContent />
-  </LanguagePreviewFrame>
-);
+export const CreateRecipeScreen = CreateRecipeContent;
 
 export default CreateRecipeScreen;
