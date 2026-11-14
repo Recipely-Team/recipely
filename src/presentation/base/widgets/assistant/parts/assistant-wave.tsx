@@ -40,11 +40,14 @@ export const AssistantWave = ({ active, color, bars, height }: AssistantWaveProp
   const [animated] = useState(() => new Animated.Value(ValueConstants.zero));
 
   useEffect(() => {
-    Animated.timing(animated, {
+    const settle = Animated.timing(animated, {
       toValue: active ? level : ValueConstants.zero,
       duration: assistantMetrics.levelSettleMs,
       useNativeDriver: true,
-    }).start();
+    });
+    settle.start();
+    // Stopped on unmount, so a native animation never fires into a removed view.
+    return () => settle.stop();
   }, [animated, active, level]);
 
   const weights = useMemo(
