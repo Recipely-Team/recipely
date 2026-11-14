@@ -128,6 +128,10 @@ export const AssistantAction = {
    * photos (arg the note, up to 300 characters; no arg clears it).
    */
   SetPhotoNote: 'setPhotoNote',
+  /** On Cook from my fridge: reads the photos for ingredients (the "Find ingredients" button). */
+  ScanFridge: 'scanFridge',
+  /** On Cook from my fridge: asks for recipe ideas from the ingredients, or more ideas when some are shown. */
+  ShowFridgeIdeas: 'showFridgeIdeas',
 } as const;
 
 export type AssistantActionType = (typeof AssistantAction)[keyof typeof AssistantAction];
