@@ -123,6 +123,11 @@ export const AssistantAction = {
   AddToShoppingList: 'addToShoppingList',
   /** Reads a described meal into Add food's confirm list; the user ticks and adds. */
   LogMeal: 'logMeal',
+  /**
+   * On the create/edit screen: shows the screen in another language (arg a
+   * language code such as `de`, or its own name such as `Deutsch`).
+   */
+  SetScreenLanguage: 'setScreenLanguage',
 } as const;
 
 export type AssistantActionType = (typeof AssistantAction)[keyof typeof AssistantAction];
