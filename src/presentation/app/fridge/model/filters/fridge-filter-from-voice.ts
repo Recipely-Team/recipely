@@ -1,3 +1,4 @@
+import { CharConstants } from '@core/constants';
 import { FridgeDiet } from '@domain/fridge/ideas/fridge-diet';
 import { FridgeMaxMinutes, type FridgeMaxMinutesType } from '@domain/fridge/ideas/fridge-max-minutes';
 import { FridgeLimits } from '@domain/fridge/fridge-limits';
@@ -8,6 +9,9 @@ const FridgeVoiceFilterKey = { time: 'time', diet: 'diet', servings: 'servings' 
 /** "No time limit" / "no diet". */
 const ANY = 'any';
 const DECIMAL = 10;
+/** Dashes and spaces a spoken value may carry: `high-protein`, `high protein`. */
+const SEPARATORS = /[\s-]/g;
+const fold = (word: string): string => word.replace(SEPARATORS, CharConstants.empty).toLowerCase();
 
 const MINUTES: readonly number[] = Object.values(FridgeMaxMinutes);
 const DIETS: readonly string[] = Object.values(FridgeDiet);
@@ -25,7 +29,7 @@ export const fridgeFilterFromVoice = (key: string, value: string): Partial<Fridg
       return MINUTES.includes(minutes) ? { maxMinutes: minutes as FridgeMaxMinutesType } : null;
     }
     case FridgeVoiceFilterKey.diet: {
-      const diet = said.toLowerCase() === ANY ? FridgeDiet.None : DIETS.find((d) => d.toLowerCase() === said.toLowerCase());
+      const diet = said.toLowerCase() === ANY ? FridgeDiet.None : DIETS.find((d) => fold(d) === fold(said));
       return diet === undefined ? null : { diet: diet as FridgeFilters['diet'] };
     }
     case FridgeVoiceFilterKey.servings: {

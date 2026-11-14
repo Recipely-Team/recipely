@@ -35,7 +35,7 @@ const LIST_JOIN = CharConstants.commaSpace;
  * - **Words the model already knows** where one fits: `attachPhoto` (arg
  *   `camera` or none for the library), `addIngredient` / `removeIngredient` on
  *   the chips (an ingredient said on the photo step switches to typing them),
- *   `addFilter time=15|30|60|any, diet=vegetarian|vegan|highProtein|any,
+ *   `addFilter time=15|30|60|any, diet=vegetarian|vegan|high-protein|any,
  *   servings=1..12`, `clearFilters`, `openRecipe` to cook an idea,
  *   `addToShoppingList` for an idea's missing items, and `goBack` walking
  *   the steps. Two new ones name the screen's own buttons: `scanFridge` and

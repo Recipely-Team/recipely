@@ -4,7 +4,7 @@ describe('fridgeFilterFromVoice', () => {
   it('reads the time, diet and servings the screen offers', () => {
     expect(fridgeFilterFromVoice('time', '30')).toEqual({ maxMinutes: 30 });
     expect(fridgeFilterFromVoice('time', 'any')).toEqual({ maxMinutes: null });
-    expect(fridgeFilterFromVoice('Diet', 'highprotein')).toEqual({ diet: 'highProtein' });
+    expect(fridgeFilterFromVoice('Diet', 'high-protein')).toEqual({ diet: 'highProtein' });
     expect(fridgeFilterFromVoice('diet', 'any')).toEqual({ diet: 'none' });
     expect(fridgeFilterFromVoice('servings', '4')).toEqual({ servings: 4 });
   });
