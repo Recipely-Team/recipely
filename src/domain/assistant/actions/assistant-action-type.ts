@@ -134,6 +134,11 @@ export const AssistantAction = {
   ScanFridge: 'scanFridge',
   /** On Cook from my fridge: asks for recipe ideas from the ingredients, or more ideas when some are shown. */
   ShowFridgeIdeas: 'showFridgeIdeas',
+  /**
+   * On the create/edit screen: shows the screen in another language (arg a
+   * language code such as `de`, or its own name such as `Deutsch`).
+   */
+  SetScreenLanguage: 'setScreenLanguage',
 } as const;
 
 export type AssistantActionType = (typeof AssistantAction)[keyof typeof AssistantAction];
