@@ -176,6 +176,7 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="import-recipe/index" options={{ headerShown: false }} />
         <Stack.Screen name="fridge/index" options={{ headerShown: false }} />
         <Stack.Screen name="settings/index" options={{ headerShown: false }} />
+        <Stack.Screen name="premium/index" options={{ headerShown: false, presentation: 'modal' }} />
         <Stack.Screen name="forgot-password/index" options={{ headerShown: false }} />
         <Stack.Screen name="reset-password/index" options={{ headerShown: false }} />
         <Stack.Screen name="ai-generate/index" options={{ headerShown: false }} />

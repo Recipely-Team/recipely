@@ -167,4 +167,9 @@ export const ApiRoutes = {
     /** POST `{ keyId, attestation, challenge }` — registers the attested key's public half. */
     appleKey: '/attestation/apple-key',
   },
+  /** Premium: the backend verifies a store purchase with Apple or Google and answers the entitlement. */
+  subscriptions: {
+    /** POST `{ platform, productId, transactionId, purchaseToken }` → `{ isPremium, expiresAt }`. */
+    verify: '/subscriptions/verify',
+  },
 } as const;

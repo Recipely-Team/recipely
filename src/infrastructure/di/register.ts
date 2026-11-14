@@ -43,6 +43,7 @@ import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 import { AdsService } from '@infrastructure/ads/ads-service';
 import { IapSubscriptionStore } from '@infrastructure/subscriptions/iap-subscription-store';
 import { reactNativeIapModule } from '@infrastructure/subscriptions/react-native-iap-module';
+import { SubscriptionVerifierRepository } from '@infrastructure/subscriptions/subscription-verifier-repository';
 import { OsAssistantBridge } from '@infrastructure/assistant/os/os-assistant-bridge';
 import { WindowPostureBridge } from '@infrastructure/display/window-posture-bridge';
 import { AssistantMessenger } from '@infrastructure/assistant/message/assistant-messenger';
@@ -176,6 +177,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.ShoppingOutboxRepository, () => new ShoppingOutboxRepository(kvStore));
   container.register(TOKENS.MealPlanRepository, () => new MealPlanRepository(http));
   container.register(TOKENS.FridgeRepository, () => new FridgeRepository(http));
+  container.register(TOKENS.SubscriptionVerifier, () => new SubscriptionVerifierRepository(http));
   container.register(TOKENS.UserProfileRepository, () => new UserProfileRepository(http));
   container.register(TOKENS.FeedbackRepository, () => new FeedbackRepository(http));
   container.register(TOKENS.AppVersionRepository, () => new AppVersionRepository(http, appBuild));

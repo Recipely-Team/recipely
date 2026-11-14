@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2488 source files.
+[architecture.md](architecture.md). 2510 source files.
 
 ## Layers
 
@@ -16,7 +16,7 @@ Never upward. Exceptions: `infrastructure/constants/*` is importable anywhere;
 
 ## Routes — `src/presentation/app/<segment>/index.tsx`
 
-`ai-generate` · `automations` · `create-recipe` · `creators` · `diary` · `edit-profile` · `forgot-password` · `fridge` · `import-recipe` · `instagram-connected` · `login` · `my-recipes` · `notifications` · `onboarding` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `shopping-list` · `verify-code`
+`ai-generate` · `automations` · `create-recipe` · `creators` · `diary` · `edit-profile` · `forgot-password` · `fridge` · `import-recipe` · `instagram-connected` · `login` · `my-recipes` · `notifications` · `onboarding` · `premium` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `shopping-list` · `verify-code`
 
 Nested detail pages: `creators/[…]`, `recipes/[…]`.
 Each page folder holds `body/ items/ sheets/ hooks/ model/` (+ `shared/` when
@@ -52,7 +52,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(76)_
 - `shopping/` — items, outbox, recipe _(18)_
 - `storage/` _(4)_
-- `subscriptions/` _(3)_
+- `subscriptions/` _(5)_
 - `timers/` _(4)_
 - `user-profile/` _(5)_
 
@@ -68,7 +68,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `config/` _(6)_
 - `creators/` — claim, list, profile _(14)_
 - `device/` _(2)_
-- `di/` — features _(17)_
+- `di/` — features _(18)_
 - `diary/` — day, entries, foods, goals, meal, month, states _(36)_
 - `drafts/` — list, read, write _(8)_
 - `favorites/` _(5)_
@@ -84,6 +84,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `shopping/` — read, sync, write _(20)_
 - `storage/` _(4)_
 - `store/` — paging _(14)_
+- `subscriptions/` _(6)_
 - `timers/` _(7)_
 - `user-profile/` — follow, recipes, states _(12)_
 
@@ -120,7 +121,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(33)_
 - `shopping/` — dtos _(13)_
 - `storage/` _(9)_
-- `subscriptions/` _(4)_
+- `subscriptions/` — dtos _(9)_
 - `user-profile/` _(4)_
 
 ## `src/core/` — building blocks only
@@ -185,4 +186,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: e52169789248c388 -->
+<!-- fingerprint: 9cb85be2be55c69a -->

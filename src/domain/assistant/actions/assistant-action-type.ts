@@ -139,6 +139,15 @@ export const AssistantAction = {
    * language code such as `de`, or its own name such as `Deutsch`).
    */
   SetScreenLanguage: 'setScreenLanguage',
+  /** On the premium screen: picks the monthly or yearly plan (arg `monthly` | `yearly`). */
+  ChoosePlan: 'choosePlan',
+  /**
+   * On the premium screen: starts buying the chosen plan. The store's own sheet is
+   * the confirmation (Face ID or a double press), so no spoken yes is asked first.
+   */
+  Subscribe: 'subscribe',
+  /** On the premium screen: restores premium from purchases the store already holds. */
+  RestorePurchases: 'restorePurchases',
 } as const;
 
 export type AssistantActionType = (typeof AssistantAction)[keyof typeof AssistantAction];

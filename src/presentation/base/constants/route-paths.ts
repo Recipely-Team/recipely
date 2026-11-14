@@ -46,6 +46,7 @@ export const RoutePaths = {
   /** Edit Profile scrolled to its creator account section — where a claim decision is acted on. */
   editProfileCreatorAccount: `/edit-profile?section=${EditProfileSection.CreatorAccount}`,
   settings: '/settings',
+  premium: '/premium',
   /** Instagram automations: the creator's comment-to-DM rules. */
   automations: '/automations',
   /** The viewer's shopping list (an account page, not crawlable content). */

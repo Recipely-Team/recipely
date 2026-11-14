@@ -16,6 +16,7 @@ Disallow: /onboarding
 
 # Behind the account: nothing here renders for a signed-out crawler.
 Disallow: /settings
+Disallow: /premium
 Disallow: /profile
 Disallow: /edit-profile
 Disallow: /notifications
