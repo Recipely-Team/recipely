@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import { AppStateStatusValue } from '@infrastructure/constants/app-state-status';
 import { AssistantView } from '@application/assistant/session/assistant-view';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { OsIntentId } from '@domain/assistant/os/os-intent-id';
 import { isStaleInvocation } from '@domain/assistant/os/is-stale-invocation';
+import { InFlightInvocations } from '@domain/assistant/os/in-flight-invocations';
 import type { OsIntentInvocation } from '@domain/assistant/os/os-intent-invocation';
 import type { OsIntentLink } from '@presentation/navigation/os-intent-link-shape';
 import { PendingOsIntent } from '@presentation/navigation/pending-os-intent';
@@ -72,6 +73,8 @@ export const useOsAssistantInvocations = (): void => {
   const { assistantActionRegistry: registry, osAssistant, assistantSessionStore } = useStores();
   const locale = useLocale();
   const isDraining = useRef(false);
+  // One per mounted hook: the event and the drain both reach a request through this instance.
+  const [inFlight] = useState(() => new InFlightInvocations());
 
   const perform = useCallback(
     async (request: OsIntentRequest): Promise<void> => {
@@ -92,15 +95,19 @@ export const useOsAssistantInvocations = (): void => {
 
   const dispatch = useCallback(
     async (invocation: OsIntentInvocation): Promise<void> => {
+      // Announced by the event while also queued: whichever road arrives second finds it claimed.
+      if (!inFlight.claim(invocation.invocationId)) return;
       // Acknowledged whatever perform did; a failed acknowledge is swallowed so it cannot strand the queue.
       const acknowledge = (): Promise<void> => osAssistant.acknowledge(invocation.invocationId).catch(() => undefined);
       const work = isStaleInvocation(invocation, Date.now()) ? Promise.resolve() : perform(invocation);
-      await work.then(acknowledge, async (failure: unknown) => {
-        await acknowledge();
-        throw failure;
-      });
+      await work
+        .then(acknowledge, async (failure: unknown) => {
+          await acknowledge();
+          throw failure;
+        })
+        .finally(() => inFlight.release(invocation.invocationId));
     },
-    [osAssistant, perform],
+    [inFlight, osAssistant, perform],
   );
 
   const drain = useCallback(async (): Promise<void> => {

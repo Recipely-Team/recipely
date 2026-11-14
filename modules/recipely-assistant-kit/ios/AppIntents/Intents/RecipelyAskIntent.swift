@@ -59,7 +59,7 @@ struct RecipelyAskIntent: AppIntent, ForegroundContinuableIntent {
 
   func perform() async throws -> some IntentResult & ProvidesDialog {
     guard let reply = await RecipelyAssistantClient.ask(question) else {
-      try await comeForward(running: RecipelyRequest.enqueue(id: "askRecipely", action: nil, arg: question))
+      try await comeForward(running: RecipelyRequest.enqueue(id: "askRecipely", action: nil, arg: question, announce: false))
       return .result(dialog: Self.openingApp)
     }
 
@@ -67,7 +67,7 @@ struct RecipelyAskIntent: AppIntent, ForegroundContinuableIntent {
       return .result(dialog: IntentDialog(stringLiteral: reply.text))
     }
 
-    try await comeForward(running: RecipelyRequest.enqueue(id: "askRecipely", action: action, arg: reply.arg))
+    try await comeForward(running: RecipelyRequest.enqueue(id: "askRecipely", action: action, arg: reply.arg, announce: false))
     return .result(dialog: reply.spokenText.map { IntentDialog(stringLiteral: $0) } ?? Self.openingApp)
   }
 
@@ -88,5 +88,7 @@ struct RecipelyAskIntent: AppIntent, ForegroundContinuableIntent {
       RecipelyRequest.withdraw(invocationId)
       throw error
     }
+    // The user said yes: only now may a running app act on the request.
+    RecipelyRequest.announce(invocationId)
   }
 }

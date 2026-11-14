@@ -72,6 +72,20 @@ public enum RecipelyAssistantStore {
     defaults.set(queue, forKey: queueKey)
   }
 
+  /// Posted when a queued request should reach a running app at once. The
+  /// module turns it into the `onInvocation` event; with no app running nobody
+  /// listens, and the queue still holds the request for the next launch.
+  public static let invocationAnnounced = Notification.Name("recipely.assistant.invocationAnnounced")
+
+  /// Announces a request already in the queue. Callers announce only once the
+  /// user has agreed to run it: "Ask Recipely" queues, asks to continue in the
+  /// app, and announces after the yes, so a no never reaches the app.
+  public static func announce(invocationId: String) {
+    guard let invocation = pendingInvocations().first(where: { $0["invocationId"] as? String == invocationId })
+    else { return }
+    NotificationCenter.default.post(name: invocationAnnounced, object: nil, userInfo: invocation)
+  }
+
   public static func pendingInvocations() -> [[String: Any]] {
     defaults?.array(forKey: queueKey) as? [[String: Any]] ?? []
   }
