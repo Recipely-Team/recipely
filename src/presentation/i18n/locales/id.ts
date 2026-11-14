@@ -1329,6 +1329,7 @@ export const id = {
     moreCalories: 'Tambah 50 kkal',
   },
   shopping: {
+    share: "Bagikan daftar",
     toBuyCount: "{n} perlu dibeli",
     listEmptyShort: "Kosong",
     cartA11y: "Daftar belanja, {n} perlu dibeli",

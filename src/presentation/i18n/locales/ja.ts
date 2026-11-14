@@ -1329,6 +1329,7 @@ export const ja = {
     moreCalories: '50 kcal 増やす',
   },
   shopping: {
+    share: "リストを共有",
     toBuyCount: "未購入 {n} 件",
     listEmptyShort: "空です",
     cartA11y: "買い物リスト、未購入 {n} 件",

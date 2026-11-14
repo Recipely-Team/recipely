@@ -11,6 +11,7 @@ import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
 import { useShoppingList } from '@presentation/app/shopping-list/hooks/use-shopping-list';
 import { useShoppingItemEditor } from '@presentation/app/shopping-list/hooks/use-shopping-item-editor';
+import { useShareShoppingList } from '@presentation/app/shopping-list/hooks/use-share-shopping-list';
 import { useAssistantShoppingActions } from '@presentation/app/shopping-list/hooks/use-assistant-shopping-actions';
 import { ShoppingConfirm } from '@presentation/app/shopping-list/model/shopping-confirm';
 import { ShoppingListBar } from '@presentation/app/shopping-list/body/shopping-list-bar';
@@ -32,11 +33,13 @@ export const ShoppingListScreen = (): React.JSX.Element => {
   const list = vm.list;
   const scrollable = useAssistantScrollable(list.status !== StoreStatus.Error);
   const copy = t.shopping;
+  const share = useShareShoppingList(vm.items);
   useAssistantShoppingActions({
     items: vm.items,
     listState: list.status === StoreStatus.Loaded ? ListState.Ready : list.status === StoreStatus.Error ? ListState.Failed : ListState.Loading,
     onToggle: vm.onToggle,
     onReload: vm.onRefresh,
+    onShare: share,
   });
 
   const body = (): React.JSX.Element => {
@@ -52,7 +55,7 @@ export const ShoppingListScreen = (): React.JSX.Element => {
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <PageTitle subject={copy.title} />
-      <ShoppingListBar onBack={vm.onBack} />
+      <ShoppingListBar onBack={vm.onBack} onShare={vm.items.length > ValueConstants.zero ? share : null} />
       <ResponsiveContainer route="shoppingList" fill>
         {body()}
       </ResponsiveContainer>

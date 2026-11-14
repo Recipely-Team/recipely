@@ -1329,6 +1329,7 @@ export const ar = {
     moreCalories: "50 سعرة أكثر",
   },
   shopping: {
+    share: "مشاركة القائمة",
     toBuyCount: "{n} للشراء",
     listEmptyShort: "فارغة",
     cartA11y: "قائمة التسوق، {n} للشراء",
