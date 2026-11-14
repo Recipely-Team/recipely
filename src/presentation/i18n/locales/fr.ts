@@ -98,6 +98,11 @@ export const fr = {
       body: 'Notre IA n’a pas pu créer de recette pour le moment. Patientez un instant puis générez à nouveau.',
       short: 'L’IA n’a pas pu répondre — réessayez',
     },
+    aiUsageLimit: {
+      title: "Limite d'IA atteinte",
+      body: "Vous avez utilisé pour l'instant les requêtes d'IA du forfait gratuit. Premium n'a pas de limite.",
+      short: "Limite d'IA atteinte",
+    },
     aiCooldown: {
       title: 'Doucement une seconde',
       body: 'Cela fait beaucoup de demandes à l’IA en peu de temps. Attendez environ une minute puis réessayez.',
@@ -2234,5 +2239,19 @@ export const fr = {
     welcome: "Bienvenue dans Premium",
     a11yPlan: "{plan}, {price}",
     a11yBestValue: "meilleure offre",
+  },
+  aiLimit: {
+    titleDaily: "Limite quotidienne d'IA atteinte",
+    titleMonthly: "Limite mensuelle d'IA atteinte",
+    bodyDaily: "Vous avez utilisé aujourd'hui les {limit} requêtes d'IA incluses dans le forfait gratuit.",
+    bodyMonthly: "Vous avez utilisé ce mois-ci les {limit} requêtes d'IA incluses dans le forfait gratuit.",
+    used: "Utilisées",
+    resets: "Renouvellement",
+    today: "Aujourd'hui, {time}",
+    tomorrow: "Demain, {time}",
+    onDate: "{date}, {time}",
+    planNote: "Forfait gratuit : {daily} par jour, {monthly} par mois",
+    upgrade: "Passer à Premium",
+    gotIt: "Compris",
   },
 };

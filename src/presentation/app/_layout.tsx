@@ -31,6 +31,7 @@ import { useIconFonts } from '@presentation/navigation/use-icon-fonts';
 import { alarmStore } from '@application/timers/alarm-store';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { AiLimitDialog } from '@presentation/base/widgets/dialogs/ai-limit-dialog';
 
 /**
  * Full-screen overlay for the alarm at the head of the queue.
@@ -195,6 +196,7 @@ const RootStack = (): React.JSX.Element => {
       <AssistantPill />
       <ToastHost />
       <AlarmOverlay />
+      <AiLimitDialog />
       <LaunchCampaignHost />
       <SplashOverlay />
       <AppUpdateHost />

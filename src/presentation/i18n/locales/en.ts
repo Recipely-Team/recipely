@@ -104,6 +104,11 @@ export const en = {
       body: "Our AI couldn't produce a recipe right now. Give it a moment and generate again.",
       short: "The AI couldn't respond — try again",
     },
+    aiUsageLimit: {
+      title: "AI limit reached",
+      body: "You've used the AI requests included in the free plan for now. Premium has no limit.",
+      short: "AI limit reached",
+    },
     aiCooldown: {
       title: 'Slow down a sec',
       body: "That's a lot of AI requests in a short time. Wait about a minute and try again.",
@@ -2278,5 +2283,19 @@ export const en = {
     welcome: "Welcome to Premium",
     a11yPlan: "{plan}, {price}",
     a11yBestValue: "best value",
+  },
+  aiLimit: {
+    titleDaily: "Daily AI limit reached",
+    titleMonthly: "Monthly AI limit reached",
+    bodyDaily: "You used all {limit} AI requests included in the free plan today.",
+    bodyMonthly: "You used all {limit} AI requests included in the free plan this month.",
+    used: "Used",
+    resets: "Resets",
+    today: "Today, {time}",
+    tomorrow: "Tomorrow, {time}",
+    onDate: "{date}, {time}",
+    planNote: "Free plan: {daily} per day, {monthly} per month",
+    upgrade: "Upgrade to Premium",
+    gotIt: "Got it",
   },
 };

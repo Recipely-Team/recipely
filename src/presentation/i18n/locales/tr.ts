@@ -101,6 +101,11 @@ export const tr: TranslationsType = {
       body: 'Yapay zekâ şu anda tarif üretemedi. Biraz bekleyip tekrar oluştur.',
       short: 'Yapay zekâ yanıt veremedi — tekrar dene',
     },
+    aiUsageLimit: {
+      title: "Yapay zekâ sınırına ulaşıldı",
+      body: "Ücretsiz plana dahil yapay zekâ isteklerini şimdilik kullandın. Premium'da sınır yok.",
+      short: "Yapay zekâ sınırına ulaşıldı",
+    },
     aiCooldown: {
       title: 'Biraz yavaşla',
       body: 'Kısa sürede çok fazla yapay zekâ isteği gönderdin. Bir dakika bekleyip tekrar dene.',
@@ -2238,5 +2243,19 @@ export const tr: TranslationsType = {
     welcome: "Premium’a hoş geldin",
     a11yPlan: "{plan}, {price}",
     a11yBestValue: "en avantajlı",
+  },
+  aiLimit: {
+    titleDaily: "Günlük yapay zekâ sınırı doldu",
+    titleMonthly: "Aylık yapay zekâ sınırı doldu",
+    bodyDaily: "Ücretsiz plana dahil {limit} yapay zekâ isteğinin hepsini bugün kullandın.",
+    bodyMonthly: "Ücretsiz plana dahil {limit} yapay zekâ isteğinin hepsini bu ay kullandın.",
+    used: "Kullanılan",
+    resets: "Yenilenme",
+    today: "Bugün, {time}",
+    tomorrow: "Yarın, {time}",
+    onDate: "{date}, {time}",
+    planNote: "Ücretsiz plan: günde {daily}, ayda {monthly}",
+    upgrade: "Premium'a geç",
+    gotIt: "Anladım",
   },
 };

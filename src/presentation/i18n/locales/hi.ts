@@ -100,6 +100,11 @@ export const hi: TranslationsType = {
       body: 'AI अभी रेसिपी नहीं बना पाया। थोड़ा रुककर फिर कोशिश करें।',
       short: 'AI जवाब नहीं दे पाया — फिर कोशिश करें',
     },
+    aiUsageLimit: {
+      title: "AI सीमा पूरी हुई",
+      body: "आपने अभी के लिए मुफ़्त प्लान के AI अनुरोध इस्तेमाल कर लिए हैं। Premium में कोई सीमा नहीं है।",
+      short: "AI सीमा पूरी हुई",
+    },
     aiCooldown: {
       title: 'थोड़ा धीरे',
       body: 'कम समय में बहुत ज़्यादा AI अनुरोध भेजे गए हैं। लगभग एक मिनट रुककर फिर कोशिश करें।',
@@ -2230,5 +2235,19 @@ export const hi: TranslationsType = {
     welcome: "Premium में आपका स्वागत है",
     a11yPlan: "{plan}, {price}",
     a11yBestValue: "सबसे किफ़ायती",
+  },
+  aiLimit: {
+    titleDaily: "दैनिक AI सीमा पूरी हुई",
+    titleMonthly: "मासिक AI सीमा पूरी हुई",
+    bodyDaily: "आपने आज मुफ़्त प्लान के सभी {limit} AI अनुरोध इस्तेमाल कर लिए।",
+    bodyMonthly: "आपने इस महीने मुफ़्त प्लान के सभी {limit} AI अनुरोध इस्तेमाल कर लिए।",
+    used: "इस्तेमाल",
+    resets: "रीसेट",
+    today: "आज, {time}",
+    tomorrow: "कल, {time}",
+    onDate: "{date}, {time}",
+    planNote: "मुफ़्त प्लान: रोज़ {daily}, महीने में {monthly}",
+    upgrade: "Premium लें",
+    gotIt: "ठीक है",
   },
 };

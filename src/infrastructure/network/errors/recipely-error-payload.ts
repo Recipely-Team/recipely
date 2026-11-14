@@ -12,4 +12,6 @@ export interface RecipelyErrorPayload {
   message?: string;
   messageKey?: string;
   field?: string;
+  /** Facts about the error for the client, e.g. an AI limit's scope and reset time. */
+  details?: unknown;
 }

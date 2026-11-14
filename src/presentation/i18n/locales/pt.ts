@@ -98,6 +98,11 @@ export const pt = {
       body: 'Nossa IA não conseguiu criar uma receita agora. Espere um instante e gere novamente.',
       short: 'A IA não conseguiu responder — tente novamente',
     },
+    aiUsageLimit: {
+      title: "Limite de IA atingido",
+      body: "Você usou por enquanto os pedidos de IA incluídos no plano gratuito. O Premium não tem limite.",
+      short: "Limite de IA atingido",
+    },
     aiCooldown: {
       title: 'Vá com calma',
       body: 'Foram muitos pedidos para a IA em pouco tempo. Espere cerca de um minuto e tente novamente.',
@@ -2234,5 +2239,19 @@ export const pt = {
     welcome: "Bem-vindo ao Premium",
     a11yPlan: "{plan}, {price}",
     a11yBestValue: "melhor valor",
+  },
+  aiLimit: {
+    titleDaily: "Limite diário de IA atingido",
+    titleMonthly: "Limite mensal de IA atingido",
+    bodyDaily: "Você usou hoje todos os {limit} pedidos de IA incluídos no plano gratuito.",
+    bodyMonthly: "Você usou este mês todos os {limit} pedidos de IA incluídos no plano gratuito.",
+    used: "Usados",
+    resets: "Renova",
+    today: "Hoje, {time}",
+    tomorrow: "Amanhã, {time}",
+    onDate: "{date}, {time}",
+    planNote: "Plano gratuito: {daily} por dia, {monthly} por mês",
+    upgrade: "Assinar o Premium",
+    gotIt: "Entendi",
   },
 };

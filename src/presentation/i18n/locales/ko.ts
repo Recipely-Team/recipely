@@ -100,6 +100,11 @@ export const ko: TranslationsType = {
       body: '지금은 AI가 레시피를 만들지 못했어요. 잠시 후 다시 생성해 주세요.',
       short: 'AI가 응답하지 못했어요 — 다시 시도해 주세요',
     },
+    aiUsageLimit: {
+      title: "AI 한도에 도달했어요",
+      body: "무료 플랜에 포함된 AI 요청을 지금은 모두 사용했어요. Premium은 한도가 없어요.",
+      short: "AI 한도에 도달했어요",
+    },
     aiCooldown: {
       title: '잠깐만 쉬어갈게요',
       body: '짧은 시간에 AI 요청을 너무 많이 보냈어요. 약 1분 후 다시 시도해 주세요.',
@@ -2230,5 +2235,19 @@ export const ko: TranslationsType = {
     welcome: "Premium에 오신 것을 환영합니다",
     a11yPlan: "{plan}, {price}",
     a11yBestValue: "가장 저렴",
+  },
+  aiLimit: {
+    titleDaily: "일일 AI 한도에 도달했어요",
+    titleMonthly: "월간 AI 한도에 도달했어요",
+    bodyDaily: "오늘 무료 플랜에 포함된 AI 요청 {limit}회를 모두 사용했어요.",
+    bodyMonthly: "이번 달 무료 플랜에 포함된 AI 요청 {limit}회를 모두 사용했어요.",
+    used: "사용",
+    resets: "초기화",
+    today: "오늘 {time}",
+    tomorrow: "내일 {time}",
+    onDate: "{date} {time}",
+    planNote: "무료 플랜: 하루 {daily}회, 한 달 {monthly}회",
+    upgrade: "Premium으로 업그레이드",
+    gotIt: "확인",
   },
 };

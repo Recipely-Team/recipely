@@ -20,6 +20,7 @@ import { HttpMethod } from '@infrastructure/network/http/http-method';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { isString } from '@core/guards/type-guards';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
+import { toAiUsageLimit } from '@domain/subscriptions/to-ai-usage-limit';
 
 /** Credential endpoints: a 401 there is a wrong password or a dead refresh token, never a reason to refresh. */
 const CREDENTIAL_ROUTES: ReadonlySet<string> = new Set(Object.values(ApiRoutes.auth));
@@ -145,6 +146,8 @@ export class AxiosHttpClient {
 
   /** Notes the failure with the request id it was sent under, then returns it. */
   private failed<T>(config: AxiosRequestConfig, sentHeaders: unknown, failure: Failure): Result<T, Failure> {
+    const limit = toAiUsageLimit(failure);
+    if (limit !== null) this.options.onAiLimitReached?.(limit);
     const requestId = (sentHeaders as Record<string, unknown> | undefined)?.[HttpHeader.requestId];
     this.options.onRequestFailed?.(
       `${String(config.method ?? CharConstants.empty).toUpperCase()} ${config.url ?? CharConstants.empty} → ${failure.code}${isString(requestId) ? ` (request ${requestId})` : CharConstants.empty}`,

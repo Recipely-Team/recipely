@@ -27,6 +27,7 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKeyType> =
   [ErrorMessageKey.aiInvalidResponse]: 'aiInvalidResponse',
   [ErrorMessageKey.aiUpstreamFailed]: 'aiUpstreamFailed',
   [ErrorMessageKey.aiCooldown]: 'aiCooldown',
+  [ErrorMessageKey.aiUsageLimit]: 'aiUsageLimit',
   [ErrorMessageKey.promptRequired]: 'promptRequired',
   [ErrorMessageKey.promptTooLong]: 'promptTooLong',
   [ErrorMessageKey.refineInstructionRequired]: 'refineInstructionRequired',

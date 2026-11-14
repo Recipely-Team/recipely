@@ -98,6 +98,11 @@ export const ja = {
       body: '現在、AIでレシピを作成できません。少し待ってから、もう一度生成してください。',
       short: 'AIが応答できませんでした — 再試行してください',
     },
+    aiUsageLimit: {
+      title: "AIの上限に達しました",
+      body: "無料プランのAIリクエストを今は使い切りました。Premiumには上限がありません。",
+      short: "AIの上限に達しました",
+    },
     aiCooldown: {
       title: '少しゆっくりいきましょう',
       body: '短時間にAIへのリクエストが多すぎます。1分ほど待ってから、もう一度お試しください。',
@@ -2234,5 +2239,19 @@ export const ja = {
     welcome: "Premiumへようこそ",
     a11yPlan: "{plan}、{price}",
     a11yBestValue: "いちばんお得",
+  },
+  aiLimit: {
+    titleDaily: "1日のAI上限に達しました",
+    titleMonthly: "1か月のAI上限に達しました",
+    bodyDaily: "無料プランに含まれる{limit}回のAIリクエストを今日すべて使いました。",
+    bodyMonthly: "無料プランに含まれる{limit}回のAIリクエストを今月すべて使いました。",
+    used: "使用済み",
+    resets: "リセット",
+    today: "今日 {time}",
+    tomorrow: "明日 {time}",
+    onDate: "{date} {time}",
+    planNote: "無料プラン：1日{daily}回、1か月{monthly}回",
+    upgrade: "Premiumにアップグレード",
+    gotIt: "OK",
   },
 };

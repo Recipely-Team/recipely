@@ -61,6 +61,7 @@ import { DevicePlatform } from '@domain/notifications/device-platform';
 import { API_BASE_URL } from '@infrastructure/constants/api/api-hosts';
 import { isWeb } from '@infrastructure/constants/platform';
 import { logCrashBreadcrumb, recordCrash } from '@infrastructure/firebase/crashlytics-service';
+import type { AiUsageLimit } from '@domain/subscriptions/ai-usage-limit';
 
 /** Host-app callbacks and providers injected into the infrastructure wiring. */
 interface InfrastructureOptions {
@@ -72,6 +73,8 @@ interface InfrastructureOptions {
   onUnauthorized?: () => void;
   /** Invoked on every 426 from the backend's version gate; the app re-checks and shows its update gate. */
   onUpgradeRequired?: () => void;
+  /** Invoked when the free plan's AI cap refuses a request; the app shows its limit dialog. */
+  onAiLimitReached?: (limit: AiUsageLimit) => void;
 }
 
 /**
@@ -153,6 +156,9 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   }
   if (opts?.onUpgradeRequired) {
     httpClientOptions.onUpgradeRequired = opts.onUpgradeRequired;
+  }
+  if (opts?.onAiLimitReached) {
+    httpClientOptions.onAiLimitReached = opts.onAiLimitReached;
   }
   const http = new AxiosHttpClient(httpClientOptions);
   const authRepository = new AuthRepository(http, storage, deviceIdentity, isCookieSession);

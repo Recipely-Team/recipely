@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2513 source files.
+[architecture.md](architecture.md). 2523 source files.
 
 ## Layers
 
@@ -52,7 +52,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(76)_
 - `shopping/` — items, outbox, recipe _(18)_
 - `storage/` _(4)_
-- `subscriptions/` _(5)_
+- `subscriptions/` _(9)_
 - `timers/` _(4)_
 - `user-profile/` _(5)_
 
@@ -84,7 +84,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `shopping/` — read, sync, write _(20)_
 - `storage/` _(4)_
 - `store/` — paging _(14)_
-- `subscriptions/` _(7)_
+- `subscriptions/` _(9)_
 - `timers/` _(7)_
 - `user-profile/` — follow, recipes, states _(12)_
 
@@ -151,9 +151,9 @@ locale list `application/i18n/locale-constants.ts`.
 - `test-support/` — render harness for component tests _(7)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(53)_
 - `timers/` — timer control helpers _(9)_
-- `utils/` (diary, instagram, meal-plan) — small pure helpers _(36)_
+- `utils/` (diary, instagram, meal-plan, subscriptions) — small pure helpers _(37)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, app-update, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, launch-campaign, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(234)_
+- `widgets/` (ads, app-update, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, launch-campaign, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(237)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -186,4 +186,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 21b9be1f030ff191 -->
+<!-- fingerprint: fc21cdcd9583d9a4 -->

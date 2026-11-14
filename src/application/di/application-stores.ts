@@ -1,3 +1,4 @@
+import type { AiLimitStore } from '@application/subscriptions/ai-limit-store-contract';
 import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import type { AssistantSessionStore } from '@application/assistant/session/assistant-session-store-contract';
 import type { StoreApi } from 'zustand/vanilla';
@@ -114,6 +115,8 @@ export interface ApplicationStores {
   fridgeStore: StoreApi<FridgeStore>;
   /** Premium: plans, purchase, restore and the confirmed entitlement. User-scoped. */
   premiumStore: StoreApi<PremiumStore>;
+  /** The free plan's AI-limit dialog, raised by the HTTP client from any screen. */
+  aiLimitStore: StoreApi<AiLimitStore>;
   /** The food search without a store, for the assistant's `logFood` / `searchFood`. */
   searchFoods: SearchFoodsUseCase;
   /** Recent foods, product-aware, for the assistant's name matching. */

@@ -101,6 +101,11 @@ export const zh = {
       body: 'AI 现在无法生成食谱。稍等片刻后再试一次。',
       short: 'AI 暂时无法响应，请重试',
     },
+    aiUsageLimit: {
+      title: "已达到 AI 上限",
+      body: "你暂时已用完免费方案包含的 AI 请求。Premium 没有上限。",
+      short: "已达到 AI 上限",
+    },
     aiCooldown: {
       title: '稍微慢一点',
       body: '你在短时间内发送了太多 AI 请求。等大约一分钟后再试。',
@@ -2238,5 +2243,19 @@ export const zh = {
     welcome: "欢迎加入 Premium",
     a11yPlan: "{plan}，{price}",
     a11yBestValue: "最超值",
+  },
+  aiLimit: {
+    titleDaily: "已达到每日 AI 上限",
+    titleMonthly: "已达到每月 AI 上限",
+    bodyDaily: "你今天已用完免费方案包含的全部 {limit} 次 AI 请求。",
+    bodyMonthly: "你本月已用完免费方案包含的全部 {limit} 次 AI 请求。",
+    used: "已用",
+    resets: "重置时间",
+    today: "今天 {time}",
+    tomorrow: "明天 {time}",
+    onDate: "{date} {time}",
+    planNote: "免费方案：每天 {daily} 次，每月 {monthly} 次",
+    upgrade: "升级到 Premium",
+    gotIt: "知道了",
   },
 };

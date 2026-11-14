@@ -98,6 +98,11 @@ export const id = {
       body: 'AI kami belum bisa membuat resep sekarang. Tunggu sebentar lalu buat lagi.',
       short: 'AI tidak bisa merespons — coba lagi',
     },
+    aiUsageLimit: {
+      title: "Batas AI tercapai",
+      body: "Kamu sudah memakai permintaan AI paket gratis untuk saat ini. Premium tanpa batas.",
+      short: "Batas AI tercapai",
+    },
     aiCooldown: {
       title: 'Pelan-pelan dulu',
       body: 'Terlalu banyak permintaan AI dalam waktu singkat. Tunggu sekitar satu menit lalu coba lagi.',
@@ -2234,5 +2239,19 @@ export const id = {
     welcome: "Selamat datang di Premium",
     a11yPlan: "{plan}, {price}",
     a11yBestValue: "paling hemat",
+  },
+  aiLimit: {
+    titleDaily: "Batas AI harian tercapai",
+    titleMonthly: "Batas AI bulanan tercapai",
+    bodyDaily: "Kamu sudah memakai semua {limit} permintaan AI paket gratis hari ini.",
+    bodyMonthly: "Kamu sudah memakai semua {limit} permintaan AI paket gratis bulan ini.",
+    used: "Terpakai",
+    resets: "Direset",
+    today: "Hari ini, {time}",
+    tomorrow: "Besok, {time}",
+    onDate: "{date}, {time}",
+    planNote: "Paket gratis: {daily} per hari, {monthly} per bulan",
+    upgrade: "Beralih ke Premium",
+    gotIt: "Mengerti",
   },
 };

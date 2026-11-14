@@ -98,6 +98,11 @@ export const de = {
       body: 'Unsere KI konnte gerade kein Rezept erstellen. Warte kurz und generiere erneut.',
       short: 'Die KI konnte nicht antworten — versuch es erneut',
     },
+    aiUsageLimit: {
+      title: "KI-Limit erreicht",
+      body: "Du hast die KI-Anfragen des kostenlosen Plans vorerst aufgebraucht. Premium hat kein Limit.",
+      short: "KI-Limit erreicht",
+    },
     aiCooldown: {
       title: 'Einen Moment langsamer',
       body: 'Das waren viele KI-Anfragen in kurzer Zeit. Warte etwa eine Minute und versuche es erneut.',
@@ -2234,5 +2239,19 @@ export const de = {
     welcome: "Willkommen bei Premium",
     a11yPlan: "{plan}, {price}",
     a11yBestValue: "bester Preis",
+  },
+  aiLimit: {
+    titleDaily: "Tägliches KI-Limit erreicht",
+    titleMonthly: "Monatliches KI-Limit erreicht",
+    bodyDaily: "Du hast heute alle {limit} KI-Anfragen des kostenlosen Plans genutzt.",
+    bodyMonthly: "Du hast diesen Monat alle {limit} KI-Anfragen des kostenlosen Plans genutzt.",
+    used: "Genutzt",
+    resets: "Erneuert",
+    today: "Heute, {time}",
+    tomorrow: "Morgen, {time}",
+    onDate: "{date}, {time}",
+    planNote: "Kostenloser Plan: {daily} pro Tag, {monthly} pro Monat",
+    upgrade: "Zu Premium wechseln",
+    gotIt: "Verstanden",
   },
 };
