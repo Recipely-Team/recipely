@@ -22,8 +22,10 @@ enum RecipelyRequest {
   ///     where the assistant itself decides what to do.
   ///   - arg: the single argument the registry's handlers take.
   /// - Returns: the invocation id, so a caller can withdraw a request the user declined.
+  /// - Parameter announce: false when the caller must first ask the user to
+  ///   continue in the app; it then calls `announce(_:)` after the yes.
   @discardableResult
-  static func enqueue(id: String, action: String?, arg: String?) -> String {
+  static func enqueue(id: String, action: String?, arg: String?, announce shouldAnnounce: Bool = true) -> String {
     // An absent value is an ABSENT KEY, never a null one. `UserDefaults` stores
     // property lists only, and Swift bridges `Optional.none as Any` to
     // `NSNull` — which is not a property-list type, so `set(_:forKey:)` raises
@@ -38,7 +40,13 @@ enum RecipelyRequest {
     if let action { request["action"] = action }
     if let arg { request["arg"] = arg }
     RecipelyAssistantStore.enqueue(request)
+    if shouldAnnounce { RecipelyAssistantStore.announce(invocationId: invocationId) }
     return invocationId
+  }
+
+  /// Announces a queued request once the user has agreed to continue in the app.
+  static func announce(_ invocationId: String) {
+    RecipelyAssistantStore.announce(invocationId: invocationId)
   }
 
   /// Takes back a request the app has not run yet.
