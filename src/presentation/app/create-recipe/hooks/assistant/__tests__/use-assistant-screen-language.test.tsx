@@ -25,9 +25,9 @@ describe('useAssistantScreenLanguage', () => {
     expect(onChange.mock.calls).toEqual([['de'], ['tr']]);
   });
 
-  it('says not_found for a language the app does not have', async () => {
+  it('says unknown_language for a language the app does not have', async () => {
     const onChange = jest.fn();
-    await expect(mount(onChange).run(AssistantAction.SetScreenLanguage, 'klingon')).resolves.toMatchObject({ ok: false, error: AssistantActionError.NotFound });
+    await expect(mount(onChange).run(AssistantAction.SetScreenLanguage, 'klingon')).resolves.toMatchObject({ ok: false, error: AssistantActionError.UnknownLanguage });
     expect(onChange).not.toHaveBeenCalled();
   });
 });

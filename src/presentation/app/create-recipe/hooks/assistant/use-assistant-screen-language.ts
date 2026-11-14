@@ -19,7 +19,7 @@ const localeFor = (said: string): string | null => {
  * @remarks
  * - **Same effect as picking in the combo**: the screen changes language, the
  *   app's saved language does not.
- * - **An unknown language is `not_found`**, never a silent fallback to English.
+ * - **An unknown language is `unknown_language`**, never a silent fallback to English.
  */
 export const useAssistantScreenLanguage = (onChange: (locale: string) => void): void => {
   useAssistantAction(
@@ -27,7 +27,7 @@ export const useAssistantScreenLanguage = (onChange: (locale: string) => void): 
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const locale = localeFor(arg ?? CharConstants.empty);
-        if (locale === null) return { ok: false, error: AssistantActionError.NotFound };
+        if (locale === null) return { ok: false, error: AssistantActionError.UnknownLanguage };
         onChange(locale);
         return { ok: true, title: LANGUAGE_NAMES[locale] ?? locale };
       },
