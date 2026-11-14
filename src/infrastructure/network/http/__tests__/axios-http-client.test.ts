@@ -258,3 +258,37 @@ describe('AxiosHttpClient onUpgradeRequired hook', () => {
     expect(onUpgradeRequired).not.toHaveBeenCalled();
   });
 });
+
+describe('AxiosHttpClient onAiLimitReached hook', () => {
+  beforeEach(() => {
+    mockRequest.mockReset();
+  });
+
+  const limitBody = (details: unknown) => ({
+    error: { code: 'too_many_requests', message: 'limit', messageKey: 'errors.too_many_requests.ai_usage_limit', details },
+  });
+
+  // The limit dialog must come up from whichever AI screen hit the cap, not from one screen's check.
+  it('reports the free plan cap with the server numbers', async () => {
+    mockRequest.mockResolvedValue({ status: 429, data: limitBody({ scope: 'daily', limit: 200, used: 200, resetsAt: '2026-11-15T00:00:00.000Z' }) });
+    const onAiLimitReached = jest.fn();
+    const { client } = buildClient({ onAiLimitReached });
+
+    const result = await client.request({ url: '/recipes/generate' });
+
+    expect(result.ok).toBe(false);
+    expect(onAiLimitReached).toHaveBeenCalledWith({ scope: 'daily', limit: 200, used: 200, resetsAt: new Date('2026-11-15T00:00:00.000Z') });
+  });
+
+  it('stays quiet on the per-minute cooldown and on a limit without details', async () => {
+    const onAiLimitReached = jest.fn();
+    const { client } = buildClient({ onAiLimitReached });
+    mockRequest.mockResolvedValueOnce({ status: 429, data: { error: { code: 'too_many_requests', message: 'slow', messageKey: 'errors.too_many_requests.ai_cooldown' } } });
+    mockRequest.mockResolvedValueOnce({ status: 429, data: limitBody(undefined) });
+
+    await client.request({ url: '/recipes/generate' });
+    await client.request({ url: '/recipes/generate' });
+
+    expect(onAiLimitReached).not.toHaveBeenCalled();
+  });
+});

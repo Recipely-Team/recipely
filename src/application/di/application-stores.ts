@@ -1,3 +1,4 @@
+import type { AiLimitStore } from '@application/subscriptions/ai-limit-store-contract';
 import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import type { AssistantSessionStore } from '@application/assistant/session/assistant-session-store-contract';
 import type { StoreApi } from 'zustand/vanilla';
@@ -20,6 +21,7 @@ import type { DmArrivalStore } from '@application/instagram/stats/dm-arrival-sto
 import type { ShoppingListStore } from '@application/shopping/shopping-list-store-contract';
 import type { MealPlanStore } from '@application/meal-plan/meal-plan-store-contract';
 import type { FridgeStore } from '@application/fridge/fridge-store-contract';
+import type { PremiumStore } from '@application/subscriptions/premium-store-contract';
 import type { ListRecentFoodPageUseCase } from '@application/diary/foods/browse/list-recent-food-page-use-case';
 import type { FavoritesStore } from '@application/favorites/favorites-store-contract';
 import type { ImportJobStore } from '@application/recipes/import/import-job-store-contract';
@@ -111,6 +113,10 @@ export interface ApplicationStores {
   mealPlanStore: StoreApi<MealPlanStore>;
   /** Cook from my fridge: its flag and its two AI calls. Not user-scoped. */
   fridgeStore: StoreApi<FridgeStore>;
+  /** Premium: plans, purchase, restore and the confirmed entitlement. User-scoped. */
+  premiumStore: StoreApi<PremiumStore>;
+  /** The free plan's AI-limit dialog, raised by the HTTP client from any screen. */
+  aiLimitStore: StoreApi<AiLimitStore>;
   /** The food search without a store, for the assistant's `logFood` / `searchFood`. */
   searchFoods: SearchFoodsUseCase;
   /** Recent foods, product-aware, for the assistant's name matching. */

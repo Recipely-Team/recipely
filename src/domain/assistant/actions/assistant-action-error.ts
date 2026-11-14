@@ -49,6 +49,7 @@ export const AssistantActionError = {
   UnknownDifficulty: 'unknown_difficulty',
   UnknownDirection: 'unknown_direction',
   UnknownField: 'unknown_field',
+  UnknownPlan: 'unknown_plan',
   UnknownFilter: 'unknown_filter',
   UnknownLanguage: 'unknown_language',
   UnknownPalette: 'unknown_palette',

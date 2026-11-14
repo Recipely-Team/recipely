@@ -14,6 +14,8 @@ import { act } from "react-test-renderer";
 /** Captured so a test can fire the SDK's own failure callback. */
 let onFailed: ((error: Error) => void) | undefined;
 
+// A free account: this suite is about loading banners, not premium.
+jest.mock("@presentation/base/hooks/subscriptions/use-is-premium", () => ({ useIsPremium: () => false }));
 jest.mock("react-native-google-mobile-ads", () => ({
   __esModule: true,
   default: () => ({ initialize: async () => [] }),

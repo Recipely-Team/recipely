@@ -46,6 +46,7 @@ const KEY_TO_SEVERITY: Partial<Record<FailureContentKeyType, SeverityType>> = {
   // Waiting or retrying, not an error: neutral.
   cancelled: SeverityType.Neutral,
   aiCooldown: SeverityType.Warning,
+  aiUsageLimit: SeverityType.Warning,
   codeCooldown: SeverityType.Warning,
   tooManyAttempts: SeverityType.Warning,
   importBusy: SeverityType.Warning,
@@ -96,6 +97,7 @@ const KEY_TO_ICON: Partial<Record<FailureContentKeyType, IoniconNameType>> = {
   aiInvalidResponse: 'sparkles-outline',
   aiUpstreamFailed: 'sparkles-outline',
   aiCooldown: 'hourglass-outline',
+  aiUsageLimit: 'sparkles-outline',
   promptRequired: 'create-outline',
   promptTooLong: 'cut-outline',
   refineInstructionRequired: 'chatbubble-ellipses-outline',

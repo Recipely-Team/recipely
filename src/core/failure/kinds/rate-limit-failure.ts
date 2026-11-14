@@ -7,6 +7,8 @@ import { FailureCode } from '@core/failure/failure-code';
  * server provides it, tells the UI how long to wait before offering a retry.
  * The inherited `messageKey` (e.g. `errors.too_many_requests.ai_cooldown`)
  * distinguishes a generic throttle from a feature-specific cooldown.
+ * `details` carries the backend's facts about the limit (scope, limit, used,
+ * reset time for the AI usage cap), uninterpreted here.
  */
 export class RateLimitFailure extends Failure {
   readonly code = FailureCode.RateLimit;
@@ -14,6 +16,7 @@ export class RateLimitFailure extends Failure {
     readonly message: string = 'Too many requests',
     readonly retryAfterSeconds?: number,
     messageKey?: string,
+    readonly details?: Readonly<Record<string, unknown>>,
   ) {
     super(messageKey);
   }

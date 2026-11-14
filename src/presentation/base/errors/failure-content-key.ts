@@ -25,6 +25,7 @@ export type FailureContentKeyType =
   | 'aiInvalidResponse'
   | 'aiUpstreamFailed'
   | 'aiCooldown'
+  | 'aiUsageLimit'
   | 'promptRequired'
   | 'promptTooLong'
   | 'refineInstructionRequired'

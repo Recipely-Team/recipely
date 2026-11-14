@@ -1,3 +1,4 @@
+import type { AiUsageLimit } from '@domain/subscriptions/ai-usage-limit';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 
@@ -53,4 +54,6 @@ export interface AxiosHttpClientOptions {
   appBuild?: { platform: string; version: string };
   /** Invoked on every 426 from the version gate, so the app re-checks and shows its update gate. */
   onUpgradeRequired?: () => void;
+  /** Invoked when a request is refused for the free plan's AI cap, so the app shows its limit dialog. */
+  onAiLimitReached?: (limit: AiUsageLimit) => void;
 }

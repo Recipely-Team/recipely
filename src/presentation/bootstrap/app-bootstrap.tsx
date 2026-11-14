@@ -22,6 +22,7 @@ import { AppSyncs } from '@presentation/bootstrap/app-syncs';
 import { registerPushToken } from '@infrastructure/notifications/push-token-registrar';
 import { setPushRegistrationHandler } from '@application/notifications/ensure-push-registration';
 import { hydrateLocale } from '@presentation/i18n/i18n';
+import type { AiUsageLimit } from '@domain/subscriptions/ai-usage-limit';
 
 export interface AppBootstrapProps {
   children: ReactNode;
@@ -35,12 +36,15 @@ export interface AppBootstrapProps {
 let onSessionExpired: () => void = () => {};
 // Same late binding for the backend's 426 version gate: re-check, which raises the update gate.
 let onUpgradeRequired: () => void = () => {};
+// And for the free plan's AI cap: raise the limit dialog.
+let onAiLimitReached: (limit: AiUsageLimit) => void = () => {};
 
 // Initialize stores synchronously on module load
 const initializeStores = (): ApplicationStores => {
   registerInfrastructure(container, {
     onUnauthorized: () => onSessionExpired(),
     onUpgradeRequired: () => onUpgradeRequired(),
+    onAiLimitReached: (limit) => onAiLimitReached(limit),
   });
   const created = registerApplication(container);
   onSessionExpired = () => {
@@ -49,6 +53,7 @@ const initializeStores = (): ApplicationStores => {
   onUpgradeRequired = () => {
     void created.appVersionStore.getState().check();
   };
+  onAiLimitReached = (limit) => created.aiLimitStore.getState().report(limit);
   return created;
 };
 
