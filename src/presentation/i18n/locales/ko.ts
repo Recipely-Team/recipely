@@ -1325,6 +1325,7 @@ export const ko: TranslationsType = {
     moreCalories: '50 kcal 늘리기',
   },
   shopping: {
+    share: "목록 공유",
     toBuyCount: "살 것 {n}개",
     listEmptyShort: "비어 있음",
     cartA11y: "장보기 목록, 살 것 {n}개",

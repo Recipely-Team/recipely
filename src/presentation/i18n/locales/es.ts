@@ -1329,6 +1329,7 @@ export const es = {
     moreCalories: '50 kcal más',
   },
   shopping: {
+    share: "Compartir lista",
     toBuyCount: "{n} por comprar",
     listEmptyShort: "Vacía",
     cartA11y: "Lista de la compra, {n} por comprar",

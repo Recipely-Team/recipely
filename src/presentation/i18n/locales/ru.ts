@@ -1329,6 +1329,7 @@ export const ru = {
     moreCalories: 'На 50 ккал больше',
   },
   shopping: {
+    share: "Поделиться списком",
     toBuyCount: "Купить: {n}",
     listEmptyShort: "Пусто",
     cartA11y: "Список покупок, купить: {n}",
